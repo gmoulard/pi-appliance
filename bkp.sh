@@ -1,5 +1,6 @@
 
 DEST=cloud@cloud.moulard.org:/data/backup/$HOSTNAME/
+DEST=pi@pi3.moulard.org:/media/sda/bkpCloud/$HOSTNAME/
 
 REPINFO=/tmp/info
 rm -r $REPINFO
