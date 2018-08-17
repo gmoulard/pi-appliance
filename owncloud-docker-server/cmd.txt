@@ -1,0 +1,47 @@
+
+# https://doc.owncloud.org/server/10.0/admin_manual/installation/docker/
+
+# Create a new project directory
+wget https://raw.githubusercontent.com/owncloud-docker/server/master/docker-compose.yml
+
+
+update it !!!
+
+
+# Create the environment configuration file
+cat << EOF > .env
+OWNCLOUD_VERSION=10.0
+OWNCLOUD_DOMAIN=localhost
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=azeAZE123
+HTTP_PORT=80
+HTTPS_PORT=443
+EOF
+
+alias dc=docker-compose
+mkdir /data/owncloud /data/mysql /data/mysql-backup /data/redis /var/lib/letsencrypt /var/www/html
+
+ 
+# Build and start the container
+docker-compose up -d
+
+docker-compose down
+docker-compose up -d --build
+
+d exec -it ownclouddockerserver_owncloud_1 bash   
+dc exec server bash 
+
+dc exec server occ maintenance:mode --on
+dc exec db backup
+
+
+d exec -it ownclouddockerserver_owncloud_1 apt-get update
+d exec -it ownclouddockerserver_owncloud_1 apt-get install -y software-properties-common
+d exec -it ownclouddockerserver_owncloud_1 add-apt-repository ppa:certbot/certbot
+d exec -it ownclouddockerserver_owncloud_1 apt-get update
+d exec -it ownclouddockerserver_owncloud_1 apt-get install -y python-certbot-apache 
+d exec -it ownclouddockerserver_owncloud_1 certbot --apache certonly
+
+# ln -s /etc/letsencrypt/live/cloud.moulard.org/cert.pem /data/owncloud/certs/ssl-cert.crt
+# ln -s /etc/letsencrypt/live/cloud.moulard.org/privkey.pem /data/owncloud/certs/ssl-cert.key
+

@@ -1,0 +1,18 @@
+pi@pi3:~/pi-appliance/apache-docker $ docker-compose up -d
+...
+Successfully tagged apache-docker_myproject:latest
+WARNING: Image for service myproject was built because it did not already exist. To rebuild this image you must use `docker-compose build` or `docker-compose up --build`.
+
+Creating pi-appliance-www ... done
+
+alias d=docker
+alias dc=docker-com
+d system prune -f
+d pull resin/rpi-raspbian:latest
+d stop pi-appliance-www ; d rm pi-appliance-www ; docker-compose up --build 
+d exec -it pi-appliance-www bash
+
+dc down
+dc up -d
+dc up --build -d
+

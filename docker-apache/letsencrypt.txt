@@ -1,0 +1,13 @@
+# install
+# https://hub.docker.com/r/bcecchinato/letsencrypt-rpi/
+docker pull bcecchinato/letsencrypt-rpi
+
+# help
+docker run -it --rm bcecchinato/letsencrypt-rpi --help
+
+./certbot-auto certonly --standalone --email gmoulard@gmail.com --agree-tos -d pi3.moulard.org
+
+
+docker run -it --rm bcecchinato/letsencrypt-rpi  certonly --standalone --email gmoulard@gmail.com --agree-tos -d pi3.moulard.org
+
+
