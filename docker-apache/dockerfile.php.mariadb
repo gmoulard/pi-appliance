@@ -16,8 +16,9 @@ RUN apt-get -qy install php \
                         php7.0-mbstring \
                         php-curl 
                         
-RUN apt-get -qy install php-mysql
-RUN apt-get -qy install mariadb-client
+RUN apt-get -qy install php-mysql \
+                        mariadb-client
+                        
 RUN apt-get -qy install php-gd
 RUN apt-get -qy install mcrypt
 
@@ -36,7 +37,5 @@ ENV APACHE_PID_FILE /var/run/apache2.pid
 
 EXPOSE 80
 EXPOSE 443
-
-
 
 CMD /usr/sbin/apache2ctl -D FOREGROUND
