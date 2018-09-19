@@ -16,6 +16,7 @@ RUN apt-get -qy install php \
                         php7.0-mbstring \
                         php-curl 
                         
+RUN apt-get -qy install php-mysql
 RUN apt-get -qy install mariadb-client
 RUN apt-get -qy install php-gd
 RUN apt-get -qy install mcrypt
