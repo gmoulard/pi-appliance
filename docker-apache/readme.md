@@ -6,10 +6,4 @@ Merci gwendal : https://github.com/gwendal-orinel/docker/blob/master/proxy/Docke
 
 docker build https://github.com/gmoulard/pi-appliance.git#master:docker-apache -f dockerfile.php.mariadb -t pi-appliance-www
 
-docker run -d --name=pi-appliance-www \
-           -h pi-appliance-www \
-           --restart=always \
-           -v /var/log:/var/log \
-           -v /var/www:/var/w \
-           -p 443:443 -p 80:80 \
-           pi-appliance-www
+docker run -d --name=pi-appliance-www -h pi-appliance-www --restart=always -v /var/log:/var/logc -v /var/www:/var/www -p 443:443 -p 80:80  pi-appliance-www
