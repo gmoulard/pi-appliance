@@ -1,7 +1,5 @@
 FROM debian:latest
 
-RUN apt-get update -y && apt-get install -qy wget vim apache2 libapache2-mod-php php php-xml php7.0-mbstring php-curl 
-
 RUN apt-get update -y
 RUN apt-get -qy install apt-utils \
                         wget \
