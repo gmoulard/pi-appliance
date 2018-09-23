@@ -12,7 +12,7 @@ docker stop nextcloud ; docker rm nextcloud
 DOMAIN="pi3b.moulard.org 192.168.1.49"
 docker run -d -p 1443:443 \
               -p 180:80 \
-              -v ncdata:/data \
+              -v /data:/data \
               -v /media:/media  \
               --restart unless-stopped  \
               --name nextcloud \
