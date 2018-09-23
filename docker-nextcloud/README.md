@@ -5,7 +5,8 @@ see: #https://ownyourbits.com/2017/06/08/nextcloudpi-docker-for-raspberry-pi/
 ```
 mkdir /data
 mkdir /data/config
-sudo wget https://github.com/gmoulard/pi-appliance/raw/master/docker-nextcloud/data/config/config.php -O /data/config/config.php
+sudo wget https://github.com/gmoulard/pi-appliance/raw/master/docker-nextcloud/data/config/config.php \
+          -O /data/config/config.php
 
 # Start
 docker stop nextcloud ; docker rm nextcloud
@@ -16,7 +17,7 @@ docker run -d -p 1443:443 \
               -v /media:/media  \
               --restart unless-stopped  \
               --name nextcloud \
-              --hostname nextcloud
+              --hostname nextcloud \
               ownyourbits/nextcloud $DOMAINE
 
 # reset password
