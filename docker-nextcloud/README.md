@@ -3,7 +3,7 @@
 see: #https://ownyourbits.com/2017/06/08/nextcloudpi-docker-for-raspberry-pi/
 
 ```
-#lauche 
+# Start
 DOMAIN="pi3b.moulard.org 127.0.0.1"
 docker run -d -p 1443:443 -p 180:80 -v ncdata:/data -v /media:/media  --restart unless-stopped  --name nextcloudpi ownyourbits/nextcloudpi $DOMAINE
 
