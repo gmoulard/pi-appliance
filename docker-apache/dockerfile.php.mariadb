@@ -20,6 +20,12 @@ RUN apt-get -qy install php-mysql \
 RUN apt-get -qy install php-gd
 RUN apt-get -qy install mcrypt
 
+#for certboot
+RUN apt-get -qy install cpp \
+                        python3.5 \
+                        python2.7 \
+                        openssl
+
 COPY etc/* /etc/
 COPY etc/apache2/sites-available/* /etc/apache2/sites-available/
 
