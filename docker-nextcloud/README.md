@@ -18,7 +18,7 @@ docker run -d -p 1443:443 \
               --restart unless-stopped  \
               --name nextcloud \
               --hostname nextcloud \
-              ownyourbits/nextcloud $DOMAINE
+              ownyourbits/nextcloudpi $DOMAIN
 
 # reset password
 docker exec -it nextcloudpi sudo -u www-data /var/www/nextcloud/occ user:resetpassword admin
