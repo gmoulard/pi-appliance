@@ -10,10 +10,15 @@ $ docker build https://github.com/gmoulard/pi-appliance.git#master:docker-apache
 
 Start
 docker stop pi-appliance-www; docker rm pi-appliance-www
-docker run -d --name=pi-appliance-www -h pi-appliance-www --restart=always \
-             -v /var/log:/var/log \
-             -v /var/www:/var/www -v  \
-             letsencrypt:/etc/letsencrypt -p 443:443 -p 80:80  pi-appliance-www
+docker run -d --name=pi-appliance-www \
+              --restart=always \
+              -v /var/log:/var/log \
+              -v /var/www:/var/www -v  \
+              --hostname pi3.moulard.org
+              -v letsencrypt:/etc/letsencrypt \
+              -p 443:443 \
+              -p 80:80  \
+              pi-appliance-www
 
 ```
 
