@@ -6,7 +6,7 @@ Merci [@gwendal-orinel](https://github.com/gwendal-orinel/docker)
 # build images Apache 
 ```
 Build
-$ docker build https://github.com/gmoulard/pi-appliance.git#master:docker-apache \
+docker build https://github.com/gmoulard/pi-appliance.git#master:docker-apache \
                -f dockerfile.php.mariadb -t pi-appliance-www
 
 Start
