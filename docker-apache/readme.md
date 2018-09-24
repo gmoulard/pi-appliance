@@ -15,7 +15,8 @@ docker run -d --name=pi-appliance-www \
               --restart=always \
               -v /var/log:/var/log \
               -v /var/www:/var/www  \
-              -v letsencrypt:/etc/letsencrypt \
+              -v pi-appliance-www_etc_letsencrypt:/etc/letsencrypt \
+              -v pi-appliance-www_lib_letsencrypt:/var/lib/letsencrypt \
               --hostname pi3.moulard.org \
               -p 443:443 \
               -p 80:80  \
