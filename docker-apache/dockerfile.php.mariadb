@@ -39,9 +39,9 @@ EXPOSE 443
 RUN wget https://dl.eff.org/certbot-auto
 RUN chmod a+x certbot-auto
 
-RUN /certbot-auto --apache  -n \
-            --email gmoulard@gmail.com --agree-tos \
-            -d pi3.moulard.org  \
-            -d pi3b.moulard.org
+#RUN /certbot-auto --apache  -n \
+#            --email gmoulard@gmail.com --agree-tos \
+#            -d pi3.moulard.org  \
+#            -d pi3b.moulard.org
 
 CMD /usr/sbin/apache2ctl -D FOREGROUND
