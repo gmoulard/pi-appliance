@@ -24,7 +24,8 @@ COPY etc/* /etc/
 COPY etc/apache2/sites-available/* /etc/apache2/sites-available/
 
 RUN a2enmod proxy proxy_http proxy_ajp rewrite deflate headers proxy_balancer proxy_connect proxy_html rewrite
-RUN a2ensite pi3-default-ssl.conf pi3-default.conf pi3b-default.conf pi3b-default-ssl.conf
+RUN a2ensite pi3.moulard.org.conf  pi3.moulard.org-ssl.conf   
+RUN a2ensite pi3b.moulard.org.conf pi3b.moulard.org-ssl.conf
 
 # Manually set up the apache environment variables
 ENV APACHE_RUN_USER www-data
