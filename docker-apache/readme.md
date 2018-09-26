@@ -23,10 +23,10 @@ docker run -d --name=pi-appliance-www \
               pi-appliance-www
 
 #pi3
-docker exec -it pi-appliance-www bash a2ensite pi3.moulard.org.conf  pi3.moulard.org-ssl.conf  
+docker exec -it pi-appliance-www a2ensite pi3.moulard.org.conf  pi3.moulard.org-ssl.conf  
 
 #pi3b
-docker exec -it pi-appliance-www bash a2ensite pi3b.moulard.org.conf pi3b.moulard.org-ssl.conf
+docker exec -it pi-appliance-www a2ensite pi3b.moulard.org.conf pi3b.moulard.org-ssl.conf
 
 ```
 
@@ -35,15 +35,15 @@ docker exec -it pi-appliance-www bash a2ensite pi3b.moulard.org.conf pi3b.moular
 Request
 PI3
 
-docker exec -it pi-appliance-www bash /certbot-auto --apache  -n \
+docker exec -it pi-appliance-www certbot-auto --apache  -n \
             --email gmoulard@gmail.com --agree-tos \
             -d pi3.moulard.org  \
             -d pi3b.moulard.org
 PI3b
-docker exec -it pi-appliance-www bash /certbot-auto --apache -n \
+docker exec -it pi-appliance-www certbot-auto --apache -n \
             --email gmoulard@gmail.com --agree-tos 
             -d pi3b.moulard.org
 
 renew 
- docker exec -it pi-appliance-www bash /certbot-auto renew
+ docker exec -it pi-appliance-www certbot-auto renew
 ```
