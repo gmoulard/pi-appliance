@@ -5,11 +5,11 @@ Merci [@gwendal-orinel](https://github.com/gwendal-orinel/docker)
 
 # build images Apache 
 ```
-Build
+#Build
 docker build https://github.com/gmoulard/pi-appliance.git#master:docker-apache \
                -f dockerfile.php.mariadb -t pi-appliance-www
 
-Start
+#Start
 docker stop pi-appliance-www; docker rm pi-appliance-www
 docker run -d --name=pi-appliance-www \
               --restart=always \
@@ -21,6 +21,12 @@ docker run -d --name=pi-appliance-www \
               -p 443:443 \
               -p 80:80  \
               pi-appliance-www
+
+#pi3
+docker exec -it pi-appliance-www bash a2ensite pi3.moulard.org.conf  pi3.moulard.org-ssl.conf  
+
+#pi3b
+docker exec -it pi-appliance-www bash a2ensite pi3b.moulard.org.conf pi3b.moulard.org-ssl.conf
 
 ```
 
