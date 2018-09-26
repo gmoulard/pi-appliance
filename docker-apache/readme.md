@@ -32,14 +32,16 @@ docker exec -it pi-appliance-www a2ensite pi3b.moulard.org.conf pi3b.moulard.org
 
 # initialiasation des certificat SSL 
 ```
-Request
-PI3
+#Init
+docker exec -it pi-appliance-www wget https://dl.eff.org/certbot-auto
+docker exec -it pi-appliance-www chmod a+x certbot-auto
 
+#request pi3
 docker exec -it pi-appliance-www /certbot-auto --apache  -n \
             --email gmoulard@gmail.com --agree-tos \
             -d pi3.moulard.org  \
             -d pi3b.moulard.org
-PI3b
+#request pi3b
 docker exec -it pi-appliance-www /certbot-auto --apache -n \
             --email gmoulard@gmail.com --agree-tos 
             -d pi3b.moulard.org
