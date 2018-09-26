@@ -43,7 +43,7 @@ docker exec -it pi-appliance-www /certbot-auto --apache  -n \
             -d pi3b.moulard.org
 #request pi3b
 docker exec -it pi-appliance-www /certbot-auto --apache -n \
-            --email gmoulard@gmail.com --agree-tos 
+            --email gmoulard@gmail.com --agree-tos \
             -d pi3b.moulard.org
 
 renew 
