@@ -38,7 +38,4 @@ ENV APACHE_PID_FILE /var/run/apache2.pid
 EXPOSE 80
 EXPOSE 443
 
-RUN wget https://dl.eff.org/certbot-auto
-RUN chmod a+x certbot-auto
-
 CMD /usr/sbin/apache2ctl -D FOREGROUND
