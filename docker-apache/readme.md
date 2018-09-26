@@ -35,15 +35,15 @@ docker exec -it pi-appliance-www a2ensite pi3b.moulard.org.conf pi3b.moulard.org
 Request
 PI3
 
-docker exec -it pi-appliance-www certbot-auto --apache  -n \
+docker exec -it pi-appliance-www /certbot-auto --apache  -n \
             --email gmoulard@gmail.com --agree-tos \
             -d pi3.moulard.org  \
             -d pi3b.moulard.org
 PI3b
-docker exec -it pi-appliance-www certbot-auto --apache -n \
+docker exec -it pi-appliance-www /certbot-auto --apache -n \
             --email gmoulard@gmail.com --agree-tos 
             -d pi3b.moulard.org
 
 renew 
- docker exec -it pi-appliance-www certbot-auto renew
+ docker exec -it pi-appliance-www /certbot-auto renew
 ```
