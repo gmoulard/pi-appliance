@@ -19,7 +19,9 @@ docker run -d -p 3443:443 \
    
 wget https://raw.githubusercontent.com/gmoulard/pi-appliance/master/docker-nextcloud/data/config/config.php
 docker cp config.php nextcloudpi:/data/config
-docker exec -it nextcloudpi chmod 666 /data/config/config.php
+docker exec -it nextcloudpi chown www-data:www-data /data/config/config.php
+#docker exec -it nextcloudpi chmod 666 /data/config/config.php
+
               
               
 # reset password
