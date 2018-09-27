@@ -11,6 +11,8 @@ sudo wget https://github.com/gmoulard/pi-appliance/raw/master/docker-nextcloud/d
 # Start
 docker stop nextcloud ; docker rm nextcloud
 
+docker run -d -p 443:443 -p 80:80 -p 4443:4443  -v ncdata:/data --name nextcloudpi ownyourbits/nextcloudpi 127.0.0.1
+
 docker run -d -p 1443:443 \
               -p 180:80 \
               -p 4443:4443 \
