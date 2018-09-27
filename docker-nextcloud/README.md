@@ -16,6 +16,11 @@ docker run -d -p 3443:443 \
               -v /media:/media  \
               --restart=always \
               --name nextcloudpi ownyourbits/nextcloudpi 127.0.0.1 pi3b.moulard.org 192.168.1.49
+   
+wget https://raw.githubusercontent.com/gmoulard/pi-appliance/master/docker-nextcloud/data/config/config.php
+docker cp config.php nextcloudpi:/data/config
+docker exec -it nextcloudpi chmod 666 /data/config/config.php
+              
               
 # reset password
 docker exec -it nextcloudpi sudo -u www-data /var/www/nextcloud/occ user:resetpassword admin
