@@ -13,7 +13,7 @@ docker stop nextcloudpi ; docker rm nextcloudpi
 
 docker run -d -p 3443:443 \
               -v ncdata:/data \
-              -v /media:/media  \
+              -v /var/www/html/DD:/DD  \
               --restart=always \
               --name nextcloudpi ownyourbits/nextcloudpi 127.0.0.1 pi3b.moulard.org 192.168.1.49
    
