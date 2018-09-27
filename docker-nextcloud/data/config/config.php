@@ -1,18 +1,16 @@
 <?php
 $CONFIG = array (
-  'passwordsalt' => 'rtCtOxa/vxAQFbGZo5hZ35HGXr8fwA',
-  'secret' => '4rUBfPUoIYSBWZWEXboHbGacmdBoY8sttkGkj24UW7nyPgMf',
+  'passwordsalt' => 'U/FM5iOE4E2Jt03tmlJ12PacVxy+m4',
+  'secret' => '9jr5Qo5S2gUvz6KuN7Lf0wfImfj4EdEFIFNpEyiz60l3gGNs',
   'trusted_domains' =>
   array (
     0 => 'localhost',
-    2 => '172.17.0.3',
+    1 => '127.0.0.1',
+    2 => '172.17.0.2',
     3 => 'pi3b.moulard.org',
-    4 => '192.168.1.49',
-    5 => 'pi3b.pi-appliance.com',
-    6 => '10.100.0.3',
   ),
   'datadirectory' => '/data/app',
-  'overwrite.cli.url' => 'http://pi3b.moulard.org',
+  'overwrite.cli.url' => 'http://localhost',
   'dbtype' => 'mysql',
   'version' => '12.0.0.29',
   'dbname' => 'nextcloud',
@@ -22,15 +20,11 @@ $CONFIG = array (
   'dbuser' => 'ncadmin',
   'dbpassword' => 'ownyourbits',
   'installed' => true,
-  'instanceid' => 'oczb2i9a656w',
+  'instanceid' => 'ocwotab0o1u2',
   'memcache.local' => '\\OC\\Memcache\\APCu',
-  'trusted_proxies' =>
-  array (
-    0 => '10.100.0.3',
-  ),
-  'overwritehost' => 'pi3b.moulard.org',
-  'overwriteprotocol' => 'https',
-  'overwritewebroot' => '/nextcloud',
-  'overwritecondaddr' => '^192.168.0.100$',
-  ‘overwrite.cli.url’ => ‘https://pi3b.moulard.org/nextcloud/’,
+'overwritehost' => 'pi3b.moulard.org',
+'overwriteprotocol' => 'https',
+'overwritewebroot' => '/cloud',
+'overwritecondaddr' => '^172.17.0.2$',
+'overwrite.cli.url' => 'https://pi3b.moulard.org/cloud/',
 );
