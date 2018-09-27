@@ -9,20 +9,14 @@ sudo wget https://github.com/gmoulard/pi-appliance/raw/master/docker-nextcloud/d
           -O /data/config/config.php
 
 # Start
-docker stop nextcloud ; docker rm nextcloud
+docker stop nextcloudpi ; docker rm nextcloudpi
 
-docker run -d -p 443:443 -p 80:80 -p 4443:4443  -v ncdata:/data --name nextcloudpi ownyourbits/nextcloudpi 127.0.0.1
-
-docker run -d -p 1443:443 \
-              -p 180:80 \
-              -p 4443:4443 \
-              -v /data:/data \
+docker run -d -p 3443:443 \
+              -v ncdata:/data \
+              -v /data:/dataFS \
               -v /media:/media  \
-              --restart unless-stopped  \
-              --name nextcloud \
-              --hostname nextcloud \
-              ownyourbits/nextcloudpi pi3b.moulard.org 192.168.1.49
-
+              --name nextcloudpi ownyourbits/nextcloudpi 127.0.0.1 pi3b.moulard.org 192.168.1.49
+              
 # reset password
 docker exec -it nextcloudpi sudo -u www-data /var/www/nextcloud/occ user:resetpassword admin
 
