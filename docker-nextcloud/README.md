@@ -9,8 +9,9 @@ sudo wget https://github.com/gmoulard/pi-appliance/raw/master/docker-nextcloud/d
           -O /data/config/config.php
 
 # Start
-docker stop nextcloudpi ; docker rm nextcloudpi
 
+
+docker stop nextcloudpi ; docker rm nextcloudpi
 docker run -d -p 3443:443 \
               -p 4443:4443 \
               -p 8080:80 \
@@ -18,6 +19,12 @@ docker run -d -p 3443:443 \
               -v /var/www/html/DD:/DD  \
               --restart=always \
               --name nextcloudpi ownyourbits/nextcloudpi 127.0.0.1 pi3b.moulard.org 192.168.1.49
+
+Et pour pas : --name nextcloudpi ownyourbits/nextcloudpi-armhf 127.0.0.1 pi3b.moulard.org 192.168.1.49
+docker pull ownyourbits/nextcloudpi-armhf
+pi@pi3b:~/tmp $ d load < nextcloudpi-armhf.tar
+
+
    
 wget https://raw.githubusercontent.com/gmoulard/pi-appliance/master/docker-nextcloud/data/config/config.php
 docker cp config.php nextcloudpi:/data/config
