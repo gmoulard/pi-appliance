@@ -19,7 +19,7 @@ RUN apt-get -qy install php-mysql \
                         
 RUN apt-get -qy install php-gd
 RUN apt-get -qy install mcrypt
-
+RUN apt-get -qy install ffmpeg
 
 
 COPY etc/apache2/sites-available/* /etc/apache2/sites-available/
