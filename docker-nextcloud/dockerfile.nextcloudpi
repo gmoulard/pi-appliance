@@ -1,0 +1,18 @@
+FROM ownyourbits/nextcloudpi
+
+COPY data/app/config/* /data/app/config/
+
+EXPOSE 3443:443 
+EXPOSE 4443:4443 
+EXPOSE 8080:80 
+
+VOLUME ncdata:/data 
+VOLUME /var/www/html/DD:/DD  
+
+
+
+
+et pour le reste ...
+--restart=always \
+--name nextcloudpi ownyourbits/nextcloudpi 127.0.0.1 pi3b.moulard.org 192.168.1.49
+CMD /usr/sbin/apache2ctl -D FOREGROUND
