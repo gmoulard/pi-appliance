@@ -8,7 +8,7 @@ BEGIN {
 }
 
 function reportBug (typeError, linNum, ligne) { 
-	print linNum, ":", typeError, ":" ligne 
+	printf ("%3i %s20: %s\n",linNum, typeError, ligne) 
 	nbPbs=nbPbs+1;
 }
 
