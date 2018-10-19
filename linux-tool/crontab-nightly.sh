@@ -2,9 +2,6 @@
 
 date
 
-sudo
-
-
-/home/pi/pi-appliance/bkp.sh
+~/pi-appliance/linux-tool/bkp.sh
 
 sudo /sbin/reboot
