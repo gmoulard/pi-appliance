@@ -1,0 +1,31 @@
+./dimanche/pic_00_57_1.jpg ./dimanche/pic_00_57_2.jpg
+./dimanche/pic_00_57_1.jpg ./dimanche/pic_00_57_2.jpg Manhattan norm: 121582.761983  xel: 0.131925739999 Zero norm: 134462.0 / per pixel: 0.145900607639
+./dimanche/pic_00_57_2.jpg ./dimanche/pic_00_57_4.jpg
+./dimanche/pic_00_57_2.jpg ./dimanche/pic_00_57_4.jpg Manhattan norm: 119185.14924  xel: 0.129324163672 Zero norm: 125696.0 / per pixel: 0.136388888889
+./dimanche/pic_00_57_4.jpg ./dimanche/pic_00_58_1.jpg
+./dimanche/pic_00_57_4.jpg ./dimanche/pic_00_58_1.jpg Manhattan norm: 109446.923552  xel: 0.118757512535 Zero norm: 116598.0 / per pixel: 0.126516927083
+./dimanche/pic_00_58_1.jpg ./dimanche/pic_00_58_2.jpg
+./dimanche/pic_00_58_1.jpg ./dimanche/pic_00_58_2.jpg Manhattan norm: 114673.86588  xel: 0.124429107943 Zero norm: 127230.0 / per pixel: 0.138053385417
+./dimanche/pic_00_58_2.jpg ./dimanche/pic_00_58_4.jpg
+./dimanche/pic_00_58_2.jpg ./dimanche/pic_00_58_4.jpg Manhattan norm: 115205.76616  xel: 0.125006256684 Zero norm: 123882.0 / per pixel: 0.134420572917
+./dimanche/pic_00_58_4.jpg ./dimanche/pic_00_59_1.jpg
+./dimanche/pic_00_58_4.jpg ./dimanche/pic_00_59_1.jpg Manhattan norm: 112190.870504  xel: 0.121734885529 Zero norm: 112587.0 / per pixel: 0.122164713542
+./dimanche/pic_00_59_1.jpg ./dimanche/pic_00_59_2.jpg
+./dimanche/pic_00_59_1.jpg ./dimanche/pic_00_59_2.jpg Manhattan norm: 102897.487528  xel: 0.111650919626 Zero norm: 107955.0 / per pixel: 0.117138671875
+./dimanche/pic_00_59_2.jpg ./dimanche/pic_01_00_1.jpg
+./dimanche/pic_00_59_2.jpg ./dimanche/pic_01_00_1.jpg Manhattan norm: 110152.391818  xel: 0.119522994594 Zero norm: 122297.0 / per pixel: 0.132700737847
+./dimanche/pic_01_00_1.jpg ./dimanche/pic_01_00_2.jpg
+./dimanche/pic_01_00_1.jpg ./dimanche/pic_01_00_2.jpg Manhattan norm: 133711.785196  xel: 0.145086572478 Zero norm: 149212.0 / per pixel: 0.161905381944
+./dimanche/pic_01_00_2.jpg ./dimanche/pic_01_00_4.jpg
+./dimanche/pic_01_00_2.jpg ./dimanche/pic_01_00_4.jpg Manhattan norm: 135015.73844  xel: 0.1465014523 Zero norm: 145010.0 / per pixel: 0.157345920139
+./dimanche/pic_01_00_4.jpg ./dimanche/pic_01_01_1.jpg
+Traceback (most recent call last):
+  File compareDir.py, line 52, in <module>
+    main()
+  File compareDir.py, line 17, in main
+    compute(sys.argv[1]+listImg[i], sys.argv[1]+listImg[i+1])
+  File compareDir.py, line 25, in compute
+    n_m, n_0 = compare_images(img1, img2)
+  File compareDir.py, line 34, in compare_images
+    diff = img1 - img2  # elementwise for scipy arrays
+ValueError: operands could not be broadcast together with shapes (720,1280) (2464,3280)
