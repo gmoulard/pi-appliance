@@ -2,7 +2,7 @@
 
 how to install 
 
-
+'''
 
 
 on crontab :
@@ -183,4 +183,4 @@ my hard disk tree:
 │       ├── img
 │       ├── imgZeroNorm
 │       └── th
-└── pi-timelaps -> /home/pi/pi-appliance/pi-timelaps
+'''
