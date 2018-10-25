@@ -1,7 +1,0 @@
-
-#* * * * * ( sleep 00 ; ~/pi-appliance/pi-timelaps/pictureToCloud.sh 1 >> /var/log/pi-appliance.log 2>> /var/log/pi-appliance.err )
-#* * * * * ( sleep 15 ; ~/pi-appliance/pi-timelaps/pictureToCloud.sh 2 >> /var/log/pi-appliance.log 2>> /var/log/pi-appliance.err )
-#* * * * * ( sleep 30 ; ~/pi-appliance/pi-timelaps/pictureToCloud.sh 3 >> /var/log/pi-appliance.log 2>> /var/log/pi-appliance.err )
-#* * * * * ( sleep 45 ; ~/pi-appliance/pi-timelaps/pictureToCloud.sh 4 >> /var/log/pi-appliance.log 2>> /var/log/pi-appliance.err )
-
-
