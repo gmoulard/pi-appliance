@@ -2,7 +2,7 @@
 
 how to install 
 
-'''
+```
 
 
 on crontab :
@@ -184,3 +184,4 @@ my hard disk tree:
 │       ├── imgZeroNorm
 │       └── th
 '''
+``` 
