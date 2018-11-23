@@ -30,7 +30,7 @@ docker exec -it pi-appliance-www a2ensite pi3.moulard.org.conf  pi3.moulard.org-
 docker exec -it pi-appliance-www a2ensite pi3b.moulard.org.conf pi3b.moulard.org-ssl.conf
 
 #vgm 
-docker exec -it pi-appliance-www a2ensite pi-appliance.com-ssl.conf
+docker exec -it pi-appliance-www a2ensite pi-appliance.com.conf pi-appliance.com-ssl.conf
 
 ```
 
@@ -49,6 +49,11 @@ docker exec -it pi-appliance-www /certbot-auto --apache  -n \
 docker exec -it pi-appliance-www /certbot-auto --apache -n \
             --email gmoulard@gmail.com --agree-tos \
             -d pi3b.moulard.org
+
+#request vgm
+docker exec -it pi-appliance-www /certbot-auto --apache -n \
+            --email gmoulard@gmail.com --agree-tos \
+            -d pi-appliance.com
 
 renew 
  docker exec -it pi-appliance-www /certbot-auto renew
