@@ -24,7 +24,7 @@ RUN apt-get -qy install ffmpeg
 
 
 COPY etc/apache2/sites-available/* /etc/apache2/sites-available/
-run echo 192.168.1.53 pi3b >> /etc/hosts
+RUN echo 192.168.1.53 pi3b >> /etc/hosts
  
 RUN a2enmod ssl proxy proxy_http proxy_ajp rewrite deflate headers proxy_balancer proxy_connect proxy_html rewrite
 
