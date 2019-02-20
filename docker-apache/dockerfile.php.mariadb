@@ -3,7 +3,8 @@ FROM debian:latest
 RUN apt-get update -y
 RUN apt-get -qy install apt-utils \
                         wget \
-                        vim 
+                        vim \
+                        curl
                    
 
 RUN apt-get -qy install apache2 
@@ -19,7 +20,7 @@ RUN apt-get -qy install php-mysql \
                         
 RUN apt-get -qy install php-gd
 RUN apt-get -qy install mcrypt
-#RUN apt-get -qy install ffmpeg
+RUN apt-get -qy install ffmpeg
 
 
 COPY etc/apache2/sites-available/* /etc/apache2/sites-available/
