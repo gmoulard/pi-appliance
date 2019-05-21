@@ -1,0 +1,8 @@
+FROM python:alpine3.7
+#COPY . /app
+COPY pypy/hw.py ./hw.py 
+#WORKDIR /app
+#RUN pip install -r requirements.txt
+#EXPOSE 5000
+CMD python ./hw.py
+© 2019 GitHub, Inc.
