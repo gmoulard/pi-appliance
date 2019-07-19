@@ -16,6 +16,7 @@ docker run -d --name=pi-appliance-www \
               --restart=always \
               -v /var/log:/var/log \
               -v /var/www:/var/www  \
+              -v /etc/letsencrypt:/etc/letsencrypt \
               -v pi-appliance-www_etc_letsencrypt:/etc/letsencrypt \
               -v pi-appliance-www_lib_letsencrypt:/var/lib/letsencrypt \
               --hostname $WHOSTNAME \
