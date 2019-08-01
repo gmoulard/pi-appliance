@@ -22,6 +22,7 @@ RUN apt-get -qy install php-gd
 RUN apt-get -qy install mcrypt
 RUN apt-get -qy install ffmpeg
 
+RUN apt-get -qy install python
 
 COPY etc/apache2/sites-available/* /etc/apache2/sites-available/
 
