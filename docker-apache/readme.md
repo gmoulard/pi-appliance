@@ -46,17 +46,19 @@ docker exec -it pi-appliance-www /certbot-auto --apache  -n \
             -d pi3.moulard.org  \
             -d pi3b.moulard.org \
             -d cyprin.eu \
-            -d traefik \
-            -d git.cyprin.eu \
+            -d tom.moulard.org \
+            -d couill.eu
+
+            -d traefik.cyprin.eu  \
+            -d git.cyprin.eu 
             -d torent.cyprin.eu \
             -d video.cyprin.eu \
             -d jupiter.cyprin.eu \
             -d paste.cyprin.eu \
             -d cloud.cyprin.eu \
             -d latex.cyprin.eu \
-            -d tom.moulard.org \
-            -d couill.eu
-            
+
+
 #request pi3b
 docker exec -it pi-appliance-www /certbot-auto --apache -n \
             --email gmoulard@gmail.com --agree-tos \
