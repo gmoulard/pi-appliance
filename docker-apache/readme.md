@@ -27,7 +27,7 @@ docker run -d --name=pi-appliance-www \
 docker exec -it pi-appliance-www a2ensite pi3.moulard.org.conf  pi3.moulard.org-ssl.conf  
 
 #pi3b
-docker exec -it pi-appliance-www a2ensite pi3b.moulard.org.conf pi3b.moulard.org-ssl.conf
+docker exec -it pi-appliance-www a2ensite pi3b.moulard.org.conf pi3b.moulard.org-ssl.conf martin.moulard.org
 
 #vgm 
 docker exec -it pi-appliance-www a2ensite pi-appliance.com.conf pi-appliance.com-ssl.conf
