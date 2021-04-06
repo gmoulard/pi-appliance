@@ -6,7 +6,7 @@
 
 #  cat /sys/firmware/devicetree/base/model
 # https://www.raspberrypi.org/documentation/hardware/raspberrypi/revision-codes/README.md
-# $ sudo crontab -e
+# sudo crontab -e
 # @reboot /home/pi/pi-appliance/autossh.sh >> /var/log/pi-appliance.log 2>> /var/log/pi-appliance.err
 # curl https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi/autossh.sh > /home/pi/pi-appliance/autossh.sh
 
