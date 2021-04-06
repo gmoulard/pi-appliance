@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # description: setup autossh for gm pi cluster
-# V0 : D/M/20 By guillaume@moulard.org - creation
+# V0 : 07/04/21 By guillaume@moulard.org - creation
 #set -x
 
 #  cat /sys/firmware/devicetree/base/model
