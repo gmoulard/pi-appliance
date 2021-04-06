@@ -25,6 +25,6 @@ esac
 
 export AUTOSSH_DEBUG=yes
 export AUTO_OPTION=" -M 0 -q -f -N  -oStrictHostKeyChecking=no -oServerAliveInterval=60 -oServerAliveCountMax=3 -i /home/pi/.ssh/identity "
-autossh $AUTO_OPTION $AUTO_PORT cloud@vdlZZ.moulard.org
+autossh $AUTO_OPTION $AUTO_PORT cloud@vdl.moulard.org
 autossh $AUTO_OPTION $AUTO_PORT pi@pi.moulard.org
 
