@@ -33,19 +33,19 @@ cat ${temp_file} > ~/.ssh/authorized_keys
 
 sudo crontab -l -u pi > ${temp_file}
 if [ `grep -c upd.sh ${temp_file}` -ge 1 ]; then
-    echo 1 1 * * * /home/pi/upd.sh  >> ${temp_file}
+    echo "1 1 * * * /home/pi/upd.sh"  >> ${temp_file}
 fi
 sudo crontab -u pi ${temp_file}
 
 sudo crontab -l -u root > ${temp_file}
 if [ `grep -c 'hostname..moulard' ${temp_file}` -ge 1 ]; then
-    echo 02 * * * * /root/DynHost/dynhost \`hostname\`.moulard.org >> ${temp_file}
+    echo "02 * * * * /root/DynHost/dynhost \`hostname\`.moulard.org" >> ${temp_file}
 fi
 if [ `grep -c 'apt-get update' ${temp_file}` -ge 1 ]; then
-    echo 4 4 * * *  apt-get update ; apt-get -y upgrade ; reboot >> ${temp_file}
+    echo "4 4 * * *  apt-get update ; apt-get -y upgrade ; reboot" >> ${temp_file}
 fi
 if [ `grep -c 'autossh' ${temp_file}` -ge 1 ]; then
-    echo @reboot /home/pi/pi-appliance/autossh.sh \>\> /var/log/pi-appliance.log 2\>\> /var/log/pi-appliance.err >> ${temp_file}
+    echo "@reboot /home/pi/pi-appliance/autossh.sh >> /var/log/pi-appliance.log 2>> /var/log/pi-appliance.err" >> ${temp_file}
 fi
 sudo crontab -u root ${temp_file}
 
