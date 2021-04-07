@@ -1,0 +1,3 @@
+set mouse=r
+set nu
+:syntax on
