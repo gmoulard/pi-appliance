@@ -8,14 +8,15 @@ echo Begin: `date`
 cat /sys/firmware/devicetree/base/model
 
 temp_file=$(mktemp)
+REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
 
 if [ `cat /sys/firmware/devicetree/base/model | grep Raspberry | wc -l` != 1 ]; then
     echo on est pas sur un pi, Pbs !!!!
     exit 0
 fi
 
-export REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
 mkdir ~/pi-appliance
+curl -s $REPO/upd.sh > ~/pi-appliance/upd.sh
 curl -s $REPO/autossh.sh > ~/pi-appliance/autossh.sh
 curl -s $REPO/bkp.sh > ~/pi-appliance/bkp.sh
 curl -s $REPO/config > ~/.ssh/config
