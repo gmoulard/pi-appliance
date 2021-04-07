@@ -4,9 +4,6 @@
 # V0 : 07/04/21 By guillaume@moulard.org - creation
 #set -x
 #  curl -s https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi/upd.sh | sh -
-echo Begin: `date` 
-cat /sys/firmware/devicetree/base/model
-echo 
 
 temp_file=$(mktemp)
 REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
@@ -34,6 +31,7 @@ cat ${temp_file} > ~/.ssh/authorized_keys
 sudo crontab -l -u pi > ${temp_file}
 if [ `grep -c upd.sh ${temp_file}` -ge 1 ]; then
     echo "1 1 * * * /home/pi/upd.sh"  >> ${temp_file}
+    cat  ${temp_file}
 fi
 sudo crontab -u pi ${temp_file}
 
@@ -51,4 +49,4 @@ sudo crontab -u root ${temp_file}
 
 
 rm ${temp_file}
-echo End: `date` 
+
