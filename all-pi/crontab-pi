@@ -1,0 +1,36 @@
+# Edit this file to introduce tasks to be run by cron.
+#
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+#
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').#
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+#
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+#
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+#
+# For more information see the manual pages of crontab(5) and cron(8)
+#
+# @hourly        Run once an hour   ==  0 * * * *
+# @daily         Run once a day     ==  0 0 * * *
+# @midnight      (same as @daily)
+# @weekly        Run once a week    ==  0 0 * * 0
+# @monthly       Run once a month   ==  0 0 1 * *
+# @yearly        Run once a year    ==  0 0 1 1 *
+# @annually      (same as @yearly)
+# @reboot        Run at startup
+# */15 * * * * cmd #all 15 segond
+PATH=~:/bin:/usr/bin:/usr/local/bin:
+MAILTO=pi
+
+1 1 * * * /home/pi/upd.sh
+5 * * * * sudo nmap -sP  192.168.1.1/24 > /tmp/nmap.log
+
