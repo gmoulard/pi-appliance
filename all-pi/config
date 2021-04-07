@@ -47,6 +47,12 @@ host pi4b
      HostName pi.moulard.org
      Port 1306
      User pi
+     
+host pi3bp-vdl
+     HostName vdl.moulard.org
+     Port 1307
+     User pi
+     
 
 host bastion
      HostName 10.228.164.4
