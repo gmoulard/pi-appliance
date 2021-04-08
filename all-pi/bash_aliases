@@ -1,5 +1,6 @@
 alias d=docker
 alias k=kubectl
+alias dc=docker-compose
 
 gp(){ git add -A ;
       git commit -m \"`[[ -z "$1" ]] && echo "Tipo"\" || echo $1`\" ;
