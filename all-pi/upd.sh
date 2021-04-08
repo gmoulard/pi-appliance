@@ -6,7 +6,7 @@
 #  curl -s https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi/upd.sh | sh -
 
 temp_file=$(mktemp)
-REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
+export REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
 
 if [ `cat /sys/firmware/devicetree/base/model | grep Raspberry | wc -l` -ne 1 ]; then
     echo on est pas sur un Raspberry
