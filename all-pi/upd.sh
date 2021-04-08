@@ -2,11 +2,11 @@
 #
 # description: setup autossh for gm pi cluster
 # V0 : 07/04/21 By guillaume@moulard.org - creation
-#set -x
-#  curl -s https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi/upd.sh | sh -
+# set -x
+#  export REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi" ; curl -s $REPO/upd.sh | sh -
 
 temp_file=$(mktemp)
-export REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
+REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
 
 if [ `cat /sys/firmware/devicetree/base/model | grep Raspberry | wc -l` -ne 1 ]; then
     echo on est pas sur un Raspberry
