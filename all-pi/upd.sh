@@ -20,16 +20,17 @@ curl -s $REPO/upd.sh > ~/pi-appliance/upd.sh
 curl -s $REPO/autossh.sh > ~/pi-appliance/autossh.sh
 curl -s $REPO/bkp.sh > ~/pi-appliance/bkp.sh
 chmod 777  ~/pi-appliance/*.sh
+
 curl -s $REPO/crontab-root > ~/pi-appliance/crontab-root
 curl -s $REPO/crontab-pi > ~/pi-appliance/crontab-pi
+
 curl -s $REPO/vimrc > ~.vimrc
 sudo cp ~.vimrc /root/.vimrc
+
+curl -s $REPO/bash_aliases > ~/.bash_aliases
 
 curl -s $REPO/config > ~/.ssh/config
 
 curl -s $REPO/authorized_keys >> ~/.ssh/authorized_keys
 sort -u ~/.ssh/authorized_keys > ${temp_file}
 cat ${temp_file} > ~/.ssh/authorized_keys
-
-
-
