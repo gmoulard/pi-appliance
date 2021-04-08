@@ -24,6 +24,7 @@ chmod 777  ~/pi-appliance/*.sh
 curl -s $REPO/crontab-root > ~/pi-appliance/crontab-root
 curl -s $REPO/crontab-pi > ~/pi-appliance/crontab-pi
 
+
 curl -s $REPO/vimrc > ~/.vimrc
 sudo cp ~/.vimrc /root/.vimrc
 
