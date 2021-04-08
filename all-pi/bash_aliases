@@ -1,0 +1,10 @@
+alias d=docker
+alias k=kubectl
+
+gp(){ git add -A ;
+      git commit -m \"`[[ -z "$1" ]] && echo "Tipo"\" || echo $1`\" ;
+      git push ;
+      git pull ;
+}
+
+bkp (){ cp -a $1 $1-bkp$(date +"%y%m%d%H%M%S") ; }
