@@ -9,8 +9,7 @@ temp_file=$(mktemp)
 REPO="https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi"
 
 if [ `cat /sys/firmware/devicetree/base/model | grep Raspberry | wc -l` -ne 1 ]; then
-    echo on est pas sur un pi, Pbs !!!!
-    exit 0
+    echo on est pas sur un Raspberry
 fi
 
 if [ ! -d ~/pi-appliance ]; then 
