@@ -4,17 +4,21 @@
 # V0 : 07/04/21 By guillaume@moulard.org - creation
 #set -x
 
-DEST=pi@pi3.moulard.org:/media/sda/bkpCloud/$HOSTNAME/
+DEST=pi@pi.moulard.org:/media/sda/bkpCloud/$HOSTNAME/
+TS=`date +%R`
 
 REPINFO=/tmp/info
 rm -r $REPINFO
 mkdir $REPINFO
-crontab -l  > $REPINFO/crontab`date +%R`.txt
-df -h  > $REPINFO/df`date +%R`.txt
-ps -ef  > $REPINFO/ps`date +%R`.txt
-ip a >  $REPINFO/pi`date +%R`.txt
-ip route >>  $REPINFO/pi`date +%R`.txt
+crontab -l  > $REPINFO/crontab${TS}.txt
+df -h  > $REPINFO/df${TS}.txt
+ps -ef  > $REPINFO/ps${TS}.txt
 
+echo `hostname` >  $REPINFO/pi${TS}.txt
+echo external IP: `/usr/bin/curl -s ipv4.icanhazip.com` >>  $REPINFO/pi${TS}.txt
+ip a >>  $REPINFO/pi${TS}.txt
+ip route >>  $REPINFO/pi${TS}.txt
+echo
 
 scp -r $REPINFO $DEST
 scp /var/log/pi-appliance.* $DEST
