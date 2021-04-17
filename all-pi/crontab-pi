@@ -31,6 +31,6 @@
 PATH=~:/bin:/usr/bin:/usr/local/bin:
 MAILTO=pi
 
-1 1 * * * /home/pi/upd.sh
+1 1 * * * /home/pi/pi-appliance/upd.sh ; /home/pi/pi-appliance/bkp.sh 
 5 * * * * sudo nmap -sP  192.168.0.0/21 > /tmp/nmap.log
 
