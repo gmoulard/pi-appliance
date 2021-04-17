@@ -33,6 +33,8 @@ MAILTO=pi
 # m h  dom mon dow   command
 
 @reboot /home/pi/pi-appliance/autossh.sh >> /var/log/pi-appliance.log 2>> /var/log/pi-appliance.err
+#@reboot mount /dev/sda1 /media/sda
+#@reboot mount /dev/sdb1 /media/sdb
 
 02 * * * * /root/DynHost/dynhost `hostname`.moulard.org
 
