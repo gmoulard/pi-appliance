@@ -32,5 +32,5 @@ PATH=~:/bin:/usr/bin:/usr/local/bin:
 MAILTO=pi
 
 1 1 * * * /home/pi/upd.sh
-5 * * * * sudo nmap -sP  192.168.1.1/24 > /tmp/nmap.log
+5 * * * * sudo nmap -sP  192.168.0.0/21 > /tmp/nmap.log
 
