@@ -14,7 +14,9 @@ crontab -l  > $REPINFO/crontab${TS}.txt
 df -h  > $REPINFO/df${TS}.txt
 ps -ef  > $REPINFO/ps${TS}.txt
 
+
 echo `hostname` >  $REPINFO/pi${TS}.txt
+raspinfo >> $REPINFO/pi${TS}.txt
 echo external IP: `/usr/bin/curl -s ipv4.icanhazip.com` >>  $REPINFO/pi${TS}.txt
 ip a >>  $REPINFO/pi${TS}.txt
 ip route >>  $REPINFO/pi${TS}.txt
