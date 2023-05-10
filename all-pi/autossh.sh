@@ -28,4 +28,5 @@ export AUTO_OPTION=" -M 0 -q -f -N  -oStrictHostKeyChecking=no -oServerAliveInte
 autossh $AUTO_OPTION $AUTO_PORT cloud@vdl.moulard.org
 echo autossh $AUTO_OPTION $AUTO_PORT pi@pi.moulard.org
 autossh $AUTO_OPTION $AUTO_PORT pi@pi.moulard.org
+autossh $AUTO_OPTION $AUTO_PORT pi@ssh.moulard.org
 
