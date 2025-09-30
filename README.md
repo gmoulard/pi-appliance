@@ -5,13 +5,12 @@
 
 ``` shell
 imager-1.9.6.exe : setup wifi, clef public, user !!!
-sudo apt-get update ; sudo apt-get upgrade -y
+sudo apt-get update ; sudo apt-get upgrade -y ; sudo apt-get install autossh
 
 mkdir  /home/pi/pi-appliance
 # install autossh
 curl https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi/autossh.sh > /home/pi/pi-appliance/autossh.sh
 chmod 777 autossh.sh
-sudo apt-get install autossh
 
 # mise en place connection ssh
 ssh-keygen -t rsa -b 4096
