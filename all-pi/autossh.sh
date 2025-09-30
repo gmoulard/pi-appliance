@@ -25,6 +25,7 @@ case $HOSTNAME in
   "pi3bp-vdl") export AUTO_PORT=" -R 1307:*:22 " ;;
   "pibp-vdl")  export AUTO_PORT=" -R 1308:*:22 " ;;
   "docker")    export AUTO_PORT=" -R 1309:*:22 " ;;
+  "iot")    export AUTO_PORT=" -R 1310:*:22 " ;;
   *)       export AUTO_PORT="" ;;
 esac
 
