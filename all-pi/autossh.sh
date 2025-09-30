@@ -11,7 +11,7 @@ set -x
 # curl https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi/autossh.sh > /home/pi/pi-appliance/autossh.sh
 
 # supprime les ancien autossh
-`ps -fe | grep "/usr/lib/autossh/autossh" | awk '{print "kill -9 " $2}'`
+#`ps -fe | grep "/usr/lib/autossh/autossh" | awk '{print "kill -9 " $2}'`
 
 
 case $HOSTNAME in
@@ -28,11 +28,6 @@ case $HOSTNAME in
   "iot")    export AUTO_PORT=" -R 1310:*:22 " ;;
   *)       export AUTO_PORT="" ;;
 esac
-
-export LL=$LL" -L 2248:tom.moulard.org:22"
-export LL=$LL" -L 2249:mbpdevrenaudin.home.pi-appliance.com:22"
-export LL=$LL" -L 2250:awsb.moulard.org:22"
-
 
 export AUTOSSH_DEBUG=yes
 export AUTOSSH_LOGFILE=/var/log/autossh.log
