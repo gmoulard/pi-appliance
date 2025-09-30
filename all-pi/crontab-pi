@@ -28,9 +28,14 @@
 # @annually      (same as @yearly)
 # @reboot        Run at startup
 # */15 * * * * cmd #all 15 segond
+#  curl https://raw.githubusercontent.com/gmoulard/pi-appliance/master/all-pi/crontab-pi > /tmp/crontab-pi
+# crontab /tmp/crontab-pi
 PATH=~:/bin:/usr/bin:/usr/local/bin:
 MAILTO=pi
 
-1 1 * * * /home/pi/pi-appliance/upd.sh ; /home/pi/pi-appliance/bkp.sh 
-5 * * * * sudo nmap -sP  192.168.0.0/21 > /tmp/nmap.log
+@reboot sleep 120;/home/pi/pi-appliance/autossh.sh > /tmp/autossh.log 2> /tmp/autossh.err
+#0 1 * * * /home/pi/dynhost/dynhost.sh
+#1 1 * * * /home/pi/pi-appliance/upd.sh ; /home/pi/pi-appliance/bkp.sh 
+#5 * * * * sudo nmap -sP  192.168.0.0/21 > /tmp/nmap.log
+
 
