@@ -30,7 +30,7 @@ case $HOSTNAME in
 esac
 
 export AUTOSSH_DEBUG=yes
-export AUTOSSH_LOGFILE=/var/log/autossh.log
+export AUTOSSH_LOGFILE=/tmp/autossh.log
 export AUTOSSH_LOGLEVEL=5
 export AUTO_OPTION=" -M 0 -q -f -N  -F /home/pi/.ssh/config "
 autossh $AUTO_OPTION $AUTO_PORT $LL awsmb
