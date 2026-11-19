@@ -105,7 +105,7 @@ func TestBuiltinManifests(t *testing.T) {
 			}
 		})
 	}
-	for _, id := range []string{"nextcloud", "site-web", "dokuwiki", "etherpad"} {
+	for _, id := range []string{"nextcloud", "site-web", "dokuwiki", "etherpad", "postgresql"} {
 		if !ids[id] {
 			t.Errorf("manifeste %s absent", id)
 		}

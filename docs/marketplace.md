@@ -28,7 +28,7 @@ Ces pistes ne sont pas encore installables depuis la marketplace :
 
 - **WireGuard** : accès au réseau de la maison depuis l'extérieur, avec configuration par QR code.
 - **Générateurs de sites** : MkDocs, Astro, Hugo, Jekyll et Next.js.
-- **Bases et services de données** : PostgreSQL, SQLite, MongoDB, Redis et MSSQL ; compatibilité et usage comme services autonomes à étudier.
+- **Bases de données** : PostgreSQL est disponible, avec l'interface web Adminer. MongoDB (Pi 5 seulement), Redis, MSSQL (pas d'image pour le Pi) et SQLite (un simple fichier) ne sont pas proposés seuls : voir la [spécification](specification.html), section 6.3.
 - **Samba** : partage de fichiers sur le réseau local.
 - **Caméra et timelapse** : applications autour de Motion et de la capture d'images.
 
