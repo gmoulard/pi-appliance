@@ -51,7 +51,14 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] Clé des sauvegardes protégée par le mot de passe administrateur, jumelage par code, restauration appliance/service/fichier, formatage ext4 avec accord (9.1).
 - [x] Graphiques sur 30 jours ; une console par appliance (5.2) ; canaux stable et bêta (5.4).
 - [x] Format des manifestes : Docker Compose + section `x-pi-appliance` (6.5).
-- [ ] Questions ouvertes de la section 15 : prix du relais, débit du Pi du projet, longueur du mot de passe administrateur, garde-fous du Compose libre.
+- [x] Relais : nombre d'appliances relayées limité, liste d'attente (7.3).
+- [x] Mot de passe administrateur de 12 caractères au moins (8.1).
+- [x] Compose libre : options dangereuses signalées, pas bloquées (6.4).
+- [x] Pas d'identifiant initial : compte administrateur créé dans le portail (5.1).
+- [x] Point d'accès Wi-Fi ouvert, limité à 24 heures (4).
+- [x] E-mail de l'administrateur vérifié dès que le service d'e-mails est joignable (5.1).
+- [x] Certificat auto-signé avant Let's Encrypt, alerte expliquée (8.4).
+- [ ] Questions ouvertes de la section 15 : prix et paiement du relais, nombre maximal d'appliances relayées (à l'étape Internet).
 
 ## 2. Étape 1 — Local
 
@@ -60,14 +67,14 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [ ] Construction de l'image à partir de Raspberry Pi OS Lite 64 bits (`pi-gen`), une seule image pour les quatre modèles.
 - [ ] Docker et Docker Compose préinstallés.
 - [ ] Premier démarrage : nom d'hôte, mDNS `pi-appliance.local`, secrets propres au boîtier, certificat local.
-- [ ] Point d'accès Wi-Fi « pi-appliance » et portail de configuration.
+- [ ] Point d'accès Wi-Fi « pi-appliance » ouvert, limité à 24 heures, et portail de configuration avec création du compte administrateur.
 - [ ] Construction automatique de l'image (GitHub Actions) et publication avec somme de contrôle.
 
 ### Console (5)
 
 - [x] Squelette Go : page d'accueil sous `/pi-appliance/`, `api/health`, tests, binaire `arm64` construit par GitHub Actions (10.1).
 - [ ] Service systemd et passage derrière Traefik, en HTTPS.
-- [ ] Authentification, changement obligatoire du mot de passe initial, e-mail vérifié.
+- [ ] Authentification ; compte administrateur créé au premier démarrage ; e-mail vérifié dès que le service d'e-mails est joignable.
 - [ ] Fichier `reset` sur la carte SD (8.5).
 - [ ] Assistant de premier démarrage.
 - [ ] Tableau de bord : état du Pi et des services, graphiques sur 30 jours.
@@ -97,7 +104,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [ ] Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] Domaine personnel : guide OVH, à partir de l'ancien `linux-tool/dynHost/` (historique git).
 - [ ] Accès direct : UPnP, guide de la box, test depuis internet.
-- [ ] Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, offre payante.
+- [ ] Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente, offre payante.
 - [ ] Accès par service : public, connectés, maison (8.2).
 - [ ] Console ouverte sur internet avec double authentification (8.3).
 

@@ -72,7 +72,7 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 - Contient Docker, Docker Compose, la console pi-appliance et Traefik, démarrés au premier boot.
 - Premier démarrage : extension de la partition, nom d'hôte `pi-appliance`, annonce mDNS (`pi-appliance.local`), génération des secrets propres au boîtier (certificat local auto-signé, clés de session). Aucun secret n'est commun à deux images.
 - **Modèles pris en charge** : Raspberry Pi 5, Pi 4, Pi 3 B+ et Pi Zero 2 W, avec une seule image 64 bits. Sur les petits modèles (Pi 3 B+ : 1 Go, Zero 2 W : 512 Mo), une application dont la mémoire minimale dépasse celle du Pi s'installe quand même, après un avertissement sur les performances.
-- **Réseau au premier démarrage** : le Pi ouvre **toujours** un point d'accès Wi-Fi « pi-appliance » avec un portail de configuration, même si un câble Ethernet est branché, pour que le parcours soit le même pour tous. Le portail propose les Wi-Fi visibles et, si un câble est branché, le réseau filaire. Le point d'accès se referme une fois le Pi connecté, et se rouvre s'il perd durablement le réseau. Le Pi Zero 2 W n'a pas de prise Ethernet.
+- **Réseau au premier démarrage** : le Pi ouvre **toujours** un point d'accès Wi-Fi « pi-appliance » avec un portail de configuration, même si un câble Ethernet est branché, pour que le parcours soit le même pour tous. Le portail propose les Wi-Fi visibles et, si un câble est branché, le réseau filaire. Le point d'accès est **ouvert** (sans mot de passe) mais **limité à 24 heures** : il se referme une fois le Pi connecté, ou au bout de 24 heures ; redémarrer le Pi le rouvre pour 24 heures, et il se rouvre de même si le Pi perd durablement le réseau. Rien de sensible n'y transite avant la création du compte administrateur. Le Pi Zero 2 W n'a pas de prise Ethernet.
 - **Stockage** : tout fonctionne sur la carte SD. Quand un disque USB est branché, la console propose d'y placer les données des services ; elle prévient quand la carte SD se remplit.
 - L'image est publiée sur www.pi-appliance.com avec sa somme de contrôle.
 
@@ -82,8 +82,8 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 
 ### 5.1 Premier démarrage (assistant)
 
-1. Connexion avec l'identifiant initial ; changement de mot de passe obligatoire.
-2. Adresse e-mail de l'administrateur, **obligatoire**, vérifiée par un code envoyé par e-mail (récupération et alertes, sections 8.5 et 8.6).
+1. Création du compte administrateur, directement dans le portail de configuration : il n'y a **pas d'identifiant initial** ; la première personne connectée au point d'accès crée le compte (mot de passe de 12 caractères au moins, section 8.1).
+2. Adresse e-mail de l'administrateur, **obligatoire**, vérifiée par un code envoyé par e-mail (récupération et alertes, sections 8.5 et 8.6). Si le service d'envoi d'e-mails du projet n'est pas joignable (appliance sans internet, ou avant l'étape Internet de la section 16), l'adresse est enregistrée et vérifiée dès qu'il le devient ; la console le rappelle tant que ce n'est pas fait.
 3. Langue de l'interface.
 4. Adresse de l'appliance : `<nom>.pi-appliance.com` (vérification que le nom est libre) ou domaine personnel (section 7.1).
 5. Test d'accès depuis internet ; guide de la box ou bascule sur le relais si besoin (section 7).
@@ -233,7 +233,7 @@ Offre :
 
 ### 8.4 Règles
 
-- HTTPS partout ; HTTP redirigé vers HTTPS.
+- HTTPS partout ; HTTP redirigé vers HTTPS. Tant que l'appliance n'a pas d'adresse internet (et donc pas de certificat Let's Encrypt), elle utilise son certificat local auto-signé : le navigateur affiche une alerte, que le portail et le guide utilisateur expliquent en langage courant, pas à pas.
 - Aucun mot de passe par défaut ne survit au premier démarrage.
 - Mots de passe stockés hachés ; limitation des tentatives de connexion.
 - Chaque service tourne dans ses conteneurs, avec ses propres volumes ; rien n'est monté du système hôte sans que le manifeste le déclare.
