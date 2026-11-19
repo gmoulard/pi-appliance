@@ -5,7 +5,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 ## 0. Ménage du dépôt
 
 - [x] Retirer les anciens prototypes (`all-pi/`, `linux-tool/`, `docker-*/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`, `pypy/`) : ils restent dans l'historique git, au commit `4ee13f9` (spécification, section 12).
-- [ ] Changer les secrets qui étaient versionnés (mots de passe Wi-Fi de `all-pi/wpa_supplicant.conf`, clés de `all-pi/authorized_keys`, `linux-tool/ssh/`) : retirés du dépôt, ils restent dans l'historique git (8.4).
+- [x] Changer les secrets qui étaient versionnés (mots de passe Wi-Fi de `all-pi/wpa_supplicant.conf`, clés de `all-pi/authorized_keys`, `linux-tool/ssh/`) : retirés du dépôt, ils restent dans l'historique git (8.4).
 - [x] Retirer les fichiers générés (`*.log`, `old.ip`, `ipcheck.dat`) et ajouter un `.gitignore`.
 - [x] Supprimer `tmp.uml` (exemple PlantUML sans rapport avec le projet).
 - [x] Choisir une licence et ajouter `LICENSE` : AGPL-3.0 (1.2).
