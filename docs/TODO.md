@@ -147,7 +147,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-3.4**: Shell Linux.
 - [ ] **TODO-3.5**: Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
 - [ ] **TODO-3.6**: Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
-- [ ] **TODO-3.7**: Domaine personnel : guide OVH, à partir de l'ancien `linux-tool/dynHost/` (historique git).
+- [ ] **TODO-3.7**: Domaine personnel : guide OVH, avec étapes DNS chez OVH séparées des réglages dans la console ([guide utilisateur](guide-utilisateur.md#domaine-personnel-chez-ovh)). Tâche ouverte : le guide signale l'indisponibilité du parcours ; avant de le rendre opérationnel, il faut TODO-3.2 et TODO-3.5 pour fournir l'adresse cible, puis la prise en charge du domaine et de ses certificats dans la console.
 - [ ] **TODO-3.8**: Accès direct : UPnP, guide de la box, test depuis internet.
 - [ ] **TODO-3.9**: Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente, offre payante.
 - [ ] **TODO-3.10**: Accès par service : public, connectés, maison (8.2).

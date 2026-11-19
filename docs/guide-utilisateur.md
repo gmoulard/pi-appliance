@@ -19,6 +19,25 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 - L'accès aux services depuis internet et la réservation d'une adresse `*.pi-appliance.com`.
 - Les sauvegardes, le VPN et les mises à jour de l'appliance depuis la console.
 
+## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
+
+> **Cette option n'est pas encore disponible.** La console ne permet pas de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
+
+Quand cette option sera disponible, la configuration se fera en deux endroits :
+
+### Chez OVH
+
+1. Choisissez un sous-domaine de votre domaine, par exemple `ma-maison.exemple.fr`. C'est préférable au domaine seul (`exemple.fr`) : un alias DNS classique ne peut pas toujours être créé à la racine d'un domaine.
+2. Dans l'espace client OVH, ouvrez la zone DNS de votre domaine et ajoutez une entrée de type **CNAME** pour ce sous-domaine. La cible sera le nom complet fourni par la console, de la forme `<nom>.pi-appliance.com`.
+3. Ne remplacez pas les serveurs DNS du domaine et ne modifiez pas ses autres entrées, notamment celles utilisées pour le site web ou les e-mails. N'utilisez pas la fonction de redirection web d'OVH à la place de l'entrée DNS.
+4. Si la console demande d'autres entrées pour les adresses des services, suivez les valeurs qu'elle affiche ; ne les devinez pas.
+
+### Dans la console pi-appliance
+
+La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible à recopier chez OVH, puis de vérifier la configuration avant d'activer le domaine. Ces réglages et cette vérification ne sont pas encore présents.
+
+**Prérequis :** l'appliance doit d'abord pouvoir obtenir et tenir à jour son adresse pi-appliance (`TODO-3.2` et `TODO-3.5`). La prise en charge du domaine dans la console, notamment pour l'utiliser avec les services et leurs certificats, reste aussi à réaliser. L'accès depuis internet n'est pas encore disponible non plus.
+
 ## Télécharger et installer l'image expérimentale {#telecharger-limage-experimentale}
 
 Le workflow GitHub Actions a construit l'image avec succès le 19 novembre 2026. L'artefact **`pi-appliance-image`** comprend l'image et son fichier de somme SHA-256 ; il expire le **3 décembre 2026**. [Télécharger directement l'image et sa somme de contrôle](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083/artifacts/14559608001). Il s'agit d'un artefact temporaire, pas d'une version stable. Le fichier image est `pi-appliance-2026-11-19-48c047d.img.xz` (environ 720 Mio compressé, 3,3 Gio une fois décompressé).
