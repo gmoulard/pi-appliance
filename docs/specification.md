@@ -24,11 +24,15 @@ pi-appliance s'adresse au **grand public** : des personnes sans connaissances te
 - chaque choix a une valeur par défaut raisonnable ; l'utilisateur peut tout accepter sans comprendre ;
 - l'interface parle de « services », d'« adresse », de « sauvegarde », pas de conteneurs, de ports ni de certificats ; les termes techniques restent dans les écrans avancés ;
 - une erreur dit ce qui ne va pas et quoi faire, en langage courant ;
-- une étape qui sort de la console (réglage de la box, achat d'un domaine) est guidée pas à pas.
+- une étape qui sort de la console (réglage de la box) est guidée pas à pas.
 
 ### 1.2 Licence
 
 pi-appliance est un logiciel libre sous licence **GNU Affero General Public License version 3** (AGPL-3.0), fichier [`LICENSE`](../LICENSE). Toute personne qui modifie pi-appliance et le met à disposition d'autres utilisateurs, y compris à travers le réseau, doit publier ses modifications sous la même licence. Les applications de la marketplace gardent leur propre licence.
+
+### 1.3 Objectif de la première version
+
+Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son Nextcloud **depuis internet en moins de 15 minutes** après avoir flashé la carte SD, **sans aide** (hors temps de flashage et de téléchargement des images Docker).
 
 ## 2. Vocabulaire
 
@@ -36,35 +40,41 @@ pi-appliance est un logiciel libre sous licence **GNU Affero General Public Lice
 |-------|------|
 | **Appliance** | Le Raspberry Pi équipé de l'image pi-appliance. |
 | **Console** | L'interface web d'administration de l'appliance, servie sous `/pi-appliance`. |
-| **Propriétaire** | La personne qui administre l'appliance (compte créé au premier démarrage). |
-| **Utilisateur** | Un compte créé par le propriétaire pour accéder aux services. |
+| **Administrateur** | Compte qui gère l'appliance ; le premier est créé au premier démarrage. |
+| **Utilisateur** | Compte qui accède aux services autorisés. |
+| **Invité** | Compte à durée limitée, pour un partage ponctuel. |
 | **Service** | Une application installée depuis la marketplace : un ou plusieurs conteneurs Docker. |
 | **Marketplace** | Le catalogue des applications installables. |
-| **Manifeste** | La description d'une application de la marketplace (images, ports, volumes, sous-domaine, paramètres). |
+| **Manifeste** | La description d'une application de la marketplace (images, volumes, sous-domaine, paramètres, besoins). |
+| **Adresse de l'appliance** | Le nom sous lequel l'appliance est joignable depuis internet : `<nom>.pi-appliance.com` par défaut, ou un domaine personnel. |
+| **Relais** | Serveur du projet qui rend l'appliance joignable quand la box ne le permet pas (section 7.3). |
 
 ## 3. Parcours type
 
 1. J'achète un Raspberry Pi.
-2. Je télécharge l'image pi-appliance et je la flashe sur une carte SD (Raspberry Pi Imager ou équivalent).
-3. Je démarre le Pi branché sur ma box (Ethernet, ou Wi-Fi saisi dans Raspberry Pi Imager).
-4. J'ouvre la console :
-   - depuis un autre appareil du réseau local : `https://pi-appliance.local/pi-appliance` ;
+2. Sur www.pi-appliance.com, je télécharge l'image et je la flashe sur une carte SD en suivant le guide.
+3. Je démarre le Pi.
+4. S'il n'a pas de réseau, le Pi crée un Wi-Fi « pi-appliance ». Je m'y connecte avec mon téléphone : une page s'ouvre, je choisis le Wi-Fi de la maison et je saisis son mot de passe. Le Pi rejoint mon Wi-Fi.
+5. J'ouvre la console :
+   - depuis un appareil de la maison : `https://pi-appliance.local/pi-appliance` ;
    - depuis le Pi lui-même (écran et clavier branchés) : `https://localhost/pi-appliance`.
-5. Je me connecte avec l'identifiant et le mot de passe initiaux, et je choisis aussitôt mon propre mot de passe.
-6. Je donne mon nom de domaine (par exemple `maison.example.org`).
-7. Je crée mes utilisateurs.
-8. Dans la marketplace, je coche les services que je veux.
-9. pi-appliance télécharge les images Docker, configure le reverse proxy Traefik et les certificats, et ouvre chaque service :
-   - à la maison, sur le réseau local ;
-   - sur internet, à l'adresse `https://<service>.<mon domaine>`.
+6. Je me connecte avec l'identifiant et le mot de passe initiaux, et je choisis aussitôt mon propre mot de passe.
+7. Je choisis mon adresse : un nom libre `<nom>.pi-appliance.com`, ou mon propre domaine.
+8. Je crée mes utilisateurs.
+9. Dans la marketplace, je coche les services que je veux et, pour chacun, qui peut y accéder.
+10. pi-appliance télécharge les images Docker, configure Traefik et les certificats, et ouvre chaque service :
+    - à la maison, sur le réseau local ;
+    - sur internet, à l'adresse `https://<service>.<nom>.pi-appliance.com`.
 
-## 4. Image système
+## 4. Image système et matériel
 
 - Construite à partir de l'image officielle Raspberry Pi OS Lite 64 bits, sans modification du système de base au-delà du nécessaire.
 - Contient Docker, Docker Compose, la console pi-appliance et Traefik, démarrés au premier boot.
 - Premier démarrage : extension de la partition, nom d'hôte `pi-appliance`, annonce mDNS (`pi-appliance.local`), génération des secrets propres au boîtier (certificat local auto-signé, clés de session). Aucun secret n'est commun à deux images.
-- Cible matérielle : Raspberry Pi 4 et 5 (64 bits, 2 Go de mémoire au moins). Les modèles plus anciens ne sont pas visés.
-- L'image est publiée en téléchargement avec sa somme de contrôle.
+- **Modèles pris en charge** : Raspberry Pi 5, Pi 4, Pi 3 B+ et Pi Zero 2 W, avec une seule image 64 bits. Sur les petits modèles (Pi 3 B+ : 1 Go, Zero 2 W : 512 Mo), une application dont la mémoire minimale dépasse celle du Pi s'installe quand même, après un avertissement sur les performances.
+- **Réseau au premier démarrage** : sans réseau, le Pi ouvre un point d'accès Wi-Fi « pi-appliance » avec un portail de configuration (choix du Wi-Fi et saisie du mot de passe), puis le referme une fois connecté. Il le rouvre s'il perd durablement le réseau.
+- **Stockage** : tout fonctionne sur la carte SD. Quand un disque USB est branché, la console propose d'y placer les données des services ; elle prévient quand la carte SD se remplit.
+- L'image est publiée sur www.pi-appliance.com avec sa somme de contrôle.
 
 ## 5. Console d'administration
 
@@ -73,83 +83,160 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 ### 5.1 Premier démarrage (assistant)
 
 1. Connexion avec l'identifiant initial ; changement de mot de passe obligatoire.
-2. Nom de domaine de l'appliance (facultatif : sans domaine, les services ne sont accessibles qu'à la maison).
-3. Méthode d'exposition sur internet (section 7).
-4. Création des utilisateurs.
-5. Choix des premiers services dans la marketplace.
+2. Langue de l'interface.
+3. Adresse de l'appliance : `<nom>.pi-appliance.com` (vérification que le nom est libre) ou domaine personnel (section 7.1).
+4. Test d'accès depuis internet ; guide de la box ou bascule sur le relais si besoin (section 7).
+5. Création des utilisateurs.
+6. Statistiques anonymes : proposées, désactivées par défaut (section 8.4).
+7. Choix des premiers services dans la marketplace.
 
 ### 5.2 Fonctions courantes
 
-- État de l'appliance : charge, mémoire, température, espace disque, adresse publique, état des certificats.
-- Services installés : démarrer, arrêter, redémarrer, mettre à jour, désinstaller (avec ou sans ses données), journaux.
-- Utilisateurs : créer, modifier, supprimer, réinitialiser un mot de passe.
-- Domaine et exposition : modifier, tester l'accès depuis internet.
+- État de l'appliance : charge, mémoire, température, espace disque, adresse publique, état des certificats, mode d'accès (direct ou relais).
+- Services installés : démarrer, arrêter, redémarrer, mettre à jour, désinstaller, journaux, qui peut y accéder.
+- Utilisateurs : créer, modifier, supprimer, réinitialiser un mot de passe, rôle, date d'expiration des invités.
+- Adresse et accès depuis internet : modifier, tester.
 - Sauvegarde et restauration (section 9).
+- Mises à jour disponibles (section 9.2).
+
+### 5.3 Langues
+
+L'interface est traduite dans les 12 langues de Wikipedia2Book : français, anglais, espagnol, portugais, italien, allemand, néerlandais, turc, chinois, japonais, arabe et persan (ces deux dernières de droite à gauche). Langue détectée d'après le navigateur, modifiable à tout moment. Le français fait foi.
 
 ## 6. Marketplace
 
-- Catalogue d'applications installables, chacune décrite par un **manifeste** versionné dans ce dépôt (format à définir, proche d'un fichier Docker Compose complété de métadonnées).
-- Un manifeste donne : nom, description, icône, catégorie, images Docker (multi-architecture, `arm64` obligatoire), volumes de données, ports internes, sous-domaine proposé, paramètres demandés à l'installation, besoins minimaux (mémoire, disque).
-- Installer un service : télécharger les images, créer les volumes, générer la configuration Traefik (routeur, certificat), démarrer les conteneurs, afficher l'adresse du service.
-- Applications envisagées (reprises des prototypes du dépôt) : Nextcloud, Samba (partage de fichiers, réseau local seulement), serveur web Apache/PHP, Motion (vidéosurveillance), timelapse.
+### 6.1 Catalogue
 
-## 7. Exposition sur internet
+- Maintenu dans un dépôt GitHub du projet, lu en ligne par l'appliance et mis à jour sans nouvelle version de pi-appliance.
+- Tout le monde peut proposer une application par pull request ; le projet la vérifie avant de l'accepter.
+- Chaque application est décrite par un **manifeste** : nom, description, icône, catégorie, images Docker (multi-architecture, `arm64` obligatoire), volumes de données, ports internes, sous-domaine proposé, paramètres demandés à l'installation, mémoire et disque minimaux, mode de connexion (section 8.1), accès par défaut (section 8.2), licence.
 
-Objectif : chaque service est joignable à `https://<service>.<domaine>`, depuis la maison comme depuis internet, avec un certificat valide.
+### 6.2 Installer et désinstaller
+
+- Installer : télécharger les images, créer les volumes, poser les labels Traefik (routeur, certificat, protection), démarrer les conteneurs, afficher l'adresse du service.
+- Désinstaller : la console **demande à chaque fois** s'il faut garder ou supprimer les données du service ; la suppression demande une confirmation. Les données gardées sont réutilisées si on réinstalle le service.
+
+### 6.3 Applications de la première version
+
+| Application | Logiciel | Remarques |
+|-------------|----------|-----------|
+| Fichiers, agenda, contacts | Nextcloud | Prototype dans `docker-nextcloud/` |
+| Partage de fichiers à la maison | Samba | Réseau de la maison seulement ; prototype dans `docker-samba/` |
+| Site web | Apache + PHP | Prototype dans `docker-apache/` |
+| Wiki | DokuWiki | Sans base de données, tourne sur tous les modèles |
+| Édition de texte à plusieurs | Etherpad | |
+| VPN | WireGuard | Accès au réseau de la maison depuis l'extérieur ; configuration du téléphone par QR code affiché dans la console. Le trafic internet du téléphone ne passe pas par la maison. |
+
+Plus tard : caméra (Motion, timelapse : prototypes dans `pi-motion/` et `pi-timelaps/`).
+
+## 7. Accès depuis internet
+
+Objectif : chaque service est joignable à `https://<service>.<adresse de l'appliance>`, depuis la maison comme depuis internet, avec un certificat valide.
 
 - **Reverse proxy** : Traefik, seul point d'entrée sur les ports 80 et 443, routage par nom d'hôte vers les conteneurs.
 - **Certificats** : Let's Encrypt, obtenus et renouvelés automatiquement par Traefik.
-- **DNS** : le domaine (ou un sous-domaine) pointe vers l'adresse publique de la box. L'adresse publique changeante est suivie par DNS dynamique (DynHost chez OVH, prototype dans `linux-tool/dynHost/`).
-- **Box** : redirection des ports 80 et 443 vers le Pi. La console indique la marche à suivre et tente UPnP si la box le permet.
-- **Sans IP publique joignable** (CGNAT, box verrouillée) : tunnel sortant vers un relais (prototype autossh dans `all-pi/autossh.sh`).
 - **À la maison** : le même nom résout vers le Pi (NAT loopback de la box ou DNS local), sinon accès par `pi-appliance.local`.
 
-## 8. Sécurité
+### 7.1 Adresse de l'appliance
+
+- **Par défaut : `<nom>.pi-appliance.com`**, réservé depuis le site ou depuis la console. Ce nom (et `*.<nom>.pi-appliance.com` pour les services) est un **alias** (CNAME) vers un nom d'un **service de DNS dynamique gratuit** (de type DuckDNS), que l'appliance tient à jour avec l'adresse publique de la box. Le projet ne gère que les alias de la zone `pi-appliance.com`, jamais l'adresse IP des utilisateurs.
+- **En option : un domaine personnel**, que l'utilisateur fait pointer (alias) vers son adresse `<nom>.pi-appliance.com`, guidé pas à pas pour les principaux bureaux d'enregistrement (OVH d'abord). Prototype de mise à jour OVH dans `linux-tool/dynHost/`.
+
+### 7.2 Accès direct
+
+Par défaut, la box redirige les ports 80 et 443 vers le Pi. L'appliance tente de l'obtenir par UPnP ; sinon, la console guide l'utilisateur pas à pas pour sa box, puis vérifie l'accès depuis internet.
+
+### 7.3 Relais
+
+Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance ouvre un tunnel sortant vers un **relais du projet**, qui fait suivre le trafic ; l'adresse de l'appliance pointe alors vers le relais. Bascule automatique, signalée dans la console. Prototype : tunnel autossh dans `all-pi/autossh.sh`.
+
+## 8. Utilisateurs, accès et sécurité
+
+### 8.1 Connexion unique
+
+- Un seul identifiant et mot de passe pour la console et pour tous les services qui acceptent une connexion standard (OpenID Connect ou LDAP), servis par un fournisseur d'identité installé sur l'appliance.
+- Un service sans connexion standard est protégé en amont par Traefik (authentification déléguée au même fournisseur) et garde, si besoin, ses propres comptes internes.
+- Rôles : **administrateur** (gère l'appliance), **utilisateur** (accède aux services autorisés), **invité** (comme un utilisateur, avec une date d'expiration).
+
+### 8.2 Qui accède à un service
+
+À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (Samba : maison seulement ; site web : public ; Nextcloud : utilisateurs connectés). Modifiable ensuite dans la console.
+
+### 8.3 Console
+
+- Fermée sur internet par défaut : accessible depuis la maison ou par le VPN.
+- Un administrateur peut l'ouvrir sur internet, **à condition d'activer la double authentification** (code à usage unique, TOTP).
+
+### 8.4 Règles
 
 - HTTPS partout ; HTTP redirigé vers HTTPS.
 - Aucun mot de passe par défaut ne survit au premier démarrage.
-- La console n'est pas exposée sur internet par défaut ; le propriétaire peut l'ouvrir explicitement.
 - Mots de passe stockés hachés ; limitation des tentatives de connexion.
 - Chaque service tourne dans ses conteneurs, avec ses propres volumes ; rien n'est monté du système hôte sans que le manifeste le déclare.
-- Mises à jour de sécurité de Raspberry Pi OS appliquées automatiquement (`unattended-upgrades`).
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
+- **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
 
 ## 9. Sauvegarde et mises à jour
 
-- Sauvegarde de la configuration de l'appliance et des volumes des services vers un disque USB ou un stockage distant (prototype : `all-pi/bkp.sh`, `linux-tool/bkp.sh`).
+### 9.1 Sauvegarde
+
+- Sauvegarde de la configuration de l'appliance et des données des services, vers une ou plusieurs destinations :
+  - un **disque USB** (autre que le disque de données) ;
+  - un **stockage en ligne** compatible S3 ou OVH Swift ;
+  - **un autre pi-appliance**, par exemple chez un proche (sauvegarde croisée).
+- Les sauvegardes qui quittent la maison sont chiffrées sur l'appliance ; la clé reste chez l'utilisateur.
 - Restauration sur une nouvelle carte SD à partir d'une sauvegarde.
-- Mise à jour de la couche pi-appliance et des services depuis la console, sans reflasher.
+- Prototypes : `all-pi/bkp.sh`, `linux-tool/bkp.sh`, `linux-tool/mountSwift.sh`.
+
+### 9.2 Mises à jour
+
+Les mises à jour de pi-appliance, des services et du système sont **proposées** : la console les signale, l'utilisateur clique pour les appliquer. Rien n'est mis à jour sans son accord.
 
 ## 10. Architecture
 
 ```mermaid
 flowchart LR
     Internet((Internet)) --> Box[Box / routeur]
-    LAN((Réseau local)) --> Traefik
+    Internet -. "sans accès direct" .-> Relais[Relais du projet]
+    Relais -. "tunnel sortant" .-> Traefik
+    LAN((Réseau de la maison)) --> Traefik
     Box -- "80 / 443" --> Traefik
     subgraph Pi["Raspberry Pi — Raspberry Pi OS + Docker"]
         Traefik[Traefik<br/>reverse proxy + Let's Encrypt]
         Console[Console pi-appliance<br/>/pi-appliance]
-        Market[(Catalogue<br/>marketplace)]
+        IdP[Fournisseur d'identité<br/>connexion unique]
         S1[Service A]
         S2[Service B]
         Traefik --> Console
         Traefik --> S1
         Traefik --> S2
-        Console -- "API Docker" --> S1
-        Console -- "API Docker" --> S2
-        Console -- "configuration dynamique" --> Traefik
-        Console --> Market
+        Traefik -- "authentification déléguée" --> IdP
+        S1 -- "OpenID Connect / LDAP" --> IdP
+        Console -- "API Docker, labels Traefik" --> S1
+        Console -- "API Docker, labels Traefik" --> S2
     end
-    Console -- "DNS dynamique" --> DNS[(Fournisseur DNS)]
+    Console -- "catalogue" --> Catalogue[(Dépôt GitHub<br/>marketplace)]
+    Console -- "adresse publique" --> DDNS[(DNS dynamique gratuit)]
+    Alias[(Zone pi-appliance.com<br/>alias nom → DNS dynamique)] --> DDNS
 ```
+
+### 10.1 Choix techniques
+
+| Partie | Choix |
+|--------|-------|
+| Console (API, Docker, utilisateurs, DNS dynamique) | **Go**, bibliothèque standard `net/http` : un seul binaire statique, peu de mémoire, même langage que Docker, Compose et Traefik |
+| Interface web | HTML, CSS et JavaScript sans framework, intégrés au binaire (`embed`) |
+| Configuration de Traefik | Labels Docker posés sur les conteneurs des services |
+| Manifestes de la marketplace | YAML au format Docker Compose, avec des métadonnées en plus |
+| Fabrication de l'image | Shell et `pi-gen` |
 
 ## 11. Exigences non fonctionnelles
 
+- Objectif de la section 1.3 : 15 minutes jusqu'au premier service sur internet.
 - Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte).
+- Fonctionne sur Pi Zero 2 W (512 Mo) : la couche pi-appliance seule (console, Traefik, fournisseur d'identité) doit y laisser de la place pour au moins un service léger.
 - Démarrage de la console en moins de deux minutes après la mise sous tension.
 - Interface utilisable sur téléphone.
-- Interface en français d'abord ; anglais ensuite.
 
 ## 12. Arborescence du dépôt
 
@@ -168,16 +255,32 @@ flowchart LR
 | `pypy/` | Divers |
 | `CNAME` | Domaine du site GitHub Pages (`www.pi-appliance.com`) |
 
-## 13. Hors périmètre
+## 13. Site www.pi-appliance.com
+
+- **Présentation** : ce qu'est pi-appliance, pour qui, captures d'écran.
+- **Téléchargement** : l'image, sa somme de contrôle et le guide de flashage.
+- **Documentation** : guide utilisateur pas à pas, FAQ, catalogue des applications.
+- **Inscription** : réservation d'une adresse `<nom>.pi-appliance.com`.
+
+Dans les mêmes langues que la console (section 5.3).
+
+## 14. Hors périmètre
 
 - Grappe de plusieurs Pi (orchestration Kubernetes, k3s) : pas dans la première version.
 - Hébergement d'un service pour des tiers à grande échelle.
+- Faire passer tout le trafic internet du téléphone par la maison (le VPN donne seulement accès au réseau de la maison).
 
-## 14. Questions ouvertes
+## 15. Questions ouvertes
 
-- Langage et framework de la console (Python/FastAPI, Go, Node…).
-- Format exact des manifestes de la marketplace, et catalogue local ou dépôt distant.
-- Relais pour les accès sans IP publique : serveur fourni par le projet, ou à la charge de l'utilisateur.
-- Comptes utilisateurs : partagés entre les services (SSO, par exemple Authelia ou Authentik), ou propres à chaque service.
-- Fournisseurs DNS gérés automatiquement au-delà d'OVH.
-- Domaine : le grand public n'en possède généralement pas. Faut-il fournir un sous-domaine (par exemple `<nom>.pi-appliance.com`), le domaine personnel devenant une option ?
+- Relais : financement (gratuit avec plafond de débit, dons, offre payante), plafonds, code publié pour qu'on puisse héberger le sien.
+- Service de DNS dynamique gratuit retenu (DuckDNS ou autre), et réservation des noms `<nom>.pi-appliance.com` : qui gère la zone, comment éviter les abus.
+- Fournisseur d'identité assez léger pour un Pi Zero 2 W (Authelia avec LLDAP, Authentik, Kanidm…).
+- Format exact des manifestes de la marketplace.
+- Fréquence des sauvegardes, nombre de sauvegardes gardées.
+- Ethernet : un câble branché suffit-il à sauter l'étape du point d'accès (probable, à confirmer) ?
+
+## 16. Ordre de construction
+
+1. **Local** : image, console, marketplace et services sur le réseau de la maison.
+2. **Internet** : adresse `<nom>.pi-appliance.com`, accès direct, relais.
+3. **Le reste** : connexion unique, sauvegardes, VPN, site d'inscription.

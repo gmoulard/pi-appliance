@@ -16,13 +16,16 @@ L'image pi-appliance empile trois couches :
 
 ## Parcours type
 
-1. J'achète un Raspberry Pi et je télécharge l'image pi-appliance.
-2. Je la flashe sur une carte SD et je démarre le Pi branché sur ma box.
-3. J'ouvre la console : `https://pi-appliance.local/pi-appliance` depuis mon réseau (ou `https://localhost/pi-appliance` sur le Pi lui-même).
-4. Je me connecte avec mon identifiant et mon mot de passe.
-5. Je donne mon nom de domaine et je crée mes utilisateurs.
-6. Je coche dans la marketplace les services que je veux.
-7. pi-appliance télécharge les images Docker, configure Traefik et ouvre chaque service, à la maison comme sur internet, à l'adresse `https://<service>.<mon domaine>`.
+1. J'achète un Raspberry Pi (Pi 5, Pi 4, Pi 3 B+ ou Pi Zero 2 W) et je télécharge l'image pi-appliance.
+2. Je la flashe sur une carte SD et je démarre le Pi.
+3. S'il n'a pas de réseau, il crée un Wi-Fi « pi-appliance » : je m'y connecte avec mon téléphone et je choisis le Wi-Fi de la maison.
+4. J'ouvre la console : `https://pi-appliance.local/pi-appliance` depuis la maison (ou `https://localhost/pi-appliance` sur le Pi lui-même).
+5. Je me connecte avec mon identifiant et mon mot de passe.
+6. Je choisis mon adresse, `<nom>.pi-appliance.com` (ou mon propre domaine), et je crée mes utilisateurs.
+7. Je coche dans la marketplace les services que je veux : Nextcloud, partage de fichiers, site web, wiki, Etherpad, VPN…
+8. pi-appliance télécharge les images Docker, configure Traefik et ouvre chaque service, à la maison comme sur internet, à l'adresse `https://<service>.<nom>.pi-appliance.com`, avec un seul identifiant pour tous les services.
+
+Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur internet, sans aucune connaissance technique.
 
 ## Contenu du dépôt
 

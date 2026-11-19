@@ -36,6 +36,6 @@ Ne jamais versionner de secret (mot de passe Wi-Fi, clé SSH, jeton DNS, mot de 
     ```
 - **`spec-sync`** :
   - référence : `docs/specification.md`, en français, qui fait foi ; pas de traduction pour l'instant ;
-  - évolutions non implémentées : `docs/TODO.md` et section 14 « Questions ouvertes » ;
-  - schéma Mermaid : section 10 ; arborescence : section 12 et README.
+  - évolutions non implémentées : `docs/TODO.md`, section 15 « Questions ouvertes » et section 16 « Ordre de construction » ;
+  - schéma Mermaid et choix techniques : section 10 ; arborescence : section 12 et README.
 - **`release`** : pas encore de numéro de version ; branche principale : `master`.

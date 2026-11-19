@@ -1,61 +1,88 @@
 # TODO
 
-Feuille de route de pi-appliance. Le produit visé est décrit dans [specification.md](specification.md) ; les numéros entre parenthèses renvoient à ses sections.
+Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 de la [spécification](specification.md). Les numéros entre parenthèses renvoient à ses sections.
 
 ## 0. Ménage du dépôt
 
-- [ ] Retirer les secrets versionnés (mots de passe Wi-Fi de `all-pi/wpa_supplicant.conf`, clés de `all-pi/authorized_keys`, `linux-tool/ssh/`) et les changer : ils restent dans l'historique git (8).
+- [ ] Retirer les secrets versionnés (mots de passe Wi-Fi de `all-pi/wpa_supplicant.conf`, clés de `all-pi/authorized_keys`, `linux-tool/ssh/`) et les changer : ils restent dans l'historique git (8.4).
 - [ ] Retirer les fichiers générés (`*.log`, `old.ip`, `ipcheck.dat`) et ajouter un `.gitignore`.
 - [ ] Supprimer `tmp.uml` (exemple PlantUML sans rapport avec le projet).
 - [x] Choisir une licence et ajouter `LICENSE` : AGPL-3.0 (1.2).
 - [ ] Ajouter l'en-tête de licence aux fichiers de code existants.
 - [ ] Vérifier l'origine et la licence des fichiers repris d'ailleurs (`docker-apache/`, d'après gwendal-orinel ; `linux-tool/dynHost/ipcheck.py`) avant de les intégrer au produit.
 
-## 1. Décisions (14)
+## 1. Décisions
 
 - [x] Public visé : grand public (1.1).
-- [ ] Langage et framework de la console.
-- [ ] Format des manifestes de la marketplace.
-- [ ] Solution d'accès sans IP publique (relais).
-- [ ] Gestion des comptes : SSO commun ou comptes par service.
+- [x] Objectif : Nextcloud sur internet en 15 minutes, sans aide (1.3).
+- [x] Langage de la console : Go (10.1).
+- [x] Matériel : Pi 5, 4, 3 B+, Zero 2 W ; avertissement pour les applications trop lourdes (4).
+- [x] Premier réseau : point d'accès Wi-Fi de configuration (4).
+- [x] Stockage : carte SD, disque USB proposé (4).
+- [x] Catalogue : dépôt GitHub du projet, contributions par pull request (6.1).
+- [x] Applications v1 : Nextcloud, Samba, site web, DokuWiki, Etherpad, WireGuard (6.3).
+- [x] Désinstallation : toujours demander pour les données (6.2).
+- [x] Adresse : `<nom>.pi-appliance.com`, alias vers un DNS dynamique gratuit ; domaine personnel en option (7.1).
+- [x] Accès : direct (UPnP ou guide), relais du projet sinon (7.2, 7.3).
+- [x] Connexion unique ; rôles administrateur, utilisateur, invité (8.1).
+- [x] Accès choisi par service : public, connectés, maison (8.2).
+- [x] Console sur internet seulement avec double authentification (8.3).
+- [x] Statistiques anonymes sur accord explicite (8.4).
+- [x] Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
+- [x] Mises à jour proposées, jamais automatiques (9.2).
+- [x] Interface et site dans les 12 langues de Wikipedia2Book (5.3, 13).
+- [ ] Questions ouvertes de la section 15 : relais, DNS dynamique et réservation des noms, fournisseur d'identité, manifestes, fréquence des sauvegardes, Ethernet.
 
-## 2. Image système (4)
+## 2. Étape 1 — Local
 
-- [ ] Script de construction de l'image à partir de Raspberry Pi OS Lite 64 bits (pi-gen ou personnalisation d'image).
+### Image système (4)
+
+- [ ] Construction de l'image à partir de Raspberry Pi OS Lite 64 bits (`pi-gen`), une seule image pour les quatre modèles.
 - [ ] Docker et Docker Compose préinstallés.
 - [ ] Premier démarrage : nom d'hôte, mDNS `pi-appliance.local`, secrets propres au boîtier, certificat local.
+- [ ] Point d'accès Wi-Fi « pi-appliance » et portail de configuration.
 - [ ] Construction automatique de l'image (GitHub Actions) et publication avec somme de contrôle.
 
-## 3. Console (5)
+### Console (5)
 
 - [ ] Service web sous `/pi-appliance`, en HTTPS, derrière Traefik.
 - [ ] Authentification, changement obligatoire du mot de passe initial.
-- [ ] Assistant de premier démarrage : domaine, exposition, utilisateurs, premiers services.
+- [ ] Assistant de premier démarrage.
 - [ ] Tableau de bord : état du Pi et des services.
-- [ ] Gestion des utilisateurs.
+- [ ] Traduction dans les 12 langues, arabe et persan de droite à gauche.
+- [ ] Disque USB : détection, déplacement des données, alerte de remplissage de la carte SD.
 
-## 4. Marketplace (6)
+### Marketplace (6)
 
 - [ ] Format de manifeste et validation.
-- [ ] Installation, démarrage, arrêt, mise à jour, désinstallation d'un service.
-- [ ] Premières applications, à partir des prototypes : Nextcloud (`docker-nextcloud/`), Samba (`docker-samba/`), Apache/PHP (`docker-apache/`).
-- [ ] Puis : Motion (`pi-motion/`), timelapse (`pi-timelaps/`).
+- [ ] Dépôt GitHub du catalogue et règles de contribution.
+- [ ] Installation, démarrage, arrêt, désinstallation (question sur les données).
+- [ ] Avertissement mémoire sur les petits Pi.
+- [ ] Applications : Nextcloud, Samba, site web Apache/PHP, DokuWiki, Etherpad.
 
-## 5. Exposition sur internet (7)
+## 3. Étape 2 — Internet (7)
 
 - [ ] Traefik : point d'entrée unique, routage par sous-domaine, certificats Let's Encrypt.
-- [ ] DNS dynamique OVH, à partir de `linux-tool/dynHost/`.
-- [ ] Aide à la redirection de ports ; UPnP si possible.
-- [ ] Test d'accès depuis internet dans la console.
-- [ ] Repli par tunnel sortant, à partir de `all-pi/autossh.sh`.
+- [ ] DNS dynamique gratuit tenu à jour par l'appliance.
+- [ ] Réservation de `<nom>.pi-appliance.com` et création des alias.
+- [ ] Domaine personnel : guide OVH, à partir de `linux-tool/dynHost/`.
+- [ ] Accès direct : UPnP, guide de la box, test depuis internet.
+- [ ] Relais : serveur, tunnel sortant (à partir de `all-pi/autossh.sh`), bascule automatique.
+- [ ] Accès par service : public, connectés, maison (8.2).
+- [ ] Console ouverte sur internet avec double authentification (8.3).
 
-## 6. Sauvegarde et mises à jour (9)
+## 4. Étape 3 — Le reste
 
-- [ ] Sauvegarde de la configuration et des volumes, à partir de `all-pi/bkp.sh`.
-- [ ] Restauration sur une nouvelle carte SD.
-- [ ] Mise à jour de la couche pi-appliance depuis la console.
+- [ ] Fournisseur d'identité et connexion unique ; rôles et invités (8.1).
+- [ ] Sauvegardes : disque USB, cloud, autre pi-appliance, chiffrement, restauration (9.1).
+- [ ] Mises à jour proposées dans la console (9.2).
+- [ ] VPN WireGuard avec QR code (6.3).
+- [ ] Statistiques anonymes (8.4).
+- [ ] Puis : applications caméra (Motion, timelapse).
 
-## 7. Site et documentation
+## 5. Site www.pi-appliance.com (13)
 
 - [ ] Activer GitHub Pages pour `www.pi-appliance.com` et corriger la zone DNS chez OVH.
-- [ ] Guide d'installation pas à pas pour l'utilisateur final.
+- [ ] Présentation, téléchargement, documentation, FAQ, catalogue.
+- [ ] Inscription d'une adresse `<nom>.pi-appliance.com`.
+- [ ] Traduction dans les 12 langues.
