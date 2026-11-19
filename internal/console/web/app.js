@@ -116,6 +116,11 @@ async function loadServices() {
     actions.append(open);
     if (currentAccount && currentAccount.role === "admin") {
       const buttons = element("div", undefined, "controls");
+      if (service.app === "site-web") {
+        const upload = element("button", "Déposer un ZIP", "secondary");
+        upload.addEventListener("click", () => chooseSiteArchive(service, upload));
+        buttons.append(upload);
+      }
       for (const control of CONTROLS.filter((c) => c.when(service.status.color))) {
         const button = element("button", control.label, "secondary");
         button.addEventListener("click", () => act(service, control, button));
@@ -132,6 +137,10 @@ async function loadServices() {
     detail.append(element("p", service.address, "address"), state);
     if (service.update_available) {
       detail.append(element("p", "Nouvelle version disponible.", "meta"));
+    }
+    if (service.app === "site-web") {
+      detail.append(element("p", `Nextcloud : dossier externe /srv/pi-appliance/services/${service.name}/www`, "meta"));
+      detail.append(element("p", "FTP : compte pi sur le port 2121, sauf port personnalisé.", "meta"));
     }
     card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
     return card;

@@ -112,7 +112,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.
 - [x] Application Nextcloud (manifeste `marketplace/nextcloud/`).
 - [x] Applications site web Apache/PHP, DokuWiki, Etherpad (manifestes `marketplace/site-web/`, `dokuwiki/`, `etherpad/`).
-- [ ] Site web : dépôt des fichiers par Nextcloud ou ZIP.
+- [ ] Site web : dépôt des fichiers par Nextcloud ou ZIP ou ftp.
 - [ ] Etherpad : liens de partage pour une personne sans compte.
 - [ ] Réglages avancés et Docker Compose libre (6.4).
 - [ ] Générateurs de sites statiques (SSG) MkDocs, Astro, Hugo, Jekyll et Next.js
@@ -123,6 +123,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] Traefik : point d'entrée unique, routage par sous-domaine (faits à l'étape Local, `system/`), certificats Let's Encrypt (bloc prêt dans `system/etc/pi-appliance/traefik/traefik.yml`, plus le label `tls.certresolver` à poser par `internal/services`).
 - [ ] DuckDNS tenu à jour par l'appliance.
 - [ ] FTP
+- [ ] shell linux
 - [ ] Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
 - [ ] Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] Domaine personnel : guide OVH, à partir de l'ancien `linux-tool/dynHost/` (historique git).

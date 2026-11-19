@@ -112,7 +112,7 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 	if err != nil {
 		return Result{}, err
 	}
-	if err := writeFiles(dir, app, name, instance.Address, env); err != nil {
+	if err := m.writeFiles(dir, app, name, instance.Address, env); err != nil {
 		return Result{}, err
 	}
 	failure := ""

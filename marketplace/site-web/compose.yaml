@@ -11,6 +11,13 @@ x-pi-appliance:
   disk_mb: 1024
   login: application
   access: public
+  parameters:
+    - name: FTP_PASSWORD
+      label: Mot de passe FTP
+      generate: true
+    - name: FTP_PORT
+      label: Port FTP
+      default: "2121"
 
 services:
   web:
@@ -26,6 +33,19 @@ services:
           printf '%s\n' '<!doctype html>' '<html lang="fr"><meta charset="utf-8"><title>Site en construction</title>' '<body style="font-family:sans-serif;text-align:center;margin-top:20vh">' '<h1>Site en construction</h1><p>Ce site est hébergé sur un pi-appliance.</p></body></html>' > /var/www/html/index.html
         fi
         exec apache2-foreground
+    volumes:
+      - site:/var/www/html
+
+  ftp:
+    image: stilliard/pure-ftpd:hardened-1.0.52
+    restart: unless-stopped
+    environment:
+      FTP_USER_NAME: pi
+      FTP_USER_PASS: ${FTP_PASSWORD}
+      FTP_USER_HOME: /var/www/html
+      ADDED_FLAGS: -d -d
+    ports:
+      - "${FTP_PORT}:21"
     volumes:
       - site:/var/www/html
 

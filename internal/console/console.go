@@ -140,6 +140,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/services", c.adminOnly(c.install))
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/{action}", c.adminOnly(c.control))
+	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/files", c.adminOnly(c.deployFiles))
 	mux.HandleFunc("GET "+BasePath+"/api/network", c.adminOnly(c.networkStatus))
 	mux.HandleFunc("GET "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiList))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi/scan", c.adminOnly(c.wifiScan))
@@ -418,6 +419,28 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 		views = append(views, view)
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"services": views})
+}
+
+func (c *console) deployFiles(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseMultipartForm(256 << 20); err != nil {
+		writeError(w, http.StatusBadRequest, "Archive illisible ou trop volumineuse (256 Mo maximum).")
+		return
+	}
+	file, header, err := r.FormFile("archive")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "Ajoutez un fichier ZIP nommé archive.")
+		return
+	}
+	defer file.Close()
+	if header.Size > 256<<20 || !strings.HasSuffix(strings.ToLower(header.Filename), ".zip") {
+		writeError(w, http.StatusBadRequest, "Envoyez un fichier ZIP de 256 Mo maximum.")
+		return
+	}
+	if err := c.Services.DeployZIP(r.Context(), r.PathValue("name"), file); err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"message": "Le contenu du site a été remplacé."})
 }
 
 func (c *console) control(w http.ResponseWriter, r *http.Request) {
