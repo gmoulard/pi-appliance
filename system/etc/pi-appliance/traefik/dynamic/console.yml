@@ -18,15 +18,23 @@
 
 http:
   routers:
-    # Console sous /pi-appliance, quelle que soit l'adresse utilisée
-    # (pi-appliance.local, adresse IP, localhost). Les routeurs des services
-    # (Host(`<nom>.<adresse>`)) ont une règle plus longue : ils passent avant.
-    # NE PAS ouvrir les ports 80/443 sur internet ni brancher le relais avec cette
-    # règle : la console doit rester fermée sur internet par défaut (spécification
-    # 8.3). La limiter d'abord au réseau de la maison (voir docs/TODO.md, étape 2).
+    # Console sous /pi-appliance depuis un réseau privé/local. ClientIP utilise
+    # l'adresse TCP vue par Traefik, pas un en-tête fourni par le client. Les
+    # routeurs des services gardent la priorité, même pour ce chemin.
+    # Avant de brancher un relais, exclure l'adresse du pair : le trafic relayé
+    # apparaît ici avec l'adresse source du tunnel.
     pi-appliance-console:
       entryPoints: [websecure]
-      rule: "PathPrefix(`/pi-appliance`)"
+      rule: >-
+        PathPrefix(`/pi-appliance`) &&
+        (ClientIP(`10.0.0.0/8`) ||
+        ClientIP(`172.16.0.0/12`) ||
+        ClientIP(`192.168.0.0/16`) ||
+        ClientIP(`127.0.0.0/8`) ||
+        ClientIP(`::1/128`) ||
+        ClientIP(`fc00::/7`) ||
+        ClientIP(`fe80::/10`))
+      priority: 1
       service: pi-appliance-console
       tls: {}
     # Adresse nue (https://pi-appliance.local/) : vers la console.

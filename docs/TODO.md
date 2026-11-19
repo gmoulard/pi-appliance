@@ -151,7 +151,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-3.8**: Accès direct : UPnP, guide de la box, test depuis internet.
 - [ ] **TODO-3.9**: Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente, offre payante.
 - [ ] **TODO-3.10**: Accès par service : public, connectés, maison (8.2).
-- [ ] **TODO-3.11**: Console fermée sur internet par défaut (8.3) : aujourd'hui Traefik sert `/pi-appliance` à toute adresse (`system/etc/pi-appliance/traefik/dynamic/console.yml`). Avant d'ouvrir les ports 80/443 ou le relais, limiter ce routeur au réseau de la maison et au VPN (`ClientIP`, en gardant une priorité plus basse que les routeurs des services), sans oublier que le trafic du relais arrivera par le tunnel.
+- [ ] **TODO-3.11**: Console fermée sur internet par défaut (8.3) : Traefik limite désormais `/pi-appliance` aux plages privées IPv4, à la boucle locale et aux plages locales IPv6, avec une priorité basse ; le test Traefik vérifie le refus d'une source hors liste autorisée et laisse passer les routeurs des services. Reste à définir les plages réelles du VPN et du tunnel relais : si le pair du relais a une adresse privée, `ClientIP` l'autorise aussi. L'accès depuis un LAN IPv6 à adresse globale est également refusé. Ne pas cocher avant d'avoir défini ces réseaux et validé leur séparation.
 - [ ] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3).
 
 ## 4. Étape 3 — Le reste
