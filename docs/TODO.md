@@ -141,7 +141,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 ## 3. Étape 2 — Internet (7)
 
 - [x] **TODO-3.1**: Traefik : point d'entrée unique, routage par sous-domaine et sélection de Let's Encrypt pour les domaines publics ; e-mail administrateur écrit localement et chargé au prochain démarrage de Traefik ; certificat local conservé pour les noms locaux et les adresses IP.
-- [ ] **TODO-3.2**: DuckDNS tenu à jour par l'appliance.
+- [x] **TODO-3.2**: DuckDNS tenu à jour par l'appliance (`internal/ddns`, API `api/duckdns` réservée à l'administrateur) ; à vérifier sur un vrai Pi.
+- [ ] **TODO-3.13**: Écran de la console pour DuckDNS : saisie de l'identifiant et du jeton, état de la dernière mise à jour (l'API `api/duckdns` existe).
 - [ ] **TODO-3.3**: FTP.
 - [ ] **TODO-3.4**: Shell Linux.
 - [ ] **TODO-3.5**: Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).

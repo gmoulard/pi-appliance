@@ -84,12 +84,25 @@ type Manager struct {
 	Domain   string
 	Runner   Runner
 	MemoryMB func() int
+	// Measure mesure la mémoire et le disque du Pi ; nil : inconnus.
+	Measure func(dir string) Resources
 	// Copier copie les données d'un service avant sa mise à jour ; nil : « cp -a ».
 	Copier Copier
 	// FreeMB donne la place libre du disque qui porte un dossier ; nil : lue
 	// par internal/system.
 	FreeMB func(dir string) (int64, bool)
 	mu     sync.Mutex
+}
+
+// Resources mesure la mémoire du Pi et la place libre du dossier de données.
+func (m *Manager) Resources() Resources {
+	if m.Measure != nil {
+		return m.Measure(m.Dir)
+	}
+	if m.MemoryMB != nil {
+		return Resources{MemoryTotalMB: m.MemoryMB()}
+	}
+	return Resources{}
 }
 
 func (m *Manager) serviceDir(name string) string {
@@ -121,8 +134,8 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 		return Result{}, err
 	}
 	var warnings []string
-	if m.MemoryMB != nil {
-		if memory := m.MemoryMB(); memory > 0 && memory < app.MemoryMB {
+	if m.Measure != nil || m.MemoryMB != nil {
+		if memory := m.Resources().MemoryTotalMB; memory > 0 && memory < app.MemoryMB {
 			warnings = append(warnings, fmt.Sprintf("Ce Raspberry Pi a %d Mo de mémoire et %s en demande %d : le service risque d'être lent.", memory, app.Name, app.MemoryMB))
 		}
 	}

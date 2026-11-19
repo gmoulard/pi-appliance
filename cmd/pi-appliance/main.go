@@ -29,6 +29,7 @@ import (
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/console"
+	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
@@ -60,7 +61,7 @@ func main() {
 	} else if found {
 		log.Printf("fichier reset trouvé : réinitialisation du mot de passe administrateur ouverte")
 	}
-	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, MemoryMB: services.SystemMemoryMB}
+	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Measure: services.Measure}
 	var net *network.Client
 	if *networkScript != "" {
 		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}
@@ -78,6 +79,12 @@ func main() {
 	if err := history.Load(); err != nil {
 		log.Printf("historique illisible, il repart de zéro : %v", err)
 	}
+	// Réglages DuckDNS (identifiant et jeton) : fichier en droits 600, jamais journalisés.
+	duckdns, err := ddns.Open(filepath.Join(*data, "duckdns.json"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	duckdns.Logf = log.Printf
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	measured := make(chan struct{})
@@ -85,6 +92,7 @@ func main() {
 		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(resources()) }, log.Printf)
 		close(measured)
 	}()
+	go duckdns.Run(ctx)
 	server := &http.Server{
 		Addr: *addr,
 		Handler: console.Handler(console.Config{
@@ -96,6 +104,7 @@ func main() {
 			Storage:       disks,
 			Resources:     resources,
 			History:       history,
+			DuckDNS:       duckdns,
 			WizardFile:    filepath.Join(*data, "wizard-done"),
 			ACMEEmailFile: filepath.Join(*data, "system", "traefik", "acme-email"),
 		}),
