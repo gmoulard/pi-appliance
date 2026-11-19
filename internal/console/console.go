@@ -79,6 +79,22 @@ type CountryRequest struct {
 	Country string `json:"country"`
 }
 
+// AdvancedRequest : nouveaux réglages avancés d'un service (spécification 6.4) ;
+// ConfirmRisks confirme les options dangereuses signalées.
+type AdvancedRequest struct {
+	Settings     services.Advanced `json:"settings"`
+	ConfirmRisks bool              `json:"confirm_risks"`
+}
+
+// ComposeRequest : un fichier Docker Compose libre à installer (spécification 6.4).
+type ComposeRequest struct {
+	Name         string `json:"name"`
+	Compose      string `json:"compose"`
+	Service      string `json:"service"`
+	Port         int    `json:"port"`
+	ConfirmRisks bool   `json:"confirm_risks"`
+}
+
 // StorageUseRequest : placer les données des services sur cette partition ext4.
 type StorageUseRequest struct {
 	Partition string `json:"partition"`
@@ -143,6 +159,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/{action}", c.adminOnly(c.control))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/files", c.adminOnly(c.deployFiles))
+	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.advancedSettings))
+	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
+	mux.HandleFunc("POST "+BasePath+"/api/compose", c.adminOnly(c.installCompose))
 	mux.HandleFunc("GET "+BasePath+"/api/network", c.adminOnly(c.networkStatus))
 	mux.HandleFunc("GET "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiList))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi/scan", c.adminOnly(c.wifiScan))
@@ -542,6 +561,10 @@ func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
 		}
 		app, ok := c.Catalog.Get(instance.App)
 		if !ok {
+			if instance.App == services.CustomApp {
+				writeError(w, http.StatusBadRequest, "Un service Docker Compose libre ne se met pas à jour depuis la marketplace : changez les versions des images dans son fichier et réinstallez-le.")
+				return
+			}
 			writeError(w, http.StatusNotFound, "Cette application n'est plus dans la marketplace : pas de mise à jour possible.")
 			return
 		}
@@ -556,8 +579,66 @@ func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
 	writeServiceError(w, fmt.Errorf("%w : %s", services.ErrNotFound, name))
 }
 
+// Réglages avancés et Docker Compose libre (spécification 6.4), réservés à l'administrateur.
+
+func (c *console) advancedSettings(w http.ResponseWriter, r *http.Request) {
+	settings, names, err := c.Services.AdvancedSettings(r.PathValue("name"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"settings": settings, "services": names})
+}
+
+func (c *console) setAdvanced(w http.ResponseWriter, r *http.Request) {
+	var request AdvancedRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	risks, err := c.Services.SetAdvanced(r.Context(), r.PathValue("name"), request.Settings, request.ConfirmRisks)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"risks": nonNil(risks)})
+}
+
+func (c *console) installCompose(w http.ResponseWriter, r *http.Request) {
+	var request ComposeRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	result, err := c.Services.InstallCustom(r.Context(), services.CustomRequest{
+		Name:         request.Name,
+		Compose:      []byte(request.Compose),
+		Service:      request.Service,
+		Port:         request.Port,
+		ConfirmRisks: request.ConfirmRisks,
+	})
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusCreated, result)
+}
+
+func nonNil(risks []services.Risk) []services.Risk {
+	if risks == nil {
+		return []services.Risk{}
+	}
+	return risks
+}
+
 func writeServiceError(w http.ResponseWriter, err error) {
+	var risks services.RisksError
 	switch {
+	case errors.As(err, &risks):
+		// À confirmer, pas bloqué (spécification 6.4) : la console redemande avec confirm_risks.
+		writeJSON(w, http.StatusConflict, map[string]any{"error": "Ces options donnent la main sur tout le Pi : confirmez pour continuer.", "risks": risks.Risks})
+	case errors.Is(err, services.ErrSettingsRestored):
+		writeError(w, http.StatusConflict, "Avec ces réglages, le service ne démarre pas : les réglages d'avant sont remis. "+strings.TrimPrefix(err.Error(), services.ErrSettingsRestored.Error()+" : "))
+	case errors.Is(err, services.ErrNoSpace):
+		writeError(w, http.StatusConflict, strings.TrimPrefix(err.Error(), services.ErrNoSpace.Error()+" : ")+".")
 	case errors.Is(err, services.ErrRolledBack):
 		writeError(w, http.StatusConflict, "La mise à jour n'a pas marché : le service est revenu à sa version précédente. "+strings.TrimPrefix(err.Error(), services.ErrRolledBack.Error()+" : "))
 	case errors.Is(err, services.ErrInvalid):

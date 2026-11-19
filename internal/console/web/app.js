@@ -46,7 +46,10 @@ async function api(path, options = {}) {
   }
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(body.error || `Erreur ${response.status}`);
+    const error = new Error(body.error || `Erreur ${response.status}`);
+    error.status = response.status;
+    error.body = body;
+    throw error;
   }
   return body;
 }
@@ -121,15 +124,18 @@ async function loadServices() {
         upload.addEventListener("click", () => chooseSiteArchive(service, upload));
         buttons.append(upload);
       }
-      for (const control of CONTROLS.filter((c) => c.when(service.status.color))) {
+      // Un Compose libre ne se met pas à jour depuis la marketplace.
+      for (const control of CONTROLS.filter((c) => c.when(service.status.color) && !(c.action === "update" && service.app === CUSTOM_APP))) {
         const button = element("button", control.label, "secondary");
         button.addEventListener("click", () => act(service, control, button));
         buttons.append(button);
       }
+      const advanced = advancedButton(service, card);
+      buttons.append(advanced.button);
       const remove = element("button", "Désinstaller", "secondary");
       remove.addEventListener("click", () => uninstall(service, remove));
       buttons.append(remove);
-      actions.append(buttons);
+      actions.append(buttons, advanced.panel);
     }
     const state = element("p", undefined, "state");
     state.append(element("span", undefined, `dot ${service.status.color}`), element("span", service.status.message));
@@ -491,6 +497,9 @@ async function loadCatalog() {
     card.append(form, element("p", `${app.category} · licence ${app.license}`, "meta"));
     return card;
   }));
+  if (currentAccount && currentAccount.role === "admin") {
+    catalogList.append(customComposeCard());
+  }
 }
 
 async function install(app, form, button) {
@@ -520,6 +529,223 @@ async function install(app, form, button) {
   } finally {
     button.disabled = false;
   }
+}
+
+// Réglages avancés et Docker Compose libre (spécification 6.4) : écrans
+// masqués par défaut, pour les administrateurs. Les options qui donnent la
+// main sur tout le Pi sont signalées et doivent être confirmées, pas bloquées.
+const CUSTOM_APP = "compose-libre";
+icons[CUSTOM_APP] = "M8 6l-5 6 5 6M16 6l5 6-5 6M14 4l-4 16";
+
+// withRisks envoie la demande ; si la console signale des options dangereuses,
+// elle les montre et renvoie la demande une fois confirmée.
+async function withRisks(send) {
+  try {
+    return await send(false);
+  } catch (error) {
+    const risks = error.body && error.body.risks;
+    if (error.status !== 409 || !risks) {
+      throw error;
+    }
+    const lines = risks.map((risk) => `• ${risk.message}`).join("\n");
+    if (!window.confirm(`Attention, ces options donnent la main sur tout le Pi :\n\n${lines}\n\nUn service mal intentionné ou mal écrit pourrait alors abîmer le Pi ou lire toutes vos données. Continuer quand même ?`)) {
+      return null;
+    }
+    return send(true);
+  }
+}
+
+function linesOf(text) {
+  return text.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
+}
+
+// parseSettings lit les trois zones de texte ; une ligne illisible lève une erreur.
+function parseSettings(service, variables, ports, volumes) {
+  const settings = { service, environment: {}, ports: [], volumes: [] };
+  for (const line of linesOf(variables)) {
+    const at = line.indexOf("=");
+    if (at < 1) throw new Error(`Variable illisible : « ${line} » (attendu : NOM=valeur).`);
+    settings.environment[line.slice(0, at).trim()] = line.slice(at + 1).trim();
+  }
+  for (const line of linesOf(ports)) {
+    const match = /^(\d+):(\d+)(?:\/(tcp|udp))?$/.exec(line);
+    if (!match) throw new Error(`Port illisible : « ${line} » (attendu : port du Pi:port du conteneur, par exemple 8443:443 ou 5353:53/udp).`);
+    settings.ports.push({ host: Number(match[1]), container: Number(match[2]), protocol: match[3] || "tcp" });
+  }
+  for (const line of linesOf(volumes)) {
+    const parts = line.split(":");
+    const readOnly = parts.length === 3 && parts[2] === "ro";
+    if (parts.length < 2 || parts.length > 3 || (parts.length === 3 && !readOnly)) {
+      throw new Error(`Volume illisible : « ${line} » (attendu : source:dossier du conteneur, ou source:dossier:ro pour la lecture seule).`);
+    }
+    settings.volumes.push({ source: parts[0], target: parts[1], read_only: readOnly });
+  }
+  return settings;
+}
+
+function textArea(label, name, value, placeholder) {
+  const box = element("label", label);
+  const area = element("textarea");
+  area.name = name;
+  area.rows = 3;
+  area.value = value;
+  area.placeholder = placeholder;
+  area.spellcheck = false;
+  area.autocapitalize = "none";
+  box.append(area);
+  return box;
+}
+
+async function advancedPanel(service, panel) {
+  const { settings, services } = await api(`services/${encodeURIComponent(service.name)}/advanced`);
+  const form = element("form", undefined, "advanced");
+  form.append(element("p", "Écran avancé : ces réglages changent le fonctionnement interne du service. S'il ne démarre plus avec eux, la console remet les réglages d'avant.", "note"));
+  const which = element("label", "Conteneur concerné");
+  const select = element("select");
+  select.name = "service";
+  for (const name of services) {
+    const option = element("option", name);
+    option.value = name;
+    select.append(option);
+  }
+  select.value = settings.service;
+  which.append(select);
+  form.append(which,
+    textArea("Variables (une par ligne : NOM=valeur)", "variables",
+      Object.entries(settings.environment || {}).map(([key, value]) => `${key}=${value}`).join("\n"), "TZ=Europe/Paris"),
+    textArea("Ports ouverts directement sur le Pi, sans passer par l'adresse du service (port du Pi:port du conteneur)", "ports",
+      (settings.ports || []).map((p) => `${p.host}:${p.container}${p.protocol === "udp" ? "/udp" : ""}`).join("\n"), "8443:443"),
+    textArea("Volumes (source:dossier du conteneur, :ro pour la lecture seule ; la source est un nom de volume ou un dossier du Pi)", "volumes",
+      (settings.volumes || []).map((v) => `${v.source}:${v.target}${v.read_only ? ":ro" : ""}`).join("\n"), "photos:/photos"));
+  const apply = element("button", "Appliquer les réglages");
+  form.append(apply);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    let next;
+    try {
+      next = parseSettings(data.get("service"), data.get("variables"), data.get("ports"), data.get("volumes"));
+    } catch (error) {
+      showMessage([error.message], "error");
+      return;
+    }
+    apply.disabled = true;
+    showMessage([`Application des réglages de ${service.name}… Le service redémarre.`], "info");
+    try {
+      const result = await withRisks((confirm) => api(`services/${encodeURIComponent(service.name)}/advanced`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings: next, confirm_risks: confirm }),
+      }));
+      if (result) {
+        showMessage([`Les réglages de ${service.name} sont appliqués.`], "success");
+      } else {
+        message.hidden = true;
+      }
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      apply.disabled = false;
+      await loadServices().catch(() => null);
+    }
+  });
+  panel.replaceChildren(form);
+}
+
+function advancedButton(service, card) {
+  const button = element("button", "Réglages avancés", "secondary");
+  button.setAttribute("aria-expanded", "false");
+  const panel = element("div");
+  panel.hidden = true;
+  button.addEventListener("click", async () => {
+    const open = panel.hidden;
+    panel.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    if (open) {
+      try {
+        await advancedPanel(service, panel);
+      } catch (error) {
+        panel.hidden = true;
+        showMessage([error.message], "error");
+      }
+    }
+  });
+  return { button, panel };
+}
+
+// Carte « Docker Compose libre », à la fin de la marketplace.
+function customComposeCard() {
+  const card = element("li", undefined, "card app");
+  tint(card, CUSTOM_APP);
+  card.append(cardHead(CUSTOM_APP, "Docker Compose libre",
+    element("p", "Pour les personnes qui connaissent Docker : installez votre propre fichier Docker Compose, hors marketplace.")));
+  const details = element("details");
+  details.append(element("summary", "Installer un fichier Docker Compose"));
+  const form = element("form");
+  form.append(element("p", "Ce service ne sera ni vérifié ni pris en charge par le projet pi-appliance. Les images doivent être prêtes à l'emploi (pas de « build ») et exister pour le Pi (arm64).", "note"));
+  const nameLabel = element("label", "Nom du service (son adresse)");
+  const name = element("input");
+  name.name = "name";
+  name.pattern = "[a-z]([a-z0-9\\-]{0,30}[a-z0-9])?";
+  name.required = true;
+  nameLabel.append(name);
+  const composeLabel = element("label", "Fichier compose.yaml");
+  const compose = element("textarea");
+  compose.name = "compose";
+  compose.rows = 10;
+  compose.required = true;
+  compose.spellcheck = false;
+  compose.autocapitalize = "none";
+  compose.placeholder = "services:\n  web:\n    image: nginx:1.27";
+  composeLabel.append(compose);
+  const serviceLabel = element("label", "Conteneur à ouvrir à l'adresse du service");
+  const service = element("input");
+  service.name = "service";
+  service.required = true;
+  service.placeholder = "web";
+  serviceLabel.append(service);
+  const portLabel = element("label", "Son port dans le conteneur");
+  const port = element("input");
+  port.name = "port";
+  port.type = "number";
+  port.min = 1;
+  port.max = 65535;
+  port.value = 80;
+  port.required = true;
+  portLabel.append(port);
+  const button = element("button", "Installer");
+  form.append(nameLabel, composeLabel, serviceLabel, portLabel, button);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+    button.disabled = true;
+    showMessage([`Installation de ${data.get("name")}… Le premier téléchargement peut prendre plusieurs minutes.`], "info");
+    try {
+      const result = await withRisks((confirm) => api("compose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.get("name"), compose: data.get("compose"), service: data.get("service"),
+          port: Number(data.get("port")), confirm_risks: confirm,
+        }),
+      }));
+      if (!result) {
+        message.hidden = true;
+        return;
+      }
+      showMessage([`${result.instance.name} est prêt : https://${result.instance.address}`, ...(result.warnings || [])], "success");
+      form.reset();
+      await loadServices();
+      await refreshResources();
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+  details.append(form);
+  card.append(details);
+  return card;
 }
 
 async function refreshResources() {

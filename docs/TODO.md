@@ -130,7 +130,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] **TODO-2.42**: 6.5.3 FTP : service FTP installé avec un compte `pi`, un port configurable et un mot de passe généré.
   - [ ] **TODO-2.43**: 6.5.4 Valider les trois méthodes sur Raspberry Pi réel et documenter les limites.
 - [ ] **TODO-2.44**: Etherpad : liens de partage pour une personne sans compte.
-- [ ] **TODO-2.45**: Réglages avancés et Docker Compose libre (6.4).
+- [x] **TODO-2.45**: Permettre à l'administrateur de déployer et gérer ses propres services Docker Compose depuis la console, à partir de fichiers `compose.yaml`, sans les ajouter au catalogue ; inclure les réglages avancés et signaler les options dangereuses (6.4) : écran « Réglages avancés » sur chaque service (variables, ports, volumes), carte « Docker Compose libre » dans la marketplace, options dangereuses signalées et confirmées, pas bloquées (`internal/services/advanced.go`, `custom.go`) ; à vérifier sur un vrai Pi. Règles d'accès et sauvegardes viendront pour tous les services.
 - [ ] **TODO-2.46**: Générateurs de sites statiques (SSG) MkDocs, Astro, Hugo, Jekyll et Next.js.
 - [ ] **TODO-2.47**: MSSQL, PostgreSQL, SQLite, MongoDB, Redis.
 

@@ -98,6 +98,10 @@ func (m *Manager) serviceDir(name string) string {
 
 func (m *Manager) compose(ctx context.Context, name string, args ...string) ([]byte, error) {
 	base := []string{"compose", "--project-name", "pi-" + name, "--env-file", envName, "--file", composeName, "--file", overrideName}
+	// Réglages avancés (spécification 6.4), lus en dernier.
+	if _, err := os.Stat(filepath.Join(m.serviceDir(name), advancedName)); err == nil {
+		base = append(base, "--file", advancedName)
+	}
 	return m.Runner.Run(ctx, m.serviceDir(name), append(base, args...)...)
 }
 

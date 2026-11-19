@@ -661,3 +661,38 @@ label.check input {
 .chart .dot-mark {
   fill: var(--card);
 }
+
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid var(--ink);
+  border-radius: 0.875rem;
+  background: #ffffff;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  font-weight: 400;
+  resize: vertical;
+}
+
+textarea:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+
+form.advanced {
+  margin-top: 0.75rem;
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.5rem 0;
+}
+
+details form {
+  margin-top: 0.5rem;
+}
