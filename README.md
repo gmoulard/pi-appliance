@@ -36,7 +36,7 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 | Chemin | Contenu |
 |--------|---------|
 | `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services |
-| `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud pour commencer) |
+| `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud, site web, DokuWiki, Etherpad) |
 | [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |
 | `.claude/skills/` | Sous-module : [skills Claude Code](https://github.com/gmoulard/claude_skills) partagés |
 
