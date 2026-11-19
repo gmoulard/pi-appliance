@@ -132,7 +132,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-2.44**: Etherpad : liens de partage pour une personne sans compte.
 - [x] **TODO-2.45**: Permettre à l'administrateur de déployer et gérer ses propres services Docker Compose depuis la console, à partir de fichiers `compose.yaml`, sans les ajouter au catalogue ; inclure les réglages avancés et signaler les options dangereuses (6.4) : écran « Réglages avancés » sur chaque service (variables, ports, volumes), carte « Docker Compose libre » dans la marketplace, options dangereuses signalées et confirmées, pas bloquées (`internal/services/advanced.go`, `custom.go`) ; à vérifier sur un vrai Pi. Règles d'accès et sauvegardes viendront pour tous les services.
 - [ ] **TODO-2.46**: Générateurs de sites statiques (SSG) MkDocs, Astro, Hugo, Jekyll et Next.js.
-- [ ] **TODO-2.47**: MSSQL, PostgreSQL, SQLite, MongoDB, Redis.
+- [x] **TODO-2.47**: MSSQL, PostgreSQL, SQLite, MongoDB, Redis : PostgreSQL retenu avec l'interface web Adminer (manifeste `marketplace/postgresql/`, accès maison seulement ; à vérifier sur un vrai Pi) ; MSSQL écarté (pas d'image `arm64`), SQLite (pas un serveur), MongoDB (Pi 5 seulement à partir de la version 5), Redis (cache sans interface web, à mettre dans le manifeste d'une application) : raisons en 6.3. Une base ouverte sur le réseau de la maison sans interface web attend le format de manifeste pour un service qui n'est pas un site web (comme Samba, TODO-4.8).
 
 ## 3. Étape 2 — Internet (7)
 
