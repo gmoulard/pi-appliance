@@ -146,7 +146,6 @@ Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta
 | Application | Logiciel | Remarques |
 |-------------|----------|-----------|
 | Fichiers, agenda, contacts | Nextcloud | Ancien prototype (section 12) : `docker-nextcloud/` |
-| Partage de fichiers à la maison | Samba | Réseau de la maison seulement ; ancien prototype (section 12) : `docker-samba/` |
 | Site web | Apache + PHP | Ancien prototype (section 12) : `docker-apache/` |
 | Wiki | DokuWiki | Sans base de données, tourne sur tous les modèles |
 | Édition de texte à plusieurs | Etherpad | |
@@ -154,9 +153,7 @@ Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta
 
 Règles propres à ces applications :
 
-- **Samba** : un dossier **commun** à tous les comptes et un dossier **personnel** par utilisateur, avec les comptes de l'appliance (LDAP, section 8.1).
-- **Nextcloud et Samba voient les mêmes fichiers** : le dossier commun et les dossiers personnels de Samba apparaissent dans Nextcloud (stockage externe), et inversement.
-- **Site web** : les fichiers du site se déposent, au choix, dans un dossier visible dans Nextcloud, dans un dossier du partage Samba, ou en envoyant un fichier ZIP dans la console. Une instance = un dossier.
+- **Site web** : les fichiers du site se déposent, au choix, dans un dossier visible dans Nextcloud ou en envoyant un fichier ZIP dans la console. Une instance = un dossier.
 - **Etherpad** : les utilisateurs connectés créent des documents ; un lien de partage permet à une personne sans compte d'éditer un document précis.
 
 **Réalisé** (manifestes de la marketplace, section 6.5) :
@@ -168,12 +165,13 @@ Règles propres à ces applications :
 | DokuWiki | `marketplace/dokuwiki/` | `dokuwiki/dokuwiki:2026-07-14c` (image officielle ; DokuWiki numérote ses versions par date) | utilisateurs connectés | 128 Mo, 1 024 Mo |
 | Etherpad | `marketplace/etherpad/` | `etherpad/etherpad:3` (image officielle) | utilisateurs connectés | 384 Mo, 1 024 Mo |
 
-- **Site web** : les fichiers du site sont dans un volume propre à l'instance ; tant qu'il est vide, une page « Site en construction » s'affiche. Le dépôt des fichiers par Nextcloud, Samba ou ZIP reste à faire.
+- **Site web** : les fichiers du site sont dans un volume propre à l'instance ; tant qu'il est vide, une page « Site en construction » s'affiche. Le dépôt des fichiers par Nextcloud ou ZIP reste à faire.
 - **DokuWiki** : au premier démarrage, le compte `admin` est créé avec un mot de passe tiré au hasard, affiché une seule fois ; l'assistant d'installation de DokuWiki est donc fermé (sinon le premier visiteur choisirait le compte administrateur). Tout le monde lit, les comptes du wiki écrivent ; pas d'inscription libre ; wiki en français.
 - **Etherpad** : documents gardés dans une base SQLite du volume ; mot de passe de l'administrateur (`/admin`) tiré au hasard et affiché une seule fois ; les secrets internes de connexion d'Etherpad sont aussi tirés au hasard ; sa propre vérification des mises à jour est coupée (elles passeront par la console, section 9.2). Etherpad demande environ 350 Mo de mémoire : sur un Pi Zero 2 W, la console prévient qu'il risque d'être lent. Les liens de partage pour une personne sans compte restent à faire : ils demandent que l'accès « utilisateurs connectés » (section 8.2) laisse passer l'adresse d'un document précis.
-- **Samba : pas encore**. Le format des manifestes ne sait publier qu'un service web (Traefik, `service` et `port`) ; Samba parle SMB sur le port 445 du Pi, que seul un service peut occuper, et l'accès « maison seulement » ne peut pas s'appuyer sur Traefik pour lui. Voir section 15.
+Plus tard :
 
-Plus tard : caméra (Motion, timelapse : anciens prototypes `pi-motion/` et `pi-timelaps/`, section 12).
+- **Samba**, partage de fichiers en lecteur réseau à la maison (Explorateur Windows, Finder, téléviseurs, scanners, Time Machine), avec un dossier commun et un dossier personnel par compte. Sorti de la première version : Nextcloud couvre déjà les fichiers, et Samba demande un format de manifeste pour un service qui n'est pas un site web (port SMB 445 du Pi, une seule instance possible, accès « maison seulement » appliqué sans Traefik) et un annuaire LDAP servi par la console (section 8.1). Nextcloud verra alors ses dossiers par son stockage externe (client Samba). Ancien prototype (section 12) : `docker-samba/`.
+- Caméra (Motion, timelapse : anciens prototypes `pi-motion/` et `pi-timelaps/`, section 12).
 
 ### 6.4 Hors marketplace
 
@@ -244,7 +242,7 @@ Offre :
 - Un seul identifiant et mot de passe pour la console et pour tous les services qui acceptent une connexion standard (OpenID Connect).
 - Le **fournisseur d'identité est intégré à la console** : elle est fournisseur OpenID Connect pour les services et point d'authentification déléguée (*forward auth*) pour Traefik. Pas de logiciel d'identité séparé, pour tenir sur un Pi Zero 2 W.
 - Un service sans connexion standard est protégé en amont par Traefik (authentification déléguée à la console) et garde, si besoin, ses propres comptes internes.
-- **LDAP** : la console sert aussi un annuaire LDAP, **activé seulement quand Samba est installé** (Samba ne connaît pas OpenID Connect), désactivé à sa désinstallation.
+- **LDAP** : pas dans la première version. Il viendra avec Samba (section 6.3, plus tard), qui ne connaît pas OpenID Connect : la console servira un annuaire LDAP activé seulement quand Samba est installé.
 - **Nouveau compte** : l'administrateur saisit un nom et une adresse e-mail ; la personne reçoit une **invitation par e-mail** et choisit elle-même son mot de passe.
 - **Mots de passe** : **8 caractères au moins**, **12 pour un administrateur** (son mot de passe protège aussi la clé des sauvegardes, section 9.1) ; la console suggère une phrase de passe ; pas d'expiration.
 - **Double authentification** (TOTP) : obligatoire pour ouvrir la console sur internet (section 8.3), **facultative** pour les autres comptes, que l'administrateur peut l'exiger.
@@ -253,7 +251,7 @@ Offre :
 
 ### 8.2 Qui accède à un service
 
-À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (Samba : maison seulement ; site web : public ; Nextcloud, DokuWiki, Etherpad : utilisateurs connectés). Modifiable ensuite dans la console.
+À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (site web : public ; Nextcloud, DokuWiki, Etherpad : utilisateurs connectés). Modifiable ensuite dans la console.
 
 ### 8.3 Console
 
@@ -278,7 +276,7 @@ Offre :
 - Connexion (`POST api/login`), déconnexion (`POST api/logout`), état (`GET api/session` : création à faire, réinitialisation en cours, compte connecté). Session dans un cookie `HttpOnly`, `SameSite=Strict`, `Secure` derrière Traefik en HTTPS ; valable 7 jours, prolongée à chaque usage, gardée en mémoire : un redémarrage de la console déconnecte tout le monde.
 - Limitation des tentatives par client et par compte : après 5 échecs, attente d'une minute, doublée à chaque nouvel échec, 15 minutes au plus. Derrière Traefik (bouclage ou réseau Docker), le client est la dernière adresse de `X-Forwarded-For`.
 - Fichier `reset` (section 8.5) : lu au démarrage (option `-reset-file`, `/boot/firmware/reset` par défaut), supprimé aussitôt ; la console propose alors un nouveau mot de passe pour le premier administrateur (`POST api/reset`), sans toucher aux services, et ferme toutes les sessions.
-- Pas encore : autres comptes et invitations, rôles utilisateur et invité dans l'interface, double authentification, OpenID Connect, LDAP, vérification de l'e-mail, récupération par e-mail.
+- Pas encore : autres comptes et invitations, rôles utilisateur et invité dans l'interface, double authentification, OpenID Connect, vérification de l'e-mail, récupération par e-mail.
 
 ### 8.5 Récupération de l'accès
 
@@ -445,6 +443,7 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 ## 14. Hors périmètre
 
 - Grappe de plusieurs Pi (orchestration Kubernetes, k3s) : pas dans la première version.
+- Partage de fichiers Samba et annuaire LDAP : pas dans la première version (section 6.3).
 - Hébergement d'un service pour des tiers à grande échelle.
 - Faire passer tout le trafic internet du téléphone par la maison (le VPN donne seulement accès au réseau de la maison).
 - Tableau de bord commun à plusieurs appliances.
@@ -453,7 +452,6 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 
 - Relais : prix et moyen de paiement de l'offre payante.
 - Relais : nombre maximal d'appliances relayées (7.3).
-- Samba (6.3) : comment décrire dans le manifeste un service qui n'est pas un site web (port SMB 445 ouvert sur le Pi, une seule instance possible, accès « maison seulement » appliqué sans Traefik), et que doit faire la console pour lui (pas d'adresse web à afficher).
 
 ## 16. Ordre de construction
 

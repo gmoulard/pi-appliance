@@ -26,7 +26,7 @@ L'image pi-appliance empile trois couches :
 4. J'ouvre la console : `https://pi-appliance.local/pi-appliance` depuis la maison (ou `https://localhost/pi-appliance` sur le Pi lui-même).
 5. Je me connecte avec mon identifiant et mon mot de passe.
 6. Je choisis mon adresse, `<nom>.pi-appliance.com` (ou mon propre domaine), et je crée mes utilisateurs.
-7. Je coche dans la marketplace les services que je veux : Nextcloud, partage de fichiers, site web, wiki, Etherpad, VPN…
+7. Je coche dans la marketplace les services que je veux : Nextcloud, site web, wiki, Etherpad, VPN…
 8. pi-appliance télécharge les images Docker, configure Traefik et ouvre chaque service, à la maison comme sur internet, à l'adresse `https://<service>.<nom>.pi-appliance.com`, avec un seul identifiant pour tous les services.
 
 Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur internet, sans aucune connaissance technique.
