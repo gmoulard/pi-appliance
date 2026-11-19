@@ -1,5 +1,7 @@
 # pi-appliance
 
+<img src="docs/pi-appliance-logo.png" alt="Logo pi-appliance" width="200">
+
 **pi-appliance transforme un Raspberry Pi en appliance** : un boîtier personnel, à la maison, sur lequel on déploie des services en quelques clics. C'est un nœud de **Fog Computing** : vos services tournent chez vous et restent accessibles depuis internet.
 
 On flashe une image système prête à l'emploi sur la carte SD, et le Pi fonctionne aussitôt, sans installation manuelle.
