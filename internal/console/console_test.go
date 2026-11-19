@@ -60,7 +60,7 @@ func newFixture(t *testing.T) fixture {
 		t.Fatal(err)
 	}
 	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}}
-	return fixture{handler: Handler("1.2.3", catalog, manager, accounts, nil), accounts: accounts}
+	return fixture{handler: Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts}), accounts: accounts}
 }
 
 // admin crée le compte administrateur et renvoie le cookie de sa session.

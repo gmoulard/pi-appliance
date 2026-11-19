@@ -433,6 +433,77 @@ a {
   flex: none;
 }
 
+select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0 0.875rem;
+  border: 2px solid var(--ink);
+  border-radius: 0.875rem;
+  background: #ffffff;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 400;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 1.5rem;
+  display: grid;
+  gap: 0.25rem;
+}
+
+.steps li.done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.steps li.current {
+  font-weight: 800;
+  color: var(--brand-dark);
+}
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.9375rem;
+}
+
+.gauge + .gauge {
+  margin-top: 0.5rem;
+}
+
+.gauge .bar {
+  height: 0.875rem;
+  border-radius: 999px;
+  border: 1px solid var(--muted);
+  background: #ffffff;
+  display: flex;
+  overflow: hidden;
+}
+
+.gauge .used {
+  background: var(--muted);
+}
+
+.gauge .share {
+  background: var(--brand);
+}
+
+.gauge.orange .share {
+  background: #f08c00;
+}
+
+.gauge.red .share {
+  background: #d62839;
+}
+
+.gauge .warning {
+  color: var(--brand-dark);
+  font-weight: 700;
+}
+
 label.check {
   flex-direction: row;
   align-items: center;

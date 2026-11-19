@@ -45,11 +45,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 </section>
 <p id="emailReminder" class="empty" hidden></p>
+<section id="wizard" class="card" hidden>
+<h2>Mise en route</h2>
+<ol class="steps">
+<li id="stepAccount" class="done">Votre compte administrateur</li>
+<li id="stepNetwork">Le réseau de la maison</li>
+<li id="stepServices">Vos premiers services</li>
+</ol>
+<p id="wizardHelp"></p>
+<div class="controls">
+<button id="wizardNext" type="button" hidden></button>
+<button id="wizardSkip" class="secondary" type="button" hidden>Passer cette étape</button>
+</div>
+</section>
 <section id="networkSection" hidden>
 <h2>Réseau de la maison</h2>
 <div class="card">
 <p id="networkState" class="state"></p>
 <p id="networkAp" class="meta" hidden></p>
+<label>Pays où se trouve le Pi<select id="wifiCountry"></select></label>
 <div id="networkCert" class="note" hidden>
 <p><strong>Pourquoi le navigateur affiche une alerte ?</strong> Votre appliance protège la connexion avec son propre certificat, créé pour elle seule. Le navigateur ne le connaît pas encore, d'où l'alerte : vous pouvez continuer (« Paramètres avancés », puis « Continuer »). L'alerte disparaîtra quand l'appliance sera accessible sur internet avec un certificat reconnu.</p>
 </div>
@@ -68,6 +82,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <button>Se connecter à ce Wi-Fi</button>
 </form>
 </div>
+</section>
+<section id="piSection" hidden>
+<h2>Mon Pi</h2>
+<div id="piGauges" class="card"></div>
 </section>
 <section id="servicesSection" hidden>
 <h2>Mes services</h2>

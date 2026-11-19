@@ -82,7 +82,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - `POST api/network/wifi` `{"ssid", "password", "hidden"}` → `network.sh wifi-join` (corps passé tel quel sur l'entrée standard) : répondre `202` **avant** de lancer la commande (quelques secondes plus tard), car le point d'accès se ferme et le téléphone perd la réponse ; dire à l'utilisateur de rejoindre le Wi-Fi de la maison puis d'ouvrir `https://pi-appliance.local/pi-appliance`. En cas d'échec, le point d'accès se rouvre et `lastError` vaut `wrong-password`, `not-found`, `timeout` ou `failed` ;
   - `POST api/network/wired` → `network.sh wired` : `{"ok": true}` ou `{"ok": false, "error": "no-cable", "message"}` ;
   - écrans du portail : liste des Wi-Fi, mot de passe, choix du câble, temps restant avant la fermeture du point d'accès, explication de l'alerte du certificat.
-- [ ] Choix du pays du Wi-Fi dans le portail (l'image part sur la France ; le point d'accès reste sur le canal 6, permis partout).
+- [x] Choix du pays du Wi-Fi dans le portail (l'image part sur la France ; le point d'accès reste sur le canal 6, permis partout) : `network.sh country`, `POST api/network/country` ; à vérifier sur un vrai Pi.
 
 ### Console (5)
 
@@ -91,7 +91,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Authentification : compte administrateur créé au premier démarrage, connexion, sessions, limitation des tentatives (5.1, 8.1, 8.4).
 - [ ] Vérification de l'e-mail par un code, dès que le service d'e-mails est joignable (5.1, étape 2).
 - [x] Fichier `reset` sur la carte SD (8.5).
-- [ ] Assistant de premier démarrage.
+- [x] Assistant de premier démarrage, première version : compte, réseau, premiers services (5.1).
+- [ ] Étapes suivantes de l'assistant, avec leurs fonctions : langue, adresse sur internet, test d'accès, utilisateurs, statistiques (5.1).
 - [ ] Tableau de bord : état du Pi et des services, graphiques sur 30 jours.
 - [ ] Canaux de version stable et bêta.
 - [ ] Traduction dans les 12 langues, arabe et persan de droite à gauche.
@@ -106,7 +107,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Mise à jour d'un service avec retour arrière automatique.
 - [ ] Copie des données d'un service avant sa mise à jour, pour un retour arrière complet (avec les sauvegardes, 9.1).
 - [x] Avertissement mémoire sur les petits Pi.
-- [ ] Jauges de mémoire et de disque : ce que le Pi a, ce qui est utilisé, ce que prendrait le service et ce qui resterait après l'installation (6.2).
+- [x] Jauges de mémoire et de disque : ce que le Pi a, ce qui est utilisé, ce que prendrait le service et ce qui resterait après l'installation (6.2) ; aussi dans « Mon Pi ». Le conseil de brancher un disque USB viendra avec le disque USB.
 - [x] Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.
 - [x] Application Nextcloud (manifeste `marketplace/nextcloud/`).
 - [x] Applications site web Apache/PHP, DokuWiki, Etherpad (manifestes `marketplace/site-web/`, `dokuwiki/`, `etherpad/`).

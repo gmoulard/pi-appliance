@@ -23,6 +23,7 @@
 #   network.sh wifi-scan    nouvelle recherche (ferme le point d'accès quelques secondes)
 #   network.sh wifi-join    connexion ; entrée standard : {"ssid": "…", "password": "…", "hidden": false}
 #   network.sh wired        garder le câble comme réseau du Pi
+#   network.sh country FR   pays du Wi-Fi (code ISO 3166 à deux lettres)
 #
 # Le mot de passe du Wi-Fi n'apparaît jamais dans la ligne de commande d'un
 # programme (visible de tous dans /proc) : il passe par l'entrée standard.
@@ -72,11 +73,12 @@ status() {
 		sed -n 's/^yes://p' | head -n 1 | sed 's/\\\(.\)/\1/g')
 	if ap_is_open; then ssid=; fi
 	choice=$(cat "$NETWORK_CHOICE" 2>/dev/null || true)
+	country=$(wifi_country)
 	error=$(cat "$ERROR_FILE" 2>/dev/null || true)
 	addresses | jq -R -s \
 		--argjson open "$([ "$state" = open ] && echo true || echo false)" \
 		--arg reason "$reason" --argjson closesIn "${closes_in:-0}" \
-		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" '
+		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" --arg country "$country" '
 		{
 			ok: true,
 			accessPoint: {open: $open, ssid: "pi-appliance", reason: $reason,
@@ -85,6 +87,7 @@ status() {
 			wired: {connected: $wired},
 			wifi: {connected: ($ssid != ""), ssid: $ssid},
 			addresses: (split("\n") | map(select(length > 0))),
+			country: $country,
 			lastError: $error
 		}'
 }
@@ -177,6 +180,35 @@ wired() {
 	jq -n '{ok: true}'
 }
 
+# Pays du Wi-Fi : celui choisi dans le portail, sinon celui du noyau (FR dans l'image).
+wifi_country() {
+	if [ -s "$COUNTRY_FILE" ]; then
+		cat "$COUNTRY_FILE"
+		return
+	fi
+	iw reg get 2>/dev/null | sed -n 's/^country \([A-Z][A-Z]\):.*/\1/p' | head -n 1
+}
+
+# Le pays fixe les canaux et la puissance permis. Le point d'accès reste sur le
+# canal 6, permis partout : changer de pays ne coupe pas le portail.
+set_country() {
+	code=${1:-}
+	case "$code" in
+	[A-Z][A-Z]) ;;
+	*) fail invalid-country "Code de pays invalide : deux lettres majuscules, comme FR." ;;
+	esac
+	if command -v raspi-config >/dev/null 2>&1; then
+		# Garde le pays après un redémarrage (cfg80211.ieee80211_regdom).
+		raspi-config nonint do_wifi_country "$code" >/dev/null 2>&1 ||
+			fail failed "Impossible de changer le pays du Wi-Fi."
+	else
+		iw reg set "$code" 2>/dev/null || fail failed "Impossible de changer le pays du Wi-Fi."
+	fi
+	mkdir -p "$PI_STATE"
+	echo "$code" >"$COUNTRY_FILE"
+	jq -n --arg country "$code" '{ok: true, country: $country}'
+}
+
 umask 077
 case "${1:-}" in
 status) status ;;
@@ -184,5 +216,6 @@ wifi-list) wifi_list ;;
 wifi-scan) with_wifi_lock wifi_rescan; wifi_list ;;
 wifi-join) with_wifi_lock wifi_join ;;
 wired) wired ;;
-*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wired" ;;
+country) set_country "${2:-}" ;;
+*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wired | country <code>" ;;
 esac

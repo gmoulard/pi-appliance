@@ -149,6 +149,14 @@ func (c *Client) Wired(ctx context.Context) (json.RawMessage, error) {
 	return c.run(ctx, shortTimeout, nil, "wired")
 }
 
+// SetCountry change le pays du Wi-Fi (code ISO 3166 à deux lettres majuscules).
+func (c *Client) SetCountry(ctx context.Context, code string) (json.RawMessage, error) {
+	if len(code) != 2 || code[0] < 'A' || code[0] > 'Z' || code[1] < 'A' || code[1] > 'Z' {
+		return nil, fmt.Errorf("%w : code de pays invalide", ErrInvalid)
+	}
+	return c.run(ctx, shortTimeout, nil, "country", code)
+}
+
 // Join lance la connexion en arrière-plan, après JoinDelay, et rend la main
 // tout de suite : le point d'accès va se fermer et le téléphone perdre la
 // réponse. Le résultat se lit ensuite dans Status (lastError).

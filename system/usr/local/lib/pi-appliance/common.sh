@@ -29,6 +29,7 @@ NETWORK_CHOICE=$PI_STATE/network-choice  # « wifi » ou « wired », choisi dan
 SCAN_FILE=$PI_RUN/wifi-scan.json
 STATUS_FILE=$PI_RUN/ap-status
 ERROR_FILE=$PI_RUN/network-error
+COUNTRY_FILE=$PI_STATE/wifi-country  # pays du Wi-Fi choisi dans le portail
 
 # Une seule commande à la fois sur la puce Wi-Fi (point d'accès, recherche, connexion).
 # with_wifi_lock <commande…>

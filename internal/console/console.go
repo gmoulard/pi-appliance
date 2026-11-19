@@ -26,12 +26,14 @@ import (
 	"mime"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
@@ -70,30 +72,45 @@ type ResetRequest struct {
 	Password string `json:"password"`
 }
 
+type CountryRequest struct {
+	Country string `json:"country"`
+}
+
 // SessionState dit à l'interface quoi afficher : création du compte administrateur,
-// réinitialisation par le fichier reset, connexion ou console.
+// réinitialisation par le fichier reset, connexion, assistant de premier démarrage
+// (administrateur seulement) ou console.
 type SessionState struct {
 	Setup   bool         `json:"setup"`
 	Reset   bool         `json:"reset"`
+	Wizard  bool         `json:"wizard"`
 	Account *auth.Public `json:"account"`
 }
 
-type console struct {
-	version  string
-	catalog  marketplace.Catalog
-	services *services.Manager
-	accounts *auth.Store
-	network  *network.Client
+// Config rassemble ce dont la console a besoin.
+type Config struct {
+	Version  string
+	Catalog  marketplace.Catalog
+	Services *services.Manager
+	Accounts *auth.Store
+	// Network peut être nil (poste de développement) : les écrans du réseau
+	// disent alors que le réseau ne se règle pas ici.
+	Network *network.Client
+	// Resources lit la mémoire et le disque du Pi ; nil : jauges absentes.
+	Resources func() system.Resources
+	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
+	WizardFile string
 }
 
-// Handler sert la console. net peut être nil (poste de développement) : les
-// écrans du réseau disent alors que le réseau ne se règle pas ici.
-func Handler(version string, catalog marketplace.Catalog, manager *services.Manager, accounts *auth.Store, net *network.Client) http.Handler {
+type console struct {
+	Config
+}
+
+func Handler(config Config) http.Handler {
 	web, err := fs.Sub(webFiles, "web")
 	if err != nil {
 		panic(err)
 	}
-	c := &console{version: version, catalog: catalog, services: manager, accounts: accounts, network: net}
+	c := &console{Config: config}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET "+BasePath+"/api/health", c.health)
 	mux.HandleFunc("GET "+BasePath+"/api/session", c.session)
@@ -111,6 +128,9 @@ func Handler(version string, catalog marketplace.Catalog, manager *services.Mana
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi/scan", c.adminOnly(c.wifiScan))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiJoin))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wired", c.adminOnly(c.wired))
+	mux.HandleFunc("POST "+BasePath+"/api/network/country", c.adminOnly(c.country))
+	mux.HandleFunc("GET "+BasePath+"/api/system", c.adminOnly(c.resources))
+	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
@@ -121,7 +141,7 @@ func (c *console) account(r *http.Request) (auth.Account, bool) {
 	if err != nil {
 		return auth.Account{}, false
 	}
-	return c.accounts.Session(cookie.Value)
+	return c.Accounts.Session(cookie.Value)
 }
 
 func (c *console) signedIn(next http.HandlerFunc) http.HandlerFunc {
@@ -151,10 +171,11 @@ func (c *console) adminOnly(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (c *console) session(w http.ResponseWriter, r *http.Request) {
-	state := SessionState{Setup: c.accounts.SetupNeeded(), Reset: c.accounts.ResetPending()}
+	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending()}
 	if account, ok := c.account(r); ok {
 		public := account.Public()
 		state.Account = &public
+		state.Wizard = account.Role == auth.RoleAdmin && c.wizardPending()
 	}
 	writeJSON(w, http.StatusOK, state)
 }
@@ -164,12 +185,12 @@ func (c *console) setup(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	account, err := c.accounts.CreateAdmin(request.Name, request.Email, request.Password)
+	account, err := c.Accounts.CreateAdmin(request.Name, request.Email, request.Password)
 	if err != nil {
 		writeAuthError(w, err)
 		return
 	}
-	openSession(w, r, c.accounts.StartSession(account.Name))
+	openSession(w, r, c.Accounts.StartSession(account.Name))
 	writeJSON(w, http.StatusCreated, account.Public())
 }
 
@@ -178,12 +199,12 @@ func (c *console) reset(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	account, err := c.accounts.ResetAdmin(request.Password)
+	account, err := c.Accounts.ResetAdmin(request.Password)
 	if err != nil {
 		writeAuthError(w, err)
 		return
 	}
-	openSession(w, r, c.accounts.StartSession(account.Name))
+	openSession(w, r, c.Accounts.StartSession(account.Name))
 	writeJSON(w, http.StatusOK, account.Public())
 }
 
@@ -192,7 +213,7 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	token, account, err := c.accounts.Login(request.Name, request.Password, clientIP(r))
+	token, account, err := c.Accounts.Login(request.Name, request.Password, clientIP(r))
 	if err != nil {
 		writeAuthError(w, err)
 		return
@@ -203,7 +224,7 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 
 func (c *console) logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(cookieName); err == nil {
-		c.accounts.Logout(cookie.Value)
+		c.Accounts.Logout(cookie.Value)
 	}
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: BasePath, MaxAge: -1, HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteStrictMode})
 	w.WriteHeader(http.StatusNoContent)
@@ -303,12 +324,41 @@ func waitText(wait time.Duration) string {
 	return "une minute"
 }
 
+// wizardPending : l'assistant de premier démarrage n'est pas encore terminé (spécification 5.1).
+func (c *console) wizardPending() bool {
+	if c.WizardFile == "" {
+		return false
+	}
+	_, err := os.Stat(c.WizardFile)
+	return errors.Is(err, fs.ErrNotExist)
+}
+
+func (c *console) wizardDone(w http.ResponseWriter, _ *http.Request) {
+	if c.WizardFile != "" {
+		if err := os.WriteFile(c.WizardFile, []byte(time.Now().UTC().Format(time.RFC3339)+"\n"), 0o600); err != nil {
+			log.Printf("assistant : %v", err)
+			writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer la fin de l'assistant.")
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// resources : jauges de la mémoire et du disque du Pi (spécification 6.2).
+func (c *console) resources(w http.ResponseWriter, _ *http.Request) {
+	var resources system.Resources
+	if c.Resources != nil {
+		resources = c.Resources()
+	}
+	writeJSON(w, http.StatusOK, resources)
+}
+
 func (c *console) health(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, Health{Status: "ok", Version: c.version})
+	writeJSON(w, http.StatusOK, Health{Status: "ok", Version: c.Version})
 }
 
 func (c *console) listCatalog(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]any{"apps": c.catalog.Apps()})
+	writeJSON(w, http.StatusOK, map[string]any{"apps": c.Catalog.Apps()})
 }
 
 // ServiceView est un service installé avec son état vert, orange ou rouge.
@@ -319,7 +369,7 @@ type ServiceView struct {
 }
 
 func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
-	instances, err := c.services.List()
+	instances, err := c.Services.List()
 	if err != nil {
 		log.Printf("liste des services : %v", err)
 		writeError(w, http.StatusInternalServerError, "La liste des services est illisible.")
@@ -327,13 +377,13 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 	}
 	views := make([]ServiceView, 0, len(instances))
 	for _, instance := range instances {
-		status, err := c.services.Status(r.Context(), instance.Name)
+		status, err := c.Services.Status(r.Context(), instance.Name)
 		if err != nil {
 			status = services.Status{Color: services.Orange, Message: "État inconnu."}
 		}
 		view := ServiceView{Instance: instance, Status: status}
-		if app, ok := c.catalog.Get(instance.App); ok {
-			view.UpdateAvailable = c.services.UpdateAvailable(app, instance.Name)
+		if app, ok := c.Catalog.Get(instance.App); ok {
+			view.UpdateAvailable = c.Services.UpdateAvailable(app, instance.Name)
 		}
 		views = append(views, view)
 	}
@@ -346,11 +396,11 @@ func (c *console) control(w http.ResponseWriter, r *http.Request) {
 		c.update(w, r, name)
 		return
 	}
-	if err := c.services.Control(r.Context(), name, services.Action(r.PathValue("action"))); err != nil {
+	if err := c.Services.Control(r.Context(), name, services.Action(r.PathValue("action"))); err != nil {
 		writeServiceError(w, err)
 		return
 	}
-	status, err := c.services.Status(r.Context(), name)
+	status, err := c.Services.Status(r.Context(), name)
 	if err != nil {
 		writeServiceError(w, err)
 		return
@@ -363,7 +413,7 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	app, ok := c.catalog.Get(request.App)
+	app, ok := c.Catalog.Get(request.App)
 	if !ok {
 		writeError(w, http.StatusNotFound, "Cette application n'est pas dans la marketplace.")
 		return
@@ -371,7 +421,7 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 	if request.Name == "" {
 		request.Name = app.Subdomain
 	}
-	result, err := c.services.Install(r.Context(), app, request.Name, request.Parameters)
+	result, err := c.Services.Install(r.Context(), app, request.Name, request.Parameters)
 	if err != nil {
 		writeServiceError(w, err)
 		return
@@ -389,7 +439,7 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "Dites s'il faut garder (data=keep) ou supprimer (data=delete) les données du service.")
 		return
 	}
-	if err := c.services.Remove(r.Context(), r.PathValue("name"), keepData); err != nil {
+	if err := c.Services.Remove(r.Context(), r.PathValue("name"), keepData); err != nil {
 		writeServiceError(w, err)
 		return
 	}
@@ -398,7 +448,7 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 
 // update met un service à jour depuis le catalogue, avec retour arrière automatique en cas d'échec.
 func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
-	instances, err := c.services.List()
+	instances, err := c.Services.List()
 	if err != nil {
 		writeServiceError(w, err)
 		return
@@ -407,12 +457,12 @@ func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
 		if instance.Name != name {
 			continue
 		}
-		app, ok := c.catalog.Get(instance.App)
+		app, ok := c.Catalog.Get(instance.App)
 		if !ok {
 			writeError(w, http.StatusNotFound, "Cette application n'est plus dans la marketplace : pas de mise à jour possible.")
 			return
 		}
-		result, err := c.services.Update(r.Context(), app, name)
+		result, err := c.Services.Update(r.Context(), app, name)
 		if err != nil {
 			writeServiceError(w, err)
 			return
@@ -443,11 +493,11 @@ func writeServiceError(w http.ResponseWriter, err error) {
 // portail de configuration crée d'abord son compte, puis choisit le réseau.
 
 func (c *console) networkCall(w http.ResponseWriter, r *http.Request, call func(*network.Client, context.Context) (json.RawMessage, error)) {
-	if c.network == nil {
+	if c.Network == nil {
 		writeError(w, http.StatusServiceUnavailable, "Le réseau ne se règle pas depuis cette console.")
 		return
 	}
-	out, err := call(c.network, r.Context())
+	out, err := call(c.Network, r.Context())
 	if err != nil {
 		writeNetworkError(w, err)
 		return
@@ -471,10 +521,20 @@ func (c *console) wired(w http.ResponseWriter, r *http.Request) {
 	c.networkCall(w, r, (*network.Client).Wired)
 }
 
+func (c *console) country(w http.ResponseWriter, r *http.Request) {
+	var request CountryRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	c.networkCall(w, r, func(n *network.Client, ctx context.Context) (json.RawMessage, error) {
+		return n.SetCountry(ctx, request.Country)
+	})
+}
+
 // wifiJoin répond 202 avant de lancer la connexion : le point d'accès va se
 // fermer et le téléphone perdre la réponse.
 func (c *console) wifiJoin(w http.ResponseWriter, r *http.Request) {
-	if c.network == nil {
+	if c.Network == nil {
 		writeError(w, http.StatusServiceUnavailable, "Le réseau ne se règle pas depuis cette console.")
 		return
 	}
@@ -482,7 +542,7 @@ func (c *console) wifiJoin(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	if err := c.network.Join(request); err != nil {
+	if err := c.Network.Join(request); err != nil {
 		writeNetworkError(w, err)
 		return
 	}

@@ -42,5 +42,5 @@ TIMEZONE_DEFAULT=Europe/Paris
 
 # Pays du Wi-Fi : sans pays, Raspberry Pi OS coupe le Wi-Fi, et le point
 # d'accès ne peut pas s'ouvrir. Le point d'accès reste sur le canal 6, permis
-# partout ; le choix du pays dans le portail est à faire (docs/TODO.md).
+# partout ; le pays se change ensuite dans le portail (network.sh country).
 WPA_COUNTRY=FR

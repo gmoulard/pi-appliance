@@ -26,6 +26,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/console"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
@@ -57,8 +58,16 @@ func main() {
 		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}
 	}
 	server := &http.Server{
-		Addr:              *addr,
-		Handler:           console.Handler(version, catalog, manager, accounts, net),
+		Addr: *addr,
+		Handler: console.Handler(console.Config{
+			Version:    version,
+			Catalog:    catalog,
+			Services:   manager,
+			Accounts:   accounts,
+			Network:    net,
+			Resources:  func() system.Resources { return system.Read(*data) },
+			WizardFile: filepath.Join(*data, "wizard-done"),
+		}),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("console pi-appliance %s sur %s%s", version, *addr, console.BasePath)

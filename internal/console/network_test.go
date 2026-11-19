@@ -49,6 +49,8 @@ func (f *fakeNetwork) Run(_ context.Context, stdin []byte, args ...string) ([]by
 		return []byte(`{"scannedAt": "2026-11-19T10:00:00Z", "networks": [{"ssid": "maison", "signal": 80, "security": "wpa"}]}`), nil
 	case "wired":
 		return []byte(`{"ok": false, "error": "no-cable", "message": "Aucun câble réseau branché, ou la box ne répond pas."}`), errors.New("exit status 1")
+	case "country":
+		return []byte(`{"ok": true, "country": "` + args[1] + `"}`), nil
 	case "wifi-join":
 		f.stdin = string(stdin)
 		close(f.joined)
@@ -71,7 +73,7 @@ func newNetworkFixture(t *testing.T) (fixture, *fakeNetwork) {
 	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}}
 	fake := &fakeNetwork{joined: make(chan struct{})}
 	client := &network.Client{Runner: fake}
-	return fixture{handler: Handler("1.2.3", catalog, manager, accounts, client), accounts: accounts}, fake
+	return fixture{handler: Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, Network: client}), accounts: accounts}, fake
 }
 
 func TestNetworkAdminOnly(t *testing.T) {

@@ -81,6 +81,22 @@ func TestUnreadable(t *testing.T) {
 	}
 }
 
+func TestSetCountry(t *testing.T) {
+	fake := &Fake{Out: map[string]string{"country": `{"ok": true, "country": "BE"}`}}
+	client := &Client{Runner: fake}
+	if _, err := client.SetCountry(context.Background(), "BE"); err != nil {
+		t.Fatal(err)
+	}
+	for _, code := range []string{"", "be", "FRA", "F1", "B;"} {
+		if _, err := client.SetCountry(context.Background(), code); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%q accepté", code)
+		}
+	}
+	if got := strings.Join(fake.Calls, ","); got != "country BE" {
+		t.Fatalf("commandes %s", got)
+	}
+}
+
 func TestValidate(t *testing.T) {
 	for _, request := range []JoinRequest{
 		{},

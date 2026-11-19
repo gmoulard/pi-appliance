@@ -137,6 +137,65 @@ async function loadServices() {
   }));
 }
 
+// Jauges de la mémoire et du disque (spécification 6.2) : ce que le Pi a, ce
+// qui est déjà pris, la part du nouveau service et ce qui resterait.
+const piSection = document.getElementById("piSection");
+const piGauges = document.getElementById("piGauges");
+let resources = { memory: null, disk: null };
+
+function sizeText(mb) {
+  if (Math.abs(mb) >= 1024) {
+    return `${(mb / 1024).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Go`;
+  }
+  return `${Math.round(mb)} Mo`;
+}
+
+function gauge(kind, values, shareMB) {
+  const memory = kind === "memory";
+  const share = shareMB || 0;
+  const left = values.free_mb - share;
+  const color = left < 0 ? "red" : left < values.total_mb * 0.15 ? "orange" : "green";
+  const box = element("div", undefined, `gauge ${color}`);
+  const title = memory ? "Mémoire" : "Disque";
+  box.append(element("p", `${title} : ${sizeText(values.total_mb)} en tout, ${sizeText(values.used_mb)} déjà pris.`));
+  const bar = element("div", undefined, "bar");
+  bar.setAttribute("aria-hidden", "true");
+  const used = element("span", undefined, "used");
+  used.style.width = `${(100 * values.used_mb) / values.total_mb}%`;
+  bar.append(used);
+  if (share > 0) {
+    const part = element("span", undefined, "share");
+    part.style.width = `${(100 * Math.min(share, values.free_mb)) / values.total_mb}%`;
+    bar.append(part);
+  }
+  box.append(bar);
+  const what = memory ? "de mémoire" : "de place sur le disque";
+  if (share === 0) {
+    box.append(element("p", `Il reste ${sizeText(values.free_mb)} ${what}.`, "meta"));
+  } else if (left >= 0) {
+    box.append(element("p", `Ce service prendrait ${sizeText(share)} : il resterait ${sizeText(left)} ${what}.`, "meta"));
+  } else {
+    box.append(element("p", memory
+      ? `Ce service demande ${sizeText(share)} de mémoire, il en manquerait ${sizeText(-left)} : il risque d'être lent. Arrêtez un autre service pour lui faire de la place.`
+      : `Ce service demande ${sizeText(share)} sur le disque, il en manquerait ${sizeText(-left)} : il risque de ne pas s'installer. Désinstallez un service dont vous ne vous servez plus.`, "warning"));
+  }
+  return box;
+}
+
+function gauges(memoryMB, diskMB) {
+  const list = [];
+  if (resources.memory) list.push(gauge("memory", resources.memory, memoryMB));
+  if (resources.disk) list.push(gauge("disk", resources.disk, diskMB));
+  return list;
+}
+
+async function loadResources() {
+  resources = await api("system").catch(() => ({ memory: null, disk: null }));
+  const list = gauges(0, 0);
+  piGauges.replaceChildren(...list);
+  piSection.hidden = list.length === 0 || wizardStep !== null;
+}
+
 async function loadCatalog() {
   const { apps } = await api("catalog");
   for (const app of apps) {
@@ -166,6 +225,12 @@ async function loadCatalog() {
       form.append(label);
     }
     const button = element("button", "Installer");
+    const fit = gauges(app.memory_mb, app.disk_mb);
+    if (fit.length > 0) {
+      const box = element("div");
+      box.append(...fit);
+      form.append(box);
+    }
     form.append(button);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -197,11 +262,17 @@ async function install(app, form, button) {
     lines.push(...(result.warnings || []));
     showMessage(lines, "success");
     await loadServices();
+    await refreshResources();
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
     button.disabled = false;
   }
+}
+
+async function refreshResources() {
+  await loadResources();
+  await loadCatalog();
 }
 
 async function act(service, control, button) {
@@ -241,6 +312,7 @@ async function uninstall(service, button) {
     await api(`services/${encodeURIComponent(service.name)}?data=${keep ? "keep" : "delete"}`, { method: "DELETE" });
     showMessage([`${service.name} est désinstallé${keep ? ", ses données sont gardées" : ""}.`], "success");
     await loadServices();
+    await refreshResources();
   } catch (error) {
     showMessage([error.message], "error");
     button.disabled = false;
@@ -260,6 +332,23 @@ const wifiPasswordField = document.getElementById("wifiPasswordField");
 const wifiScanButton = document.getElementById("wifiScan");
 const wifiOtherButton = document.getElementById("wifiOther");
 const wiredButton = document.getElementById("wired");
+const wifiCountry = document.getElementById("wifiCountry");
+// Pays proposés : ceux des langues de l'interface (spécification 5.3) et les voisins
+// de la France ; le code est celui de la norme ISO 3166.
+const COUNTRIES = {
+  DE: "Allemagne", SA: "Arabie saoudite", AT: "Autriche", BE: "Belgique", BR: "Brésil",
+  CA: "Canada", CN: "Chine", DZ: "Algérie", EG: "Égypte", ES: "Espagne", US: "États-Unis",
+  FR: "France", IN: "Inde", IR: "Iran", IT: "Italie", JP: "Japon", LU: "Luxembourg",
+  MA: "Maroc", MC: "Monaco", NL: "Pays-Bas", PT: "Portugal", GB: "Royaume-Uni",
+  RU: "Russie", SN: "Sénégal", CH: "Suisse", TN: "Tunisie",
+};
+wifiCountry.replaceChildren(...Object.entries(COUNTRIES)
+  .sort((a, b) => a[1].localeCompare(b[1], "fr"))
+  .map(([code, name]) => {
+    const option = element("option", name);
+    option.value = code;
+    return option;
+  }));
 const LAST_ERRORS = {
   "wrong-password": "La dernière connexion a échoué : le Wi-Fi a refusé le mot de passe.",
   "not-found": "La dernière connexion a échoué : ce Wi-Fi est introuvable. Est-il allumé et assez proche ?",
@@ -314,7 +403,32 @@ function showNetworkState(state) {
   apClosesAt = state.accessPoint.open ? Date.now() + state.accessPoint.closesInSeconds * 1000 : 0;
   showApCountdown();
   wiredButton.hidden = !state.wired.connected || state.configured === "wired";
+  if (state.country && !COUNTRIES[state.country]) {
+    const option = element("option", state.country);
+    option.value = state.country;
+    wifiCountry.append(option);
+  }
+  wifiCountry.value = state.country || "FR";
+  wifiCountry.dataset.current = wifiCountry.value;
 }
+
+wifiCountry.addEventListener("change", async () => {
+  wifiCountry.disabled = true;
+  try {
+    const result = await api("network/country", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ country: wifiCountry.value }),
+    });
+    wifiCountry.dataset.current = result.country;
+    showMessage([`Pays du Wi-Fi : ${COUNTRIES[result.country] || result.country}. Cherchez à nouveau les Wi-Fi si le vôtre n'apparaît pas.`], "success");
+  } catch (error) {
+    wifiCountry.value = wifiCountry.dataset.current;
+    showMessage([error.message], "error");
+  } finally {
+    wifiCountry.disabled = false;
+  }
+});
 
 function chooseWifi(network, button) {
   for (const other of wifiList.querySelectorAll("button")) {
@@ -355,13 +469,14 @@ async function loadNetwork() {
     state = await api("network");
   } catch {
     networkSection.hidden = true;
-    return;
+    return null;
   }
   networkSection.hidden = false;
   showNetworkState(state);
   showWifiList(await api("network/wifi").catch(() => ({ networks: [] })));
   clearInterval(networkTimer);
   networkTimer = setInterval(showApCountdown, 30000);
+  return state;
 }
 
 wifiScanButton.addEventListener("click", async () => {
@@ -413,11 +528,95 @@ wiredButton.addEventListener("click", async () => {
   try {
     await api("network/wired", { method: "POST" });
     showMessage(["C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau."], "success");
-    await loadNetwork();
+    const state = await loadNetwork();
+    if (wizardStep === "network" && state && state.configured) {
+      await wizardServices();
+    }
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
     wiredButton.disabled = false;
+  }
+});
+
+// Assistant de premier démarrage (spécification 5.1) : compte administrateur,
+// réseau de la maison, premiers services. Les autres étapes de la
+// spécification (langue, adresse sur internet, utilisateurs, statistiques)
+// viendront avec leurs fonctions.
+const wizardSection = document.getElementById("wizard");
+const wizardHelp = document.getElementById("wizardHelp");
+const wizardNext = document.getElementById("wizardNext");
+const wizardSkip = document.getElementById("wizardSkip");
+const stepNetwork = document.getElementById("stepNetwork");
+const stepServices = document.getElementById("stepServices");
+let wizardStep = null;
+let wizardTimer = null;
+
+function setStep(step) {
+  wizardStep = step;
+  stepNetwork.className = step === "network" ? "current" : "done";
+  stepServices.className = step === "services" ? "current" : "";
+  clearInterval(wizardTimer);
+}
+
+async function startWizard() {
+  wizardSection.hidden = false;
+  servicesSection.hidden = true;
+  catalogSection.hidden = true;
+  piSection.hidden = true;
+  setStep("network");
+  const state = await loadNetwork();
+  if (!state || state.configured) {
+    await wizardServices();
+    return;
+  }
+  wizardHelp.textContent = "Reliez le Pi à votre réseau : choisissez le Wi-Fi de la maison ci-dessous, ou le câble s'il est branché sur votre box.";
+  wizardNext.hidden = true;
+  wizardSkip.hidden = false;
+  // Le choix se fait parfois sans réponse de la page (connexion au Wi-Fi) :
+  // l'étape avance dès que l'état du réseau le montre.
+  wizardTimer = setInterval(async () => {
+    const current = await api("network").catch(() => null);
+    if (current && current.configured && wizardStep === "network") {
+      await loadNetwork();
+      await wizardServices();
+    }
+  }, 5000);
+}
+
+async function wizardServices() {
+  setStep("services");
+  networkSection.hidden = true;
+  wizardHelp.textContent = "Choisissez vos premiers services dans la marketplace ci-dessous. Vous pourrez en ajouter d'autres plus tard.";
+  wizardSkip.hidden = true;
+  wizardNext.textContent = "Terminer la mise en route";
+  wizardNext.hidden = false;
+  servicesSection.hidden = false;
+  catalogSection.hidden = false;
+  await loadResources();
+  await loadCatalog();
+  await loadServices();
+}
+
+wizardSkip.addEventListener("click", async () => {
+  if (!window.confirm("Passer le choix du réseau ? Le Wi-Fi « pi-appliance » restera ouvert, au plus 24 heures, pour le faire plus tard.")) {
+    return;
+  }
+  await wizardServices();
+});
+
+wizardNext.addEventListener("click", async () => {
+  wizardNext.disabled = true;
+  try {
+    await api("wizard", { method: "POST" });
+    wizardStep = null;
+    wizardSection.hidden = true;
+    showMessage(["Votre appliance est prête. Vous retrouverez tout ici : vos services, la marketplace et le réseau."], "success");
+    await showConsole(currentAccount, false);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    wizardNext.disabled = false;
   }
 });
 
@@ -470,7 +669,11 @@ function showAuth(mode) {
   logoutButton.hidden = true;
   emailReminder.hidden = true;
   networkSection.hidden = true;
+  piSection.hidden = true;
+  wizardSection.hidden = true;
+  wizardStep = null;
   clearInterval(networkTimer);
+  clearInterval(wizardTimer);
 }
 
 authForm.addEventListener("submit", async (event) => {
@@ -496,7 +699,8 @@ authForm.addEventListener("submit", async (event) => {
       body: JSON.stringify(body),
     });
     message.hidden = true;
-    await showConsole(account);
+    const session = await api("session");
+    await showConsole(account, session.wizard);
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -510,7 +714,7 @@ logoutButton.addEventListener("click", async () => {
   showAuth("login");
 });
 
-async function showConsole(account) {
+async function showConsole(account, wizard) {
   currentAccount = account;
   authSection.hidden = true;
   logoutButton.hidden = false;
@@ -518,8 +722,13 @@ async function showConsole(account) {
   catalogSection.hidden = account.role !== "admin";
   emailReminder.hidden = account.email_verified;
   emailReminder.textContent = `Votre adresse ${account.email} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.`;
+  if (account.role === "admin" && wizard) {
+    await startWizard();
+    return;
+  }
   if (account.role === "admin") {
     await loadNetwork();
+    await loadResources();
   }
   await loadCatalog();
   await loadServices();
@@ -538,7 +747,7 @@ api("health")
     } else if (!session.account) {
       showAuth("login");
     } else {
-      await showConsole(session.account);
+      await showConsole(session.account, session.wizard);
     }
   })
   .catch((error) => {
