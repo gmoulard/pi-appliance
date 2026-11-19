@@ -61,6 +61,8 @@ jobs:
           exit "$status"
       - name: YAML
         run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml system
+      - name: Accès à la console dans Traefik
+        run: sh system/tests/traefik-console-test.sh
       - name: Règles du point d'accès
         run: sh system/tests/ap-rules-test.sh
       - name: Pare-feu du point d'accès
