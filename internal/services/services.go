@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -201,15 +202,19 @@ func (m *Manager) writeFiles(dir string, app marketplace.App, name, address stri
 
 func (m *Manager) override(app marketplace.App, name, address string) map[string]any {
 	router := "traefik.http.routers.pi-" + name
+	labels := map[string]string{
+		"traefik.enable":         "true",
+		"traefik.docker.network": Network,
+		router + ".rule":         "Host(`" + address + "`)",
+		router + ".entrypoints":  "websecure",
+		router + ".tls":          "true",
+		"traefik.http.services.pi-" + name + ".loadbalancer.server.port": strconv.Itoa(app.Port),
+	}
+	if m.usesLetsEncrypt() {
+		labels[router+".tls.certresolver"] = "letsencrypt"
+	}
 	service := map[string]any{
-		"labels": map[string]string{
-			"traefik.enable":         "true",
-			"traefik.docker.network": Network,
-			router + ".rule":         "Host(`" + address + "`)",
-			router + ".entrypoints":  "websecure",
-			router + ".tls":          "true",
-			"traefik.http.services.pi-" + name + ".loadbalancer.server.port": strconv.Itoa(app.Port),
-		},
+		"labels":   labels,
 		"networks": []string{"default", Network},
 	}
 	if app.ID == "site-web" {
@@ -222,6 +227,19 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 		"services": map[string]any{app.Service: service},
 		"networks": map[string]any{Network: map[string]any{"external": true}},
 	}
+}
+
+func (m *Manager) usesLetsEncrypt() bool {
+	domain := strings.TrimSuffix(strings.ToLower(strings.TrimSpace(m.Domain)), ".")
+	if domain == "" || net.ParseIP(domain) != nil || !strings.Contains(domain, ".") {
+		return false
+	}
+	for _, localSuffix := range []string{".local", ".localhost", ".test", ".invalid", ".example"} {
+		if strings.HasSuffix(domain, localSuffix) {
+			return false
+		}
+	}
+	return true
 }
 
 func (m *Manager) List() ([]Instance, error) {

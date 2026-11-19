@@ -53,15 +53,13 @@ providers:
     directory: /etc/traefik/dynamic
     watch: true
 
-# Let's Encrypt, à l'étape Internet (spécification 7) : décommenter ce bloc, puis
-# ajouter aux routeurs le label « traefik.http.routers.<nom>.tls.certresolver=letsencrypt ».
-# Le défi HTTP passe par le port 80, déjà ouvert. Le certificat local reste
-# utilisé pour les adresses sans certificat (pi-appliance.local, adresse IP).
-#
-# certificatesResolvers:
-#   letsencrypt:
-#     acme:
-#       email: administrateur@example.org
-#       storage: /var/lib/traefik/acme.json
-#       httpChallenge:
-#         entryPoint: web
+# Let's Encrypt pour les noms de domaine publics. Le défi HTTP passe par le
+# port 80 ; les routeurs des services reçoivent le label certresolver seulement
+# si leur domaine n'est pas local ou une adresse IP. Le certificat local reste
+# utilisé pour pi-appliance.local et les adresses IP.
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      storage: /var/lib/traefik/acme.json
+      httpChallenge:
+        entryPoint: web

@@ -7,7 +7,7 @@
 - Une console en français avec création du compte administrateur, connexion et assistant de première mise en route.
 - La configuration du réseau filaire ou du Wi-Fi depuis la console, ainsi qu'un point d'accès Wi-Fi de configuration au premier démarrage de l'image.
 - Un tableau de bord avec l'état du Pi, des graphiques et des alertes de mémoire et de stockage.
-- Une marketplace avec quatre applications : Nextcloud, un site web, DokuWiki et Etherpad.
+- Une marketplace avec les applications installables du catalogue.
 - L'installation de plusieurs instances, les commandes de démarrage et d'arrêt, la mise à jour des applications avec retour arrière, et le choix de conserver ou supprimer leurs données à la désinstallation.
 - La gestion d'un disque USB pour les données des services.
 
@@ -22,6 +22,8 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 ## Télécharger et installer l'image expérimentale {#telecharger-limage-experimentale}
 
 Le workflow GitHub Actions a construit l'image avec succès le 19 novembre 2026. L'artefact **`pi-appliance-image`** comprend l'image et son fichier de somme SHA-256 ; il expire le **3 décembre 2026**. [Télécharger directement l'image et sa somme de contrôle](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083/artifacts/14559608001). Il s'agit d'un artefact temporaire, pas d'une version stable. Le fichier image est `pi-appliance-2026-11-19-48c047d.img.xz` (environ 720 Mio compressé, 3,3 Gio une fois décompressé).
+
+Dans ce guide, le Raspberry Pi s'appelle **controlTower**. Attention : le nom réseau intégré à cette image reste `pi-appliance` ; pour ouvrir la console, utilisez donc `pi-appliance.local`, et non `controlTower.local`.
 
 L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte micro-SD de 16 Go ou plus, un ordinateur et [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Le flashage efface entièrement la carte SD.
 
@@ -43,9 +45,17 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 
    Ne flashez pas l'image si la vérification échoue.
 3. Décompressez le fichier `.img.xz` avec 7-Zip pour obtenir le fichier `.img`.
-4. telecharger [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
-5. Insérez la carte dans le Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement.
+4. Téléchargez et ouvrez [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
+5. Insérez la carte dans le Raspberry Pi **controlTower** et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement.
 6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, ouvrez `https://pi-appliance.local/pi-appliance/` depuis le réseau de la maison.
+
+7. Dans la console, faites défiler la page sous **Mes services** jusqu'à la rubrique **Marketplace**. Si vous êtes encore dans l'assistant de première mise en route, choisissez **Vos premiers services** : il affiche cette même rubrique. Sélectionnez une application, choisissez son nom puis cliquez sur **Installer**. Une adresse locale comme `www.pi-appliance.local` apparaît dans **Mes services** quand l'installation réussit. Pour un site web, trois méthodes permettent de déposer les fichiers :
+
+   - **ZIP** : connectez-vous comme administrateur, ouvrez la carte du site puis choisissez **Déposer un ZIP**. Envoyez une archive de 256 Mio maximum. Son contenu remplace intégralement les fichiers du site ; les chemins dangereux et les liens symboliques sont refusés.
+   - **Nextcloud** : depuis un compte administrateur Nextcloud, ajoutez dans les paramètres de stockage externe le dossier `/srv/pi-appliance/services/<nom-du-site>/www`, accessible au conteneur Nextcloud. Les fichiers placés dans ce dossier sont servis directement par Apache.
+   - **FTP** : utilisez le compte `pi`, le port `2121` par défaut et le mot de passe FTP affiché une seule fois à la fin de l'installation. Un autre port peut être choisi au moment de l'installation du site.
+
+Le compte FTP est réservé au contenu du site. Si vous perdez son mot de passe, désinstallez puis réinstallez le site avec **Garder les données** pour créer une nouvelle installation avec de nouvelles données.
 
 La partition, le démarrage et le portail de cette image restent à valider sur du matériel réel. L'accès aux applications depuis internet n'est pas encore disponible.
 
@@ -66,6 +76,7 @@ Pour construire l'image système, utiliser le workflow [Image](https://github.co
 
 ## Pour aller plus loin
 
+- [Installation du plan de contrôle](installation.html) : Docker, Traefik, console et services systemd sur un Raspberry Pi OS existant.
 - [Marketplace](marketplace.html) : catalogue actuel, applications envisagées et guide de contribution.
 - [Spécification](specification.html) : fonctionnement visé par le projet.
 - [Avancement](TODO.html) : fonctions réalisées et essais restants.

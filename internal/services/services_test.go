@@ -115,6 +115,9 @@ func TestInstall(t *testing.T) {
 	if labels["traefik.http.routers.pi-cloud.rule"] != "Host(`cloud.maison.example.org`)" || labels["traefik.http.services.pi-cloud.loadbalancer.server.port"] != "80" {
 		t.Fatalf("labels %v", labels)
 	}
+	if labels["traefik.http.routers.pi-cloud.tls.certresolver"] != "letsencrypt" {
+		t.Fatalf("résolveur de certificat absent des labels : %v", labels)
+	}
 	if !runner.called("compose --project-name pi-cloud --env-file .env --file compose.yaml --file pi-appliance.override.json up --detach --wait") {
 		t.Fatalf("appels %v", runner.calls)
 	}
@@ -124,6 +127,18 @@ func TestInstall(t *testing.T) {
 	instances, err := m.List()
 	if err != nil || len(instances) != 1 || instances[0].Name != "cloud" {
 		t.Fatalf("liste %v %v", instances, err)
+	}
+}
+
+func TestLocalDomainDoesNotUseLetsEncrypt(t *testing.T) {
+	for _, domain := range []string{"", "pi-appliance.local", "localhost", "192.168.1.20"} {
+		manager := &Manager{Domain: domain}
+		if manager.usesLetsEncrypt() {
+			t.Errorf("le domaine local %q ne doit pas demander de certificat public", domain)
+		}
+	}
+	if !(&Manager{Domain: "maison.pi-appliance.com"}).usesLetsEncrypt() {
+		t.Fatal("un domaine public doit utiliser Let's Encrypt")
 	}
 }
 

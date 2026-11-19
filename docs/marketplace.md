@@ -6,14 +6,17 @@ La marketplace regroupe les applications que l'on peut installer et gérer depui
 
 ## Applications déjà dans le catalogue
 
-| Application | À quoi sert-elle ? | État |
-|-------------|-------------------|------|
-| [Nextcloud](https://nextcloud.com/) | Fichiers, photos, agenda et contacts | Manifeste présent ; à tester sur un vrai Pi |
-| Site web (Apache + PHP) | Héberger un site en pages simples ou en PHP | Manifeste présent ; transfert des fichiers du site à venir |
-| [DokuWiki](https://www.dokuwiki.org/) | Créer et partager des pages de wiki | Manifeste présent ; à tester sur un vrai Pi |
-| [Etherpad](https://etherpad.org/) | Écrire un texte à plusieurs en temps réel | Manifeste présent ; liens de partage sans compte à venir |
+<div id="marketplace-catalog" data-catalog-index="{{ '/static/pi-appliance-catalog.json' | relative_url }}">
+<p id="marketplace-catalog-status" role="status">Chargement du catalogue…</p>
+<table id="marketplace-catalog-table" hidden>
+<thead><tr><th>Application</th><th>Description</th><th>Catégorie</th><th>Mémoire</th><th>Disque</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
 
-Les manifestes de ces applications sont dans [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). La console gère plusieurs instances, leur démarrage et leur arrêt, les mises à jour avec retour arrière, ainsi que la conservation ou la suppression des données à la désinstallation.
+Cette liste est chargée depuis le catalogue JSON généré à partir des manifestes de [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). Après toute modification d'un manifeste, régénérez le fichier avec `go run ./cmd/marketplace-json` depuis la racine du dépôt. Le nom du fichier contient le MD5 de son contenu ; l'index `docs/static/pi-appliance-catalog.json` indique la version courante.
+
+La console gère plusieurs instances, leur démarrage et leur arrêt, les mises à jour avec retour arrière, ainsi que la conservation ou la suppression des données à la désinstallation.
 
 ## Ce qui est prévu ou à l'étude
 

@@ -49,5 +49,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </nav>
 <p>Logiciel libre, licence AGPL-3.0.</p>
 </footer>
+{% if page.name == "TODO.md" %}
+<script src="{{ '/todo-filter.js' | relative_url }}" defer></script>
+{% elsif page.name == "marketplace.md" or page.name == "index.html" %}
+<script src="{{ '/marketplace-catalog.js' | relative_url }}" defer></script>
+{% endif %}
 </body>
 </html>

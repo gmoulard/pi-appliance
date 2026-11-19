@@ -33,7 +33,7 @@ services:
       - /etc/pi-appliance/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - /etc/pi-appliance/traefik/dynamic:/etc/traefik/dynamic:ro
       - /var/lib/pi-appliance/system/tls:/etc/traefik/tls:ro
-      # Certificats Let's Encrypt (acme.json), à l'étape Internet.
+      # Certificats Let's Encrypt (acme.json).
       - /var/lib/pi-appliance/system/traefik:/var/lib/traefik
       - /var/run/docker.sock:/var/run/docker.sock:ro
     logging:

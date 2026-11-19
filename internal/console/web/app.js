@@ -527,6 +527,30 @@ async function refreshResources() {
   await loadCatalog();
 }
 
+function chooseSiteArchive(service, button) {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".zip,application/zip";
+  input.addEventListener("change", async () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (!window.confirm(`Remplacer tout le contenu du site ${service.name} par « ${file.name} » ?`)) return;
+    button.disabled = true;
+    showMessage([`Déploiement du ZIP sur ${service.name}…`], "info");
+    const data = new FormData();
+    data.append("archive", file);
+    try {
+      const result = await api(`services/${encodeURIComponent(service.name)}/files`, { method: "POST", body: data });
+      showMessage([result.message], "success");
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+  input.click();
+}
+
 async function act(service, control, button) {
   if (control.action === "update" && !window.confirm(`Mettre à jour ${service.name} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.`)) {
     return;
