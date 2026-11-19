@@ -63,6 +63,8 @@ jobs:
         run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml system
       - name: Règles du point d'accès
         run: sh system/tests/ap-rules-test.sh
+      - name: Disques USB
+        run: sh system/tests/storage-test.sh
       - name: pi-gen (préparation, sans construction)
         run: |
           set -eu

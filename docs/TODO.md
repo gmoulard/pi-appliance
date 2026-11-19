@@ -97,7 +97,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Tableau de bord : charge, température, mémoire, disque, état des services, graphiques sur 24 heures et 30 jours, historique horaire écrit une fois par heure (`internal/metrics`) ; à vérifier sur un vrai Pi (capteur de température, interfaces réseau, mémoire prise sur le Zero 2 W). Adresse publique, certificats et mode d'accès viendront avec l'étape Internet.
 - [ ] Canaux de version stable et bêta.
 - [ ] Traduction dans les 12 langues, arabe et persan de droite à gauche.
-- [ ] Disque USB : détection, déplacement des données, alerte de remplissage de la carte SD.
+- [x] Disque USB : détection, formatage en ext4 avec accord, déplacement des données de Docker (volumes et images), alerte de remplissage de la carte SD dans la console (`storage.sh`, `internal/storage`) ; à vérifier sur un vrai Pi (copie, redémarrage de Docker et de Traefik, disque débranché au démarrage). Reste : revenir sur la carte SD, changer de disque, alerte par e-mail (avec le service d'e-mails).
 
 ### Marketplace (6)
 
@@ -108,7 +108,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Mise à jour d'un service avec retour arrière automatique.
 - [ ] Copie des données d'un service avant sa mise à jour, pour un retour arrière complet (avec les sauvegardes, 9.1).
 - [x] Avertissement mémoire sur les petits Pi.
-- [x] Jauges de mémoire et de disque : ce que le Pi a, ce qui est utilisé, ce que prendrait le service et ce qui resterait après l'installation (6.2) ; aussi dans « Mon Pi ». Le conseil de brancher un disque USB viendra avec le disque USB.
+- [x] Jauges de mémoire et de disque : ce que le Pi a, ce qui est utilisé, ce que prendrait le service et ce qui resterait après l'installation (6.2) ; aussi dans « Mon Pi », avec le conseil de brancher un disque USB quand la place manque.
 - [x] Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.
 - [x] Application Nextcloud (manifeste `marketplace/nextcloud/`).
 - [x] Applications site web Apache/PHP, DokuWiki, Etherpad (manifestes `marketplace/site-web/`, `dokuwiki/`, `etherpad/`).

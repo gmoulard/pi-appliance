@@ -50,6 +50,16 @@ func TestRead(t *testing.T) {
 	}
 }
 
+func TestMounted(t *testing.T) {
+	mounts := "/dev/mmcblk0p2 / ext4 rw 0 0\n/dev/sda1 /mnt/pi-appliance-data ext4 rw,noatime 0 0\n"
+	if !mounted(strings.NewReader(mounts), "/mnt/pi-appliance-data") || mounted(strings.NewReader(mounts), "/mnt") {
+		t.Fatal("points de montage mal lus")
+	}
+	if MountedDisk(filepath.Join(t.TempDir(), "absent")) != nil {
+		t.Fatal("jauge d'un dossier où rien n'est monté")
+	}
+}
+
 func TestParseTemperature(t *testing.T) {
 	if celsius := parseTemperature(strings.NewReader("48312\n")); celsius == nil || *celsius != 48.3 {
 		t.Fatalf("%v", celsius)

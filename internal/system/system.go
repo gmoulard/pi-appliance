@@ -40,7 +40,10 @@ type Gauge struct {
 // développement, capteur absent).
 type Resources struct {
 	Memory *Gauge `json:"memory"`
-	Disk   *Gauge `json:"disk"`
+	// Disk : la carte SD (disque du dossier des données de la console).
+	Disk *Gauge `json:"disk"`
+	// USBDisk : le disque USB des données des services, s'il y en a un (section 4).
+	USBDisk *Gauge `json:"usb_disk"`
 	// CPUPercent : part du temps où le processeur a travaillé depuis la
 	// mesure précédente, tous cœurs confondus (la « charge » du tableau de bord).
 	CPUPercent *float64 `json:"cpu_percent"`
@@ -51,6 +54,7 @@ type Resources struct {
 // Fichiers du noyau lus par le paquet ; des variables pour les tests.
 var (
 	meminfoPath     = "/proc/meminfo"
+	mountsPath      = "/proc/self/mounts"
 	statPath        = "/proc/stat"
 	thermalPath     = "/sys/class/thermal/thermal_zone0/temp"
 	netDevPath      = "/proc/net/dev"
@@ -72,6 +76,30 @@ func Read(dir string) Resources {
 		file.Close()
 	}
 	return resources
+}
+
+// MountedDisk : jauge du disque monté sur dir ; nil si rien n'y est monté
+// (sinon ce serait la carte SD qui porte le dossier vide).
+func MountedDisk(dir string) *Gauge {
+	file, err := os.Open(mountsPath)
+	if err != nil {
+		return nil
+	}
+	defer file.Close()
+	if !mounted(file, dir) {
+		return nil
+	}
+	return disk(dir)
+}
+
+func mounted(r io.Reader, dir string) bool {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		if fields := strings.Fields(scanner.Text()); len(fields) >= 2 && fields[1] == dir {
+			return true
+		}
+	}
+	return false
 }
 
 // parseMeminfo : la mémoire libre est MemAvailable (ce que le noyau peut

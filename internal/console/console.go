@@ -34,6 +34,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -77,6 +78,17 @@ type CountryRequest struct {
 	Country string `json:"country"`
 }
 
+// StorageUseRequest : placer les données des services sur cette partition ext4.
+type StorageUseRequest struct {
+	Partition string `json:"partition"`
+}
+
+// StorageFormatRequest : effacer ce disque USB ; Erase confirme que son contenu sera perdu.
+type StorageFormatRequest struct {
+	Disk  string `json:"disk"`
+	Erase bool   `json:"erase"`
+}
+
 // SessionState dit à l'interface quoi afficher : création du compte administrateur,
 // réinitialisation par le fichier reset, connexion, assistant de premier démarrage
 // (administrateur seulement) ou console.
@@ -96,6 +108,8 @@ type Config struct {
 	// Network peut être nil (poste de développement) : les écrans du réseau
 	// disent alors que le réseau ne se règle pas ici.
 	Network *network.Client
+	// Storage peut être nil (poste de développement) : pas de disque USB.
+	Storage *storage.Client
 	// Resources lit l'état du Pi ; nil : jauges absentes.
 	Resources func() system.Resources
 	// History : historique des graphiques sur 30 jours ; nil : pas de graphiques.
@@ -135,6 +149,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/system", c.adminOnly(c.resources))
 	mux.HandleFunc("GET "+BasePath+"/api/system/history", c.adminOnly(c.history))
 	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
+	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
+	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
+	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
@@ -572,6 +589,68 @@ func writeNetworkError(w http.ResponseWriter, err error) {
 	default:
 		log.Printf("réseau : %v", err)
 		writeError(w, http.StatusInternalServerError, "Le réseau du Pi ne répond pas.")
+	}
+}
+
+// Disque USB des données des services (spécification 4), réservé à l'administrateur.
+
+func (c *console) storageStatus(w http.ResponseWriter, r *http.Request) {
+	if c.Storage == nil {
+		writeError(w, http.StatusServiceUnavailable, "Le disque USB ne se règle pas depuis cette console.")
+		return
+	}
+	status, err := c.Storage.Status(r.Context())
+	if err != nil {
+		writeStorageError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, status)
+}
+
+func (c *console) storageUse(w http.ResponseWriter, r *http.Request) {
+	var request StorageUseRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	c.storageStart(w, r, func(ctx context.Context) error { return c.Storage.Use(ctx, request.Partition) })
+}
+
+func (c *console) storageFormat(w http.ResponseWriter, r *http.Request) {
+	var request StorageFormatRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	if !request.Erase {
+		writeError(w, http.StatusBadRequest, "Confirmez que le contenu du disque sera effacé.")
+		return
+	}
+	c.storageStart(w, r, func(ctx context.Context) error { return c.Storage.Format(ctx, request.Disk) })
+}
+
+// storageStart lance le déplacement, qui se poursuit après la réponse : Docker
+// s'arrête pendant la copie, donc Traefik et l'accès à la console avec lui.
+func (c *console) storageStart(w http.ResponseWriter, r *http.Request, start func(context.Context) error) {
+	if c.Storage == nil {
+		writeError(w, http.StatusServiceUnavailable, "Le disque USB ne se règle pas depuis cette console.")
+		return
+	}
+	if err := start(r.Context()); err != nil {
+		writeStorageError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusAccepted, map[string]bool{"started": true})
+}
+
+func writeStorageError(w http.ResponseWriter, err error) {
+	var failure storage.Failure
+	switch {
+	case errors.As(err, &failure):
+		writeJSON(w, http.StatusConflict, map[string]string{"error": failure.Message, "code": failure.Code})
+	case errors.Is(err, storage.ErrInvalid):
+		writeError(w, http.StatusBadRequest, "Ce disque est inconnu.")
+	default:
+		log.Printf("disque USB : %v", err)
+		writeError(w, http.StatusInternalServerError, "Les disques du Pi ne répondent pas.")
 	}
 }
 

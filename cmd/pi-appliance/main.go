@@ -32,6 +32,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -44,6 +45,7 @@ func main() {
 	domain := flag.String("domain", "pi-appliance.local", "adresse de l'appliance, suffixe de l'adresse de chaque service")
 	resetFile := flag.String("reset-file", "/boot/firmware/reset", "fichier déposé sur la carte SD pour réinitialiser le mot de passe administrateur (vide : désactivé)")
 	networkScript := flag.String("network-script", network.DefaultScript, "script du réseau du Pi (vide : réseau non réglable depuis la console)")
+	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")
 	flag.Parse()
 	catalog, err := marketplace.Builtin()
 	if err != nil {
@@ -63,6 +65,15 @@ func main() {
 	if *networkScript != "" {
 		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}
 	}
+	var disks *storage.Client
+	if *storageScript != "" {
+		disks = &storage.Client{Runner: network.Script(*storageScript)}
+	}
+	resources := func() system.Resources {
+		r := system.Read(*data)
+		r.USBDisk = system.MountedDisk(storage.DataMount)
+		return r
+	}
 	history := &metrics.History{Path: filepath.Join(*data, "history.json")}
 	if err := history.Load(); err != nil {
 		log.Printf("historique illisible, il repart de zéro : %v", err)
@@ -71,7 +82,7 @@ func main() {
 	defer stop()
 	measured := make(chan struct{})
 	go func() {
-		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(*data) }, log.Printf)
+		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(resources()) }, log.Printf)
 		close(measured)
 	}()
 	server := &http.Server{
@@ -82,7 +93,8 @@ func main() {
 			Services:   manager,
 			Accounts:   accounts,
 			Network:    net,
-			Resources:  func() system.Resources { return system.Read(*data) },
+			Storage:    disks,
+			Resources:  resources,
 			History:    history,
 			WizardFile: filepath.Join(*data, "wizard-done"),
 		}),

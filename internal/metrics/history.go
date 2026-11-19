@@ -270,14 +270,18 @@ func rounded(value float64) *float64 {
 	return &value
 }
 
-// Measure prend une mesure de l'état du Pi ; dir est le dossier des données.
-func Measure(dir string) Sample {
-	resources := system.Read(dir)
+// Measure fait une mesure de l'état du Pi lu par system.Read. Le disque est
+// celui des données des services : le disque USB s'il y en a un, sinon la carte SD.
+func Measure(resources system.Resources) Sample {
 	sample := Sample{CPUPercent: resources.CPUPercent, TemperatureC: resources.TemperatureC}
-	if gauge := resources.Memory; gauge != nil && gauge.TotalMB > 0 {
-		sample.MemoryPercent = rounded(100 * float64(gauge.UsedMB) / float64(gauge.TotalMB))
+	if memory := resources.Memory; memory != nil && memory.TotalMB > 0 {
+		sample.MemoryPercent = rounded(100 * float64(memory.UsedMB) / float64(memory.TotalMB))
 	}
-	if gauge := resources.Disk; gauge != nil && gauge.TotalMB > 0 {
+	gauge := resources.Disk
+	if resources.USBDisk != nil {
+		gauge = resources.USBDisk
+	}
+	if gauge != nil && gauge.TotalMB > 0 {
 		sample.DiskPercent = rounded(100 * float64(gauge.UsedMB) / float64(gauge.TotalMB))
 	}
 	sample.Received, sample.Sent, sample.Network = system.NetworkBytes()

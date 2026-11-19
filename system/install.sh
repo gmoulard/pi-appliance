@@ -45,7 +45,8 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y --no-install-recommends \
 	ca-certificates curl gnupg jq openssl iw \
-	network-manager dnsmasq-base avahi-daemon
+	network-manager dnsmasq-base avahi-daemon \
+	fdisk e2fsprogs
 
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc.tmp
@@ -64,6 +65,10 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
+# Données des services sur un disque USB (storage.sh) : le réglage de Docker
+# survit à une réinstallation, sinon Docker repartirait à vide sur la carte SD.
+data_root=$(jq -r '."data-root" // empty' /etc/docker/daemon.json 2>/dev/null || true)
+
 # Fichiers de system/, aux mêmes chemins sur le Pi.
 for dir in etc usr; do
 	(cd "$here/$dir" && find . -type d) | while read -r d; do
@@ -78,6 +83,10 @@ for dir in etc usr; do
 		install -m "$mode" "$here/$dir/$f" "/$dir/$f"
 	done
 done
+if [ -n "$data_root" ]; then
+	jq --arg root "$data_root" '. + {"data-root": $root}' /etc/docker/daemon.json >/etc/docker/daemon.json.tmp
+	mv /etc/docker/daemon.json.tmp /etc/docker/daemon.json
+fi
 install -m 0755 "$binary" /usr/local/bin/pi-appliance
 if [ -n "$archive" ]; then
 	install -D -m 0644 "$archive" /usr/local/share/pi-appliance/traefik-image.tar

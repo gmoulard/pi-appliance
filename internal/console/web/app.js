@@ -142,7 +142,8 @@ async function loadServices() {
 // qui est déjà pris, la part du nouveau service et ce qui resterait.
 const piSection = document.getElementById("piSection");
 const piGauges = document.getElementById("piGauges");
-let resources = { memory: null, disk: null };
+let resources = { memory: null, disk: null, usb_disk: null };
+const GAUGE_TITLES = { memory: "Mémoire", disk: "Carte SD", usb: "Disque USB" };
 
 function sizeText(mb) {
   if (Math.abs(mb) >= 1024) {
@@ -157,7 +158,7 @@ function gauge(kind, values, shareMB) {
   const left = values.free_mb - share;
   const color = left < 0 ? "red" : left < values.total_mb * 0.15 ? "orange" : "green";
   const box = element("div", undefined, `gauge ${color}`);
-  const title = memory ? "Mémoire" : "Disque";
+  const title = GAUGE_TITLES[kind];
   box.append(element("p", `${title} : ${sizeText(values.total_mb)} en tout, ${sizeText(values.used_mb)} déjà pris.`));
   const bar = element("div", undefined, "bar");
   bar.setAttribute("aria-hidden", "true");
@@ -170,15 +171,25 @@ function gauge(kind, values, shareMB) {
     bar.append(part);
   }
   box.append(bar);
-  const what = memory ? "de mémoire" : "de place sur le disque";
+  const what = memory ? "de mémoire" : kind === "usb" ? "de place sur le disque USB" : "de place sur la carte SD";
   if (share === 0) {
     box.append(element("p", `Il reste ${sizeText(values.free_mb)} ${what}.`, "meta"));
+    // Alerte de remplissage (spécification 4) : la carte SD, ou le disque USB.
+    if (!memory && color !== "green") {
+      box.append(element("p", kind === "usb"
+        ? "Le disque USB se remplit : désinstallez les services dont vous ne vous servez plus, ou utilisez un disque plus grand."
+        : resources.usb_disk
+          ? "La carte SD se remplit."
+          : "La carte SD se remplit : branchez un disque USB, la console vous proposera d'y placer les données de vos services.", "warning"));
+    }
   } else if (left >= 0) {
     box.append(element("p", `Ce service prendrait ${sizeText(share)} : il resterait ${sizeText(left)} ${what}.`, "meta"));
   } else {
     box.append(element("p", memory
       ? `Ce service demande ${sizeText(share)} de mémoire, il en manquerait ${sizeText(-left)} : il risque d'être lent. Arrêtez un autre service pour lui faire de la place.`
-      : `Ce service demande ${sizeText(share)} sur le disque, il en manquerait ${sizeText(-left)} : il risque de ne pas s'installer. Désinstallez un service dont vous ne vous servez plus.`, "warning"));
+      : `Ce service demande ${sizeText(share)} sur le disque, il en manquerait ${sizeText(-left)} : il risque de ne pas s'installer. ${resources.usb_disk
+        ? "Désinstallez un service dont vous ne vous servez plus."
+        : "Branchez un disque USB pour avoir plus de place, ou désinstallez un service dont vous ne vous servez plus."}`, "warning"));
   }
   return box;
 }
@@ -186,18 +197,25 @@ function gauge(kind, values, shareMB) {
 function gauges(memoryMB, diskMB) {
   const list = [];
   if (resources.memory) list.push(gauge("memory", resources.memory, memoryMB));
-  if (resources.disk) list.push(gauge("disk", resources.disk, diskMB));
+  // Les données des services vont sur le disque USB s'il y en a un.
+  if (resources.usb_disk) {
+    list.push(gauge("usb", resources.usb_disk, diskMB));
+    if (resources.disk) list.push(gauge("disk", resources.disk, 0));
+  } else if (resources.disk) {
+    list.push(gauge("disk", resources.disk, diskMB));
+  }
   return list;
 }
 
 async function loadResources() {
-  resources = await api("system").catch(() => ({ memory: null, disk: null }));
+  resources = await api("system").catch(() => ({ memory: null, disk: null, usb_disk: null }));
   const list = gauges(0, 0);
   piGauges.replaceChildren(...list);
   const tiles = nowTiles();
   piNow.replaceChildren(...tiles);
   piSection.hidden = list.length + tiles.length === 0 || wizardStep !== null;
   if (!piSection.hidden) {
+    await loadStorage();
     await loadHistory();
   }
 }
@@ -542,6 +560,122 @@ async function uninstall(service, button) {
     showMessage([error.message], "error");
     button.disabled = false;
   }
+}
+
+// Disque USB (spécification 4) : la console propose d'y placer les données des
+// services. La copie arrête les services, et l'accès à la console avec eux.
+const storageBox = document.getElementById("storageBox");
+const storageState = document.getElementById("storageState");
+const storageDisks = document.getElementById("storageDisks");
+let storageTimer = null;
+
+function diskName(disk) {
+  const name = disk.model || disk.label || "Disque USB";
+  return `${name} (${sizeText(disk.sizeMB)})`;
+}
+
+function watchStorage() {
+  clearInterval(storageTimer);
+  storageTimer = setInterval(async () => {
+    const done = await loadStorage().catch(() => false);
+    if (done) {
+      clearInterval(storageTimer);
+      storageTimer = null;
+      await refreshResources().catch(() => null);
+    }
+  }, 10000);
+}
+
+async function startMove(path, body, disk) {
+  try {
+    await api(path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    showMessage([
+      `Copie des données sur ${diskName(disk)}… Vos services sont arrêtés pendant la copie, qui peut prendre de quelques minutes à une heure.`,
+      "Cette page peut ne plus répondre pendant ce temps : revenez-y plus tard, elle se mettra à jour toute seule.",
+    ], "info");
+    watchStorage();
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+  await loadStorage().catch(() => null);
+}
+
+function useDisk(disk) {
+  if (!window.confirm(`Placer les données de vos services sur ${diskName(disk)} ?\n\nVos services seront arrêtés pendant la copie. Ensuite, le disque devra rester branché : sans lui, les services ne démarrent pas.`)) {
+    return;
+  }
+  startMove("storage/use", { partition: disk.partition }, disk);
+}
+
+function formatDisk(disk) {
+  if (!window.confirm(`Tout le contenu de ${diskName(disk)} va être effacé, pour le préparer à recevoir les données de vos services. Continuer ?`)) {
+    return;
+  }
+  if (!window.confirm(`Dernière vérification : les fichiers qui sont sur ${diskName(disk)} seront perdus définitivement. Effacer le disque ?`)) {
+    return;
+  }
+  startMove("storage/format", { disk: disk.device, erase: true }, disk);
+}
+
+const MOVE_STATES = {
+  starting: "Préparation de la copie des données sur le disque USB…",
+  formatting: "Préparation du disque USB…",
+  copying: "Copie des données sur le disque USB… Vos services sont arrêtés pendant la copie.",
+};
+
+// loadStorage rend vrai quand un déplacement vient de se terminer.
+async function loadStorage() {
+  let status;
+  try {
+    status = await api("storage");
+  } catch {
+    storageBox.hidden = true;
+    return false;
+  }
+  storageBox.hidden = false;
+  storageDisks.replaceChildren();
+  const move = status.move;
+  if (move && MOVE_STATES[move.state]) {
+    storageState.textContent = MOVE_STATES[move.state];
+    watchStorage();
+    return false;
+  }
+  if (status.data) {
+    storageState.textContent = "Les données de vos services sont sur le disque USB. Laissez-le branché : sans lui, les services ne démarrent pas.";
+    if (move && move.state === "done" && storageTimer) {
+      showMessage(["Les données de vos services sont maintenant sur le disque USB. Vos services ont redémarré."], "success");
+      return true;
+    }
+    return false;
+  }
+  if (move && move.state === "failed" && storageTimer) {
+    showMessage([move.message || "Le déplacement des données a échoué : elles restent sur la carte SD."], "error");
+    clearInterval(storageTimer);
+    storageTimer = null;
+  }
+  if (status.disks.length === 0) {
+    storageState.textContent = "Les données de vos services sont sur la carte SD. Branchez un disque USB pour avoir plus de place : un disque dur ou un SSD est plus rapide et plus durable qu'une carte SD.";
+    return false;
+  }
+  storageState.textContent = status.disks.length > 1
+    ? "Les données de vos services sont sur la carte SD. Vous pouvez les placer sur l'un de ces disques USB :"
+    : "Les données de vos services sont sur la carte SD. Vous pouvez les placer sur ce disque USB :";
+  storageDisks.replaceChildren(...status.disks.map((disk) => {
+    const item = element("li");
+    const button = element("button");
+    button.type = "button";
+    const ready = disk.fstype === "ext4" && disk.partition;
+    const detail = ready ? "prêt" : disk.fstype ? "à effacer avant usage" : "vide, à préparer";
+    button.append(element("span", diskName(disk)), element("span", detail, "meta"));
+    button.addEventListener("click", () => (ready ? useDisk(disk) : formatDisk(disk)));
+    item.append(button);
+    return item;
+  }));
+  return false;
 }
 
 // Réseau de la maison (spécification, section 4) : choix du Wi-Fi ou du câble,
@@ -900,6 +1034,7 @@ function showAuth(mode) {
   clearInterval(networkTimer);
   clearInterval(wizardTimer);
   clearInterval(dashboardTimer);
+  clearInterval(storageTimer);
 }
 
 authForm.addEventListener("submit", async (event) => {
