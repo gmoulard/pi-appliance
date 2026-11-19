@@ -25,6 +25,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/gmoulard/pi-appliance/internal/system"
 )
 
 // Copie des données d'un service avant sa mise à jour (spécification 6.2) :
@@ -97,7 +99,7 @@ func (m *Manager) mountpoint(ctx context.Context, dir, volume string) (string, e
 // checkSpace refuse la mise à jour si le disque n'a pas la place de copier
 // les données (plus 10 %), avant de rien toucher.
 func (m *Manager) checkSpace(name string, copies []volumeCopy) error {
-	if m.FreeMB == nil || len(copies) == 0 {
+	if len(copies) == 0 {
 		return nil
 	}
 	var size int64
@@ -105,11 +107,22 @@ func (m *Manager) checkSpace(name string, copies []volumeCopy) error {
 		size += dirSize(c.source)
 	}
 	needMB := (size + size/10) >> 20
-	free, ok := m.FreeMB(copies[0].source)
+	freeMB := m.FreeMB
+	if freeMB == nil {
+		freeMB = systemFreeMB
+	}
+	free, ok := freeMB(copies[0].source)
 	if ok && needMB > free {
 		return fmt.Errorf("%w : copier les données de %s avant la mise à jour demande %d Mo, il en reste %d sur le disque. Faites de la place (désinstallez un service, ou branchez un disque USB), puis réessayez", ErrNoSpace, name, needMB, free)
 	}
 	return nil
+}
+
+func systemFreeMB(dir string) (int64, bool) {
+	if gauge := system.DiskAt(dir); gauge != nil {
+		return gauge.FreeMB, true
+	}
+	return 0, false
 }
 
 // backup copie chaque volume dans son volume de secours ; le service doit être arrêté.

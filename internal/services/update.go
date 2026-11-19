@@ -61,9 +61,10 @@ func (m *Manager) UpdateAvailable(app marketplace.App, name string) bool {
 }
 
 // Update met un service à jour : nouveau manifeste du catalogue, nouvelles images, redémarrage.
-// En cas d'échec, il revient automatiquement au manifeste et aux images d'avant (spécification 6.2).
-// Les données (volumes) ne sont pas copiées avant : une mise à jour qui les modifie avant
-// d'échouer peut les laisser dans un état que l'ancienne version ne sait pas lire.
+// Les données (volumes) sont copiées juste avant le démarrage de la nouvelle version, service
+// arrêté. En cas d'échec, il revient automatiquement au manifeste, aux images et aux données
+// d'avant (spécification 6.2) : une nouvelle version qui modifie les données avant d'échouer
+// ne les laisse pas illisibles pour l'ancienne.
 func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) (Result, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -88,6 +89,14 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 	}
 	previousEnv, err := os.ReadFile(filepath.Join(dir, envName))
 	if err != nil {
+		return Result{}, err
+	}
+	// Place pour la copie des données vérifiée avant de rien toucher.
+	volumes, err := m.serviceVolumes(ctx, name)
+	if err != nil {
+		return Result{}, err
+	}
+	if err := m.checkSpace(name, volumes); err != nil {
 		return Result{}, err
 	}
 	output, err := m.compose(ctx, name, "images", "--format", "json")
@@ -116,15 +125,26 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 		return Result{}, err
 	}
 	failure := ""
+	// copied : données copiées, à remettre en cas d'échec (nil tant qu'elles n'ont pas bougé).
+	var copied []volumeCopy
+	// Téléchargement d'abord, service en marche ; puis arrêt, copie des données, démarrage.
 	if output, err := m.compose(ctx, name, "pull"); err != nil {
 		failure = "téléchargement de la nouvelle version impossible : " + trimOutput(output, err)
-	} else if output, err := m.compose(ctx, name, "up", "--detach", "--wait", "--remove-orphans"); err != nil {
-		failure = "la nouvelle version n'a pas démarré : " + trimOutput(output, err)
+	} else if output, err := m.compose(ctx, name, "stop"); err != nil {
+		failure = "arrêt du service impossible : " + trimOutput(output, err)
+	} else if err := m.backup(ctx, name, volumes); err != nil {
+		failure = err.Error()
+	} else {
+		copied = volumes
+		if output, err := m.compose(ctx, name, "up", "--detach", "--wait", "--remove-orphans"); err != nil {
+			failure = "la nouvelle version n'a pas démarré : " + trimOutput(output, err)
+		}
 	}
 	if failure == "" {
 		for _, img := range images {
 			m.Runner.Run(context.WithoutCancel(ctx), dir, "image", "rm", img.keepRef(keep))
 		}
+		m.dropBackups(context.WithoutCancel(ctx), name, copied)
 		os.Remove(filepath.Join(dir, previousName))
 		instance.AppName = app.Name
 		if err := writeJSON(filepath.Join(dir, stateName), instance, 0o600); err != nil {
@@ -132,13 +152,15 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 		}
 		return Result{Instance: instance, Secrets: secrets}, nil
 	}
-	if err := m.rollback(context.WithoutCancel(ctx), name, previous, previousEnv, images, keep); err != nil {
+	if err := m.rollback(context.WithoutCancel(ctx), name, previous, previousEnv, images, keep, copied); err != nil {
 		return Result{}, fmt.Errorf("mise à jour de %s ratée (%s), et le retour à la version précédente aussi : %v", name, failure, err)
 	}
 	return Result{Instance: instance}, fmt.Errorf("%w : %s", ErrRolledBack, failure)
 }
 
-func (m *Manager) rollback(ctx context.Context, name string, compose, env []byte, images []image, keep string) error {
+// rollback revient au manifeste, aux images et, si elles ont été copiées, aux données d'avant.
+// En cas d'échec, images, manifeste et données de secours sont gardés.
+func (m *Manager) rollback(ctx context.Context, name string, compose, env []byte, images []image, keep string, copied []volumeCopy) error {
 	dir := m.serviceDir(name)
 	if err := os.WriteFile(filepath.Join(dir, composeName), compose, 0o600); err != nil {
 		return err
@@ -152,6 +174,15 @@ func (m *Manager) rollback(ctx context.Context, name string, compose, env []byte
 			problems = append(problems, fmt.Sprintf("image %s : %s", img.ref(), trimOutput(output, err)))
 		}
 	}
+	if len(copied) > 0 {
+		// Plus aucun conteneur ne doit écrire pendant la remise des données.
+		if output, err := m.compose(ctx, name, "down", "--remove-orphans"); err != nil {
+			return fmt.Errorf("arrêt de la nouvelle version impossible : %s", trimOutput(output, err))
+		}
+		if err := m.restore(ctx, copied); err != nil {
+			return err
+		}
+	}
 	if output, err := m.compose(ctx, name, "up", "--detach", "--wait", "--remove-orphans"); err != nil {
 		problems = append(problems, trimOutput(output, err))
 	}
@@ -161,6 +192,7 @@ func (m *Manager) rollback(ctx context.Context, name string, compose, env []byte
 	for _, img := range images {
 		m.Runner.Run(ctx, dir, "image", "rm", img.keepRef(keep))
 	}
+	m.dropBackups(ctx, name, copied)
 	return os.Remove(filepath.Join(dir, previousName))
 }
 

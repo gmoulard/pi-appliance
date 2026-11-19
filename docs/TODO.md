@@ -118,7 +118,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] **TODO-2.30**: Installation, désinstallation (question sur les données), plusieurs instances (6.5).
 - [x] **TODO-2.31**: Démarrer, arrêter, redémarrer un service ; état vert/orange/rouge.
 - [x] **TODO-2.32**: Mise à jour d'un service avec retour arrière automatique.
-- [ ] **TODO-2.33**: Copie des données d'un service avant sa mise à jour, pour un retour arrière complet (avec les sauvegardes, 9.1).
+- [x] **TODO-2.33**: Copie des données d'un service avant sa mise à jour, pour un retour arrière complet : volumes copiés dans des volumes de secours, service arrêté, remis en cas d'échec, place vérifiée avant (`internal/services/data.go`) ; à vérifier sur un vrai Pi. Les sauvegardes (9.1) restent à faire.
 - [x] **TODO-2.34**: Avertissement mémoire sur les petits Pi.
 - [x] **TODO-2.35**: Jauges de mémoire et de disque : ce que le Pi a, ce qui est utilisé, ce que prendrait le service et ce qui resterait après l'installation (6.2) ; aussi dans « Mon Pi », avec le conseil de brancher un disque USB quand la place manque.
 - [x] **TODO-2.36**: Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.

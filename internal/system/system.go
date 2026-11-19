@@ -78,6 +78,11 @@ func Read(dir string) Resources {
 	return resources
 }
 
+// DiskAt : jauge du disque qui porte dir ; nil si elle est inconnue.
+func DiskAt(dir string) *Gauge {
+	return disk(dir)
+}
+
 // MountedDisk : jauge du disque monté sur dir ; nil si rien n'y est monté
 // (sinon ce serait la carte SD qui porte le dossier vide).
 func MountedDisk(dir string) *Gauge {

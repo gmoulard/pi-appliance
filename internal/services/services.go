@@ -84,7 +84,12 @@ type Manager struct {
 	Domain   string
 	Runner   Runner
 	MemoryMB func() int
-	mu       sync.Mutex
+	// Copier copie les données d'un service avant sa mise à jour ; nil : « cp -a ».
+	Copier Copier
+	// FreeMB donne la place libre du disque qui porte un dossier ; nil : lue
+	// par internal/system.
+	FreeMB func(dir string) (int64, bool)
+	mu     sync.Mutex
 }
 
 func (m *Manager) serviceDir(name string) string {
