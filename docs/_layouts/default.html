@@ -1,0 +1,51 @@
+<!doctype html>
+<!--
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% if page.title %}{{ page.title }} — {% endif %}pi-appliance</title>
+<link rel="icon" href="{{ '/logo/framboise/favicon.svg' | relative_url }}" type="image/svg+xml">
+<link rel="stylesheet" href="{{ '/site.css' | relative_url }}">
+</head>
+<body class="doc">
+<header class="top">
+<a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/logo/framboise/logo.svg' | relative_url }}" alt="pi-appliance, accueil" width="160" height="54"></a>
+<nav aria-label="Menu de la documentation">
+<a href="{{ '/guide-utilisateur.html' | relative_url }}">Guide</a>
+<a href="{{ '/specification.html' | relative_url }}">Spécification</a>
+<a href="{{ '/TODO.html' | relative_url }}">Avancement</a>
+<a href="{{ '/charte-graphique.html' | relative_url }}">Charte</a>
+<a href="https://github.com/gmoulard/pi-appliance">Code source</a>
+</nav>
+</header>
+<main>
+<article class="prose">
+{{ content }}
+</article>
+</main>
+<footer>
+<nav aria-label="Liens du pied de page">
+<a href="{{ '/' | relative_url }}">Accueil</a>
+<a href="{{ '/guide-utilisateur.html' | relative_url }}">Guide</a>
+<a href="https://github.com/gmoulard/pi-appliance">Code source</a>
+</nav>
+<p>Logiciel libre, licence AGPL-3.0.</p>
+</footer>
+</body>
+</html>

@@ -115,6 +115,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 - [x] Charte graphique (framboise, logo « La maison ») appliquée à la console et au site : `docs/charte-graphique.md`.
 - [x] Page d'accueil du site : `docs/index.html`, `docs/site.css`.
+- [x] Pages de documentation à la charte : `docs/_config.yml`, `docs/_layouts/default.html`.
 - [ ] Activer GitHub Pages pour `www.pi-appliance.com` (source : branche `master`, dossier `/docs`) et corriger la zone DNS chez OVH.
 - [x] Guide utilisateur provisoire avec manuel d'installation manuelle : `docs/guide-utilisateur.md`.
 - [ ] Captures d'écran, téléchargement de l'image, FAQ, catalogue complet.

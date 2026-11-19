@@ -1,6 +1,6 @@
 # Charte graphique pi-appliance
 
-Une seule charte pour le site www.pi-appliance.com (`docs/index.html`, `docs/site.css`) et la console `/pi-appliance` (`internal/console/web/`). Ambiance **ludique et colorée**, pour le grand public, pensée **d'abord pour le téléphone**. Maquette validée : [charte, site, console et premier démarrage](https://claude.ai/artifact/JYfQUgNQEz2sE3VYqNHngu).
+Une seule charte pour le site www.pi-appliance.com (page d'accueil `docs/index.html`, pages de documentation rendues par GitHub Pages avec `docs/_layouts/default.html`, styles communs `docs/site.css`) et la console `/pi-appliance` (`internal/console/web/`). Ambiance **ludique et colorée**, pour le grand public, pensée **d'abord pour le téléphone**. Maquette validée : [charte, site, console et premier démarrage](https://claude.ai/artifact/JYfQUgNQEz2sE3VYqNHngu).
 
 ## Logo
 

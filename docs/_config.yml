@@ -1,0 +1,15 @@
+title: pi-appliance
+description: Votre serveur, à la maison.
+lang: fr
+markdown: kramdown
+kramdown:
+  input: GFM
+plugins:
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-titles-from-headings
+  - jekyll-default-layout
+  - jekyll-readme-index
+relative_links:
+  enabled: true
+  collections: false

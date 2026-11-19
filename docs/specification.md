@@ -365,7 +365,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `LICENSE` | Texte de la licence AGPL-3.0 |
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
 | `.claude/skills/` | Sous-module : skills partagés [gmoulard/claude_skills](https://github.com/gmoulard/claude_skills) |
-| `docs/` | Source du site GitHub Pages www.pi-appliance.com (`index.html`, `site.css`, `CNAME`) ; guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; charte graphique (`charte-graphique.md`) ; `logo/` : logo retenu (`framboise/`) et pistes (SVG) |
+| `docs/` | Source du site GitHub Pages www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) ; guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; charte graphique (`charte-graphique.md`) ; `logo/` : logo retenu (`framboise/`) et pistes (SVG) |
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
@@ -388,7 +388,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 
 Dans les mêmes langues que la console (section 5.3).
 
-Site et console suivent la même [charte graphique](charte-graphique.md) : framboise, ludique et colorée, pensée d'abord pour le téléphone, polices du système seulement. Le site est publié par GitHub Pages depuis le dossier `docs/` (`docs/index.html`, `docs/CNAME`). Réalisé : la page d'accueil (présentation, trois étapes, applications, adresse, téléchargement), en français ; l'image prête à flasher et la réservation d'adresse y sont annoncées pour plus tard.
+Site et console suivent la même [charte graphique](charte-graphique.md) : framboise, ludique et colorée, pensée d'abord pour le téléphone, polices du système seulement. Le site est publié par GitHub Pages depuis le dossier `docs/` (`docs/index.html`, `docs/CNAME`) ; les documents Markdown du dossier (guide, spécification, TODO, charte, logos) y deviennent des pages à la même charte (`docs/_config.yml`, `docs/_layouts/default.html`). Réalisé : la page d'accueil (présentation, trois étapes, applications, adresse, téléchargement), en français ; l'image prête à flasher et la réservation d'adresse y sont annoncées pour plus tard.
 
 ## 14. Hors périmètre
 
