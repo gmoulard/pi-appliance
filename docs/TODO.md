@@ -74,8 +74,9 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 - [x] Squelette Go : page d'accueil sous `/pi-appliance/`, `api/health`, tests, binaire `arm64` construit par GitHub Actions (10.1).
 - [ ] Service systemd et passage derrière Traefik, en HTTPS.
-- [ ] Authentification ; compte administrateur créé au premier démarrage ; e-mail vérifié dès que le service d'e-mails est joignable.
-- [ ] Fichier `reset` sur la carte SD (8.5).
+- [x] Authentification : compte administrateur créé au premier démarrage, connexion, sessions, limitation des tentatives (5.1, 8.1, 8.4).
+- [ ] Vérification de l'e-mail par un code, dès que le service d'e-mails est joignable (5.1, étape 2).
+- [x] Fichier `reset` sur la carte SD (8.5).
 - [ ] Assistant de premier démarrage.
 - [ ] Tableau de bord : état du Pi et des services, graphiques sur 30 jours.
 - [ ] Canaux de version stable et bêta.
@@ -90,7 +91,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [ ] Démarrer, arrêter, redémarrer un service ; état vert/orange/rouge.
 - [ ] Mise à jour d'un service avec retour arrière automatique.
 - [x] Avertissement mémoire sur les petits Pi.
-- [ ] Ouvrir l'installation au réseau une fois l'authentification faite (aujourd'hui depuis le Pi seulement).
+- [x] Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.
 - [x] Application Nextcloud (manifeste `marketplace/nextcloud/`).
 - [ ] Applications : Samba (dossiers commun et personnels), site web Apache/PHP (dépôt par Nextcloud, Samba ou ZIP), DokuWiki, Etherpad (liens de partage).
 - [ ] Fichiers communs à Nextcloud et Samba.

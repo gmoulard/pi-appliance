@@ -176,7 +176,7 @@ Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du servi
 - Installation : pour chaque instance, un dossier `<données>/services/<nom>/` (option `-data`, `/var/lib/pi-appliance` par défaut) avec le manifeste, un fichier `.env` (droits 600) et `pi-appliance.override.json`, qui ajoute les labels Traefik (routeur `Host(<nom>.<adresse>)`, entrée `websecure`, TLS) et le réseau Docker commun `pi-appliance`, créé s'il manque ; puis `docker compose up --detach --wait`. En cas d'échec, le service est arrêté et l'erreur de Docker affichée. Les secrets générés qui ont un libellé (mot de passe administrateur de Nextcloud) sont affichés une seule fois.
 - Plusieurs instances d'une même application, sous des noms différents ; avertissement quand la mémoire du Pi est inférieure à `memory_mb`.
 - Désinstallation : la console demande s'il faut garder les données ; gardées, elles (volumes et secrets) sont réutilisées à la réinstallation sous le même nom ; supprimées, après une seconde confirmation.
-- API de la console : `GET api/catalog`, `GET api/services`, `POST api/services` (`{"app", "name", "parameters"}`, JSON seulement), `DELETE api/services/<nom>?data=keep|delete`. Tant que l'authentification (8.1) n'existe pas, l'installation et la désinstallation ne sont acceptées que depuis le Pi lui-même (adresse de bouclage).
+- API de la console : `GET api/catalog`, `GET api/services`, `POST api/services` (`{"app", "name", "parameters"}`, JSON seulement), `DELETE api/services/<nom>?data=keep|delete`. Il faut être connecté pour lire le catalogue et les services, et administrateur pour installer ou désinstaller (section 8.1).
 - Pas encore : lecture en ligne du catalogue, démarrer/arrêter, mise à jour avec retour arrière, adresse affichée réellement joignable (Traefik n'est pas encore installé), traductions.
 
 ## 7. Accès depuis internet
@@ -239,6 +239,15 @@ Offre :
 - Chaque service tourne dans ses conteneurs, avec ses propres volumes ; rien n'est monté du système hôte sans que le manifeste le déclare.
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
 - **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
+
+**Réalisé** (première version, paquet `internal/auth`) :
+
+- Compte administrateur créé dans la console tant qu'aucun compte n'existe (`POST api/setup`, `{"name", "email", "password"}`), puis session ouverte ; refusé dès qu'un compte existe. Identifiant de 1 à 32 caractères (minuscules, chiffres, `.`, `-`, `_`), e-mail enregistré mais pas encore vérifié : la console le rappelle.
+- Comptes dans `<données>/accounts.json` (droits 600). Mots de passe hachés en PBKDF2-SHA256, 600 000 itérations, sel aléatoire (bibliothèque standard de Go) ; 12 caractères au moins pour un administrateur, 256 au plus.
+- Connexion (`POST api/login`), déconnexion (`POST api/logout`), état (`GET api/session` : création à faire, réinitialisation en cours, compte connecté). Session dans un cookie `HttpOnly`, `SameSite=Strict`, `Secure` derrière Traefik en HTTPS ; valable 7 jours, prolongée à chaque usage, gardée en mémoire : un redémarrage de la console déconnecte tout le monde.
+- Limitation des tentatives par client et par compte : après 5 échecs, attente d'une minute, doublée à chaque nouvel échec, 15 minutes au plus. Derrière Traefik (bouclage ou réseau Docker), le client est la dernière adresse de `X-Forwarded-For`.
+- Fichier `reset` (section 8.5) : lu au démarrage (option `-reset-file`, `/boot/firmware/reset` par défaut), supprimé aussitôt ; la console propose alors un nouveau mot de passe pour le premier administrateur (`POST api/reset`), sans toucher aux services, et ferme toutes les sessions.
+- Pas encore : autres comptes et invitations, rôles utilisateur et invité dans l'interface, double authentification, OpenID Connect, LDAP, vérification de l'e-mail, récupération par e-mail.
 
 ### 8.5 Récupération de l'accès
 
@@ -371,6 +380,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
+| `internal/auth/` | Comptes de la console : compte administrateur, connexion, sessions, fichier `reset` (8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `marketplace/` | Catalogue : un manifeste `<application>/compose.yaml` par application (6.5) |
 | `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |

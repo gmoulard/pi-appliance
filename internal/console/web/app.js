@@ -20,7 +20,17 @@ const noServices = document.getElementById("noServices");
 const catalogList = document.getElementById("catalog");
 const footer = document.getElementById("version");
 const statusDot = document.getElementById("statusDot");
+const authSection = document.getElementById("auth");
+const authTitle = document.getElementById("authTitle");
+const authHelp = document.getElementById("authHelp");
+const authForm = document.getElementById("authForm");
+const authButton = document.getElementById("authButton");
+const logoutButton = document.getElementById("logout");
+const emailReminder = document.getElementById("emailReminder");
+const servicesSection = document.getElementById("servicesSection");
+const catalogSection = document.getElementById("catalogSection");
 const TINTS = 6;
+const ADMIN_PASSWORD_MIN = 12;
 
 async function api(path, options = {}) {
   const response = await fetch(`api/${path}`, options);
@@ -189,12 +199,119 @@ async function uninstall(service, button) {
   }
 }
 
+// Écrans de compte : création du compte administrateur au premier démarrage,
+// réinitialisation après dépôt du fichier reset, ou connexion (spécification 5.1, 8.5).
+const AUTH_MODES = {
+  setup: {
+    title: "Bienvenue ! Créez votre compte administrateur",
+    help: `C'est le compte qui gère l'appliance. Choisissez un mot de passe d'au moins ${ADMIN_PASSWORD_MIN} caractères : une phrase de plusieurs mots est plus facile à retenir. L'adresse e-mail servira à retrouver l'accès et à recevoir les alertes.`,
+    button: "Créer le compte",
+    fields: ["name", "email", "confirm"],
+    path: "setup",
+  },
+  reset: {
+    title: "Nouveau mot de passe administrateur",
+    help: `Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins ${ADMIN_PASSWORD_MIN} caractères : vos services et vos données ne changent pas.`,
+    button: "Changer le mot de passe",
+    fields: ["confirm"],
+    path: "reset",
+  },
+  login: {
+    title: "Connexion",
+    help: "Entrez votre identifiant et votre mot de passe.",
+    button: "Se connecter",
+    fields: ["name"],
+    path: "login",
+  },
+};
+
+let authMode = "login";
+
+function showAuth(mode) {
+  authMode = mode;
+  const config = AUTH_MODES[mode];
+  authTitle.textContent = config.title;
+  authHelp.textContent = config.help;
+  authButton.textContent = config.button;
+  for (const field of ["name", "email", "confirm"]) {
+    const shown = config.fields.includes(field);
+    document.getElementById(`${field}Field`).hidden = !shown;
+    authForm.elements[field].required = shown;
+  }
+  const password = authForm.elements.password;
+  password.autocomplete = mode === "login" ? "current-password" : "new-password";
+  password.minLength = mode === "login" ? 0 : ADMIN_PASSWORD_MIN;
+  authForm.reset();
+  authSection.hidden = false;
+  servicesSection.hidden = true;
+  catalogSection.hidden = true;
+  logoutButton.hidden = true;
+  emailReminder.hidden = true;
+}
+
+authForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const config = AUTH_MODES[authMode];
+  const data = new FormData(authForm);
+  if (config.fields.includes("confirm") && data.get("password") !== data.get("confirm")) {
+    showMessage(["Les deux mots de passe ne sont pas identiques."], "error");
+    return;
+  }
+  const body = { password: data.get("password") };
+  if (config.fields.includes("name")) {
+    body.name = data.get("name");
+  }
+  if (config.fields.includes("email")) {
+    body.email = data.get("email");
+  }
+  authButton.disabled = true;
+  try {
+    const account = await api(config.path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    message.hidden = true;
+    await showConsole(account);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    authButton.disabled = false;
+  }
+});
+
+logoutButton.addEventListener("click", async () => {
+  await api("logout", { method: "POST" }).catch(() => null);
+  message.hidden = true;
+  showAuth("login");
+});
+
+async function showConsole(account) {
+  authSection.hidden = true;
+  logoutButton.hidden = false;
+  servicesSection.hidden = false;
+  catalogSection.hidden = account.role !== "admin";
+  emailReminder.hidden = account.email_verified;
+  emailReminder.textContent = `Votre adresse ${account.email} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.`;
+  await loadCatalog();
+  await loadServices();
+}
+
 api("health")
-  .then((health) => {
+  .then(async (health) => {
     status.textContent = "Appliance en service.";
     statusDot.className = "dot ok";
     footer.textContent = `pi-appliance ${health.version}`;
-    return loadCatalog().then(loadServices);
+    const session = await api("session");
+    if (session.reset) {
+      showAuth("reset");
+    } else if (session.setup) {
+      showAuth("setup");
+    } else if (!session.account) {
+      showAuth("login");
+    } else {
+      await showConsole(session.account);
+    }
   })
   .catch((error) => {
     status.textContent = `Appliance injoignable : ${error.message}`;

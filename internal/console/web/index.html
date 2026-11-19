@@ -26,18 +26,31 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <body>
 <header class="top">
 <h1 class="brand"><img src="logo.png" alt="" width="64" height="64">pi-appliance</h1>
+<button id="logout" class="secondary" type="button" hidden>Se déconnecter</button>
 </header>
 <main>
 <section class="hero" aria-live="polite">
 <p class="hero-state"><span class="dot" id="statusDot"></span><span id="status">Connexion à l'appliance…</span></p>
 </section>
 <div id="message" role="status" hidden></div>
-<section>
+<section id="auth" class="card" hidden>
+<h2 id="authTitle"></h2>
+<p id="authHelp"></p>
+<form id="authForm">
+<label id="nameField">Identifiant<input name="name" autocomplete="username" autocapitalize="none" pattern="[a-z0-9][a-z0-9._\-]{0,31}" maxlength="32"></label>
+<label id="emailField">Adresse e-mail<input name="email" type="email" autocomplete="email"></label>
+<label>Mot de passe<input name="password" type="password" maxlength="256" required></label>
+<label id="confirmField">Mot de passe, encore une fois<input name="confirm" type="password" autocomplete="new-password" maxlength="256"></label>
+<button id="authButton"></button>
+</form>
+</section>
+<p id="emailReminder" class="empty" hidden></p>
+<section id="servicesSection" hidden>
 <h2>Mes services</h2>
 <ul id="services" class="cards"></ul>
 <p id="noServices" class="empty" hidden>Aucun service installé pour l'instant : choisissez-en un ci-dessous.</p>
 </section>
-<section>
+<section id="catalogSection" hidden>
 <h2>Marketplace</h2>
 <ul id="catalog" class="cards"></ul>
 </section>

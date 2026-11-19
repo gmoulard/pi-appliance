@@ -64,6 +64,22 @@ body {
   gap: 0.5rem;
 }
 
+[hidden] {
+  display: none !important;
+}
+
+.top .secondary {
+  margin-left: auto;
+}
+
+#auth h2 {
+  margin: 0;
+}
+
+#auth p {
+  margin: 0;
+}
+
 .brand {
   margin: 0;
   display: flex;
