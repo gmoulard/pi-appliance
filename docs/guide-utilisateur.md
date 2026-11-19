@@ -19,9 +19,9 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 - L'accès aux services depuis internet et la réservation d'une adresse `*.pi-appliance.com`.
 - Les sauvegardes, le VPN et les mises à jour de l'appliance depuis la console.
 
-## Télécharger et installer l'image expérimentale
+## Télécharger et installer l'image expérimentale {#telecharger-limage-experimentale}
 
-Le workflow GitHub Actions a construit l'image avec succès le 19 novembre 2026. L'artefact **`pi-appliance-image`** comprend l'image et son fichier de somme SHA-256 ; il expire le **3 décembre 2026**. [Ouvrir l'exécution réussie et télécharger l'artefact](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083). Il s'agit d'un artefact temporaire, pas d'une version stable. Le fichier image est `pi-appliance-2026-11-19-48c047d.img.xz` (environ 720 Mio compressé, 3,3 Gio une fois décompressé).
+Le workflow GitHub Actions a construit l'image avec succès le 19 novembre 2026. L'artefact **`pi-appliance-image`** comprend l'image et son fichier de somme SHA-256 ; il expire le **3 décembre 2026**. [Télécharger directement l'image et sa somme de contrôle](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083/artifacts/14559608001). Il s'agit d'un artefact temporaire, pas d'une version stable. Le fichier image est `pi-appliance-2026-11-19-48c047d.img.xz` (environ 720 Mio compressé, 3,3 Gio une fois décompressé).
 
 L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte micro-SD de 16 Go ou plus, un ordinateur et [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Le flashage efface entièrement la carte SD.
 
@@ -43,7 +43,7 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 
    Ne flashez pas l'image si la vérification échoue.
 3. Décompressez le fichier `.img.xz` avec 7-Zip pour obtenir le fichier `.img`.
-4. Ouvrez Raspberry Pi Imager. Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
+4. telecharger [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
 5. Insérez la carte dans le Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement.
 6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, ouvrez `https://pi-appliance.local/pi-appliance/` depuis le réseau de la maison.
 
