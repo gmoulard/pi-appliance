@@ -392,3 +392,24 @@ func TestControlService(t *testing.T) {
 		}
 	}
 }
+
+func TestUpdateService(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	if code := f.install(`{"app": "nextcloud"}`, cookie).Code; code != http.StatusCreated {
+		t.Fatalf("installation : code %d", code)
+	}
+	list := decode[struct {
+		Services []ServiceView `json:"services"`
+	}](t, f.do(http.MethodGet, "/pi-appliance/api/services", "", "", cookie))
+	if list.Services[0].UpdateAvailable {
+		t.Fatal("mise à jour signalée juste après l'installation")
+	}
+	response := f.do(http.MethodPost, "/pi-appliance/api/services/cloud/update", "", "", cookie)
+	if response.Code != http.StatusOK || decode[services.Result](t, response).Instance.Name != "cloud" {
+		t.Fatalf("mise à jour : code %d : %s", response.Code, response.Body.String())
+	}
+	if code := f.do(http.MethodPost, "/pi-appliance/api/services/autre/update", "", "", cookie).Code; code != http.StatusNotFound {
+		t.Fatalf("service inconnu : code %d", code)
+	}
+}

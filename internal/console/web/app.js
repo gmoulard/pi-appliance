@@ -36,6 +36,7 @@ const CONTROLS = [
   { action: "start", label: "Démarrer", done: "démarré", when: (color) => color === "red" },
   { action: "stop", label: "Arrêter", done: "arrêté", when: (color) => color !== "red" },
   { action: "restart", label: "Redémarrer", done: "redémarré", when: (color) => color !== "red" },
+  { action: "update", label: "Mettre à jour", done: "à jour", when: () => true },
 ];
 
 async function api(path, options = {}) {
@@ -128,6 +129,9 @@ async function loadServices() {
     state.append(element("span", undefined, `dot ${service.status.color}`), element("span", service.status.message));
     const detail = element("div");
     detail.append(element("p", service.address, "address"), state);
+    if (service.update_available) {
+      detail.append(element("p", "Nouvelle version disponible.", "meta"));
+    }
     card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
     return card;
   }));
@@ -201,11 +205,22 @@ async function install(app, form, button) {
 }
 
 async function act(service, control, button) {
+  if (control.action === "update" && !window.confirm(`Mettre à jour ${service.name} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.`)) {
+    return;
+  }
   button.disabled = true;
   showMessage([`${control.label} ${service.name}…`], "info");
   try {
-    const status = await api(`services/${encodeURIComponent(service.name)}/${control.action}`, { method: "POST" });
-    showMessage([`${service.name} est ${control.done} : ${status.message}`], status.color === "red" && control.action !== "stop" ? "error" : "success");
+    const result = await api(`services/${encodeURIComponent(service.name)}/${control.action}`, { method: "POST" });
+    if (control.action === "update") {
+      const lines = [`${service.name} est à jour.`];
+      for (const [label, value] of Object.entries(result.secrets || {})) {
+        lines.push(`${label} : ${value} (notez-le, il ne sera plus affiché)`);
+      }
+      showMessage(lines, "success");
+      return;
+    }
+    showMessage([`${service.name} est ${control.done} : ${result.message}`], result.color === "red" && control.action !== "stop" ? "error" : "success");
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
