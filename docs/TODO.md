@@ -115,11 +115,14 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] Site web : dépôt des fichiers par Nextcloud ou ZIP.
 - [ ] Etherpad : liens de partage pour une personne sans compte.
 - [ ] Réglages avancés et Docker Compose libre (6.4).
+- [ ] Générateurs de sites statiques (SSG) MkDocs, Astro, Hugo, Jekyll et Next.js
+- [ ] MSSQL, PostgreSQL, SQLite, MongoDB, Redis
 
 ## 3. Étape 2 — Internet (7)
 
 - [ ] Traefik : point d'entrée unique, routage par sous-domaine (faits à l'étape Local, `system/`), certificats Let's Encrypt (bloc prêt dans `system/etc/pi-appliance/traefik/traefik.yml`, plus le label `tls.certresolver` à poser par `internal/services`).
 - [ ] DuckDNS tenu à jour par l'appliance.
+- [ ] FTP
 - [ ] Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
 - [ ] Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] Domaine personnel : guide OVH, à partir de l'ancien `linux-tool/dynHost/` (historique git).
@@ -147,7 +150,10 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Page d'accueil du site : `docs/index.html`, `docs/site.css`.
 - [x] Pages de documentation à la charte : `docs/_config.yml`, `docs/_layouts/default.html`.
 - [x] GitHub Pages pour `www.pi-appliance.com` (source : branche `master`, dossier `/docs`), zone hébergée `pi-appliance.com` dans AWS Route 53.
-- [x] Guide utilisateur provisoire avec manuel d'installation manuelle : `docs/guide-utilisateur.md`.
-- [ ] Captures d'écran, téléchargement de l'image, FAQ, catalogue complet.
+- [x] Guide utilisateur de l'état du prototype, de ses fonctions et des essais restants : `docs/guide-utilisateur.md`.
+- [x] Site mis à jour pour distinguer l'image construite de la version prête à télécharger ; essais sur un vrai Pi toujours à faire.
+- [x] Page marketplace avec les applications présentes, les pistes à venir et les instructions de contribution.
+- [x] Guide de téléchargement et de flashage de l'image expérimentale publiée comme artefact GitHub temporaire (expire le 2026-12-03).
+- [ ] Publication d'une version stable de l'image après les essais sur un vrai Pi ; captures d'écran et FAQ.
 - [ ] Inscription d'une adresse `<nom>.pi-appliance.com`.
 - [ ] Traduction dans les 12 langues.

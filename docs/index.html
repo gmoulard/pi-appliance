@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>pi-appliance — votre serveur, à la maison</title>
-<meta name="description" content="pi-appliance transforme un Raspberry Pi en serveur personnel : vos fichiers, votre site, votre wiki restent chez vous et s’ouvrent de partout, sans ligne de commande.">
+<meta name="description" content="pi-appliance est un prototype de serveur personnel pour Raspberry Pi. Découvrez son état d'avancement, ses applications et les prochaines étapes.">
 <link rel="icon" href="logo/framboise/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="site.css">
 </head>
@@ -29,34 +29,35 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <a class="brand" href="./"><img src="logo/framboise/logo.svg" alt="pi-appliance" width="160" height="54"></a>
 <nav aria-label="Menu principal">
 <a href="guide-utilisateur.html">Guide</a>
-<a href="#applications">Applications</a>
+<a href="marketplace.html">Marketplace</a>
 <a href="https://github.com/gmoulard/pi-appliance">Code source</a>
 </nav>
 </header>
 <main>
 <section class="hero">
-<p class="pill">Pour Raspberry Pi 5, 4, 3 B+ et Zero 2 W</p>
+<p class="pill">Prototype pour Raspberry Pi 5, 4, 3 B+ et Zero 2 W</p>
 <h1>Votre serveur, <span>à la maison.</span></h1>
-<p class="lead">Vos fichiers, votre site, votre wiki : ils restent chez vous, et vous les ouvrez de partout. Sans ligne de commande.</p>
+<p class="lead">Une console en français pour installer et gérer vos services chez vous. Le projet avance : la première image système est construite, les essais sur un vrai Pi restent à faire.</p>
 <div class="hero-card">
 <ul class="hero-tiles" aria-hidden="true">
 <li class="tint-0"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z"/></svg></li><li class="tint-1"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></li><li class="tint-2"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></li><li class="tint-3"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5M8 7h6"/></svg></li><li class="tint-4"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M15 4l5 5L9 20H4v-5zM13 6l5 5"/></svg></li><li class="tint-5"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4"/></svg></li>
 </ul>
-<p>Objectif : moins de 15 minutes entre la carte SD et Nextcloud ouvert sur internet.</p>
+<p>Objectif du projet : moins de 15 minutes entre la carte SD et Nextcloud prêt à l’emploi. Cette version est encore expérimentale.</p>
 </div>
 <div class="actions">
-<a class="button dark" href="#telecharger">Installer pi-appliance</a>
-<a class="link" href="guide-utilisateur.html">Lire le guide pas à pas</a>
+<a class="button dark" href="TODO.html">Voir l’avancement</a>
+<a class="link" href="guide-utilisateur.html">Découvrir le prototype</a>
 </div>
 </section>
 
 <section class="steps-band">
-<h2>Trois étapes</h2>
+<h2>Le parcours visé</h2>
 <ol class="steps">
 <li class="tint-brand"><span class="num" aria-hidden="true">1</span><div><h3>Flashez</h3><p>Copiez l’image pi-appliance sur une carte SD.</p></div></li>
 <li class="tint-1"><span class="num" aria-hidden="true">2</span><div><h3>Branchez</h3><p>Le Pi démarre. Sans réseau, il crée un Wi-Fi « pi-appliance » : choisissez celui de la maison depuis votre téléphone.</p></div></li>
-<li class="tint-2"><span class="num" aria-hidden="true">3</span><div><h3>Cochez</h3><p>Choisissez vos applications : elles s’ouvrent à la maison comme sur internet.</p></div></li>
+<li class="tint-2"><span class="num" aria-hidden="true">3</span><div><h3>Choisissez</h3><p>Installez vos applications depuis la console. L’accès depuis internet fait partie des prochaines étapes.</p></div></li>
 </ol>
+<p>Ce parcours décrit la cible du projet ; l’image construite n’a pas encore été validée sur un Raspberry Pi.</p>
 </section>
 
 <section id="applications" class="apps-band">
@@ -66,59 +67,63 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <span class="tile"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z"/></svg></span>
 <h3>Nextcloud</h3>
 <p>Vos fichiers, photos, agenda et contacts.</p>
-
+<span class="soon">Dans le prototype</span>
 </li>
 <li class="app tint-2">
 <span class="tile"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></span>
 <h3>Site web</h3>
-<p>Votre site, publié sur internet.</p>
-<span class="soon">Bientôt</span>
+<p>Votre site hébergé chez vous, avec pages simples ou PHP.</p>
+<span class="soon">Dans le prototype</span>
 </li>
 <li class="app tint-3">
 <span class="tile"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5M8 7h6"/></svg></span>
 <h3>Wiki</h3>
 <p>Les notes de la famille ou de l’association.</p>
-<span class="soon">Bientôt</span>
+<span class="soon">Dans le prototype</span>
 </li>
 <li class="app tint-4">
 <span class="tile"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M15 4l5 5L9 20H4v-5zM13 6l5 5"/></svg></span>
 <h3>Etherpad</h3>
 <p>Écrire à plusieurs, en direct.</p>
-<span class="soon">Bientôt</span>
+<span class="soon">Dans le prototype</span>
 </li>
 <li class="app tint-5">
 <span class="tile"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4"/></svg></span>
 <h3>VPN</h3>
-<p>Le réseau de la maison, depuis partout.</p>
-<span class="soon">Bientôt</span>
+<p>Accéder au réseau de la maison à distance (prévu).</p>
+<span class="soon">À venir</span>
 </li>
 </ul>
+<p><a href="marketplace.html">Voir le catalogue complet, les applications prévues et comment contribuer à la marketplace.</a></p>
 </section>
 
 <section class="address-band">
 <h2>Votre adresse sur internet</h2>
-<p>Chaque service aura la sienne : <span class="mono">cloud.<b>votre-nom</b>.pi-appliance.com</span>.</p>
+<p>L’adresse publique <span class="mono">cloud.<b>votre-nom</b>.pi-appliance.com</span> et l’accès depuis internet ne sont pas encore disponibles.</p>
 <form class="reserve" aria-describedby="reserveSoon">
 <label for="reserveName">Nom de votre adresse</label>
 <span class="field"><input id="reserveName" type="text" placeholder="votre-nom" disabled><span>.pi-appliance.com</span></span>
 <button type="button" disabled>Réserver cette adresse</button>
-<p id="reserveSoon" class="soon-note">La réservation ouvrira bientôt.</p>
+<p id="reserveSoon" class="soon-note">La réservation d’adresses est prévue dans une étape ultérieure du projet.</p>
 </form>
 </section>
 
 <section id="telecharger" class="download">
-<h2>Télécharger</h2>
+<h2>Télécharger l’image expérimentale</h2>
 <div class="panel">
-<p><b>Image pi-appliance</b></p>
-<p>L’image prête à flasher n’est pas encore publiée. En attendant, le guide explique comment installer la console à la main sur un Raspberry Pi.</p>
-<a class="button" href="guide-utilisateur.html">Installer à la main</a>
+<p><b>Une image a été construite avec succès par GitHub Actions.</b></p>
+<p>Elle n’a pas encore été testée sur un vrai Raspberry Pi : c’est une version expérimentale, sans garantie. L’artefact temporaire est disponible jusqu’au 3 décembre 2026. La page indique aussi comment vérifier la somme SHA-256 et flasher l’image.</p>
+<a class="button" href="https://github.com/gmoulard/pi-appliance/actions/runs/44578711083">Télécharger depuis GitHub Actions</a>
+<a href="guide-utilisateur.html#telecharger-et-installer-limage-experimentale">Lire les instructions d’installation</a>
 </div>
 </section>
 </main>
 <footer>
 <nav aria-label="Liens du pied de page">
 <a href="guide-utilisateur.html">Guide</a>
+<a href="marketplace.html">Marketplace</a>
 <a href="specification.html">Spécification</a>
+<a href="TODO.html">Avancement</a>
 <a href="https://github.com/gmoulard/pi-appliance">Code source</a>
 </nav>
 <p>Logiciel libre, licence AGPL-3.0.</p>

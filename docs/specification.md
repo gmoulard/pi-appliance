@@ -448,7 +448,7 @@ Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache
 
 Dans les mêmes langues que la console (section 5.3).
 
-Site et console suivent la même [charte graphique](charte-graphique.md) : framboise, ludique et colorée, pensée d'abord pour le téléphone, polices du système seulement. Le site est publié par GitHub Pages depuis le dossier `docs/` (`docs/index.html`, `docs/CNAME`) ; les documents Markdown du dossier (guide, spécification, TODO, charte, logos) y deviennent des pages à la même charte (`docs/_config.yml`, `docs/_layouts/default.html`). Réalisé : la page d'accueil (présentation, trois étapes, applications, adresse, téléchargement), en français ; l'image prête à flasher et la réservation d'adresse y sont annoncées pour plus tard.
+Site et console suivent la même [charte graphique](charte-graphique.md) : framboise, ludique et colorée, pensée d'abord pour le téléphone, polices du système seulement. Le site est publié par GitHub Pages depuis le dossier `docs/` (`docs/index.html`, `docs/CNAME`) ; les documents Markdown du dossier (guide, marketplace, spécification, TODO, charte, logos) y deviennent des pages à la même charte (`docs/_config.yml`, `docs/_layouts/default.html`). Réalisé : la page d'accueil, le [guide](guide-utilisateur.md), la [page marketplace](marketplace.md) avec le catalogue et les consignes de contribution, et les pages de documentation en français. L'image construite par GitHub Actions est proposée comme artefact temporaire expérimental avec son guide de flashage ; elle reste à tester sur un vrai Pi. L'accès depuis internet et la réservation d'adresses ne sont pas encore disponibles.
 
 ## 14. Hors périmètre
 
