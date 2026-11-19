@@ -65,7 +65,7 @@ func nextcloud(t *testing.T) marketplace.App {
 
 func manager(t *testing.T, runner *fakeRunner) *Manager {
 	t.Helper()
-	return &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, MemoryMB: func() int { return 4096 }}
+	return &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, Measure: func(string) Resources { return Resources{MemoryTotalMB: 4096} }}
 }
 
 func TestInstall(t *testing.T) {
@@ -184,7 +184,7 @@ func TestInstallRequiredParameter(t *testing.T) {
 
 func TestInstallMemoryWarning(t *testing.T) {
 	m := manager(t, &fakeRunner{})
-	m.MemoryMB = func() int { return 512 }
+	m.Measure = func(string) Resources { return Resources{MemoryTotalMB: 512} }
 	result, err := m.Install(context.Background(), nextcloud(t), "cloud", nil)
 	if err != nil || len(result.Warnings) != 1 || !strings.Contains(result.Warnings[0], "512 Mo") {
 		t.Fatalf("résultat %+v, erreur %v", result, err)

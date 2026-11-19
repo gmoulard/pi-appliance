@@ -184,6 +184,127 @@ h2 {
   background: #d62839;
 }
 
+.gauges {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.gauge {
+  border-radius: 1.5rem;
+  background: var(--card);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  box-shadow: 0 3px 0 var(--line);
+  --state: #1f9d55;
+  --state-ink: var(--success-ink);
+  --state-pale: var(--success);
+}
+
+.gauge.orange {
+  --state: #f08c00;
+  --state-ink: #8a4b00;
+  --state-pale: var(--info);
+}
+
+.gauge.red {
+  --state: #d62839;
+  --state-ink: var(--brand-dark);
+  --state-pale: var(--error);
+}
+
+.gauge-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.gauge h3 {
+  margin: 0;
+  font-family: var(--title);
+  font-size: 1.125rem;
+  font-weight: 800;
+}
+
+.bar {
+  height: 1.25rem;
+  border-radius: 999px;
+  background: var(--line);
+  display: flex;
+  overflow: hidden;
+}
+
+.bar .used {
+  background: var(--muted);
+}
+
+.bar .need {
+  background: var(--state);
+}
+
+.gauge.red .bar {
+  box-shadow: inset 0 0 0 2px var(--state);
+}
+
+.legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.swatch {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex: none;
+  border-radius: 0.25rem;
+}
+
+.swatch.used {
+  background: var(--muted);
+}
+
+.swatch.need {
+  background: var(--state);
+}
+
+.swatch.free {
+  background: var(--line);
+}
+
+.gauge p {
+  margin: 0;
+}
+
+.gauge .summary {
+  font-weight: 800;
+  color: var(--state-ink);
+}
+
+.gauge .advice {
+  border-radius: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--state-pale);
+  color: var(--state-ink);
+  font-size: 0.9375rem;
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;

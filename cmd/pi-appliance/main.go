@@ -49,7 +49,7 @@ func main() {
 	} else if found {
 		log.Printf("fichier reset trouvé : réinitialisation du mot de passe administrateur ouverte")
 	}
-	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, MemoryMB: services.SystemMemoryMB}
+	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Measure: services.Measure}
 	server := &http.Server{
 		Addr:              *addr,
 		Handler:           console.Handler(version, catalog, manager, accounts),

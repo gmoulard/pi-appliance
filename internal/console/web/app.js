@@ -29,6 +29,8 @@ const logoutButton = document.getElementById("logout");
 const emailReminder = document.getElementById("emailReminder");
 const servicesSection = document.getElementById("servicesSection");
 const catalogSection = document.getElementById("catalogSection");
+const systemSection = document.getElementById("systemSection");
+const gaugesBox = document.getElementById("gauges");
 const TINTS = 6;
 const ADMIN_PASSWORD_MIN = 12;
 let currentAccount = null;
@@ -101,6 +103,68 @@ function showMessage(lines, kind) {
   message.hidden = false;
 }
 
+// Taille en Mo écrite comme on la dit, comme Size côté serveur : « 120 Mo », « 1,5 Go ».
+function size(mb) {
+  if (mb < 1024) {
+    return `${mb} Mo`;
+  }
+  const tenths = Math.floor((mb * 10 + 512) / 1024);
+  if (tenths % 10 === 0 || tenths >= 100) {
+    return `${Math.floor((tenths + 5) / 10)} Go`;
+  }
+  return `${Math.floor(tenths / 10)},${tenths % 10} Go`;
+}
+
+function percent(part, total) {
+  return `${Math.max(0, Math.min(100, (part / total) * 100))}%`;
+}
+
+// Jauge de mémoire ou de disque (spécification 6.2) : déjà utilisé, part du nouveau service
+// (appName) et ce qui reste ; verte, orange ou rouge selon ce qui resterait.
+function gaugeElement(gauge, appName) {
+  const box = element("div", undefined, `gauge ${gauge.color}`);
+  const head = element("div", undefined, "gauge-head");
+  head.append(element("h3", gauge.title), element("span", `${size(gauge.total_mb)} en tout`, "meta"));
+  const bar = element("div", undefined, "bar");
+  bar.setAttribute("role", "img");
+  bar.setAttribute("aria-label", gauge.summary);
+  const used = element("span", undefined, "used");
+  used.style.width = percent(gauge.used_mb, gauge.total_mb);
+  bar.append(used);
+  const legend = element("ul", undefined, "legend");
+  const item = (className, text) => {
+    const line = element("li");
+    line.append(element("span", undefined, `swatch ${className}`), element("span", text));
+    return line;
+  };
+  legend.append(item("used", `Déjà utilisé par le système et les services\u00a0: ${size(gauge.used_mb)}`));
+  if (gauge.need_mb > 0) {
+    const need = element("span", undefined, "need");
+    need.style.width = percent(Math.min(gauge.need_mb, gauge.total_mb - gauge.used_mb), gauge.total_mb);
+    bar.append(need);
+    legend.append(item("need", `${appName}\u00a0: ${size(gauge.need_mb)}`));
+  }
+  legend.append(item("free", `Libre${gauge.need_mb > 0 ? " après l'installation" : ""}\u00a0: ${size(Math.max(gauge.left_mb, 0))}`));
+  box.append(head, bar, legend, element("p", gauge.summary, "summary"));
+  if (gauge.advice) {
+    box.append(element("p", gauge.advice, "advice"));
+  }
+  return box;
+}
+
+async function loadSystem() {
+  const { gauges } = await api("system");
+  gaugesBox.replaceChildren(...gauges.map((gauge) => gaugeElement(gauge)));
+  systemSection.hidden = gauges.length === 0 || !currentAccount || currentAccount.role !== "admin";
+}
+
+async function refresh() {
+  await loadServices();
+  if (currentAccount && currentAccount.role === "admin") {
+    await loadSystem().catch(() => null);
+  }
+}
+
 async function loadServices() {
   const { services } = await api("services");
   noServices.hidden = services.length > 0;
@@ -146,6 +210,10 @@ async function loadCatalog() {
     const card = element("li", undefined, "card app");
     tint(card, app.id);
     card.append(cardHead(app.id, app.name, element("p", app.description)));
+    card.append(element("p", `Il demande ${size(app.memory_mb)} de mémoire et ${size(app.disk_mb)} de place sur le disque.`, "meta"));
+    const sheet = element("div", undefined, "sheet");
+    sheet.hidden = true;
+    const gauges = element("div", undefined, "gauges");
     const form = element("form");
     const nameLabel = element("label", "Nom du service");
     const name = element("input");
@@ -155,7 +223,7 @@ async function loadCatalog() {
     name.required = true;
     nameLabel.append(name);
     form.append(nameLabel);
-    const asked = app.parameters.filter((parameter) => !parameter.generate);
+    const asked = (app.parameters || []).filter((parameter) => !parameter.generate);
     for (const parameter of asked) {
       const label = element("label", parameter.label);
       const input = element("input");
@@ -165,21 +233,47 @@ async function loadCatalog() {
       label.append(input);
       form.append(label);
     }
+    const buttons = element("div", undefined, "controls");
     const button = element("button", "Installer");
-    form.append(button);
+    const cancel = element("button", "Annuler", "secondary");
+    cancel.type = "button";
+    buttons.append(button, cancel);
+    form.append(buttons);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      install(app, form, button);
+      install(app, form, button, close);
     });
-    card.append(form, element("p", `${app.category} · licence ${app.license}`, "meta"));
+    sheet.append(gauges, form);
+    const open = element("button", "Installer…");
+    open.type = "button";
+    function close() {
+      sheet.hidden = true;
+      open.hidden = false;
+    }
+    cancel.addEventListener("click", close);
+    open.addEventListener("click", async () => {
+      open.disabled = true;
+      try {
+        const system = await api(`system?app=${encodeURIComponent(app.id)}`);
+        gauges.replaceChildren(...system.gauges.map((gauge) => gaugeElement(gauge, app.name)));
+      } catch (error) {
+        gauges.replaceChildren(element("p", `Mémoire et disque inconnus : ${error.message}`, "meta"));
+      } finally {
+        open.disabled = false;
+      }
+      open.hidden = true;
+      sheet.hidden = false;
+      button.focus();
+    });
+    card.append(open, sheet, element("p", `${app.category} · licence ${app.license}`, "meta"));
     return card;
   }));
 }
 
-async function install(app, form, button) {
+async function install(app, form, button, close) {
   const data = new FormData(form);
   const parameters = {};
-  for (const parameter of app.parameters.filter((p) => !p.generate)) {
+  for (const parameter of (app.parameters || []).filter((p) => !p.generate)) {
     parameters[parameter.name] = data.get(parameter.name);
   }
   button.disabled = true;
@@ -196,7 +290,8 @@ async function install(app, form, button) {
     }
     lines.push(...(result.warnings || []));
     showMessage(lines, "success");
-    await loadServices();
+    close();
+    await refresh();
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -224,7 +319,7 @@ async function act(service, control, button) {
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
-    await loadServices().catch(() => null);
+    await refresh().catch(() => null);
   }
 }
 
@@ -240,7 +335,7 @@ async function uninstall(service, button) {
   try {
     await api(`services/${encodeURIComponent(service.name)}?data=${keep ? "keep" : "delete"}`, { method: "DELETE" });
     showMessage([`${service.name} est désinstallé${keep ? ", ses données sont gardées" : ""}.`], "success");
-    await loadServices();
+    await refresh();
   } catch (error) {
     showMessage([error.message], "error");
     button.disabled = false;
@@ -293,6 +388,7 @@ function showAuth(mode) {
   authSection.hidden = false;
   servicesSection.hidden = true;
   catalogSection.hidden = true;
+  systemSection.hidden = true;
   logoutButton.hidden = true;
   emailReminder.hidden = true;
 }
@@ -343,7 +439,7 @@ async function showConsole(account) {
   emailReminder.hidden = account.email_verified;
   emailReminder.textContent = `Votre adresse ${account.email} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.`;
   await loadCatalog();
-  await loadServices();
+  await refresh();
 }
 
 api("health")

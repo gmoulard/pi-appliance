@@ -59,7 +59,9 @@ func newFixture(t *testing.T) fixture {
 	if err != nil {
 		t.Fatal(err)
 	}
-	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}}
+	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}, Measure: func(string) services.Resources {
+		return services.Resources{MemoryTotalMB: 2048, MemoryAvailableMB: 300, DiskTotalMB: 32768, DiskFreeMB: 20480}
+	}}
 	return fixture{handler: Handler("1.2.3", catalog, manager, accounts), accounts: accounts}
 }
 
@@ -279,7 +281,7 @@ func TestReset(t *testing.T) {
 
 func TestSignInRequired(t *testing.T) {
 	f := newFixture(t)
-	for _, path := range []string{"/pi-appliance/api/catalog", "/pi-appliance/api/services"} {
+	for _, path := range []string{"/pi-appliance/api/catalog", "/pi-appliance/api/services", "/pi-appliance/api/system"} {
 		if code := f.do(http.MethodGet, path, "", "", nil).Code; code != http.StatusUnauthorized {
 			t.Fatalf("%s sans session : code %d", path, code)
 		}
@@ -289,6 +291,39 @@ func TestSignInRequired(t *testing.T) {
 	}
 	if code := f.do(http.MethodDelete, "/pi-appliance/api/services/cloud?data=delete", "", "", nil).Code; code != http.StatusUnauthorized {
 		t.Fatalf("désinstallation sans session : code %d", code)
+	}
+}
+
+func TestSystem(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	response := f.do(http.MethodGet, "/pi-appliance/api/system", "", "", cookie)
+	if response.Code != http.StatusOK {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+	view := decode[SystemView](t, response)
+	if len(view.Gauges) != 2 {
+		t.Fatalf("jauges %+v", view.Gauges)
+	}
+	memory, disk := view.Gauges[0], view.Gauges[1]
+	if memory.Kind != services.MemoryGauge || memory.TotalMB != 2048 || memory.UsedMB != 1748 || memory.NeedMB != 0 || memory.LeftMB != 300 || memory.Color != services.Green {
+		t.Fatalf("mémoire %+v", memory)
+	}
+	if disk.Kind != services.DiskGauge || disk.UsedMB != 12288 || disk.LeftMB != 20480 || disk.Summary != "Il reste 20 Go de place sur le disque, sur 32 Go." {
+		t.Fatalf("disque %+v", disk)
+	}
+
+	view = decode[SystemView](t, f.do(http.MethodGet, "/pi-appliance/api/system?app=etherpad", "", "", cookie))
+	memory, disk = view.Gauges[0], view.Gauges[1]
+	if memory.NeedMB != 384 || memory.LeftMB != -84 || memory.Color != services.Red || memory.Summary != "Il manquerait 84 Mo de mémoire." || !strings.Contains(memory.Advice, "arrêtez un service") {
+		t.Fatalf("mémoire avec Etherpad %+v", memory)
+	}
+	if disk.NeedMB != 1024 || disk.LeftMB != 19456 || disk.Color != services.Green || disk.Summary != "Il resterait 19 Go de place sur le disque." {
+		t.Fatalf("disque avec Etherpad %+v", disk)
+	}
+
+	if response := f.do(http.MethodGet, "/pi-appliance/api/system?app=inconnue", "", "", cookie); response.Code != http.StatusNotFound {
+		t.Fatalf("application inconnue : code %d", response.Code)
 	}
 }
 

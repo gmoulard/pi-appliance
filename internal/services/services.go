@@ -76,11 +76,20 @@ type Result struct {
 }
 
 type Manager struct {
-	Dir      string
-	Domain   string
-	Runner   Runner
-	MemoryMB func() int
-	mu       sync.Mutex
+	Dir    string
+	Domain string
+	Runner Runner
+	// Measure mesure la mémoire et le disque du Pi (Measure du paquet en production) ; nil : inconnus.
+	Measure func(dir string) Resources
+	mu      sync.Mutex
+}
+
+// Resources mesure la mémoire du Pi et la place libre du dossier de données.
+func (m *Manager) Resources() Resources {
+	if m.Measure == nil {
+		return Resources{}
+	}
+	return m.Measure(m.Dir)
 }
 
 func (m *Manager) serviceDir(name string) string {
@@ -108,10 +117,8 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 		return Result{}, err
 	}
 	var warnings []string
-	if m.MemoryMB != nil {
-		if memory := m.MemoryMB(); memory > 0 && memory < app.MemoryMB {
-			warnings = append(warnings, fmt.Sprintf("Ce Raspberry Pi a %d Mo de mémoire et %s en demande %d : le service risque d'être lent.", memory, app.Name, app.MemoryMB))
-		}
+	if memory := m.Resources().MemoryTotalMB; memory > 0 && memory < app.MemoryMB {
+		warnings = append(warnings, fmt.Sprintf("Ce Raspberry Pi a %d Mo de mémoire et %s en demande %d : le service risque d'être lent.", memory, app.Name, app.MemoryMB))
 	}
 	if err := writeFiles(dir, app, name, address, env); err != nil {
 		return Result{}, err
@@ -311,22 +318,4 @@ func trimOutput(output []byte, err error) string {
 		lines = lines[len(lines)-5:]
 	}
 	return strings.Join(lines, "\n")
-}
-
-func SystemMemoryMB() int {
-	data, err := os.ReadFile("/proc/meminfo")
-	if err != nil {
-		return 0
-	}
-	for _, line := range strings.Split(string(data), "\n") {
-		fields := strings.Fields(line)
-		if len(fields) >= 2 && fields[0] == "MemTotal:" {
-			kilobytes, err := strconv.Atoi(fields[1])
-			if err != nil {
-				return 0
-			}
-			return kilobytes / 1024
-		}
-	}
-	return 0
 }

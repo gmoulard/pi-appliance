@@ -97,6 +97,7 @@ func Handler(version string, catalog marketplace.Catalog, manager *services.Mana
 	mux.HandleFunc("POST "+BasePath+"/api/login", c.login)
 	mux.HandleFunc("POST "+BasePath+"/api/logout", c.logout)
 	mux.HandleFunc("GET "+BasePath+"/api/catalog", c.signedIn(c.listCatalog))
+	mux.HandleFunc("GET "+BasePath+"/api/system", c.signedIn(c.system))
 	mux.HandleFunc("GET "+BasePath+"/api/services", c.signedIn(c.listServices))
 	mux.HandleFunc("POST "+BasePath+"/api/services", c.adminOnly(c.install))
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
@@ -299,6 +300,28 @@ func (c *console) health(w http.ResponseWriter, _ *http.Request) {
 
 func (c *console) listCatalog(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"apps": c.catalog.Apps()})
+}
+
+// SystemView est la mémoire et le disque du Pi en jauges (spécification 6.2).
+type SystemView struct {
+	Gauges []services.Gauge `json:"gauges"`
+}
+
+// system rend les jauges de mémoire et de disque ; avec ?app=<id>, elles montrent aussi
+// la part que prendrait ce service et ce qui resterait après son installation.
+func (c *console) system(w http.ResponseWriter, r *http.Request) {
+	resources := c.services.Resources()
+	id := r.URL.Query().Get("app")
+	if id == "" {
+		writeJSON(w, http.StatusOK, SystemView{Gauges: services.Gauges(resources, "", 0, 0)})
+		return
+	}
+	app, ok := c.catalog.Get(id)
+	if !ok {
+		writeError(w, http.StatusNotFound, "Cette application n'est pas dans la marketplace.")
+		return
+	}
+	writeJSON(w, http.StatusOK, SystemView{Gauges: services.Gauges(resources, app.Name, app.MemoryMB, app.DiskMB)})
 }
 
 // ServiceView est un service installé avec son état vert, orange ou rouge.
