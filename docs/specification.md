@@ -224,6 +224,7 @@ Objectif : chaque service est joignable à `https://<service>.<adresse de l'appl
 ### 7.1 Adresse de l'appliance
 
 - **Par défaut : `<nom>.pi-appliance.com`**. Ce nom (et `*.<nom>.pi-appliance.com` pour les services) est un **alias** (CNAME) vers un nom **DuckDNS** (`<identifiant>.duckdns.org`, gratuit), que l'appliance tient à jour avec l'adresse publique de la box. Le projet ne gère que les alias de la zone `pi-appliance.com`, jamais l'adresse IP des utilisateurs.
+  **Réalisé** (paquet `internal/ddns`) : la console lit l'adresse publique de la box toutes les 5 minutes (`https://api.ipify.org`) et la transmet à DuckDNS (`https://www.duckdns.org/update?domains=…&token=…&ip=…`, réponse `OK` ou `KO`) seulement quand elle change, au moins une fois par jour, et tout de suite après un changement de réglages ; après un échec, le délai double d'une minute jusqu'à une heure. L'identifiant DuckDNS et son jeton sont gardés sur le Pi dans `<données>/duckdns.json` (droits 600), jamais renvoyés par la console ni écrits dans le journal. API réservée à l'administrateur : `GET /pi-appliance/api/duckdns` (état de la dernière mise à jour : nom, adresse envoyée, dates, erreur, prochain essai), `PUT` (identifiant et jeton), `DELETE` (oublier les réglages). Reste à faire : l'écran de la console, et le lien avec le service d'adresses du projet. À vérifier sur un vrai Pi.
 - **Réservation** : depuis la console ou depuis le site, auprès du service d'adresses du projet (section 10.2). Le nom est **lié à l'appliance** par une clé propre au Pi, créée au premier démarrage : une seule adresse par appliance ; seule l'appliance qui détient la clé peut la modifier. Une adresse est libérée après **90 jours** sans signe de vie de son appliance. Une liste de noms interdits (marques, termes injurieux, noms réservés au projet comme `www`, `relais`, `mail`) est refusée.
 - **En option : un domaine personnel**, que l'utilisateur fait pointer (alias) vers son adresse `<nom>.pi-appliance.com`, guidé pas à pas pour les principaux bureaux d'enregistrement (OVH d'abord). Ancien prototype de mise à jour OVH : `linux-tool/dynHost/` (section 12).
 
@@ -424,6 +425,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
 | `internal/auth/` | Comptes de la console : compte administrateur, connexion, sessions, fichier `reset` (8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
+| `internal/ddns/` | Mise à jour du nom DuckDNS avec l'adresse publique de la box (7.1) |
 | `internal/network/` | Réseau du Pi pour la console, par `network.sh` : état, Wi-Fi, connexion, câble, pays du Wi-Fi (4) |
 | `internal/system/` | État du Pi : mémoire, disque, charge du processeur, température, trafic réseau (5.2, 6.2) |
 | `internal/metrics/` | Historique horaire de l'état du Pi sur 30 jours, pour les graphiques (5.2, 11) |

@@ -29,6 +29,7 @@ import (
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/console"
+	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
@@ -67,6 +68,12 @@ func main() {
 	if err := history.Load(); err != nil {
 		log.Printf("historique illisible, il repart de zéro : %v", err)
 	}
+	// Réglages DuckDNS (identifiant et jeton) : fichier en droits 600, jamais journalisés.
+	duckdns, err := ddns.Open(filepath.Join(*data, "duckdns.json"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	duckdns.Logf = log.Printf
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	measured := make(chan struct{})
@@ -74,6 +81,7 @@ func main() {
 		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(*data) }, log.Printf)
 		close(measured)
 	}()
+	go duckdns.Run(ctx)
 	server := &http.Server{
 		Addr: *addr,
 		Handler: console.Handler(console.Config{
@@ -84,6 +92,7 @@ func main() {
 			Network:    net,
 			Resources:  func() system.Resources { return system.Read(*data) },
 			History:    history,
+			DuckDNS:    duckdns,
 			WizardFile: filepath.Join(*data, "wizard-done"),
 		}),
 		ReadHeaderTimeout: 10 * time.Second,

@@ -119,7 +119,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 ## 3. Étape 2 — Internet (7)
 
 - [ ] Traefik : point d'entrée unique, routage par sous-domaine (faits à l'étape Local, `system/`), certificats Let's Encrypt (bloc prêt dans `system/etc/pi-appliance/traefik/traefik.yml`, plus le label `tls.certresolver` à poser par `internal/services`).
-- [ ] DuckDNS tenu à jour par l'appliance.
+- [x] DuckDNS tenu à jour par l'appliance (`internal/ddns`, API `api/duckdns` réservée à l'administrateur) ; à vérifier sur un vrai Pi.
+- [ ] Écran de la console pour DuckDNS : saisie de l'identifiant et du jeton, état de la dernière mise à jour (l'API `api/duckdns` existe).
 - [ ] Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
 - [ ] Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] Domaine personnel : guide OVH, à partir de l'ancien `linux-tool/dynHost/` (historique git).
