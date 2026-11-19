@@ -1,0 +1,75 @@
+---
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Configuration dynamique de Traefik : console, portail captif, certificat local.
+
+http:
+  routers:
+    # Console sous /pi-appliance, quelle que soit l'adresse utilisée
+    # (pi-appliance.local, adresse IP, localhost). Les routeurs des services
+    # (Host(`<nom>.<adresse>`)) ont une règle plus longue : ils passent avant.
+    # NE PAS ouvrir les ports 80/443 sur internet ni brancher le relais avec cette
+    # règle : la console doit rester fermée sur internet par défaut (spécification
+    # 8.3). La limiter d'abord au réseau de la maison (voir docs/TODO.md, étape 2).
+    pi-appliance-console:
+      entryPoints: [websecure]
+      rule: "PathPrefix(`/pi-appliance`)"
+      service: pi-appliance-console
+      tls: {}
+    # Adresse nue (https://pi-appliance.local/) : vers la console.
+    pi-appliance-root:
+      entryPoints: [websecure]
+      rule: "Path(`/`)"
+      middlewares: [pi-appliance-to-console]
+      service: noop@internal
+      tls: {}
+    # Portail captif : sur le point d'accès Wi-Fi (10.42.0.0/24), toute page
+    # demandée en HTTP mène à la console. Les téléphones ouvrent alors d'eux-mêmes
+    # la page de connexion au réseau.
+    pi-appliance-captive:
+      entryPoints: [web]
+      rule: "ClientIP(`10.42.0.0/24`)"
+      middlewares: [pi-appliance-captive]
+      service: noop@internal
+      priority: 100
+
+  middlewares:
+    pi-appliance-to-console:
+      redirectRegex:
+        regex: "^https://([^/]+)/?$"
+        replacement: "https://${1}/pi-appliance/"
+    pi-appliance-captive:
+      redirectRegex:
+        regex: ".*"
+        replacement: "https://10.42.0.1/pi-appliance/"
+
+  services:
+    pi-appliance-console:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8080"
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+  stores:
+    default:
+      # Certificat local auto-signé, propre à chaque Pi (secrets.sh). Le
+      # navigateur affiche une alerte, expliquée dans le portail et le guide.
+      defaultCertificate:
+        certFile: /etc/traefik/tls/local.crt
+        keyFile: /etc/traefik/tls/local.key

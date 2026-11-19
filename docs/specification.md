@@ -16,6 +16,10 @@ L'image repose sur trois couches :
 | Conteneurs | Docker Engine et Docker Compose |
 | Produit | La couche pi-appliance : console d'administration, marketplace, reverse proxy Traefik, exposition sur internet |
 
+![Schéma des couches : matériel Raspberry Pi, Raspberry Pi OS, pi-appliance, Docker et ses conteneurs](architecture-pi-docker.svg)
+
+*La console pi-appliance tourne comme un service du système hôte ; elle utilise Docker Compose pour piloter Docker Engine. Traefik et les applications de la marketplace tournent dans des conteneurs distincts.*
+
 ### 1.1 Public visé
 
 pi-appliance s'adresse au **grand public** : des personnes sans connaissances techniques, qui ne savent ni ce qu'est Docker ni ce qu'est un DNS. En découle, pour toute la suite :
@@ -40,6 +44,7 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 |-------|------|
 | **Appliance** | Le Raspberry Pi équipé de l'image pi-appliance. |
 | **Console** | L'interface web d'administration de l'appliance, servie sous `/pi-appliance`. |
+| **controlTower** | Le Raspberry Pi pi-appliance dédié au concepteur du projet. Il dispose de sa propre console d'administration ; il ne pilote pas les autres Pi du domicile. |
 | **Administrateur** | Compte qui gère l'appliance ; le premier est créé au premier démarrage. |
 | **Utilisateur** | Compte qui accède aux services autorisés. |
 | **Invité** | Compte à durée limitée, pour un partage ponctuel. |
@@ -72,9 +77,25 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 - Contient Docker, Docker Compose, la console pi-appliance et Traefik, démarrés au premier boot.
 - Premier démarrage : extension de la partition, nom d'hôte `pi-appliance`, annonce mDNS (`pi-appliance.local`), génération des secrets propres au boîtier (certificat local auto-signé, clés de session). Aucun secret n'est commun à deux images.
 - **Modèles pris en charge** : Raspberry Pi 5, Pi 4, Pi 3 B+ et Pi Zero 2 W, avec une seule image 64 bits. Sur les petits modèles (Pi 3 B+ : 1 Go, Zero 2 W : 512 Mo), une application dont la mémoire minimale dépasse celle du Pi s'installe quand même, après un avertissement sur les performances.
+- **Plusieurs Pi dans un domicile** : plusieurs appliances indépendantes peuvent fonctionner sur le même réseau local, dont un Pi dédié au concepteur du projet et nommé controlTower. Chaque Pi conserve sa propre console, ses comptes, ses services et ses données ; controlTower ne fournit pas de tableau de bord commun et ne pilote pas les autres Pi. Chaque appareil doit avoir un nom réseau unique pour éviter les conflits et permettre d'ouvrir la bonne console. La cohabitation et la procédure de configuration restent à valider (TODO-2.48).
+
+![Schéma cible du réseau domestique : Internet, box, controlTower et plusieurs Pi indépendants sur le réseau interne](reseau-maison.svg)
+
+*Schéma cible : tous les Pi, y compris controlTower, sont sur le réseau interne derrière la box. L'accès depuis Internet reste à mettre en place ; controlTower n'administre pas les autres Pi.*
+
 - **Réseau au premier démarrage** : le Pi ouvre **toujours** un point d'accès Wi-Fi « pi-appliance » avec un portail de configuration, même si un câble Ethernet est branché, pour que le parcours soit le même pour tous. Le portail propose les Wi-Fi visibles et, si un câble est branché, le réseau filaire. Le point d'accès est **ouvert** (sans mot de passe) mais **limité à 24 heures** : il se referme une fois le Pi connecté, ou au bout de 24 heures ; redémarrer le Pi le rouvre pour 24 heures, et il se rouvre de même si le Pi perd durablement le réseau. Rien de sensible n'y transite avant la création du compte administrateur. Le Pi Zero 2 W n'a pas de prise Ethernet.
 - **Stockage** : tout fonctionne sur la carte SD. Quand un disque USB est branché, la console propose d'y placer les données des services ; elle prévient quand la carte SD se remplit.
 - L'image est publiée sur www.pi-appliance.com avec sa somme de contrôle.
+
+**Réalisé** (code écrit, pas encore essayé sur un vrai Pi ; dossiers `image/` et `system/`) :
+
+- **Construction** : `image/build.sh` part de pi-gen (Raspberry Pi OS Lite 64 bits, Trixie, version de pi-gen fixée) et ajoute une étape `image/stage-pi-appliance/`, qui lance `system/install.sh` dans l'image : Docker et Docker Compose (dépôt officiel de Docker, clé vérifiée), la console (`/usr/local/bin/pi-appliance`), Traefik (image Docker embarquée, pour que le portail marche sans internet), NetworkManager, avahi. Une vérification refuse l'image si un secret s'y trouve (clé du Pi, certificat, comptes, clés SSH) ou si la console n'est pas un binaire `arm64`. Le même `system/install.sh` installe tout sur un Raspberry Pi OS déjà en place. Réglages de l'image : nom d'hôte `pi-appliance`, pas de SSH, aucun mot de passe (le compte système `pi` est verrouillé ; Raspberry Pi OS ne propose d'en créer un qu'avec un écran branché au Pi), langue et clavier français, pays du Wi-Fi : France.
+- **Publication** : le workflow « Image » (`.github/workflows/image.yml`) construit l'image à la demande ou pour une étiquette `v…`, et la publie alors comme version GitHub : `pi-appliance-<version>.img.xz` et sa somme de contrôle `.sha256`. Pas encore sur www.pi-appliance.com.
+- **Premier démarrage** : extension de la partition par Raspberry Pi OS lui-même (`rpi-resize`) ; `pi-appliance.local` annoncé par avahi, sur les seules interfaces du Pi (pas celles de Docker), avec la console annoncée en `_https._tcp`. `pi-appliance-secrets.service` crée, à chaque démarrage s'ils manquent, la **clé du Pi** (Ed25519, `/var/lib/pi-appliance/system/device.key`, section 7.1) et le **certificat local auto-signé** (`/var/lib/pi-appliance/system/tls/`, valable 825 jours, refait 30 jours avant la fin) pour `pi-appliance.local`, `*.pi-appliance.local`, `localhost`, `127.0.0.1` et `10.42.0.1`.
+- **Démarrage** : services systemd `pi-appliance-secrets`, `pi-appliance-traefik`, `pi-appliance-ap` et `pi-appliance` (console), activés dans l'image.
+- **Point d'accès** : connexion NetworkManager `pi-appliance-ap` (ouverte, 2,4 GHz, canal 6, adresse du Pi `10.42.0.1`), ouverte et fermée par `pi-appliance-ap.service` selon la règle des 24 heures : ouverte au démarrage tant qu'aucun réseau n'a été choisi dans le portail, même avec un câble ; fermée dès que le réseau choisi est actif, ou au bout de 24 heures ; rouverte pour 24 heures si ce réseau manque plus de 10 minutes (2 minutes juste après un redémarrage). La puce Wi-Fi ne peut pas à la fois servir le point d'accès et chercher les Wi-Fi : la liste est faite juste avant l'ouverture, et le Wi-Fi de la maison est retenté toutes les 10 minutes quand personne n'est connecté au point d'accès. **Portail captif** : sur le point d'accès, tous les noms mènent au Pi et toute page demandée en HTTP renvoie vers `https://10.42.0.1/pi-appliance/` ; les téléphones ouvrent alors d'eux-mêmes la page de connexion au réseau.
+- **Disque USB** (`/usr/local/lib/pi-appliance/storage.sh`, paquet `internal/storage`, API `api/storage` réservée à l'administrateur) : la section « Mon Pi » liste les disques USB branchés (`lsblk`, la carte SD n'y figure jamais) et propose d'y placer les données des services. Un disque déjà en ext4 est utilisé tel quel ; sinon la console propose de l'effacer (deux confirmations), d'y créer une seule partition ext4 (`sfdisk`, `mkfs.ext4`), puis de l'utiliser. Le déplacement copie tout le dossier de Docker (volumes des services et images) sur le disque, monté en `/mnt/pi-appliance-data` (ligne `nofail` dans `/etc/fstab`, par l'UUID du disque), règle `data-root` dans `/etc/docker/daemon.json` (gardé par `install.sh` lors d'une réinstallation), redémarre Docker et Traefik, puis libère la carte SD ; il vérifie d'abord la place libre (ce que prend Docker, plus 10 %). Il dure plusieurs minutes et arrête les services et l'accès à la console : le script se relance hors du service de la console (`systemd-run`, unité `pi-appliance-storage`) et répond tout de suite ; la page suit l'avancement (`GET api/storage`, champ `move`) et le dit en langage courant. En cas d'échec, retour à la carte SD et à l'ancienne configuration de Docker ; une copie interrompue (Pi éteint) est signalée. Ensuite, Docker ne démarre pas sans le disque (`RequiresMountsFor`), pour ne pas repartir à vide sur la carte SD : la console dit de le laisser branché. Revenir sur la carte SD, changer de disque : pas encore. À vérifier sur un vrai Pi.
+- **Pour la console** : `/usr/local/lib/pi-appliance/network.sh` donne en JSON l'état du réseau, la liste des Wi-Fi visibles, la connexion à un Wi-Fi (mot de passe par l'entrée standard, jamais dans une ligne de commande) et le choix du câble, le pays du Wi-Fi (`raspi-config`, gardé après un redémarrage). **Réalisé** : la console l'appelle par `internal/network` (API `api/network`, réservée à l'administrateur connecté) et le portail propose le pays du Wi-Fi, la liste des Wi-Fi, le mot de passe, un Wi-Fi caché, le câble, le temps restant avant la fermeture du point d'accès et l'explication de l'alerte du certificat. La demande de connexion reçoit sa réponse avant que le point d'accès se ferme ; le résultat se lit ensuite dans l'état (`lastError`). À vérifier sur un vrai Pi.
 
 ## 5. Console d'administration
 
@@ -91,6 +112,8 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 7. Statistiques anonymes : proposées, désactivées par défaut (section 8.4).
 8. Choix des premiers services dans la marketplace.
 
+**Réalisé** (première version) : après la création du compte, la console ouvre l'assistant « Mise en route » pour l'administrateur. Il montre les étapes et la place de chacune : compte administrateur, réseau de la maison (pays du Wi-Fi, puis Wi-Fi ou câble, section 4), premiers services (marketplace avec ses jauges, section 6.2). L'étape du réseau avance d'elle-même dès que le réseau est choisi, même si la page a perdu la connexion entre-temps ; elle peut être passée, le point d'accès restant alors ouvert. « Terminer la mise en route » l'enregistre (`/var/lib/pi-appliance/wizard-done`) ; d'ici là, l'assistant reprend à la connexion suivante. Les étapes langue, adresse, test d'accès, utilisateurs et statistiques viendront avec leurs fonctions.
+
 ### 5.2 Fonctions courantes
 
 - État de l'appliance : charge, mémoire, température, espace disque, adresse publique, état des certificats, mode d'accès (direct ou relais).
@@ -104,9 +127,24 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 
 Une appliance se gère depuis sa propre console : pas de tableau de bord commun à plusieurs appliances.
 
+**Réalisé** (tableau de bord, section « Mon Pi » de la console, administrateurs ; à vérifier sur un vrai Pi) :
+
+- **En ce moment** : charge du processeur (part du temps où il a travaillé, d'après `/proc/stat`, tous cœurs confondus ; orange à 90 %), température de la puce (`/sys/class/thermal/thermal_zone0/temp` ; orange à 70 °C, rouge à 80 °C, avec un conseil en langage courant), jauges de la mémoire et du disque (section 6.2), et l'état des services en une phrase (« 2 services en marche, 1 service arrêté »), avec la pastille de la couleur la plus grave. `GET api/system` donne `memory`, `disk`, `cpu_percent`, `temperature_c` (`null` quand la valeur est inconnue). La page se met à jour chaque minute.
+- **Graphiques** sur 24 heures ou 30 jours : processeur, mémoire, température (la plus haute de chaque heure), disque et réseau (Mo reçus et envoyés par heure, sur le câble et le Wi-Fi, sans le bouclage ni les réseaux internes de Docker). Une courbe par mesure, chacune avec son échelle ; une heure sans mesure (Pi éteint) coupe la courbe ; la valeur d'une heure s'affiche sous le doigt ou la souris. `GET api/system/history` : `{"step_seconds": 3600, "points": [{"time", "cpu_percent", "memory_percent", "temperature_c", "disk_percent", "received_mb", "sent_mb"}]}`.
+- **Historique** (paquet `internal/metrics`) : une mesure par minute, agrégée par heure en mémoire ; le fichier `<données>/history.json` n'est écrit qu'une fois par heure (section 11), et à l'arrêt de la console, heure en cours comprise, reprise au redémarrage. 30 jours gardés, soit 720 points (environ 100 Ko).
+- Pas encore : adresse publique, état des certificats et mode d'accès (étape Internet, section 7).
+
 ### 5.3 Langues
 
 L'interface est traduite dans les 12 langues de Wikipedia2Book : français, anglais, espagnol, portugais, italien, allemand, néerlandais, turc, chinois, japonais, arabe et persan (ces deux dernières de droite à gauche). Langue détectée d'après le navigateur, modifiable à tout moment. Le français fait foi.
+
+**Réalisé** (interface web de la console, `internal/console/web/` ; traductions à faire relire par des locuteurs natifs) :
+
+- `i18n.js`, chargé avant `app.js`, choisit la langue : celle de l'adresse (`?lang=`), sinon celle choisie dans la console (gardée par le navigateur), sinon la première langue du navigateur parmi les 12, sinon le français. Un sélecteur « Langue », en bas de chaque page, liste les langues sous leur propre nom et recharge la page.
+- La clé d'une traduction est la phrase française elle-même (`t("Il reste {0} de mémoire.", taille)`) : une phrase sans traduction s'affiche en français. Chaque langue est un fichier `i18n/<code>.js`, chargé seulement pour cette langue ; les textes fixes de la page sont traduits au chargement. Nombres et dates suivent la langue (`toLocaleString`), les noms de pays du réglage Wi-Fi viennent du navigateur (`Intl.DisplayNames`).
+- Arabe et persan : page en `dir="rtl"`, styles en propriétés logiques (`margin-inline-start`…) ; les graphiques gardent le temps de gauche à droite.
+- Un test Go vérifie que chaque langue traduit toutes les phrases de `app.js` et de `index.html`, sans phrase inconnue, en gardant les `{0}`, `{1}`… et les retours à la ligne.
+- Pas encore traduits : les messages qui viennent du serveur (erreurs, état des services, avertissements d'installation), les noms et descriptions des applications du catalogue, l'assistant de premier démarrage n'a pas encore son étape « Langue » (le sélecteur du bas de page en tient lieu).
 
 ### 5.4 Versions
 
@@ -125,13 +163,7 @@ Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta
 - Seuls les **administrateurs** installent, mettent à jour et désinstallent.
 - Installer : télécharger les images, créer les volumes, poser les labels Traefik (routeur, certificat, protection), démarrer les conteneurs, afficher l'adresse du service.
 - **Mémoire et disque en image** : avant d'installer, la console montre deux jauges, une pour la mémoire et une pour le disque du Pi. Chaque jauge montre ce que le Pi a en tout, ce qu'utilisent déjà le système et les services installés, la part que prendrait le nouveau service (d'après `memory_mb` et `disk_mb` de son manifeste, section 6.5) et **ce qui resterait** après l'installation, en Mo ou Go, avec des mots simples (« Il resterait 120 Mo de mémoire »). La jauge passe à l'orange quand il resterait peu de place, au rouge quand le service ne tient pas ; dans ce cas, la console explique que le service risque d'être lent (mémoire) ou de ne pas s'installer (disque), et propose d'arrêter un autre service ou de brancher un disque USB. Les mêmes jauges, sans la part du nouveau service, figurent dans le tableau de bord (section 5.2) et sur la fiche de chaque application de la marketplace.
-
-  **Réalisé** (`internal/services/resources.go`, `GET api/system`) :
-  - Mesure : la mémoire vient de `MemTotal` et `MemAvailable` dans `/proc/meminfo`. « Déjà utilisé » vaut le total moins la mémoire disponible. Le disque est mesuré par `statfs` sur le système de fichiers du dossier de données (`-data`, `/var/lib/pi-appliance` par défaut) : « déjà utilisé » vaut sa taille moins la place libre pour les programmes. Si le dossier n'existe pas encore, la console mesure son premier parent existant. Une mesure illisible n'a pas de jauge.
-  - Couleurs : rouge si ce qui resterait est négatif ; orange s'il resterait moins d'un dixième de ce que le Pi a, avec un seuil entre 100 Mo et 1 Go pour la mémoire et entre 1 Go et 4 Go pour le disque ; vert sinon. Les phrases (« Il resterait 120 Mo de mémoire. », « Il manquerait 84 Mo de mémoire. ») et les conseils sont écrits par le serveur. Mémoire : arrêter un service dont on ne se sert pas. Disque : désinstaller un service ou brancher un disque USB. Une application qui ne tient pas en mémoire s'installe quand même (section 4).
-  - API : `GET api/system` (personnes connectées) rend `{"gauges": [...]}` sans nouveau service. `GET api/system?app=<id>` ajoute la part de cette application. Chaque jauge donne `total_mb`, `used_mb`, `need_mb`, `left_mb`, `color` (`green`, `orange`, `red`), `summary` et `advice`.
-  - Console : le tableau de bord commence par « Mémoire et disque » (administrateurs, comme la marketplace). Chaque carte de la marketplace annonce ce que demande l'application (« Il demande 384 Mo de mémoire et 1 Go de place sur le disque »). Le bouton « Installer… » ouvre la fiche : jauges avec la part du service, nom et paramètres, puis « Installer » ou « Annuler ». Les jauges se mettent à jour après une installation, une désinstallation ou un démarrage ou arrêt.
-  - Reste : la fiche de la marketplace montre les jauges avec la part du service, pas les jauges seules, puisque le tableau de bord et la marketplace sont encore sur la même page ; il faudra les y mettre quand la marketplace aura sa propre page. Les mesures ne distinguent pas le système des services : il faudrait lire la mémoire de chaque conteneur (`docker stats`) et la taille des images et volumes (`docker system df`). Un service arrêté ne compte pas dans la mémoire utilisée. Le disque mesuré est celui du dossier de données : si les images Docker (`/var/lib/docker`) sont sur un autre disque, elles n'y figurent pas. Le disque USB n'est pas encore géré (section 4) : la console conseille de le brancher, mais ne sait pas encore y placer les données.
+  **Réalisé** : `GET api/system` (administrateur) donne la mémoire (`MemAvailable` de `/proc/meminfo`) et le disque du dossier des données ; la jauge passe à l'orange sous 15 % de libre après l'installation, au rouge quand le service ne tient pas. Les jauges figurent sur chaque fiche de la marketplace et, sans la part d'un service, dans la section « Mon Pi » de la console, en attendant le tableau de bord. La jauge du disque est celle de la carte SD, ou celle du disque USB quand les données des services y sont (`usb_disk` dans `GET api/system`, la carte SD restant affichée à côté). Quand le service ne tient pas, la console conseille de brancher un disque USB (s'il n'y en a pas encore) ou de désinstaller un service. Dans « Mon Pi », une jauge du disque à l'orange dit que la carte SD (ou le disque USB) se remplit et, sans disque USB, propose d'en brancher un (section 4). L'alerte par e-mail viendra avec le service d'envoi d'e-mails (section 8.6).
 - **Plusieurs instances** d'une même application sont possibles (deux sites web, deux wikis…) : chacune a son nom, son sous-domaine (`blog.`, `asso.`…) et ses données.
 - Mettre à jour : sauvegarde du service juste avant ; si le service ne redémarre pas, **retour automatique** à la version précédente et alerte par e-mail.
 - Désinstaller : la console **demande à chaque fois** s'il faut garder ou supprimer les données du service ; la suppression demande une confirmation. Les données gardées sont réutilisées si on réinstalle le service.
@@ -141,7 +173,6 @@ Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta
 | Application | Logiciel | Remarques |
 |-------------|----------|-----------|
 | Fichiers, agenda, contacts | Nextcloud | Ancien prototype (section 12) : `docker-nextcloud/` |
-| Partage de fichiers à la maison | Samba | Réseau de la maison seulement ; ancien prototype (section 12) : `docker-samba/` |
 | Site web | Apache + PHP | Ancien prototype (section 12) : `docker-apache/` |
 | Wiki | DokuWiki | Sans base de données, tourne sur tous les modèles |
 | Édition de texte à plusieurs | Etherpad | |
@@ -149,9 +180,7 @@ Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta
 
 Règles propres à ces applications :
 
-- **Samba** : un dossier **commun** à tous les comptes et un dossier **personnel** par utilisateur, avec les comptes de l'appliance (LDAP, section 8.1).
-- **Nextcloud et Samba voient les mêmes fichiers** : le dossier commun et les dossiers personnels de Samba apparaissent dans Nextcloud (stockage externe), et inversement.
-- **Site web** : les fichiers du site se déposent, au choix, dans un dossier visible dans Nextcloud, dans un dossier du partage Samba, ou en envoyant un fichier ZIP dans la console. Une instance = un dossier.
+- **Site web** : les fichiers du site se déposent, au choix, dans un dossier visible dans Nextcloud ou en envoyant un fichier ZIP dans la console. Une instance = un dossier.
 - **Etherpad** : les utilisateurs connectés créent des documents ; un lien de partage permet à une personne sans compte d'éditer un document précis.
 
 **Réalisé** (manifestes de la marketplace, section 6.5) :
@@ -163,17 +192,25 @@ Règles propres à ces applications :
 | DokuWiki | `marketplace/dokuwiki/` | `dokuwiki/dokuwiki:2026-07-14c` (image officielle ; DokuWiki numérote ses versions par date) | utilisateurs connectés | 128 Mo, 1 024 Mo |
 | Etherpad | `marketplace/etherpad/` | `etherpad/etherpad:3` (image officielle) | utilisateurs connectés | 384 Mo, 1 024 Mo |
 
-- **Site web** : les fichiers du site sont dans un volume propre à l'instance ; tant qu'il est vide, une page « Site en construction » s'affiche. Le dépôt des fichiers par Nextcloud, Samba ou ZIP reste à faire.
+- **Site web** : les fichiers du site sont dans un volume propre à l'instance ; tant qu'il est vide, une page « Site en construction » s'affiche. Le dépôt des fichiers par Nextcloud ou ZIP reste à faire.
 - **DokuWiki** : au premier démarrage, le compte `admin` est créé avec un mot de passe tiré au hasard, affiché une seule fois ; l'assistant d'installation de DokuWiki est donc fermé (sinon le premier visiteur choisirait le compte administrateur). Tout le monde lit, les comptes du wiki écrivent ; pas d'inscription libre ; wiki en français.
 - **Etherpad** : documents gardés dans une base SQLite du volume ; mot de passe de l'administrateur (`/admin`) tiré au hasard et affiché une seule fois ; les secrets internes de connexion d'Etherpad sont aussi tirés au hasard ; sa propre vérification des mises à jour est coupée (elles passeront par la console, section 9.2). Etherpad demande environ 350 Mo de mémoire : sur un Pi Zero 2 W, la console prévient qu'il risque d'être lent. Les liens de partage pour une personne sans compte restent à faire : ils demandent que l'accès « utilisateurs connectés » (section 8.2) laisse passer l'adresse d'un document précis.
-- **Samba : pas encore**. Le format des manifestes ne sait publier qu'un service web (Traefik, `service` et `port`) ; Samba parle SMB sur le port 445 du Pi, que seul un service peut occuper, et l'accès « maison seulement » ne peut pas s'appuyer sur Traefik pour lui. Voir section 15.
+Plus tard :
 
-Plus tard : caméra (Motion, timelapse : anciens prototypes `pi-motion/` et `pi-timelaps/`, section 12).
+- **Samba**, partage de fichiers en lecteur réseau à la maison (Explorateur Windows, Finder, téléviseurs, scanners, Time Machine), avec un dossier commun et un dossier personnel par compte. Sorti de la première version : Nextcloud couvre déjà les fichiers, et Samba demande un format de manifeste pour un service qui n'est pas un site web (port SMB 445 du Pi, une seule instance possible, accès « maison seulement » appliqué sans Traefik) et un annuaire LDAP servi par la console (section 8.1). Nextcloud verra alors ses dossiers par son stockage externe (client Samba). Ancien prototype (section 12) : `docker-samba/`.
+- Caméra (Motion, timelapse : anciens prototypes `pi-motion/` et `pi-timelaps/`, section 12).
 
 ### 6.4 Hors marketplace
 
 - **Réglages avancés** : un écran masqué par défaut permet à un administrateur de modifier les variables, ports et volumes d'un service installé.
 - **Docker Compose libre** : un administrateur peut installer n'importe quel fichier Docker Compose, hors marketplace. La console prévient que ce service n'est ni vérifié ni pris en charge par le projet. Elle repère les options qui donnent la main sur tout le Pi (conteneur privilégié, montage du système hôte, réseau de l'hôte, accès à Docker) et les signale par un avertissement clair, que l'administrateur doit confirmer ; elles ne sont pas bloquées. Elle lui applique les mêmes règles d'accès (section 8.2) et le sauvegarde comme les autres.
+
+**Réalisé** (paquets `internal/services` et `internal/console`, administrateurs ; à vérifier sur un vrai Pi) :
+
+- **Réglages avancés** : bouton « Réglages avancés » sur chaque service, écran replié par défaut. On choisit un conteneur du service et on lui donne des variables (`NOM=valeur`), des ports ouverts directement sur le Pi, sans Traefik (`port du Pi:port du conteneur`, `tcp` ou `udp` ; 80, 443 et 8080 sont réservés), et des volumes (un volume nommé ou un dossier du Pi en chemin absolu, en lecture seule au besoin). Ils sont enregistrés dans `<données>/services/<nom>/advanced.json` et appliqués par un troisième fichier Compose, `pi-appliance.advanced.json`, lu après le manifeste et les labels Traefik ; le service redémarre. S'il ne démarre pas, les réglages d'avant sont remis et la console le dit. API : `GET` et `PUT api/services/<nom>/advanced` (`{"settings": {"service", "environment", "ports": [{"host", "container", "protocol"}], "volumes": [{"source", "target", "read_only"}]}, "confirm_risks"}`).
+- **Docker Compose libre** : carte « Docker Compose libre » à la fin de la marketplace, repliée par défaut. On colle un fichier `compose.yaml`, on nomme le service et on dit quel conteneur ouvrir à son adresse, sur quel port. Il s'installe comme les autres (labels Traefik, réseau `pi-appliance`, adresse `<nom>.<adresse>`, désinstallation avec la question des données), avec l'avertissement qu'il n'est ni vérifié ni pris en charge par le projet. Les images doivent être prêtes (`build` refusé). Pas de mise à jour depuis la marketplace : on change le fichier et on réinstalle. API : `POST api/compose` (`{"name", "compose", "service", "port", "confirm_risks"}`).
+- **Options dangereuses**, signalées dans les deux cas : conteneur privilégié, réseau de l'hôte (`network_mode: host`), `pid`, `ipc` ou `userns_mode` de l'hôte, accès à Docker (`docker.sock`), dossier du Pi monté (dossier système, tout le système, ou autre dossier ; lecture seule dite), matériel (`devices`), droits ajoutés (`cap_add`), protections coupées (`security_opt` *unconfined*). La console répond `409` avec la liste (`risks`) ; l'écran les montre en langage courant et redemande avec `confirm_risks` une fois l'administrateur d'accord. Rien n'est bloqué.
+- Pas encore : règles d'accès (section 8.2) et sauvegardes (section 9.1), qui viendront pour tous les services.
 
 ### 6.5 Format des manifestes
 
@@ -198,9 +235,9 @@ Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du servi
 - Installation : pour chaque instance, un dossier `<données>/services/<nom>/` (option `-data`, `/var/lib/pi-appliance` par défaut) avec le manifeste, un fichier `.env` (droits 600) et `pi-appliance.override.json`, qui ajoute les labels Traefik (routeur `Host(<nom>.<adresse>)`, entrée `websecure`, TLS) et le réseau Docker commun `pi-appliance`, créé s'il manque ; puis `docker compose up --detach --wait`. En cas d'échec, le service est arrêté et l'erreur de Docker affichée. Les secrets générés qui ont un libellé (mot de passe administrateur de Nextcloud) sont affichés une seule fois.
 - Plusieurs instances d'une même application, sous des noms différents ; avertissement quand la mémoire du Pi est inférieure à `memory_mb`.
 - Désinstallation : la console demande s'il faut garder les données ; gardées, elles (volumes et secrets) sont réutilisées à la réinstallation sous le même nom ; supprimées, après une seconde confirmation.
-- API de la console : `GET api/catalog`, `GET api/services`, `GET api/system` (jauges de mémoire et de disque, section 6.2), `POST api/services` (`{"app", "name", "parameters"}`, JSON seulement), `DELETE api/services/<nom>?data=keep|delete`. Il faut être connecté pour lire le catalogue et les services, et administrateur pour installer ou désinstaller (section 8.1).
+- API de la console : `GET api/catalog`, `GET api/services`, `POST api/services` (`{"app", "name", "parameters"}`, JSON seulement), `DELETE api/services/<nom>?data=keep|delete`. Il faut être connecté pour lire le catalogue et les services, et administrateur pour installer ou désinstaller (section 8.1).
 - Démarrer, arrêter, redémarrer (`POST api/services/<nom>/start|stop|restart`, administrateurs) : `docker compose up --detach --wait`, `stop`, `restart`. État de chaque service dans `GET api/services`, d'après `docker compose ps` : **vert** si tous ses conteneurs marchent, **orange** s'ils démarrent, sont en difficulté (contrôle de santé raté), en partie arrêtés ou si Docker ne répond pas, **rouge** si tout est arrêté ; avec une phrase en langage courant.
-- Mise à jour (`POST api/services/<nom>/update`, administrateurs, après confirmation) : la console signale « Nouvelle version disponible » quand le manifeste du catalogue diffère de celui du service. Elle garde les images actuelles sous une étiquette `pi-rollback-<nom>-<étiquette>` et l'ancien manifeste, installe le nouveau manifeste (les secrets existants sont réutilisés, les nouveaux paramètres générés), puis `docker compose pull` et `up --detach --wait --remove-orphans`. **En cas d'échec, retour automatique** à l'ancien manifeste, à l'ancien `.env` et aux anciennes images, puis redémarrage ; la console dit que la mise à jour n'a pas marché et que le service est revenu à sa version précédente. Si ce retour échoue aussi, les images et le manifeste de secours sont gardés. Limite : les données (volumes) ne sont pas copiées avant la mise à jour ; une nouvelle version qui les modifie avant d'échouer peut les laisser illisibles pour l'ancienne. La copie viendra avec les sauvegardes (section 9.1).
+- Mise à jour (`POST api/services/<nom>/update`, administrateurs, après confirmation) : la console signale « Nouvelle version disponible » quand le manifeste du catalogue diffère de celui du service. Elle garde les images actuelles sous une étiquette `pi-rollback-<nom>-<étiquette>` et l'ancien manifeste, installe le nouveau manifeste (les secrets existants sont réutilisés, les nouveaux paramètres générés), puis `docker compose pull` et `up --detach --wait --remove-orphans`. **En cas d'échec, retour automatique** à l'ancien manifeste, à l'ancien `.env` et aux anciennes images, puis redémarrage ; la console dit que la mise à jour n'a pas marché et que le service est revenu à sa version précédente. Si ce retour échoue aussi, les images et le manifeste de secours sont gardés. **Données copiées avant la mise à jour** : la nouvelle version est d'abord téléchargée, service en marche ; puis le service est arrêté et chaque volume Docker du service (`docker volume ls --filter label=com.docker.compose.project=pi-<nom>`) est copié (`cp -a`, droits et propriétaires gardés) dans un volume de secours `pi-rollback-<volume>`, sur le même disque (carte SD ou disque USB) ; la nouvelle version démarre ensuite. En cas d'échec, le retour arrière arrête la nouvelle version (`down`, volumes gardés), remet les données copiées, puis redémarre l'ancienne : une nouvelle version qui modifie les données avant d'échouer ne les laisse pas illisibles. Les volumes de secours sont supprimés après une mise à jour réussie ou un retour arrière réussi, gardés si le retour arrière échoue. Avant de rien toucher, la console vérifie que le disque a la place de la copie (taille des données plus 10 %) ; sinon elle refuse la mise à jour et dit combien de place il faut, en proposant de désinstaller un service ou de brancher un disque USB. Le service est donc arrêté pendant la copie. À vérifier sur un vrai Pi (Nextcloud et sa base MariaDB).
 - Pas encore : lecture en ligne du catalogue, journaux téléchargeables, adresse affichée réellement joignable (Traefik n'est pas encore installé), traductions.
 
 ## 7. Accès depuis internet
@@ -239,7 +276,7 @@ Offre :
 - Un seul identifiant et mot de passe pour la console et pour tous les services qui acceptent une connexion standard (OpenID Connect).
 - Le **fournisseur d'identité est intégré à la console** : elle est fournisseur OpenID Connect pour les services et point d'authentification déléguée (*forward auth*) pour Traefik. Pas de logiciel d'identité séparé, pour tenir sur un Pi Zero 2 W.
 - Un service sans connexion standard est protégé en amont par Traefik (authentification déléguée à la console) et garde, si besoin, ses propres comptes internes.
-- **LDAP** : la console sert aussi un annuaire LDAP, **activé seulement quand Samba est installé** (Samba ne connaît pas OpenID Connect), désactivé à sa désinstallation.
+- **LDAP** : pas dans la première version. Il viendra avec Samba (section 6.3, plus tard), qui ne connaît pas OpenID Connect : la console servira un annuaire LDAP activé seulement quand Samba est installé.
 - **Nouveau compte** : l'administrateur saisit un nom et une adresse e-mail ; la personne reçoit une **invitation par e-mail** et choisit elle-même son mot de passe.
 - **Mots de passe** : **8 caractères au moins**, **12 pour un administrateur** (son mot de passe protège aussi la clé des sauvegardes, section 9.1) ; la console suggère une phrase de passe ; pas d'expiration.
 - **Double authentification** (TOTP) : obligatoire pour ouvrir la console sur internet (section 8.3), **facultative** pour les autres comptes, que l'administrateur peut l'exiger.
@@ -248,7 +285,7 @@ Offre :
 
 ### 8.2 Qui accède à un service
 
-À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (Samba : maison seulement ; site web : public ; Nextcloud, DokuWiki, Etherpad : utilisateurs connectés). Modifiable ensuite dans la console.
+À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (site web : public ; Nextcloud, DokuWiki, Etherpad : utilisateurs connectés). Modifiable ensuite dans la console.
 
 ### 8.3 Console
 
@@ -264,6 +301,8 @@ Offre :
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
 - **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
 
+**Réalisé** (couche système, à vérifier sur un vrai Pi) : Traefik redirige tout HTTP vers HTTPS et présente le certificat local auto-signé propre au Pi (section 4) ; la console n'écoute que sur `127.0.0.1:8080`, joignable seulement par Traefik. Let's Encrypt est prêt à activer dans `system/etc/pi-appliance/traefik/traefik.yml` (étape Internet). L'explication de l'alerte du navigateur est dans le portail ; elle reste à écrire dans le guide.
+
 **Réalisé** (première version, paquet `internal/auth`) :
 
 - Compte administrateur créé dans la console tant qu'aucun compte n'existe (`POST api/setup`, `{"name", "email", "password"}`), puis session ouverte ; refusé dès qu'un compte existe. Identifiant de 1 à 32 caractères (minuscules, chiffres, `.`, `-`, `_`), e-mail enregistré mais pas encore vérifié : la console le rappelle.
@@ -271,7 +310,7 @@ Offre :
 - Connexion (`POST api/login`), déconnexion (`POST api/logout`), état (`GET api/session` : création à faire, réinitialisation en cours, compte connecté). Session dans un cookie `HttpOnly`, `SameSite=Strict`, `Secure` derrière Traefik en HTTPS ; valable 7 jours, prolongée à chaque usage, gardée en mémoire : un redémarrage de la console déconnecte tout le monde.
 - Limitation des tentatives par client et par compte : après 5 échecs, attente d'une minute, doublée à chaque nouvel échec, 15 minutes au plus. Derrière Traefik (bouclage ou réseau Docker), le client est la dernière adresse de `X-Forwarded-For`.
 - Fichier `reset` (section 8.5) : lu au démarrage (option `-reset-file`, `/boot/firmware/reset` par défaut), supprimé aussitôt ; la console propose alors un nouveau mot de passe pour le premier administrateur (`POST api/reset`), sans toucher aux services, et ferme toutes les sessions.
-- Pas encore : autres comptes et invitations, rôles utilisateur et invité dans l'interface, double authentification, OpenID Connect, LDAP, vérification de l'e-mail, récupération par e-mail.
+- Pas encore : autres comptes et invitations, rôles utilisateur et invité dans l'interface, double authentification, OpenID Connect, vérification de l'e-mail, récupération par e-mail.
 
 ### 8.5 Récupération de l'accès
 
@@ -323,6 +362,7 @@ flowchart LR
     Internet -. "sans accès direct" .-> Relais[Relais du projet]
     Relais -. "tunnel sortant" .-> Traefik
     LAN((Réseau de la maison)) --> Traefik
+    Telephone((Téléphone<br/>premier démarrage)) -. "Wi-Fi « pi-appliance »<br/>portail captif" .-> Traefik
     Box -- "80 / 443" --> Traefik
     subgraph Pi["Appliance — Raspberry Pi OS + Docker"]
         Traefik[Traefik<br/>reverse proxy + Let's Encrypt]
@@ -362,9 +402,14 @@ flowchart LR
 | Fabrication de l'image | Shell et `pi-gen` |
 | Fournisseur d'identité | Intégré à la console Go (OpenID Connect, *forward auth* Traefik, TOTP) |
 | DNS dynamique | DuckDNS |
+| Traefik | Conteneur Docker en réseau hôte (ports 80 et 443 du Pi) ; configuration par fichiers (console, portail captif, certificat local) et par labels Docker (services) |
+| Réseau du Pi | NetworkManager (point d'accès, Wi-Fi de la maison, câble), avahi (`pi-appliance.local`) |
+| Services du système | systemd ; scripts POSIX `sh` vérifiés par `shellcheck` |
 
 
 **Réalisé** : squelette de la console (`cmd/pi-appliance`, `internal/console`). Le binaire sert la page d'accueil de la console sous `/pi-appliance/` (`/pi-appliance` redirige vers `/pi-appliance/`) et `GET /pi-appliance/api/health`, qui renvoie `{"status": "ok", "version": "…"}`. Il écoute en HTTP sur `:8080` (option `-addr`) : HTTPS sera assuré par Traefik devant lui. La version est fixée à la compilation (`-ldflags "-X main.version=…"`, `dev` sinon). Le workflow « Go » (`.github/workflows/go.yml`) lance `go vet` et `go test` et construit le binaire `arm64` à chaque push.
+
+**Réalisé** (couche système, dossier `system/`, à vérifier sur un vrai Pi) : la console tourne en service systemd `pi-appliance.service` (relancée en cas d'échec, données dans `/var/lib/pi-appliance`, `-addr 127.0.0.1:8080`), en root parce qu'elle pilote Docker. Traefik (`pi-appliance-traefik.service`, `system/etc/pi-appliance/traefik/`) est le seul point d'entrée, sur les ports 80 et 443 : HTTP redirigé vers HTTPS, `/pi-appliance` vers la console quelle que soit l'adresse (`pi-appliance.local`, adresse IP), `/` vers `/pi-appliance/`, et les services de la marketplace par leurs labels Docker sur le réseau `pi-appliance` ; un routeur `Host(...)` d'un service passe avant la console. Les en-têtes au nom trompeur (`X_Forwarded_For`) sont supprimés. Fichiers de configuration du Pi dans `/etc/pi-appliance/`, données propres au Pi dans `/var/lib/pi-appliance/system/` (à côté des données de la console), scripts dans `/usr/local/lib/pi-appliance/`. Le workflow « Système » (`.github/workflows/system.yml`) passe `shellcheck` sur tous les scripts, vérifie `set -eu` et l'en-tête de licence, `yamllint`, les règles du point d'accès (`system/tests/ap-rules-test.sh`), la lecture des disques USB (`system/tests/storage-test.sh`) et prépare pi-gen sans construire.
 
 ### 10.2 Services du projet
 
@@ -386,7 +431,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 ## 11. Exigences non fonctionnelles
 
 - Objectif de la section 1.3 : 15 minutes jusqu'au premier service sur internet.
-- Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte ; mesures des graphiques agrégées avant d'être écrites, sur le disque USB s'il y en a un).
+- Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte ; mesures des graphiques agrégées avant d'être écrites, sur le disque USB s'il y en a un). Réalisé pour les graphiques : une écriture par heure (section 5.2).
 - Fonctionne sur Pi Zero 2 W (512 Mo) : la couche pi-appliance seule (console, Traefik, fournisseur d'identité) doit y laisser de la place pour au moins un service léger.
 - Démarrage de la console en moins de deux minutes après la mise sous tension.
 - Fournisseur d'identité intégré : code de sécurité critique, à couvrir par des tests et à faire relire (bibliothèques OpenID Connect éprouvées plutôt que du code écrit à la main).
@@ -400,14 +445,23 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `LICENSE` | Texte de la licence AGPL-3.0 |
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
 | `.claude/skills/` | Sous-module : skills partagés [gmoulard/claude_skills](https://github.com/gmoulard/claude_skills) |
-| `docs/` | Source du site GitHub Pages www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) ; guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; charte graphique (`charte-graphique.md`) ; `logo/` : logo du site (`framboise/`), logo photo de la console (`photo/`, PNG) et pistes (SVG) |
+| `docs/` | Source du site GitHub Pages www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) ; guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; environnement du projet : DNS, site, AWS CLI (`environnement.md`) ; charte graphique (`charte-graphique.md`) ; `logo/` : logo du site (`framboise/`), logo photo de la console (`photo/`, PNG) et pistes (SVG) |
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
 | `internal/auth/` | Comptes de la console : compte administrateur, connexion, sessions, fichier `reset` (8.1, 8.5) |
-| `internal/services/` | Installation, désinstallation, démarrage et mise à jour des services (Docker Compose) ; mesure de la mémoire et du disque |
+| `internal/services/` | Installation et désinstallation des services (Docker Compose) |
+| `internal/network/` | Réseau du Pi pour la console, par `network.sh` : état, Wi-Fi, connexion, câble, pays du Wi-Fi (4) |
+| `internal/system/` | État du Pi : mémoire, disque, charge du processeur, température, trafic réseau (5.2, 6.2) |
+| `internal/storage/` | Disque USB des données des services, par `storage.sh` : disques branchés, déplacement des données, formatage (4) |
+| `internal/metrics/` | Historique horaire de l'état du Pi sur 30 jours, pour les graphiques (5.2, 11) |
 | `marketplace/` | Catalogue : un manifeste `<application>/compose.yaml` par application (6.5) |
+| `image/` | Construction de l'image avec pi-gen : `build.sh`, `config` (réglages de pi-gen), `stage-pi-appliance/` (étape ajoutée à Raspberry Pi OS Lite) (4) |
+| `system/` | Couche système, aux mêmes chemins que sur le Pi (`etc/`, `usr/`) : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage, disque USB des données ; `install.sh` l'installe (image ou Pi déjà en place) ; `tests/` : tests sans Pi (4, 8.4, 10) |
 | `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |
+| `.github/workflows/system.yml` | Vérification de `image/` et `system/` : `shellcheck`, `yamllint`, tests, préparation de pi-gen |
+| `.github/workflows/image.yml` | Construction de l'image et publication avec sa somme de contrôle (étiquette `v…` ou à la demande) |
+| `.yamllint.yml` | Règles `yamllint` des fichiers YAML du système |
 
 Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache/`, `docker-nextcloud/`, `docker-samba/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`) ont été retirés du dépôt ; ils restent dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79).
 
@@ -420,11 +474,12 @@ Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache
 
 Dans les mêmes langues que la console (section 5.3).
 
-Site et console suivent la même [charte graphique](charte-graphique.md) : framboise, ludique et colorée, pensée d'abord pour le téléphone, polices du système seulement. Le site est publié par GitHub Pages depuis le dossier `docs/` (`docs/index.html`, `docs/CNAME`) ; les documents Markdown du dossier (guide, spécification, TODO, charte, logos) y deviennent des pages à la même charte (`docs/_config.yml`, `docs/_layouts/default.html`). Réalisé : la page d'accueil (présentation, trois étapes, applications, adresse, téléchargement), en français ; l'image prête à flasher et la réservation d'adresse y sont annoncées pour plus tard.
+Site et console suivent la même [charte graphique](charte-graphique.md) : framboise, ludique et colorée, pensée d'abord pour le téléphone, polices du système seulement. Le site est publié par GitHub Pages depuis le dossier `docs/` (`docs/index.html`, `docs/CNAME`) ; les documents Markdown du dossier (guide, marketplace, spécification, TODO, charte, logos) y deviennent des pages à la même charte (`docs/_config.yml`, `docs/_layouts/default.html`). Réalisé : la page d'accueil, le [guide](guide-utilisateur.md), la [page marketplace](marketplace.md) avec le catalogue et les consignes de contribution, et les pages de documentation en français. L'image construite par GitHub Actions est proposée comme artefact temporaire expérimental avec son guide de flashage ; elle reste à tester sur un vrai Pi. L'accès depuis internet et la réservation d'adresses ne sont pas encore disponibles.
 
 ## 14. Hors périmètre
 
 - Grappe de plusieurs Pi (orchestration Kubernetes, k3s) : pas dans la première version.
+- Partage de fichiers Samba et annuaire LDAP : pas dans la première version (section 6.3).
 - Hébergement d'un service pour des tiers à grande échelle.
 - Faire passer tout le trafic internet du téléphone par la maison (le VPN donne seulement accès au réseau de la maison).
 - Tableau de bord commun à plusieurs appliances.
@@ -433,7 +488,6 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 
 - Relais : prix et moyen de paiement de l'offre payante.
 - Relais : nombre maximal d'appliances relayées (7.3).
-- Samba (6.3) : comment décrire dans le manifeste un service qui n'est pas un site web (port SMB 445 ouvert sur le Pi, une seule instance possible, accès « maison seulement » appliqué sans Traefik), et que doit faire la console pour lui (pas d'adresse web à afficher).
 
 ## 16. Ordre de construction
 

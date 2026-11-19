@@ -1,0 +1,46 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# shellcheck shell=bash disable=SC2034
+
+# Configuration de pi-gen pour l'image pi-appliance (lue par pi-gen, pas un
+# script). image/build.sh y ajoute IMG_FILENAME et ARCHIVE_FILENAME.
+# https://github.com/RPi-Distro/pi-gen#config
+
+IMG_NAME=pi-appliance
+RELEASE=trixie
+# Étapes 0 à 2 : Raspberry Pi OS Lite ; puis la couche pi-appliance.
+STAGE_LIST="stage0 stage1 stage2 stage-pi-appliance"
+DEPLOY_COMPRESSION=xz
+
+# Spécification 4 : nom d'hôte pi-appliance, annoncé en pi-appliance.local.
+TARGET_HOSTNAME=pi-appliance
+
+# Pas de mot de passe : le compte système « pi » est verrouillé, et Raspberry
+# Pi OS demande d'en créer un au premier démarrage seulement sur un écran
+# branché au Pi. Le compte de la console se crée dans le portail (spécification 5.1).
+FIRST_USER_NAME=pi
+ENABLE_SSH=0
+
+# Langue et clavier par défaut : français (spécification 5.3, le français fait foi).
+LOCALE_DEFAULT=fr_FR.UTF-8
+KEYBOARD_KEYMAP=fr
+KEYBOARD_LAYOUT="French"
+TIMEZONE_DEFAULT=Europe/Paris
+
+# Pays du Wi-Fi : sans pays, Raspberry Pi OS coupe le Wi-Fi, et le point
+# d'accès ne peut pas s'ouvrir. Le point d'accès reste sur le canal 6, permis
+# partout ; le pays se change ensuite dans le portail (network.sh country).
+WPA_COUNTRY=FR

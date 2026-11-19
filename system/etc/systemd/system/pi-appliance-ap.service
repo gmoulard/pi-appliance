@@ -1,0 +1,36 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Point d'accès Wi-Fi « pi-appliance » et ses 24 heures (ap.sh, spécification 4).
+
+[Unit]
+Description=Point d'accès Wi-Fi de configuration pi-appliance
+Documentation=https://github.com/gmoulard/pi-appliance
+# Jamais de Wi-Fi ouvert sans le pare-feu qui l'isole de la maison et d'internet.
+Requires=NetworkManager.service pi-appliance-firewall.service
+After=NetworkManager.service pi-appliance-firewall.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/lib/pi-appliance/ap.sh
+# Pas de Wi-Fi sur le Pi : ap.sh s'arrête normalement, sans relance.
+Restart=on-failure
+RestartSec=10s
+# /run/pi-appliance : état des 24 heures, effacé au redémarrage du Pi seulement.
+RuntimeDirectory=pi-appliance
+RuntimeDirectoryPreserve=yes
+
+[Install]
+WantedBy=multi-user.target

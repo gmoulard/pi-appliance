@@ -13,16 +13,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-//go:build linux || darwin
-
-package services
+package system
 
 import "syscall"
 
-func statfs(path string) (totalMB, freeMB int, err error) {
-	var st syscall.Statfs_t
-	if err := syscall.Statfs(path, &st); err != nil {
-		return 0, 0, err
+// disk : place libre pour un utilisateur ordinaire (Bavail), comme df.
+func disk(dir string) *Gauge {
+	var stat syscall.Statfs_t
+	if err := syscall.Statfs(dir, &stat); err != nil || stat.Blocks == 0 {
+		return nil
 	}
-	return blocksMB(uint64(st.Blocks), uint64(st.Bsize)), blocksMB(uint64(st.Bavail), uint64(st.Bsize)), nil
+	size := int64(stat.Bsize)
+	return newGauge(int64(stat.Blocks)*size>>20, int64(stat.Bavail)*size>>20)
 }

@@ -45,9 +45,67 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 </section>
 <p id="emailReminder" class="empty" hidden></p>
-<section id="systemSection" hidden>
-<h2>Mémoire et disque</h2>
-<div id="gauges" class="gauges"></div>
+<section id="wizard" class="card" hidden>
+<h2>Mise en route</h2>
+<ol class="steps">
+<li id="stepAccount" class="done">Votre compte administrateur</li>
+<li id="stepNetwork">Le réseau de la maison</li>
+<li id="stepServices">Vos premiers services</li>
+</ol>
+<p id="wizardHelp"></p>
+<div class="controls">
+<button id="wizardNext" type="button" hidden></button>
+<button id="wizardSkip" class="secondary" type="button" hidden>Passer cette étape</button>
+</div>
+</section>
+<section id="networkSection" hidden>
+<h2>Réseau de la maison</h2>
+<div class="card">
+<p id="networkState" class="state"></p>
+<p id="networkAp" class="meta" hidden></p>
+<label>Pays où se trouve le Pi<select id="wifiCountry"></select></label>
+<div id="networkCert" class="note" hidden>
+<p><strong>Pourquoi le navigateur affiche une alerte ?</strong> Votre appliance protège la connexion avec son propre certificat, créé pour elle seule. Le navigateur ne le connaît pas encore, d'où l'alerte : vous pouvez continuer (« Paramètres avancés », puis « Continuer »). L'alerte disparaîtra quand l'appliance sera accessible sur internet avec un certificat reconnu.</p>
+</div>
+<h3>Wi-Fi visibles</h3>
+<ul id="wifiList" class="wifi-list"></ul>
+<p id="noWifi" class="empty" hidden>Aucun Wi-Fi trouvé pour l'instant.</p>
+<div class="controls">
+<button id="wifiScan" class="secondary" type="button">Chercher à nouveau</button>
+<button id="wifiOther" class="secondary" type="button">Autre Wi-Fi (caché)</button>
+<button id="wired" class="secondary" type="button">Utiliser le câble réseau</button>
+</div>
+<form id="wifiForm" hidden>
+<label>Nom du Wi-Fi<input name="ssid" maxlength="32" required autocapitalize="none" autocomplete="off"></label>
+<label id="wifiPasswordField">Mot de passe du Wi-Fi<input name="password" type="password" minlength="8" maxlength="64" autocomplete="off"></label>
+<label class="check"><input name="hidden" type="checkbox">Ce Wi-Fi est caché</label>
+<button>Se connecter à ce Wi-Fi</button>
+</form>
+</div>
+</section>
+<section id="piSection" hidden>
+<h2>Mon Pi</h2>
+<div class="card">
+<div id="piNow" class="tiles"></div>
+<p id="piServices" class="state" hidden></p>
+<div id="piGauges"></div>
+</div>
+<div id="storageBox" class="card" hidden>
+<h3>Disque USB</h3>
+<p id="storageState"></p>
+<ul id="storageDisks" class="wifi-list"></ul>
+</div>
+<div id="piHistory" class="card" hidden>
+<div class="history-head">
+<h3>Les derniers jours</h3>
+<div class="periods" role="group" aria-label="Période des graphiques">
+<button type="button" class="secondary" data-hours="24" aria-pressed="true">24 heures</button>
+<button type="button" class="secondary" data-hours="720" aria-pressed="false">30 jours</button>
+</div>
+</div>
+<div id="piCharts" class="charts"></div>
+<p id="noHistory" class="empty" hidden>Les graphiques se rempliront au fil des heures.</p>
+</div>
 </section>
 <section id="servicesSection" hidden>
 <h2>Mes services</h2>
@@ -59,7 +117,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <ul id="catalog" class="cards"></ul>
 </section>
 </main>
-<footer id="version"></footer>
-<script src="app.js"></script>
+<footer>
+<p id="version"></p>
+<label class="language">Langue<select id="language"></select></label>
+</footer>
+<script src="i18n.js"></script>
 </body>
 </html>

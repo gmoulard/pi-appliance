@@ -13,12 +13,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-//go:build !(linux || darwin)
+//go:build !linux
 
-package services
+package system
 
-import "errors"
-
-func statfs(string) (int, int, error) {
-	return 0, 0, errors.New("place disque inconnue sur ce système")
+// disk : inconnu hors Linux (poste de développement).
+func disk(string) *Gauge {
+	return nil
 }

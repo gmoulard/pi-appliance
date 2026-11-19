@@ -16,15 +16,24 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/console"
+	"github.com/gmoulard/pi-appliance/internal/metrics"
+	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/storage"
+	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
@@ -35,6 +44,8 @@ func main() {
 	data := flag.String("data", "/var/lib/pi-appliance", "dossier des services installés")
 	domain := flag.String("domain", "pi-appliance.local", "adresse de l'appliance, suffixe de l'adresse de chaque service")
 	resetFile := flag.String("reset-file", "/boot/firmware/reset", "fichier déposé sur la carte SD pour réinitialiser le mot de passe administrateur (vide : désactivé)")
+	networkScript := flag.String("network-script", network.DefaultScript, "script du réseau du Pi (vide : réseau non réglable depuis la console)")
+	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")
 	flag.Parse()
 	catalog, err := marketplace.Builtin()
 	if err != nil {
@@ -49,12 +60,57 @@ func main() {
 	} else if found {
 		log.Printf("fichier reset trouvé : réinitialisation du mot de passe administrateur ouverte")
 	}
-	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Measure: services.Measure}
+	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, MemoryMB: services.SystemMemoryMB}
+	var net *network.Client
+	if *networkScript != "" {
+		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}
+	}
+	var disks *storage.Client
+	if *storageScript != "" {
+		disks = &storage.Client{Runner: network.Script(*storageScript)}
+	}
+	resources := func() system.Resources {
+		r := system.Read(*data)
+		r.USBDisk = system.MountedDisk(storage.DataMount)
+		return r
+	}
+	history := &metrics.History{Path: filepath.Join(*data, "history.json")}
+	if err := history.Load(); err != nil {
+		log.Printf("historique illisible, il repart de zéro : %v", err)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	measured := make(chan struct{})
+	go func() {
+		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(resources()) }, log.Printf)
+		close(measured)
+	}()
 	server := &http.Server{
-		Addr:              *addr,
-		Handler:           console.Handler(version, catalog, manager, accounts),
+		Addr: *addr,
+		Handler: console.Handler(console.Config{
+			Version:       version,
+			Catalog:       catalog,
+			Services:      manager,
+			Accounts:      accounts,
+			Network:       net,
+			Storage:       disks,
+			Resources:     resources,
+			History:       history,
+			WizardFile:    filepath.Join(*data, "wizard-done"),
+			ACMEEmailFile: filepath.Join(*data, "system", "traefik", "acme-email"),
+		}),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("console pi-appliance %s sur %s%s", version, *addr, console.BasePath)
-	log.Fatal(server.ListenAndServe())
+	go func() {
+		<-ctx.Done()
+		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		server.Shutdown(shutdown)
+	}()
+	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
+	}
+	// L'historique est écrit avant de quitter, heure en cours comprise.
+	<-measured
 }

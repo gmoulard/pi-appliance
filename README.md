@@ -26,7 +26,7 @@ L'image pi-appliance empile trois couches :
 4. J'ouvre la console : `https://pi-appliance.local/pi-appliance` depuis la maison (ou `https://localhost/pi-appliance` sur le Pi lui-même).
 5. Je me connecte avec mon identifiant et mon mot de passe.
 6. Je choisis mon adresse, `<nom>.pi-appliance.com` (ou mon propre domaine), et je crée mes utilisateurs.
-7. Je coche dans la marketplace les services que je veux : Nextcloud, partage de fichiers, site web, wiki, Etherpad, VPN…
+7. Je coche dans la marketplace les services que je veux : Nextcloud, site web, wiki, Etherpad, VPN…
 8. pi-appliance télécharge les images Docker, configure Traefik et ouvre chaque service, à la maison comme sur internet, à l'adresse `https://<service>.<nom>.pi-appliance.com`, avec un seul identifiant pour tous les services.
 
 Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur internet, sans aucune connaissance technique.
@@ -35,9 +35,11 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 
 | Chemin | Contenu |
 |--------|---------|
-| `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services |
+| `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services, réseau du Pi, tableau de bord |
 | `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud, site web, DokuWiki, Etherpad) |
-| [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |
+| `image/` | Construction de l'image système avec pi-gen (`image/build.sh`) |
+| `system/` | Couche système installée sur le Pi : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage (`system/install.sh`) |
+| [`docs/`](docs/) | [Guide utilisateur](docs/guide-utilisateur.md), [installation du plan de contrôle](docs/installation.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [environnement (DNS Route 53, GitHub Pages, AWS CLI)](docs/environnement.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |
 | `.claude/skills/` | Sous-module : [skills Claude Code](https://github.com/gmoulard/claude_skills) partagés |
 
 Les anciens prototypes (configuration des Pi, tunnel autossh, DNS dynamique OVH, sauvegarde, services Docker, caméra, GPIO) ont été retirés du dépôt ; ils restent consultables dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79).
@@ -56,6 +58,13 @@ Avec Go 1.24 ou plus :
 go test ./...
 go run ./cmd/pi-appliance -data ./tmp   # puis http://localhost:8080/pi-appliance/
 GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance   # binaire pour le Pi
+```
+
+Image système à flasher, avec Docker (environ une heure, voir `image/build.sh`) :
+
+```shell
+GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance
+image/build.sh pi-appliance-arm64   # puis image/deploy/pi-appliance-<date>.img.xz et .sha256
 ```
 
 Options : `-addr` (adresse d'écoute, `:8080`), `-data` (dossier des services installés, `/var/lib/pi-appliance`), `-domain` (adresse de l'appliance, `pi-appliance.local`). L'installation des services demande Docker et Docker Compose ; pour l'instant, elle n'est possible que depuis le Pi lui-même (`http://localhost:8080/pi-appliance/`).

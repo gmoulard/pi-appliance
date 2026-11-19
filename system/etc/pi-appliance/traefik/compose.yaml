@@ -1,0 +1,45 @@
+---
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Traefik, point d'entrée unique du Pi (spécification, sections 8.4 et 10).
+# Réseau de l'hôte : Traefik écoute directement sur les ports 80 et 443 du Pi,
+# joint la console sur 127.0.0.1:8080 (fermée au réseau) et les services sur le
+# réseau Docker « pi-appliance ». Démarré par pi-appliance-traefik.service.
+
+name: pi-appliance-traefik
+
+services:
+  traefik:
+    # Version fixée : l'image du Pi embarque exactement celle-ci (image/build.sh).
+    image: traefik:v3.7.19
+    container_name: pi-appliance-traefik
+    restart: always
+    network_mode: host
+    command: ["--configFile=/etc/traefik/traefik.yml"]
+    environment:
+      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: ${PI_ACME_EMAIL:-administrateur@example.org}
+    volumes:
+      - /etc/pi-appliance/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - /etc/pi-appliance/traefik/dynamic:/etc/traefik/dynamic:ro
+      - /var/lib/pi-appliance/system/tls:/etc/traefik/tls:ro
+      # Certificats Let's Encrypt (acme.json).
+      - /var/lib/pi-appliance/system/traefik:/var/lib/traefik
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging:
+      driver: local
+      options:
+        max-size: 1m
+        max-file: "2"

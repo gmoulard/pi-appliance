@@ -1,0 +1,41 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Console pi-appliance (spécification, section 5). Écoute seulement sur
+# 127.0.0.1:8080 : on la joint par Traefik, en HTTPS, sous /pi-appliance.
+# Tourne en root : elle pilote Docker (dont le socket vaut root) et le réseau.
+
+[Unit]
+Description=Console pi-appliance
+Documentation=https://github.com/gmoulard/pi-appliance
+Wants=docker.service pi-appliance-secrets.service
+After=network.target docker.service pi-appliance-secrets.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/pi-appliance -addr 127.0.0.1:8080 -data /var/lib/pi-appliance -reset-file /boot/firmware/reset
+Restart=on-failure
+RestartSec=5s
+StateDirectory=pi-appliance
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+# Pas de ProtectSystem ni ProtectHome : l'accès à Docker vaut root, ces
+# protections ne protégeraient rien, et la console doit pouvoir supprimer le
+# fichier « reset » de /boot/firmware (spécification 8.5).
+
+[Install]
+WantedBy=multi-user.target

@@ -172,3 +172,132 @@ func TestParseImages(t *testing.T) {
 		t.Fatalf("étiquette trop longue : %d", len(long))
 	}
 }
+
+// volumeRunner simule deux volumes du service et leurs volumes de secours, dans des dossiers.
+type volumeRunner struct {
+	updateRunner
+	root string
+}
+
+func (v *volumeRunner) Run(ctx context.Context, dir string, args ...string) ([]byte, error) {
+	call := strings.Join(args, " ")
+	switch {
+	case strings.HasPrefix(call, "volume ls"):
+		v.fakeRunner.Run(ctx, dir, args...)
+		return []byte("pi-cloud_db\npi-cloud_app\n"), nil
+	case strings.HasPrefix(call, "volume inspect"):
+		v.fakeRunner.Run(ctx, dir, args...)
+		path := filepath.Join(v.root, args[len(args)-1])
+		return []byte(path + "\n"), os.MkdirAll(path, 0o700)
+	case strings.HasPrefix(call, "volume rm"):
+		v.fakeRunner.Run(ctx, dir, args...)
+		return nil, os.RemoveAll(filepath.Join(v.root, args[len(args)-1]))
+	case strings.Contains(call, " up --detach --wait --remove-orphans") && v.failUp > 0:
+		// La nouvelle version abîme les données avant d'échouer.
+		os.WriteFile(filepath.Join(v.root, "pi-cloud_db", "base"), []byte("format v31"), 0o600)
+	}
+	return v.updateRunner.Run(ctx, dir, args...)
+}
+
+// goCopy copie un dossier plat, à la place de « cp -a ».
+type goCopy struct{}
+
+func (goCopy) Copy(_ context.Context, from, to string) error {
+	entries, err := os.ReadDir(from)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		data, err := os.ReadFile(filepath.Join(from, entry.Name()))
+		if err != nil {
+			return err
+		}
+		if err := os.WriteFile(filepath.Join(to, entry.Name()), data, 0o600); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func volumeManager(t *testing.T, failUp int, freeMB int64) (*Manager, *volumeRunner) {
+	t.Helper()
+	runner := &volumeRunner{updateRunner: updateRunner{failUp: failUp}, root: t.TempDir()}
+	m := installed(t, &runner.updateRunner)
+	m.Runner = runner
+	m.Copier = goCopy{}
+	m.FreeMB = func(string) (int64, bool) { return freeMB, true }
+	db := filepath.Join(runner.root, "pi-cloud_db")
+	if err := os.MkdirAll(db, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(db, "base"), []byte("format v30"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	runner.calls = nil
+	return m, runner
+}
+
+func TestUpdateCopiesData(t *testing.T) {
+	m, runner := volumeManager(t, 0, 10000)
+	app := nextcloud(t)
+	app.Compose = newVersion(t, m)
+	if _, err := m.Update(context.Background(), app, "cloud"); err != nil {
+		t.Fatal(err)
+	}
+	calls := strings.Join(runner.calls, "\n")
+	for _, call := range []string{"volume create --label pi-appliance.rollback=cloud pi-rollback-pi-cloud_db", "volume rm pi-rollback-pi-cloud_db", "volume rm pi-rollback-pi-cloud_app"} {
+		if !strings.Contains(calls, call) {
+			t.Fatalf("appel %q manquant : %v", call, runner.calls)
+		}
+	}
+	// Ordre : téléchargement service en marche, arrêt, copie, démarrage.
+	pull, stop, create, up := strings.Index(calls, " pull"), strings.Index(calls, " stop"), strings.Index(calls, "volume create"), strings.Index(calls, "--remove-orphans")
+	if !(pull < stop && stop < create && create < up) {
+		t.Fatalf("ordre des étapes : %v", runner.calls)
+	}
+}
+
+func TestUpdateRollbackRestoresData(t *testing.T) {
+	m, runner := volumeManager(t, 1, 10000)
+	app := nextcloud(t)
+	app.Compose = newVersion(t, m)
+	if _, err := m.Update(context.Background(), app, "cloud"); !errors.Is(err, ErrRolledBack) {
+		t.Fatalf("erreur %v", err)
+	}
+	data, _ := os.ReadFile(filepath.Join(runner.root, "pi-cloud_db", "base"))
+	if string(data) != "format v30" {
+		t.Fatalf("données non rendues : %q", data)
+	}
+	if !runner.called("down --remove-orphans") || !runner.called("volume rm pi-rollback-pi-cloud_db") {
+		t.Fatalf("appels %v", runner.calls)
+	}
+}
+
+func TestUpdateRollbackFailsKeepsData(t *testing.T) {
+	m, runner := volumeManager(t, 2, 10000)
+	app := nextcloud(t)
+	app.Compose = newVersion(t, m)
+	if _, err := m.Update(context.Background(), app, "cloud"); err == nil || errors.Is(err, ErrRolledBack) {
+		t.Fatalf("erreur %v", err)
+	}
+	if runner.called("volume rm") {
+		t.Fatal("données de secours supprimées alors que le retour arrière a échoué")
+	}
+}
+
+func TestUpdateNeedsSpace(t *testing.T) {
+	m, runner := volumeManager(t, 0, 0)
+	os.WriteFile(filepath.Join(runner.root, "pi-cloud_db", "gros"), make([]byte, 2<<20), 0o600)
+	app := nextcloud(t)
+	app.Compose = newVersion(t, m)
+	_, err := m.Update(context.Background(), app, "cloud")
+	if !errors.Is(err, ErrNoSpace) {
+		t.Fatalf("erreur %v", err)
+	}
+	if runner.called(" pull") || runner.called("image tag") {
+		t.Fatalf("mise à jour commencée sans place : %v", runner.calls)
+	}
+	if m.UpdateAvailable(app, "cloud") == false {
+		t.Fatal("manifeste changé alors que la mise à jour a été refusée")
+	}
+}

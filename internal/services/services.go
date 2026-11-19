@@ -16,13 +16,17 @@
 package services
 
 import (
+	"archive/zip"
 	"bufio"
+	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"math/big"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -76,20 +80,16 @@ type Result struct {
 }
 
 type Manager struct {
-	Dir    string
-	Domain string
-	Runner Runner
-	// Measure mesure la mémoire et le disque du Pi (Measure du paquet en production) ; nil : inconnus.
-	Measure func(dir string) Resources
-	mu      sync.Mutex
-}
-
-// Resources mesure la mémoire du Pi et la place libre du dossier de données.
-func (m *Manager) Resources() Resources {
-	if m.Measure == nil {
-		return Resources{}
-	}
-	return m.Measure(m.Dir)
+	Dir      string
+	Domain   string
+	Runner   Runner
+	MemoryMB func() int
+	// Copier copie les données d'un service avant sa mise à jour ; nil : « cp -a ».
+	Copier Copier
+	// FreeMB donne la place libre du disque qui porte un dossier ; nil : lue
+	// par internal/system.
+	FreeMB func(dir string) (int64, bool)
+	mu     sync.Mutex
 }
 
 func (m *Manager) serviceDir(name string) string {
@@ -98,6 +98,10 @@ func (m *Manager) serviceDir(name string) string {
 
 func (m *Manager) compose(ctx context.Context, name string, args ...string) ([]byte, error) {
 	base := []string{"compose", "--project-name", "pi-" + name, "--env-file", envName, "--file", composeName, "--file", overrideName}
+	// Réglages avancés (spécification 6.4), lus en dernier.
+	if _, err := os.Stat(filepath.Join(m.serviceDir(name), advancedName)); err == nil {
+		base = append(base, "--file", advancedName)
+	}
 	return m.Runner.Run(ctx, m.serviceDir(name), append(base, args...)...)
 }
 
@@ -117,10 +121,12 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 		return Result{}, err
 	}
 	var warnings []string
-	if memory := m.Resources().MemoryTotalMB; memory > 0 && memory < app.MemoryMB {
-		warnings = append(warnings, fmt.Sprintf("Ce Raspberry Pi a %d Mo de mémoire et %s en demande %d : le service risque d'être lent.", memory, app.Name, app.MemoryMB))
+	if m.MemoryMB != nil {
+		if memory := m.MemoryMB(); memory > 0 && memory < app.MemoryMB {
+			warnings = append(warnings, fmt.Sprintf("Ce Raspberry Pi a %d Mo de mémoire et %s en demande %d : le service risque d'être lent.", memory, app.Name, app.MemoryMB))
+		}
 	}
-	if err := writeFiles(dir, app, name, address, env); err != nil {
+	if err := m.writeFiles(dir, app, name, address, env); err != nil {
 		return Result{}, err
 	}
 	if _, err := m.Runner.Run(ctx, dir, "network", "inspect", Network); err != nil {
@@ -181,7 +187,7 @@ func (m *Manager) environment(app marketplace.App, dir, name, address string, va
 	return env, secrets, nil
 }
 
-func writeFiles(dir string, app marketplace.App, name, address string, env map[string]string) error {
+func (m *Manager) writeFiles(dir string, app marketplace.App, name, address string, env map[string]string) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
@@ -200,27 +206,49 @@ func writeFiles(dir string, app marketplace.App, name, address string, env map[s
 	if err := os.WriteFile(filepath.Join(dir, envName), []byte(content.String()), 0o600); err != nil {
 		return err
 	}
-	return writeJSON(filepath.Join(dir, overrideName), override(app, name, address), 0o600)
+	return writeJSON(filepath.Join(dir, overrideName), m.override(app, name, address), 0o600)
 }
 
-func override(app marketplace.App, name, address string) map[string]any {
+func (m *Manager) override(app marketplace.App, name, address string) map[string]any {
 	router := "traefik.http.routers.pi-" + name
+	labels := map[string]string{
+		"traefik.enable":         "true",
+		"traefik.docker.network": Network,
+		router + ".rule":         "Host(`" + address + "`)",
+		router + ".entrypoints":  "websecure",
+		router + ".tls":          "true",
+		"traefik.http.services.pi-" + name + ".loadbalancer.server.port": strconv.Itoa(app.Port),
+	}
+	if m.usesLetsEncrypt() {
+		labels[router+".tls.certresolver"] = "letsencrypt"
+	}
+	service := map[string]any{
+		"labels":   labels,
+		"networks": []string{"default", Network},
+	}
+	if app.ID == "site-web" {
+		service["volumes"] = []string{filepath.Join(m.Dir, "services", name, "www") + ":/var/www/html"}
+	}
+	if app.ID == "nextcloud" {
+		service["volumes"] = []string{filepath.Join(m.Dir, "services") + ":/srv/pi-appliance/services"}
+	}
 	return map[string]any{
-		"services": map[string]any{
-			app.Service: map[string]any{
-				"labels": map[string]string{
-					"traefik.enable":         "true",
-					"traefik.docker.network": Network,
-					router + ".rule":         "Host(`" + address + "`)",
-					router + ".entrypoints":  "websecure",
-					router + ".tls":          "true",
-					"traefik.http.services.pi-" + name + ".loadbalancer.server.port": strconv.Itoa(app.Port),
-				},
-				"networks": []string{"default", Network},
-			},
-		},
+		"services": map[string]any{app.Service: service},
 		"networks": map[string]any{Network: map[string]any{"external": true}},
 	}
+}
+
+func (m *Manager) usesLetsEncrypt() bool {
+	domain := strings.TrimSuffix(strings.ToLower(strings.TrimSpace(m.Domain)), ".")
+	if domain == "" || net.ParseIP(domain) != nil || !strings.Contains(domain, ".") {
+		return false
+	}
+	for _, localSuffix := range []string{".local", ".localhost", ".test", ".invalid", ".example"} {
+		if strings.HasSuffix(domain, localSuffix) {
+			return false
+		}
+	}
+	return true
 }
 
 func (m *Manager) List() ([]Instance, error) {
@@ -242,6 +270,104 @@ func (m *Manager) List() ([]Instance, error) {
 	}
 	sort.Slice(instances, func(i, j int) bool { return instances[i].Name < instances[j].Name })
 	return instances, nil
+}
+
+// DeployZIP remplace le contenu du site par une archive sûre.
+func (m *Manager) DeployZIP(ctx context.Context, name string, r io.Reader) error {
+	_ = ctx
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if !marketplace.ValidLabel(name) {
+		return fmt.Errorf("%w : %s", ErrInvalid, name)
+	}
+	dir := m.serviceDir(name)
+	data, err := os.ReadFile(filepath.Join(dir, stateName))
+	if err != nil {
+		return fmt.Errorf("%w : %s", ErrNotFound, name)
+	}
+	var instance Instance
+	if err := json.Unmarshal(data, &instance); err != nil || instance.App != "site-web" {
+		return fmt.Errorf("%w : %s", ErrInvalid, name)
+	}
+
+	temp, err := os.CreateTemp(m.Dir, "site-*.zip")
+	if err != nil {
+		return err
+	}
+	tempName := temp.Name()
+	defer os.Remove(tempName)
+	if err := temp.Close(); err != nil {
+		return err
+	}
+
+	limited := io.LimitReader(r, 256<<20)
+	zipData, err := io.ReadAll(limited)
+	if err != nil {
+		return err
+	}
+	if len(zipData) == (256 << 20) {
+		return fmt.Errorf("%w : archive trop volumineuse (256 Mo maximum)", ErrInvalid)
+	}
+	if err := os.WriteFile(tempName, zipData, 0o600); err != nil {
+		return err
+	}
+	archive, err := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
+	if err != nil {
+		return fmt.Errorf("%w : fichier ZIP illisible", ErrInvalid)
+	}
+
+	root := filepath.Join(dir, "www")
+	staging, err := os.MkdirTemp(m.Dir, "site-deploy-*")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(staging)
+	var extracted int64
+	for _, file := range archive.File {
+		name := filepath.Clean(filepath.FromSlash(file.Name))
+		if name == "." || name == "" {
+			continue
+		}
+		if filepath.IsAbs(name) || name == ".." || strings.HasPrefix(name, ".."+string(os.PathSeparator)) {
+			return fmt.Errorf("%w : chemin interdit dans l'archive", ErrInvalid)
+		}
+		target := filepath.Join(staging, name)
+		if file.FileInfo().IsDir() {
+			if err := os.MkdirAll(target, 0o700); err != nil {
+				return err
+			}
+			continue
+		}
+		if file.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("%w : liens symboliques interdits", ErrInvalid)
+		}
+		if file.UncompressedSize64 > 1<<30 || extracted+int64(file.UncompressedSize64) > 1<<30 {
+			return fmt.Errorf("%w : contenu trop volumineux (1 Go maximum)", ErrInvalid)
+		}
+		extracted += int64(file.UncompressedSize64)
+		if err := os.MkdirAll(filepath.Dir(target), 0o700); err != nil {
+			return err
+		}
+		src, err := file.Open()
+		if err != nil {
+			return err
+		}
+		dst, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+		if err != nil {
+			src.Close()
+			return err
+		}
+		_, copyErr := io.Copy(dst, src)
+		closeErr := dst.Close()
+		srcCloseErr := src.Close()
+		if copyErr != nil || closeErr != nil || srcCloseErr != nil {
+			return fmt.Errorf("archive illisible : %v", firstError(copyErr, closeErr, srcCloseErr))
+		}
+	}
+	if err := os.RemoveAll(root); err != nil {
+		return err
+	}
+	return os.Rename(staging, root)
 }
 
 func (m *Manager) Remove(ctx context.Context, name string, keepData bool) error {
@@ -308,6 +434,15 @@ func randomSecret() string {
 	return string(secret)
 }
 
+func firstError(errors ...error) error {
+	for _, err := range errors {
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func trimOutput(output []byte, err error) string {
 	text := strings.TrimSpace(string(output))
 	if text == "" {
@@ -318,4 +453,22 @@ func trimOutput(output []byte, err error) string {
 		lines = lines[len(lines)-5:]
 	}
 	return strings.Join(lines, "\n")
+}
+
+func SystemMemoryMB() int {
+	data, err := os.ReadFile("/proc/meminfo")
+	if err != nil {
+		return 0
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && fields[0] == "MemTotal:" {
+			kilobytes, err := strconv.Atoi(fields[1])
+			if err != nil {
+				return 0
+			}
+			return kilobytes / 1024
+		}
+	}
+	return 0
 }
