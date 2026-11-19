@@ -31,7 +31,17 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
 - [x] Mises à jour proposées, jamais automatiques (9.2).
 - [x] Interface et site dans les 12 langues de Wikipedia2Book (5.3, 13).
-- [ ] Questions ouvertes de la section 15 : relais, DNS dynamique et réservation des noms, fournisseur d'identité, manifestes, fréquence des sauvegardes, Ethernet.
+- [x] Point d'accès Wi-Fi au premier démarrage même avec un câble Ethernet (4).
+- [x] E-mail de l'administrateur obligatoire et vérifié (5.1).
+- [x] DNS dynamique : DuckDNS ; adresse liée à l'appliance, libérée après 90 jours (7.1).
+- [x] Relais gratuit avec limites, payant au-delà (7.3).
+- [x] Fournisseur d'identité intégré à la console (8.1).
+- [x] Récupération par e-mail, fichier `reset` sur la carte SD en dernier recours (8.5).
+- [x] Alertes par e-mail (8.6).
+- [x] Sauvegarde chaque nuit, 7 quotidiennes, 4 hebdomadaires, 6 mensuelles (9.1).
+- [x] Correctifs de sécurité proposés comme le reste, rappelés par e-mail (9.2).
+- [x] Services du projet hébergés sur un Pi du propriétaire du projet (10.2).
+- [ ] Questions ouvertes de la section 15 : limites et prix du relais, envoi d'e-mails depuis une IP résidentielle, Pi de secours, LDAP, manifestes.
 
 ## 2. Étape 1 — Local
 
@@ -46,7 +56,8 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 ### Console (5)
 
 - [ ] Service web sous `/pi-appliance`, en HTTPS, derrière Traefik.
-- [ ] Authentification, changement obligatoire du mot de passe initial.
+- [ ] Authentification, changement obligatoire du mot de passe initial, e-mail vérifié.
+- [ ] Fichier `reset` sur la carte SD (8.5).
 - [ ] Assistant de premier démarrage.
 - [ ] Tableau de bord : état du Pi et des services.
 - [ ] Traduction dans les 12 langues, arabe et persan de droite à gauche.
@@ -63,21 +74,23 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 ## 3. Étape 2 — Internet (7)
 
 - [ ] Traefik : point d'entrée unique, routage par sous-domaine, certificats Let's Encrypt.
-- [ ] DNS dynamique gratuit tenu à jour par l'appliance.
-- [ ] Réservation de `<nom>.pi-appliance.com` et création des alias.
+- [ ] DuckDNS tenu à jour par l'appliance.
+- [ ] Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
+- [ ] Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] Domaine personnel : guide OVH, à partir de `linux-tool/dynHost/`.
 - [ ] Accès direct : UPnP, guide de la box, test depuis internet.
-- [ ] Relais : serveur, tunnel sortant (à partir de `all-pi/autossh.sh`), bascule automatique.
+- [ ] Relais : serveur, tunnel sortant (à partir de `all-pi/autossh.sh`), bascule automatique, limites de l'offre gratuite, offre payante.
 - [ ] Accès par service : public, connectés, maison (8.2).
 - [ ] Console ouverte sur internet avec double authentification (8.3).
 
 ## 4. Étape 3 — Le reste
 
-- [ ] Fournisseur d'identité et connexion unique ; rôles et invités (8.1).
-- [ ] Sauvegardes : disque USB, cloud, autre pi-appliance, chiffrement, restauration (9.1).
+- [ ] Fournisseur d'identité intégré à la console : OpenID Connect, *forward auth* Traefik, double authentification ; rôles et invités (8.1, 8.3).
+- [ ] Alertes par e-mail, désactivables par type (8.6).
+- [ ] Sauvegardes : chaque nuit, rotation 7/4/6, disque USB, cloud, autre pi-appliance, chiffrement, restauration (9.1).
 - [ ] Mises à jour proposées dans la console (9.2).
 - [ ] VPN WireGuard avec QR code (6.3).
-- [ ] Statistiques anonymes (8.4).
+- [ ] Statistiques anonymes et leur service de réception (8.4, 10.2).
 - [ ] Puis : applications caméra (Motion, timelapse).
 
 ## 5. Site www.pi-appliance.com (13)

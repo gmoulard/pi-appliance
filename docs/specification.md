@@ -54,11 +54,11 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 1. J'achète un Raspberry Pi.
 2. Sur www.pi-appliance.com, je télécharge l'image et je la flashe sur une carte SD en suivant le guide.
 3. Je démarre le Pi.
-4. S'il n'a pas de réseau, le Pi crée un Wi-Fi « pi-appliance ». Je m'y connecte avec mon téléphone : une page s'ouvre, je choisis le Wi-Fi de la maison et je saisis son mot de passe. Le Pi rejoint mon Wi-Fi.
+4. Le Pi crée un Wi-Fi « pi-appliance ». Je m'y connecte avec mon téléphone : une page s'ouvre, je choisis le Wi-Fi de la maison (ou le câble Ethernet s'il est branché) et je saisis son mot de passe. Le Pi rejoint mon réseau.
 5. J'ouvre la console :
    - depuis un appareil de la maison : `https://pi-appliance.local/pi-appliance` ;
    - depuis le Pi lui-même (écran et clavier branchés) : `https://localhost/pi-appliance`.
-6. Je me connecte avec l'identifiant et le mot de passe initiaux, et je choisis aussitôt mon propre mot de passe.
+6. Je me connecte avec l'identifiant et le mot de passe initiaux, je choisis aussitôt mon propre mot de passe et je donne mon adresse e-mail, que je confirme avec le code reçu.
 7. Je choisis mon adresse : un nom libre `<nom>.pi-appliance.com`, ou mon propre domaine.
 8. Je crée mes utilisateurs.
 9. Dans la marketplace, je coche les services que je veux et, pour chacun, qui peut y accéder.
@@ -72,7 +72,7 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 - Contient Docker, Docker Compose, la console pi-appliance et Traefik, démarrés au premier boot.
 - Premier démarrage : extension de la partition, nom d'hôte `pi-appliance`, annonce mDNS (`pi-appliance.local`), génération des secrets propres au boîtier (certificat local auto-signé, clés de session). Aucun secret n'est commun à deux images.
 - **Modèles pris en charge** : Raspberry Pi 5, Pi 4, Pi 3 B+ et Pi Zero 2 W, avec une seule image 64 bits. Sur les petits modèles (Pi 3 B+ : 1 Go, Zero 2 W : 512 Mo), une application dont la mémoire minimale dépasse celle du Pi s'installe quand même, après un avertissement sur les performances.
-- **Réseau au premier démarrage** : sans réseau, le Pi ouvre un point d'accès Wi-Fi « pi-appliance » avec un portail de configuration (choix du Wi-Fi et saisie du mot de passe), puis le referme une fois connecté. Il le rouvre s'il perd durablement le réseau.
+- **Réseau au premier démarrage** : le Pi ouvre **toujours** un point d'accès Wi-Fi « pi-appliance » avec un portail de configuration, même si un câble Ethernet est branché, pour que le parcours soit le même pour tous. Le portail propose les Wi-Fi visibles et, si un câble est branché, le réseau filaire. Le point d'accès se referme une fois le Pi connecté, et se rouvre s'il perd durablement le réseau. Le Pi Zero 2 W n'a pas de prise Ethernet.
 - **Stockage** : tout fonctionne sur la carte SD. Quand un disque USB est branché, la console propose d'y placer les données des services ; elle prévient quand la carte SD se remplit.
 - L'image est publiée sur www.pi-appliance.com avec sa somme de contrôle.
 
@@ -83,12 +83,13 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 ### 5.1 Premier démarrage (assistant)
 
 1. Connexion avec l'identifiant initial ; changement de mot de passe obligatoire.
-2. Langue de l'interface.
-3. Adresse de l'appliance : `<nom>.pi-appliance.com` (vérification que le nom est libre) ou domaine personnel (section 7.1).
-4. Test d'accès depuis internet ; guide de la box ou bascule sur le relais si besoin (section 7).
-5. Création des utilisateurs.
-6. Statistiques anonymes : proposées, désactivées par défaut (section 8.4).
-7. Choix des premiers services dans la marketplace.
+2. Adresse e-mail de l'administrateur, **obligatoire**, vérifiée par un code envoyé par e-mail (récupération et alertes, sections 8.5 et 8.6).
+3. Langue de l'interface.
+4. Adresse de l'appliance : `<nom>.pi-appliance.com` (vérification que le nom est libre) ou domaine personnel (section 7.1).
+5. Test d'accès depuis internet ; guide de la box ou bascule sur le relais si besoin (section 7).
+6. Création des utilisateurs.
+7. Statistiques anonymes : proposées, désactivées par défaut (section 8.4).
+8. Choix des premiers services dans la marketplace.
 
 ### 5.2 Fonctions courantes
 
@@ -139,7 +140,8 @@ Objectif : chaque service est joignable à `https://<service>.<adresse de l'appl
 
 ### 7.1 Adresse de l'appliance
 
-- **Par défaut : `<nom>.pi-appliance.com`**, réservé depuis le site ou depuis la console. Ce nom (et `*.<nom>.pi-appliance.com` pour les services) est un **alias** (CNAME) vers un nom d'un **service de DNS dynamique gratuit** (de type DuckDNS), que l'appliance tient à jour avec l'adresse publique de la box. Le projet ne gère que les alias de la zone `pi-appliance.com`, jamais l'adresse IP des utilisateurs.
+- **Par défaut : `<nom>.pi-appliance.com`**. Ce nom (et `*.<nom>.pi-appliance.com` pour les services) est un **alias** (CNAME) vers un nom **DuckDNS** (`<identifiant>.duckdns.org`, gratuit), que l'appliance tient à jour avec l'adresse publique de la box. Le projet ne gère que les alias de la zone `pi-appliance.com`, jamais l'adresse IP des utilisateurs.
+- **Réservation** : depuis la console ou depuis le site, auprès du service d'adresses du projet (section 10.2). Le nom est **lié à l'appliance** par une clé propre au Pi, créée au premier démarrage : une seule adresse par appliance ; seule l'appliance qui détient la clé peut la modifier. Une adresse est libérée après **90 jours** sans signe de vie de son appliance. Une liste de noms interdits (marques, termes injurieux, noms réservés au projet comme `www`, `relais`, `mail`) est refusée.
 - **En option : un domaine personnel**, que l'utilisateur fait pointer (alias) vers son adresse `<nom>.pi-appliance.com`, guidé pas à pas pour les principaux bureaux d'enregistrement (OVH d'abord). Prototype de mise à jour OVH dans `linux-tool/dynHost/`.
 
 ### 7.2 Accès direct
@@ -150,12 +152,15 @@ Par défaut, la box redirige les ports 80 et 443 vers le Pi. L'appliance tente d
 
 Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance ouvre un tunnel sortant vers un **relais du projet**, qui fait suivre le trafic ; l'adresse de l'appliance pointe alors vers le relais. Bascule automatique, signalée dans la console. Prototype : tunnel autossh dans `all-pi/autossh.sh`.
 
+Offre : **gratuite avec des limites** de débit et de volume mensuel, **payante** au-delà, par abonnement. Les limites, le prix et le moyen de paiement seront fixés à l'étape Internet (section 15).
+
 ## 8. Utilisateurs, accès et sécurité
 
 ### 8.1 Connexion unique
 
-- Un seul identifiant et mot de passe pour la console et pour tous les services qui acceptent une connexion standard (OpenID Connect ou LDAP), servis par un fournisseur d'identité installé sur l'appliance.
-- Un service sans connexion standard est protégé en amont par Traefik (authentification déléguée au même fournisseur) et garde, si besoin, ses propres comptes internes.
+- Un seul identifiant et mot de passe pour la console et pour tous les services qui acceptent une connexion standard (OpenID Connect).
+- Le **fournisseur d'identité est intégré à la console** : elle est fournisseur OpenID Connect pour les services et point d'authentification déléguée (*forward auth*) pour Traefik. Pas de logiciel d'identité séparé, pour tenir sur un Pi Zero 2 W.
+- Un service sans connexion standard est protégé en amont par Traefik (authentification déléguée à la console) et garde, si besoin, ses propres comptes internes.
 - Rôles : **administrateur** (gère l'appliance), **utilisateur** (accède aux services autorisés), **invité** (comme un utilisateur, avec une date d'expiration).
 
 ### 8.2 Qui accède à un service
@@ -176,6 +181,25 @@ Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance 
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
 - **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
 
+### 8.5 Récupération de l'accès
+
+- **Par e-mail** : « mot de passe oublié » envoie un lien de réinitialisation à l'adresse e-mail du compte, par le service d'envoi du projet (section 10.2). Le lien est à usage unique et expire après une heure. Pour un administrateur, la réinitialisation désactive aussi la double authentification, à réactiver ensuite.
+- **En dernier recours** (e-mail perdu, appliance sans internet) : déposer un fichier `reset` sur la partition de démarrage de la carte SD (lisible depuis n'importe quel ordinateur) puis redémarrer le Pi rouvre l'assistant de mot de passe administrateur, sans toucher aux données ni aux services. Le fichier est supprimé aussitôt lu.
+
+### 8.6 Alertes par e-mail
+
+L'appliance prévient les administrateurs, par le service d'envoi du projet :
+
+- sauvegarde échouée ;
+- mises à jour en attente, en insistant pour les correctifs de sécurité (section 9.2) ;
+- carte SD ou disque USB presque plein ;
+- service arrêté, certificat qui expire, appliance injoignable depuis internet ;
+- compte créé ou supprimé ;
+- mot de passe changé (l'utilisateur concerné est aussi prévenu) ;
+- connexion inhabituelle : nouvel appareil, nombreuses tentatives échouées.
+
+Chaque type d'alerte peut être désactivé dans la console.
+
 ## 9. Sauvegarde et mises à jour
 
 ### 9.1 Sauvegarde
@@ -184,13 +208,14 @@ Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance 
   - un **disque USB** (autre que le disque de données) ;
   - un **stockage en ligne** compatible S3 ou OVH Swift ;
   - **un autre pi-appliance**, par exemple chez un proche (sauvegarde croisée).
+- Par défaut : **une sauvegarde chaque nuit** ; on garde **7 quotidiennes, 4 hebdomadaires et 6 mensuelles**. Modifiable dans la console ; sauvegarde manuelle possible à tout moment.
 - Les sauvegardes qui quittent la maison sont chiffrées sur l'appliance ; la clé reste chez l'utilisateur.
 - Restauration sur une nouvelle carte SD à partir d'une sauvegarde.
 - Prototypes : `all-pi/bkp.sh`, `linux-tool/bkp.sh`, `linux-tool/mountSwift.sh`.
 
 ### 9.2 Mises à jour
 
-Les mises à jour de pi-appliance, des services et du système sont **proposées** : la console les signale, l'utilisateur clique pour les appliquer. Rien n'est mis à jour sans son accord.
+Les mises à jour de pi-appliance, des services et du système sont **proposées** : la console les signale, l'utilisateur clique pour les appliquer. Rien n'est mis à jour sans son accord, **y compris les correctifs de sécurité** de Raspberry Pi OS : ceux-ci sont signalés en évidence dans la console et rappelés par e-mail (section 8.6) tant qu'ils ne sont pas appliqués.
 
 ## 10. Architecture
 
@@ -201,23 +226,31 @@ flowchart LR
     Relais -. "tunnel sortant" .-> Traefik
     LAN((Réseau de la maison)) --> Traefik
     Box -- "80 / 443" --> Traefik
-    subgraph Pi["Raspberry Pi — Raspberry Pi OS + Docker"]
+    subgraph Pi["Appliance — Raspberry Pi OS + Docker"]
         Traefik[Traefik<br/>reverse proxy + Let's Encrypt]
-        Console[Console pi-appliance<br/>/pi-appliance]
-        IdP[Fournisseur d'identité<br/>connexion unique]
+        Console[Console pi-appliance<br/>/pi-appliance<br/>+ fournisseur d'identité]
         S1[Service A]
         S2[Service B]
         Traefik --> Console
         Traefik --> S1
         Traefik --> S2
-        Traefik -- "authentification déléguée" --> IdP
-        S1 -- "OpenID Connect / LDAP" --> IdP
+        Traefik -- "authentification déléguée" --> Console
+        S1 -- "OpenID Connect" --> Console
         Console -- "API Docker, labels Traefik" --> S1
         Console -- "API Docker, labels Traefik" --> S2
     end
+    subgraph Projet["Services du projet — Pi du projet"]
+        Adresses[Service d'adresses<br/>zone pi-appliance.com]
+        Relais
+        Mail[Service d'envoi d'e-mails]
+        Stats[Statistiques anonymes]
+    end
     Console -- "catalogue" --> Catalogue[(Dépôt GitHub<br/>marketplace)]
-    Console -- "adresse publique" --> DDNS[(DNS dynamique gratuit)]
-    Alias[(Zone pi-appliance.com<br/>alias nom → DNS dynamique)] --> DDNS
+    Console -- "adresse publique" --> DDNS[(DuckDNS)]
+    Console -- "réservation, signe de vie" --> Adresses
+    Console -- "alertes, récupération" --> Mail
+    Console -. "si accepté" .-> Stats
+    Adresses -- "alias nom → DuckDNS" --> DDNS
 ```
 
 ### 10.1 Choix techniques
@@ -229,6 +262,21 @@ flowchart LR
 | Configuration de Traefik | Labels Docker posés sur les conteneurs des services |
 | Manifestes de la marketplace | YAML au format Docker Compose, avec des métadonnées en plus |
 | Fabrication de l'image | Shell et `pi-gen` |
+| Fournisseur d'identité | Intégré à la console Go (OpenID Connect, *forward auth* Traefik, TOTP) |
+| DNS dynamique | DuckDNS |
+
+### 10.2 Services du projet
+
+Quatre services centraux, hébergés par le projet **sur un Raspberry Pi du propriétaire du projet** :
+
+| Service | Rôle | Sans lui |
+|---------|------|----------|
+| Adresses | Réservation des noms `<nom>.pi-appliance.com`, alias vers DuckDNS, signes de vie, libération après 90 jours | Pas de nouvelle adresse ; les adresses existantes continuent de marcher |
+| Relais | Tunnel pour les appliances sans accès direct (section 7.3) | Ces appliances sont injoignables depuis internet ; l'accès direct n'est pas touché |
+| Envoi d'e-mails | Codes de vérification, récupération, alertes (sections 8.5, 8.6) | Ni récupération par e-mail ni alertes ; le fichier `reset` reste possible |
+| Statistiques | Réception des statistiques anonymes acceptées | Rien de visible pour l'utilisateur |
+
+Une appliance continue de fonctionner, à la maison comme en accès direct, quand ces services sont arrêtés. Ces services sont eux aussi sous AGPL-3.0, publiés dans ce dépôt.
 
 ## 11. Exigences non fonctionnelles
 
@@ -236,6 +284,7 @@ flowchart LR
 - Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte).
 - Fonctionne sur Pi Zero 2 W (512 Mo) : la couche pi-appliance seule (console, Traefik, fournisseur d'identité) doit y laisser de la place pour au moins un service léger.
 - Démarrage de la console en moins de deux minutes après la mise sous tension.
+- Fournisseur d'identité intégré : code de sécurité critique, à couvrir par des tests et à faire relire (bibliothèques OpenID Connect éprouvées plutôt que du code écrit à la main).
 - Interface utilisable sur téléphone.
 
 ## 12. Arborescence du dépôt
@@ -272,12 +321,13 @@ Dans les mêmes langues que la console (section 5.3).
 
 ## 15. Questions ouvertes
 
-- Relais : financement (gratuit avec plafond de débit, dons, offre payante), plafonds, code publié pour qu'on puisse héberger le sien.
-- Service de DNS dynamique gratuit retenu (DuckDNS ou autre), et réservation des noms `<nom>.pi-appliance.com` : qui gère la zone, comment éviter les abus.
-- Fournisseur d'identité assez léger pour un Pi Zero 2 W (Authelia avec LLDAP, Authentik, Kanidm…).
+- Relais : limites de l'offre gratuite (débit, volume mensuel), prix et moyen de paiement de l'offre payante.
+- Services du projet sur un Pi à la maison (10.2) :
+  - le débit montant de la connexion du projet plafonne le relais pour tous les utilisateurs ;
+  - les e-mails envoyés depuis une adresse IP résidentielle sont souvent bloqués ou classés en indésirables : passer par un relais SMTP (offre e-mail d'OVH, service d'envoi transactionnel) ?
+  - un seul Pi est un point unique de panne : sauvegarde et Pi de secours ?
+- Services qui n'acceptent que LDAP (pas OpenID Connect) : la console doit-elle aussi servir LDAP ?
 - Format exact des manifestes de la marketplace.
-- Fréquence des sauvegardes, nombre de sauvegardes gardées.
-- Ethernet : un câble branché suffit-il à sauter l'étape du point d'accès (probable, à confirmer) ?
 
 ## 16. Ordre de construction
 
