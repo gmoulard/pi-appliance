@@ -31,6 +31,7 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 
 | Chemin | Contenu |
 |--------|---------|
+| `cmd/pi-appliance/`, `internal/console/` | Console pi-appliance, en Go |
 | [`docs/`](docs/) | [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md) |
 | `all-pi/` | Configuration commune des Pi : alias, crontab, tunnel autossh, sauvegarde |
 | `linux-tool/` | Outils système : DNS dynamique OVH (`dynHost/`), sauvegarde, montage Swift |
@@ -43,6 +44,16 @@ Après un clone, récupérer les skills :
 
 ```shell
 git submodule update --init
+```
+
+## Console : construire et lancer
+
+Avec Go 1.24 ou plus :
+
+```shell
+go test ./...
+go run ./cmd/pi-appliance            # puis http://localhost:8080/pi-appliance/
+GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance   # binaire pour le Pi
 ```
 
 ## Pour qui

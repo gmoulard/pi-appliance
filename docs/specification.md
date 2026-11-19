@@ -303,6 +303,9 @@ flowchart LR
 | Fournisseur d'identité | Intégré à la console Go (OpenID Connect, *forward auth* Traefik, TOTP) |
 | DNS dynamique | DuckDNS |
 
+
+**Réalisé** : squelette de la console (`cmd/pi-appliance`, `internal/console`). Le binaire sert la page d'accueil de la console sous `/pi-appliance/` (`/pi-appliance` redirige vers `/pi-appliance/`) et `GET /pi-appliance/api/health`, qui renvoie `{"status": "ok", "version": "…"}`. Il écoute en HTTP sur `:8080` (option `-addr`) : HTTPS sera assuré par Traefik devant lui. La version est fixée à la compilation (`-ldflags "-X main.version=…"`, `dev` sinon). Le workflow « Go » (`.github/workflows/go.yml`) lance `go vet` et `go test` et construit le binaire `arm64` à chaque push.
+
 ### 10.2 Services du projet
 
 Quatre services centraux, hébergés par le projet **sur un Raspberry Pi du propriétaire du projet** :
@@ -338,6 +341,10 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
 | `.claude/skills/` | Sous-module : skills partagés [gmoulard/claude_skills](https://github.com/gmoulard/claude_skills) |
 | `docs/` | Spécification, TODO, notes |
+| `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
+| `cmd/pi-appliance/` | Programme principal de la console |
+| `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
+| `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |
 | `all-pi/` | Prototype : configuration commune des Pi (alias, crontab, autossh, sauvegarde) |
 | `linux-tool/` | Prototype : outils système (DNS dynamique OVH, sauvegarde, montage Swift) |
 | `docker-apache/`, `docker-nextcloud/`, `docker-samba/` | Prototypes de services Docker, futures entrées de la marketplace |

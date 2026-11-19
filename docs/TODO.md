@@ -63,7 +63,8 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 ### Console (5)
 
-- [ ] Service web sous `/pi-appliance`, en HTTPS, derrière Traefik.
+- [x] Squelette Go : page d'accueil sous `/pi-appliance/`, `api/health`, tests, binaire `arm64` construit par GitHub Actions (10.1).
+- [ ] Service systemd et passage derrière Traefik, en HTTPS.
 - [ ] Authentification, changement obligatoire du mot de passe initial, e-mail vérifié.
 - [ ] Fichier `reset` sur la carte SD (8.5).
 - [ ] Assistant de premier démarrage.
