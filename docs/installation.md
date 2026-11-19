@@ -1,6 +1,6 @@
 # Installation du plan de contrôle
 
-Le plan de contrôle est composé de Docker, Docker Compose, de la console pi-appliance, de Traefik et des services systemd qui les démarrent. Cette procédure installe la couche pi-appliance sur un Raspberry Pi OS Lite 64 bits déjà installé.
+Le plan de contrôle, appelé **controlTower** dans cette documentation, est composé de Docker, Docker Compose, de la console pi-appliance, de Traefik et des services systemd qui les démarrent. controlTower est inclus dans l'image pi-appliance ; ce n'est pas une application à installer depuis la marketplace. Il est réservé au concepteur ou à la personne responsable de l'appliance, qui crée son compte administrateur au premier démarrage. Cette procédure installe le même plan de contrôle sur un Raspberry Pi OS Lite 64 bits déjà installé.
 
 > Cette procédure installe le prototype local. L’accès public et les certificats Let's Encrypt ne sont pas encore activés : Traefik utilise le certificat auto-signé propre au Pi. Ne publiez pas les ports 80 et 443 tant que l’étape Internet décrite dans [l’avancement](TODO.md) n’est pas terminée.
 

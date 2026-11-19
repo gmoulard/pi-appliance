@@ -23,7 +23,7 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 
 Le workflow GitHub Actions a construit l'image avec succès le 19 novembre 2026. L'artefact **`pi-appliance-image`** comprend l'image et son fichier de somme SHA-256 ; il expire le **3 décembre 2026**. [Télécharger directement l'image et sa somme de contrôle](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083/artifacts/14559608001). Il s'agit d'un artefact temporaire, pas d'une version stable. Le fichier image est `pi-appliance-2026-11-19-48c047d.img.xz` (environ 720 Mio compressé, 3,3 Gio une fois décompressé).
 
-Dans ce guide, le Raspberry Pi s'appelle **controlTower**. Attention : le nom réseau intégré à cette image reste `pi-appliance` ; pour ouvrir la console, utilisez donc `pi-appliance.local`, et non `controlTower.local`.
+Dans cette documentation, **controlTower** désigne le service de contrôle : la console d'administration de pi-appliance. Inclus dans l'image, il n'est pas installé depuis la marketplace et son administration est réservée au compte créé par la personne qui configure l'appliance. Le Raspberry Pi garde le nom réseau `pi-appliance` ; l'adresse de la console est donc `https://pi-appliance.local/pi-appliance/`.
 
 L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte micro-SD de 16 Go ou plus, un ordinateur et [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Le flashage efface entièrement la carte SD.
 
@@ -46,7 +46,7 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
    Ne flashez pas l'image si la vérification échoue.
 3. Décompressez le fichier `.img.xz` avec 7-Zip pour obtenir le fichier `.img`.
 4. Téléchargez et ouvrez [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
-5. Insérez la carte dans le Raspberry Pi **controlTower** et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement.
+5. Insérez la carte dans le Raspberry Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement.
 6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, ouvrez `https://pi-appliance.local/pi-appliance/` depuis le réseau de la maison.
 
 7. Dans la console, faites défiler la page sous **Mes services** jusqu'à la rubrique **Marketplace**. Si vous êtes encore dans l'assistant de première mise en route, choisissez **Vos premiers services** : il affiche cette même rubrique. Sélectionnez une application, choisissez son nom puis cliquez sur **Installer**. Une adresse locale comme `www.pi-appliance.local` apparaît dans **Mes services** quand l'installation réussit. Pour un site web, trois méthodes permettent de déposer les fichiers :

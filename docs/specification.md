@@ -40,6 +40,7 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 |-------|------|
 | **Appliance** | Le Raspberry Pi équipé de l'image pi-appliance. |
 | **Console** | L'interface web d'administration de l'appliance, servie sous `/pi-appliance`. |
+| **Service de contrôle (controlTower)** | La console et les composants système de pi-appliance, fournis avec l'image et réservés au compte administrateur de l'appliance ; ce n'est pas une application de la marketplace. |
 | **Administrateur** | Compte qui gère l'appliance ; le premier est créé au premier démarrage. |
 | **Utilisateur** | Compte qui accède aux services autorisés. |
 | **Invité** | Compte à durée limitée, pour un partage ponctuel. |

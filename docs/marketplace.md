@@ -4,6 +4,10 @@ La marketplace regroupe les applications que l'on peut installer et gérer depui
 
 > **Prototype expérimental.** Les manifestes ci-dessous sont présents dans le code, mais l'image n'a pas encore été validée sur un vrai Raspberry Pi. L'accès aux services depuis internet n'est pas encore disponible.
 
+## Le service de contrôle controlTower
+
+**controlTower** désigne la console d'administration pi-appliance et les composants qui la font fonctionner. Ce service système est fourni avec l'image, pas proposé dans le catalogue : il est réservé au concepteur ou à la personne responsable de l'appliance, au moyen du compte administrateur créé au premier démarrage. Les opérations de gestion nécessitent cette session administrateur.
+
 ## Applications déjà dans le catalogue
 
 <div id="marketplace-catalog" data-catalog-index="{{ '/static/pi-appliance-catalog.json' | relative_url }}">
