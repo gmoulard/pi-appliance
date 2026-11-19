@@ -72,7 +72,8 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécification, section 4), vérifié sans Pi seulement (`shellcheck`, `yamllint`, Traefik essayé dans Docker, pi-gen préparé sans construire). À cocher après :
 
-- [ ] Première construction réelle de l'image par le workflow « Image » (à lancer à la main une fois le workflow sur `master`) : durée, taille, place sur le disque du runner.
+- [x] Première construction réelle de l'image par le workflow « Image » (à lancer à la main une fois le workflow sur `master`) : durée, taille, place sur le disque du runner.
+  - Run [44578711083](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083) du 2026-11-19, commit `48c047d` : **réussi** en 37 min 4 s, dont 34 min 53 s pour l'étape pi-gen (`real` 33 min 48 s) et 1 min 43 s pour « Place sur le disque ». Image `pi-appliance-2026-11-19-48c047d.img.xz` : 720 Mio compressée, 3 344 Mio décompressée (xz, taux 0,215) ; artefact `pi-appliance-image` de 755 Mo (image et `.sha256`), gardé jusqu'au 2026-12-03, somme de contrôle vérifiée après téléchargement. Place sur le disque après nettoyage : 145 G, 40 G utilisés, 105 G libres (28 %), largement assez.
   - Run [44573501694](https://github.com/gmoulard/pi-appliance/actions/runs/44573501694) du 2026-11-19 : **échec** après 19 min 35 s (pi-gen : 16 min 39 s), refusé par `01-check` (« docker.service n'est pas activé »), pas d'image donc pas de taille. Place sur le disque après nettoyage : 145 G, 36 G utilisés, 109 G libres (25 %). Cause : `[ -e ]` suivait les liens absolus de systemd dans le conteneur de pi-gen ; corrigé en `[ -L ]`, à relancer.
 - [ ] Essai sur un vrai Pi (Pi 5, 4, 3 B+, Zero 2 W) : partition étendue, `pi-appliance.local`, secrets différents sur deux cartes flashées avec la même image, Traefik et console démarrés sans internet, point d'accès ouvert même avec un câble, fermé après le choix du réseau, après 24 heures, rouvert après un redémarrage et après 10 minutes sans réseau, portail captif sur iPhone et Android, mémoire libre sur le Zero 2 W.
 - [x] API réseau de la console (`internal/network`, branchée sur `/usr/local/lib/pi-appliance/network.sh`, option `-network-script`), réservée à l'administrateur connecté ; essayée contre un faux `network.sh`, reste l'essai sur un vrai Pi (ligne ci-dessus) :
@@ -93,7 +94,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Fichier `reset` sur la carte SD (8.5).
 - [x] Assistant de premier démarrage, première version : compte, réseau, premiers services (5.1).
 - [ ] Étapes suivantes de l'assistant, avec leurs fonctions : langue, adresse sur internet, test d'accès, utilisateurs, statistiques (5.1).
-- [ ] Tableau de bord : état du Pi et des services, graphiques sur 30 jours.
+- [x] Tableau de bord : charge, température, mémoire, disque, état des services, graphiques sur 24 heures et 30 jours, historique horaire écrit une fois par heure (`internal/metrics`) ; à vérifier sur un vrai Pi (capteur de température, interfaces réseau, mémoire prise sur le Zero 2 W). Adresse publique, certificats et mode d'accès viendront avec l'étape Internet.
 - [ ] Canaux de version stable et bêta.
 - [ ] Traduction dans les 12 langues, arabe et persan de droite à gauche.
 - [ ] Disque USB : détection, déplacement des données, alerte de remplissage de la carte SD.

@@ -115,6 +115,13 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 
 Une appliance se gère depuis sa propre console : pas de tableau de bord commun à plusieurs appliances.
 
+**Réalisé** (tableau de bord, section « Mon Pi » de la console, administrateurs ; à vérifier sur un vrai Pi) :
+
+- **En ce moment** : charge du processeur (part du temps où il a travaillé, d'après `/proc/stat`, tous cœurs confondus ; orange à 90 %), température de la puce (`/sys/class/thermal/thermal_zone0/temp` ; orange à 70 °C, rouge à 80 °C, avec un conseil en langage courant), jauges de la mémoire et du disque (section 6.2), et l'état des services en une phrase (« 2 services en marche, 1 service arrêté »), avec la pastille de la couleur la plus grave. `GET api/system` donne `memory`, `disk`, `cpu_percent`, `temperature_c` (`null` quand la valeur est inconnue). La page se met à jour chaque minute.
+- **Graphiques** sur 24 heures ou 30 jours : processeur, mémoire, température (la plus haute de chaque heure), disque et réseau (Mo reçus et envoyés par heure, sur le câble et le Wi-Fi, sans le bouclage ni les réseaux internes de Docker). Une courbe par mesure, chacune avec son échelle ; une heure sans mesure (Pi éteint) coupe la courbe ; la valeur d'une heure s'affiche sous le doigt ou la souris. `GET api/system/history` : `{"step_seconds": 3600, "points": [{"time", "cpu_percent", "memory_percent", "temperature_c", "disk_percent", "received_mb", "sent_mb"}]}`.
+- **Historique** (paquet `internal/metrics`) : une mesure par minute, agrégée par heure en mémoire ; le fichier `<données>/history.json` n'est écrit qu'une fois par heure (section 11), et à l'arrêt de la console, heure en cours comprise, reprise au redémarrage. 30 jours gardés, soit 720 points (environ 100 Ko).
+- Pas encore : adresse publique, état des certificats et mode d'accès (étape Internet, section 7).
+
 ### 5.3 Langues
 
 L'interface est traduite dans les 12 langues de Wikipedia2Book : français, anglais, espagnol, portugais, italien, allemand, néerlandais, turc, chinois, japonais, arabe et persan (ces deux dernières de droite à gauche). Langue détectée d'après le navigateur, modifiable à tout moment. Le français fait foi.
@@ -397,7 +404,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 ## 11. Exigences non fonctionnelles
 
 - Objectif de la section 1.3 : 15 minutes jusqu'au premier service sur internet.
-- Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte ; mesures des graphiques agrégées avant d'être écrites, sur le disque USB s'il y en a un).
+- Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte ; mesures des graphiques agrégées avant d'être écrites, sur le disque USB s'il y en a un). Réalisé pour les graphiques : une écriture par heure (section 5.2).
 - Fonctionne sur Pi Zero 2 W (512 Mo) : la couche pi-appliance seule (console, Traefik, fournisseur d'identité) doit y laisser de la place pour au moins un service léger.
 - Démarrage de la console en moins de deux minutes après la mise sous tension.
 - Fournisseur d'identité intégré : code de sécurité critique, à couvrir par des tests et à faire relire (bibliothèques OpenID Connect éprouvées plutôt que du code écrit à la main).
@@ -418,7 +425,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `internal/auth/` | Comptes de la console : compte administrateur, connexion, sessions, fichier `reset` (8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `internal/network/` | Réseau du Pi pour la console, par `network.sh` : état, Wi-Fi, connexion, câble, pays du Wi-Fi (4) |
-| `internal/system/` | Mémoire et disque du Pi, pour les jauges (6.2) |
+| `internal/system/` | État du Pi : mémoire, disque, charge du processeur, température, trafic réseau (5.2, 6.2) |
+| `internal/metrics/` | Historique horaire de l'état du Pi sur 30 jours, pour les graphiques (5.2, 11) |
 | `marketplace/` | Catalogue : un manifeste `<application>/compose.yaml` par application (6.5) |
 | `image/` | Construction de l'image avec pi-gen : `build.sh`, `config` (réglages de pi-gen), `stage-pi-appliance/` (étape ajoutée à Raspberry Pi OS Lite) (4) |
 | `system/` | Couche système, aux mêmes chemins que sur le Pi (`etc/`, `usr/`) : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage ; `install.sh` l'installe (image ou Pi déjà en place) ; `tests/` : tests sans Pi (4, 8.4, 10) |

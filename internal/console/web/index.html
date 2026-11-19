@@ -85,7 +85,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </section>
 <section id="piSection" hidden>
 <h2>Mon Pi</h2>
-<div id="piGauges" class="card"></div>
+<div class="card">
+<div id="piNow" class="tiles"></div>
+<p id="piServices" class="state" hidden></p>
+<div id="piGauges"></div>
+</div>
+<div id="piHistory" class="card" hidden>
+<div class="history-head">
+<h3>Les derniers jours</h3>
+<div class="periods" role="group" aria-label="Période des graphiques">
+<button type="button" class="secondary" data-hours="24" aria-pressed="true">24 heures</button>
+<button type="button" class="secondary" data-hours="720" aria-pressed="false">30 jours</button>
+</div>
+</div>
+<div id="piCharts" class="charts"></div>
+<p id="noHistory" class="empty" hidden>Les graphiques se rempliront au fil des heures.</p>
+</div>
 </section>
 <section id="servicesSection" hidden>
 <h2>Mes services</h2>

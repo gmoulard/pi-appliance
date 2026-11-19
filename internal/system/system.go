@@ -13,16 +13,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Package system lit la mémoire et le disque du Pi, pour les jauges de la
-// console (spécification 6.2).
+// Package system lit l'état du Pi : mémoire, disque, charge du processeur,
+// température et trafic réseau, pour les jauges et le tableau de bord de la
+// console (spécification 5.2, 6.2).
 package system
 
 import (
 	"bufio"
 	"io"
+	"math"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 // Gauge : ce que le Pi a en tout, ce qui est déjà pris, ce qui reste, en Mo.
@@ -32,20 +36,41 @@ type Gauge struct {
 	FreeMB  int64 `json:"free_mb"`
 }
 
-// Resources : jauges de la mémoire et du disque ; nil quand la valeur est inconnue.
+// Resources : état du Pi ; nil quand la valeur est inconnue (poste de
+// développement, capteur absent).
 type Resources struct {
 	Memory *Gauge `json:"memory"`
 	Disk   *Gauge `json:"disk"`
+	// CPUPercent : part du temps où le processeur a travaillé depuis la
+	// mesure précédente, tous cœurs confondus (la « charge » du tableau de bord).
+	CPUPercent *float64 `json:"cpu_percent"`
+	// TemperatureC : température de la puce, en degrés Celsius.
+	TemperatureC *float64 `json:"temperature_c"`
 }
 
-// Read lit la mémoire (/proc/meminfo) et le disque qui porte dir.
+// Fichiers du noyau lus par le paquet ; des variables pour les tests.
+var (
+	meminfoPath     = "/proc/meminfo"
+	statPath        = "/proc/stat"
+	thermalPath     = "/sys/class/thermal/thermal_zone0/temp"
+	netDevPath      = "/proc/net/dev"
+	firstCPUWait    = 250 * time.Millisecond
+	cpuRefreshDelay = time.Second
+)
+
+// Read lit l'état du Pi ; le disque est celui qui porte dir.
 func Read(dir string) Resources {
 	var resources Resources
-	if file, err := os.Open("/proc/meminfo"); err == nil {
+	if file, err := os.Open(meminfoPath); err == nil {
 		resources.Memory = parseMeminfo(file)
 		file.Close()
 	}
 	resources.Disk = disk(dir)
+	resources.CPUPercent = cpu.percent()
+	if file, err := os.Open(thermalPath); err == nil {
+		resources.TemperatureC = parseTemperature(file)
+		file.Close()
+	}
 	return resources
 }
 
@@ -74,4 +99,142 @@ func parseMeminfo(r io.Reader) *Gauge {
 func newGauge(totalMB, freeMB int64) *Gauge {
 	freeMB = min(max(freeMB, 0), totalMB)
 	return &Gauge{TotalMB: totalMB, UsedMB: totalMB - freeMB, FreeMB: freeMB}
+}
+
+// parseTemperature lit un capteur du noyau, en millièmes de degré.
+func parseTemperature(r io.Reader) *float64 {
+	data, err := io.ReadAll(io.LimitReader(r, 64))
+	if err != nil {
+		return nil
+	}
+	milli, err := strconv.ParseInt(strings.TrimSpace(string(data)), 10, 64)
+	if err != nil || milli < -40000 || milli > 150000 {
+		return nil
+	}
+	celsius := math.Round(float64(milli)/100) / 10
+	return &celsius
+}
+
+// cpuTimes : temps cumulés du processeur depuis le démarrage, en unités du noyau.
+type cpuTimes struct {
+	busy, total uint64
+}
+
+// parseStat lit la première ligne de /proc/stat : user nice system idle
+// iowait irq softirq steal (guest est déjà compté dans user).
+func parseStat(r io.Reader) (cpuTimes, bool) {
+	scanner := bufio.NewScanner(r)
+	if !scanner.Scan() {
+		return cpuTimes{}, false
+	}
+	fields := strings.Fields(scanner.Text())
+	if len(fields) < 5 || fields[0] != "cpu" {
+		return cpuTimes{}, false
+	}
+	var times cpuTimes
+	for i, field := range fields[1:min(len(fields), 9)] {
+		value, err := strconv.ParseUint(field, 10, 64)
+		if err != nil {
+			return cpuTimes{}, false
+		}
+		times.total += value
+		if i != 3 && i != 4 { // idle, iowait
+			times.busy += value
+		}
+	}
+	return times, times.total > 0
+}
+
+func percentBetween(before, after cpuTimes) *float64 {
+	if after.total <= before.total || after.busy < before.busy {
+		return nil
+	}
+	percent := 100 * float64(after.busy-before.busy) / float64(after.total-before.total)
+	percent = math.Round(min(percent, 100)*10) / 10
+	return &percent
+}
+
+// cpuMeter garde la mesure précédente : la charge se calcule entre deux lectures.
+type cpuMeter struct {
+	mu   sync.Mutex
+	last cpuTimes
+	at   time.Time
+	pct  *float64
+}
+
+var cpu cpuMeter
+
+func readStat() (cpuTimes, bool) {
+	file, err := os.Open(statPath)
+	if err != nil {
+		return cpuTimes{}, false
+	}
+	defer file.Close()
+	return parseStat(file)
+}
+
+func (m *cpuMeter) percent() *float64 {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	now, ok := readStat()
+	if !ok {
+		return nil
+	}
+	if m.at.IsZero() {
+		// Première lecture : une courte attente donne une première mesure.
+		m.last, m.at = now, time.Now()
+		time.Sleep(firstCPUWait)
+		if now, ok = readStat(); !ok {
+			return nil
+		}
+	} else if time.Since(m.at) < cpuRefreshDelay && m.pct != nil {
+		return m.pct
+	}
+	if pct := percentBetween(m.last, now); pct != nil {
+		m.pct = pct
+	}
+	m.last, m.at = now, time.Now()
+	return m.pct
+}
+
+// NetworkBytes : octets reçus et envoyés par le Pi depuis son démarrage, sur
+// ses interfaces vers la maison (câble, Wi-Fi), sans le bouclage ni les
+// réseaux internes de Docker.
+func NetworkBytes() (received, sent uint64, ok bool) {
+	file, err := os.Open(netDevPath)
+	if err != nil {
+		return 0, 0, false
+	}
+	defer file.Close()
+	return parseNetDev(file)
+}
+
+var internalInterfaces = []string{"lo", "docker", "veth", "br-", "virbr", "tun", "wg"}
+
+func parseNetDev(r io.Reader) (received, sent uint64, ok bool) {
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		name, counters, found := strings.Cut(scanner.Text(), ":")
+		if !found {
+			continue
+		}
+		name = strings.TrimSpace(name)
+		internal := false
+		for _, prefix := range internalInterfaces {
+			internal = internal || strings.HasPrefix(name, prefix)
+		}
+		fields := strings.Fields(counters)
+		if internal || len(fields) < 9 {
+			continue
+		}
+		rx, errRx := strconv.ParseUint(fields[0], 10, 64)
+		tx, errTx := strconv.ParseUint(fields[8], 10, 64)
+		if errRx != nil || errTx != nil {
+			continue
+		}
+		received += rx
+		sent += tx
+		ok = true
+	}
+	return received, sent, ok
 }

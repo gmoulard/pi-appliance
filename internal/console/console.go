@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/system"
@@ -95,8 +96,10 @@ type Config struct {
 	// Network peut être nil (poste de développement) : les écrans du réseau
 	// disent alors que le réseau ne se règle pas ici.
 	Network *network.Client
-	// Resources lit la mémoire et le disque du Pi ; nil : jauges absentes.
+	// Resources lit l'état du Pi ; nil : jauges absentes.
 	Resources func() system.Resources
+	// History : historique des graphiques sur 30 jours ; nil : pas de graphiques.
+	History *metrics.History
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
 	WizardFile string
 }
@@ -130,6 +133,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/network/wired", c.adminOnly(c.wired))
 	mux.HandleFunc("POST "+BasePath+"/api/network/country", c.adminOnly(c.country))
 	mux.HandleFunc("GET "+BasePath+"/api/system", c.adminOnly(c.resources))
+	mux.HandleFunc("GET "+BasePath+"/api/system/history", c.adminOnly(c.history))
 	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
@@ -351,6 +355,15 @@ func (c *console) resources(w http.ResponseWriter, _ *http.Request) {
 		resources = c.Resources()
 	}
 	writeJSON(w, http.StatusOK, resources)
+}
+
+// history : points horaires des 30 derniers jours, pour les graphiques du tableau de bord (spécification 5.2).
+func (c *console) history(w http.ResponseWriter, _ *http.Request) {
+	points := []metrics.Point{}
+	if c.History != nil {
+		points = c.History.Points()
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"step_seconds": int(metrics.Step / time.Second), "points": points})
 }
 
 func (c *console) health(w http.ResponseWriter, _ *http.Request) {

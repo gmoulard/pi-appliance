@@ -514,3 +514,150 @@ label.check input {
   width: 1.25rem;
   min-height: 1.25rem;
 }
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+}
+
+.tiles:empty {
+  display: none;
+}
+
+.tile-now {
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 0.625rem 0.875rem;
+}
+
+.tile-now p {
+  margin: 0;
+}
+
+.tile-now .value {
+  font-family: var(--title);
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.tile-now.orange {
+  border-color: #f08c00;
+}
+
+.tile-now.red {
+  border-color: #d62839;
+}
+
+.tile-now .warning {
+  color: var(--brand-dark);
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.history-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.history-head h3 {
+  margin: 0;
+}
+
+.periods {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.periods button[aria-pressed="true"] {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+.charts {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chart {
+  margin: 0;
+}
+
+.chart figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: pan-y;
+}
+
+.chart .grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.chart .axis {
+  fill: var(--muted);
+  font-size: 12px;
+}
+
+.chart .line {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.chart .line.dashed {
+  stroke: var(--ink);
+  stroke-dasharray: 6 4;
+}
+
+.chart .cross {
+  stroke: var(--muted);
+  stroke-width: 1;
+}
+
+.chart .tip {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  min-height: 1.3em;
+}
+
+.legend {
+  display: flex;
+  gap: 0.75rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.legend .key::before {
+  content: "";
+  display: inline-block;
+  width: 1.25rem;
+  margin-right: 0.375rem;
+  vertical-align: middle;
+  border-top: 2px solid var(--brand);
+}
+
+.legend .key.dashed::before {
+  border-top: 2px dashed var(--ink);
+}
+
+.chart .dot-mark {
+  fill: var(--card);
+}

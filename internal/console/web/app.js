@@ -104,6 +104,7 @@ function showMessage(lines, kind) {
 async function loadServices() {
   const { services } = await api("services");
   noServices.hidden = services.length > 0;
+  showServicesSummary(services);
   servicesList.replaceChildren(...services.map((service) => {
     const card = element("li", undefined, "card");
     tint(card, service.app);
@@ -193,7 +194,231 @@ async function loadResources() {
   resources = await api("system").catch(() => ({ memory: null, disk: null }));
   const list = gauges(0, 0);
   piGauges.replaceChildren(...list);
-  piSection.hidden = list.length === 0 || wizardStep !== null;
+  const tiles = nowTiles();
+  piNow.replaceChildren(...tiles);
+  piSection.hidden = list.length + tiles.length === 0 || wizardStep !== null;
+  if (!piSection.hidden) {
+    await loadHistory();
+  }
+}
+
+// Tableau de bord (spécification 5.2) : charge du processeur et température
+// en ce moment, état des services, graphiques des derniers jours.
+const piNow = document.getElementById("piNow");
+const piServices = document.getElementById("piServices");
+const piHistory = document.getElementById("piHistory");
+const piCharts = document.getElementById("piCharts");
+const noHistory = document.getElementById("noHistory");
+const periodButtons = [...document.querySelectorAll(".periods button")];
+let historyHours = 24;
+let dashboardTimer = null;
+
+function number(value, digits = 0) {
+  return value.toLocaleString("fr-FR", { maximumFractionDigits: digits });
+}
+
+function nowTile(title, value, advice, color) {
+  const box = element("div", undefined, `tile-now ${color}`);
+  box.append(element("p", title, "meta"), element("p", value, "value"));
+  if (advice) {
+    box.append(element("p", advice, color === "green" ? "meta" : "warning"));
+  }
+  return box;
+}
+
+function known(value) {
+  return value !== null && value !== undefined;
+}
+
+function nowTiles() {
+  const tiles = [];
+  const cpu = resources.cpu_percent;
+  if (known(cpu)) {
+    const color = cpu >= 90 ? "orange" : "green";
+    tiles.push(nowTile("Charge du processeur", `${number(cpu)} %`,
+      color === "green" ? "Le Pi a de la marge." : "Le Pi travaille à plein : les services peuvent ralentir.", color));
+  }
+  const temperature = resources.temperature_c;
+  if (known(temperature)) {
+    const color = temperature >= 80 ? "red" : temperature >= 70 ? "orange" : "green";
+    const advice = {
+      green: "Température normale.",
+      orange: "Le Pi chauffe : vérifiez qu'il est bien aéré, loin d'une source de chaleur.",
+      red: "Le Pi est trop chaud : il ralentit pour se protéger. Mettez-le dans un endroit aéré ; un boîtier avec ventilateur aide.",
+    }[color];
+    tiles.push(nowTile("Température", `${number(temperature)} °C`, advice, color));
+  }
+  return tiles;
+}
+
+function plural(n, one, many) {
+  return `${n} ${n > 1 ? many : one}`;
+}
+
+function showServicesSummary(services) {
+  if (!currentAccount || currentAccount.role !== "admin" || services.length === 0) {
+    piServices.hidden = true;
+    return;
+  }
+  const count = (color) => services.filter((service) => service.status.color === color).length;
+  const parts = [];
+  if (count("green")) parts.push(plural(count("green"), "service en marche", "services en marche"));
+  if (count("orange")) parts.push(plural(count("orange"), "service en difficulté", "services en difficulté"));
+  if (count("red")) parts.push(plural(count("red"), "service arrêté", "services arrêtés"));
+  const worst = count("red") ? "red" : count("orange") ? "orange" : "green";
+  piServices.replaceChildren(element("span", undefined, `dot ${worst}`), element("span", `${parts.join(", ")}.`));
+  piServices.hidden = false;
+}
+
+// Graphiques : une courbe par mesure, chacune avec sa propre échelle.
+const CHARTS = [
+  { title: "Charge du processeur", unit: "%", max: 100, series: [{ key: "cpu_percent" }] },
+  { title: "Mémoire utilisée", unit: "%", max: 100, series: [{ key: "memory_percent" }] },
+  { title: "Température, au plus haut de chaque heure", unit: "°C", series: [{ key: "temperature_c" }] },
+  { title: "Disque utilisé", unit: "%", max: 100, series: [{ key: "disk_percent" }] },
+  {
+    title: "Réseau, par heure", unit: "Mo",
+    series: [{ key: "received_mb", label: "reçus" }, { key: "sent_mb", label: "envoyés", dashed: true }],
+  },
+];
+const CHART = { width: 600, height: 150, left: 44, right: 8, top: 10, bottom: 24 };
+const HOUR = 3600 * 1000;
+
+function svgNode(tag, attributes) {
+  const node = document.createElementNS(SVG, tag);
+  for (const [name, value] of Object.entries(attributes)) {
+    node.setAttribute(name, value);
+  }
+  return node;
+}
+
+function dateText(time, hours) {
+  const options = hours <= 24 ? { weekday: "short", hour: "2-digit", minute: "2-digit" } : { day: "numeric", month: "short" };
+  return new Date(time).toLocaleString("fr-FR", options);
+}
+
+function chart(spec, points, start, end, hours) {
+  const values = spec.series.flatMap((series) => points.map((point) => point[series.key]).filter(known));
+  if (values.length === 0) {
+    return null;
+  }
+  const top = spec.max || Math.max(1, ...values) * 1.15;
+  const figure = element("figure", undefined, "chart");
+  const caption = element("figcaption");
+  caption.append(element("span", spec.title));
+  if (spec.series.length > 1) {
+    const legend = element("span", undefined, "legend");
+    for (const series of spec.series) {
+      legend.append(element("span", series.label, series.dashed ? "key dashed" : "key"));
+    }
+    caption.append(legend);
+  }
+  figure.append(caption);
+  const { width, height, left, right, top: pad, bottom } = CHART;
+  const x = (time) => left + ((time - start) / (end - start)) * (width - left - right);
+  const y = (value) => height - bottom - (value / top) * (height - bottom - pad);
+  const svg = svgNode("svg", { viewBox: `0 0 ${width} ${height}`, role: "img" });
+  svg.setAttribute("aria-label", `${spec.title} : de ${number(Math.min(...values), 1)} à ${number(Math.max(...values), 1)} ${spec.unit}, dernière valeur ${number(values.at(-1), 1)} ${spec.unit}.`);
+  for (const value of [0, top / 2, top]) {
+    svg.append(svgNode("line", { x1: left, x2: width - right, y1: y(value), y2: y(value), class: "grid" }));
+    const label = svgNode("text", { x: left - 6, y: y(value) + 4, class: "axis", "text-anchor": "end" });
+    label.textContent = number(value, top < 10 ? 1 : 0);
+    svg.append(label);
+  }
+  for (const [time, anchor] of [[start, "start"], [end, "end"]]) {
+    const label = svgNode("text", { x: x(time), y: height - 6, class: "axis", "text-anchor": anchor });
+    label.textContent = dateText(time, hours);
+    svg.append(label);
+  }
+  for (const series of spec.series) {
+    // Une heure sans mesure (Pi éteint) coupe la courbe.
+    const segments = [];
+    let previous = null;
+    for (const point of points) {
+      const value = point[series.key];
+      const time = Date.parse(point.time);
+      if (!known(value)) {
+        previous = null;
+        continue;
+      }
+      if (previous === null || time - previous > 1.5 * HOUR) {
+        segments.push([]);
+      }
+      segments.at(-1).push([x(time).toFixed(1), y(value).toFixed(1)]);
+      previous = time;
+    }
+    const className = series.dashed ? "line dashed" : "line";
+    for (const segment of segments) {
+      if (segment.length === 1) {
+        // Une heure seule : un point, sinon rien ne se verrait.
+        svg.append(svgNode("circle", { cx: segment[0][0], cy: segment[0][1], r: 4, class: `${className} dot-mark` }));
+      } else {
+        svg.append(svgNode("path", { d: segment.map(([px, py], i) => `${i ? "L" : "M"}${px},${py}`).join(""), class: className }));
+      }
+    }
+  }
+  const cross = svgNode("line", { y1: pad, y2: height - bottom, class: "cross", visibility: "hidden" });
+  svg.append(cross);
+  const tip = element("p", undefined, "tip");
+  tip.textContent = "Passez le doigt ou la souris sur la courbe pour lire les valeurs.";
+  svg.addEventListener("pointermove", (event) => {
+    const box = svg.getBoundingClientRect();
+    const at = start + (((event.clientX - box.left) * (width / box.width) - left) / (width - left - right)) * (end - start);
+    let nearest = null;
+    for (const point of points) {
+      if (spec.series.some((series) => known(point[series.key]))
+        && (!nearest || Math.abs(Date.parse(point.time) - at) < Math.abs(Date.parse(nearest.time) - at))) {
+        nearest = point;
+      }
+    }
+    if (!nearest) return;
+    const px = x(Date.parse(nearest.time));
+    cross.setAttribute("x1", px);
+    cross.setAttribute("x2", px);
+    cross.setAttribute("visibility", "visible");
+    const parts = spec.series
+      .filter((series) => known(nearest[series.key]))
+      .map((series) => `${number(nearest[series.key], 1)} ${spec.unit}${series.label ? ` ${series.label}` : ""}`);
+    const when = new Date(nearest.time).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    tip.textContent = `${when} : ${parts.join(", ")}`;
+  });
+  svg.addEventListener("pointerleave", () => cross.setAttribute("visibility", "hidden"));
+  figure.append(svg, tip);
+  return figure;
+}
+
+async function loadHistory() {
+  const history = await api("system/history").catch(() => null);
+  if (!history) {
+    piHistory.hidden = true;
+    return;
+  }
+  piHistory.hidden = false;
+  const end = Date.now();
+  const start = end - historyHours * HOUR;
+  const points = history.points.filter((point) => Date.parse(point.time) >= start - HOUR);
+  const charts = CHARTS.map((spec) => chart(spec, points, start, end, historyHours)).filter(Boolean);
+  piCharts.replaceChildren(...charts);
+  noHistory.hidden = charts.length > 0;
+}
+
+for (const button of periodButtons) {
+  button.addEventListener("click", async () => {
+    historyHours = Number(button.dataset.hours);
+    for (const other of periodButtons) {
+      other.setAttribute("aria-pressed", String(other === button));
+    }
+    await loadHistory();
+  });
+}
+
+function startDashboard() {
+  clearInterval(dashboardTimer);
+  dashboardTimer = setInterval(() => {
+    if (!piSection.hidden) {
+      loadResources().catch(() => null);
+    }
+  }, 60000);
 }
 
 async function loadCatalog() {
@@ -674,6 +899,7 @@ function showAuth(mode) {
   wizardStep = null;
   clearInterval(networkTimer);
   clearInterval(wizardTimer);
+  clearInterval(dashboardTimer);
 }
 
 authForm.addEventListener("submit", async (event) => {
@@ -729,6 +955,7 @@ async function showConsole(account, wizard) {
   if (account.role === "admin") {
     await loadNetwork();
     await loadResources();
+    startDashboard();
   }
   await loadCatalog();
   await loadServices();

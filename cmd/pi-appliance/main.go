@@ -16,14 +16,20 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/console"
+	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/system"
@@ -57,6 +63,17 @@ func main() {
 	if *networkScript != "" {
 		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}
 	}
+	history := &metrics.History{Path: filepath.Join(*data, "history.json")}
+	if err := history.Load(); err != nil {
+		log.Printf("historique illisible, il repart de zéro : %v", err)
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	measured := make(chan struct{})
+	go func() {
+		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(*data) }, log.Printf)
+		close(measured)
+	}()
 	server := &http.Server{
 		Addr: *addr,
 		Handler: console.Handler(console.Config{
@@ -66,10 +83,21 @@ func main() {
 			Accounts:   accounts,
 			Network:    net,
 			Resources:  func() system.Resources { return system.Read(*data) },
+			History:    history,
 			WizardFile: filepath.Join(*data, "wizard-done"),
 		}),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("console pi-appliance %s sur %s%s", version, *addr, console.BasePath)
-	log.Fatal(server.ListenAndServe())
+	go func() {
+		<-ctx.Done()
+		shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		server.Shutdown(shutdown)
+	}()
+	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
+	}
+	// L'historique est écrit avant de quitter, heure en cours comprise.
+	<-measured
 }
