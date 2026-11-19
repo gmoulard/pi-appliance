@@ -16,6 +16,7 @@
 package console
 
 import (
+	"context"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -29,6 +30,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -81,14 +83,17 @@ type console struct {
 	catalog  marketplace.Catalog
 	services *services.Manager
 	accounts *auth.Store
+	network  *network.Client
 }
 
-func Handler(version string, catalog marketplace.Catalog, manager *services.Manager, accounts *auth.Store) http.Handler {
+// Handler sert la console. net peut être nil (poste de développement) : les
+// écrans du réseau disent alors que le réseau ne se règle pas ici.
+func Handler(version string, catalog marketplace.Catalog, manager *services.Manager, accounts *auth.Store, net *network.Client) http.Handler {
 	web, err := fs.Sub(webFiles, "web")
 	if err != nil {
 		panic(err)
 	}
-	c := &console{version: version, catalog: catalog, services: manager, accounts: accounts}
+	c := &console{version: version, catalog: catalog, services: manager, accounts: accounts, network: net}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET "+BasePath+"/api/health", c.health)
 	mux.HandleFunc("GET "+BasePath+"/api/session", c.session)
@@ -101,6 +106,11 @@ func Handler(version string, catalog marketplace.Catalog, manager *services.Mana
 	mux.HandleFunc("POST "+BasePath+"/api/services", c.adminOnly(c.install))
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/{action}", c.adminOnly(c.control))
+	mux.HandleFunc("GET "+BasePath+"/api/network", c.adminOnly(c.networkStatus))
+	mux.HandleFunc("GET "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiList))
+	mux.HandleFunc("POST "+BasePath+"/api/network/wifi/scan", c.adminOnly(c.wifiScan))
+	mux.HandleFunc("POST "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiJoin))
+	mux.HandleFunc("POST "+BasePath+"/api/network/wired", c.adminOnly(c.wired))
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
@@ -426,6 +436,77 @@ func writeServiceError(w http.ResponseWriter, err error) {
 	default:
 		log.Printf("service : %v", err)
 		writeError(w, http.StatusInternalServerError, err.Error())
+	}
+}
+
+// Réseau du Pi (spécification, section 4), réservé à l'administrateur : le
+// portail de configuration crée d'abord son compte, puis choisit le réseau.
+
+func (c *console) networkCall(w http.ResponseWriter, r *http.Request, call func(*network.Client, context.Context) (json.RawMessage, error)) {
+	if c.network == nil {
+		writeError(w, http.StatusServiceUnavailable, "Le réseau ne se règle pas depuis cette console.")
+		return
+	}
+	out, err := call(c.network, r.Context())
+	if err != nil {
+		writeNetworkError(w, err)
+		return
+	}
+	writeRaw(w, http.StatusOK, out)
+}
+
+func (c *console) networkStatus(w http.ResponseWriter, r *http.Request) {
+	c.networkCall(w, r, (*network.Client).Status)
+}
+
+func (c *console) wifiList(w http.ResponseWriter, r *http.Request) {
+	c.networkCall(w, r, (*network.Client).WifiList)
+}
+
+func (c *console) wifiScan(w http.ResponseWriter, r *http.Request) {
+	c.networkCall(w, r, (*network.Client).WifiScan)
+}
+
+func (c *console) wired(w http.ResponseWriter, r *http.Request) {
+	c.networkCall(w, r, (*network.Client).Wired)
+}
+
+// wifiJoin répond 202 avant de lancer la connexion : le point d'accès va se
+// fermer et le téléphone perdre la réponse.
+func (c *console) wifiJoin(w http.ResponseWriter, r *http.Request) {
+	if c.network == nil {
+		writeError(w, http.StatusServiceUnavailable, "Le réseau ne se règle pas depuis cette console.")
+		return
+	}
+	var request network.JoinRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	if err := c.network.Join(request); err != nil {
+		writeNetworkError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusAccepted, map[string]string{"ssid": request.SSID})
+}
+
+func writeNetworkError(w http.ResponseWriter, err error) {
+	var failure network.Failure
+	switch {
+	case errors.As(err, &failure):
+		writeJSON(w, http.StatusConflict, map[string]string{"error": failure.Message, "code": failure.Code})
+	case errors.Is(err, network.ErrInvalid):
+		writeError(w, http.StatusBadRequest, strings.TrimPrefix(err.Error(), network.ErrInvalid.Error()+" : ")+".")
+	default:
+		log.Printf("réseau : %v", err)
+		writeError(w, http.StatusInternalServerError, "Le réseau du Pi ne répond pas.")
+	}
+}
+
+func writeRaw(w http.ResponseWriter, status int, body json.RawMessage) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if _, err := w.Write(append(body, '\n')); err != nil {
+		log.Printf("réponse JSON : %v", err)
 	}
 }
 

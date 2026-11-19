@@ -45,6 +45,30 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 </section>
 <p id="emailReminder" class="empty" hidden></p>
+<section id="networkSection" hidden>
+<h2>Réseau de la maison</h2>
+<div class="card">
+<p id="networkState" class="state"></p>
+<p id="networkAp" class="meta" hidden></p>
+<div id="networkCert" class="note" hidden>
+<p><strong>Pourquoi le navigateur affiche une alerte ?</strong> Votre appliance protège la connexion avec son propre certificat, créé pour elle seule. Le navigateur ne le connaît pas encore, d'où l'alerte : vous pouvez continuer (« Paramètres avancés », puis « Continuer »). L'alerte disparaîtra quand l'appliance sera accessible sur internet avec un certificat reconnu.</p>
+</div>
+<h3>Wi-Fi visibles</h3>
+<ul id="wifiList" class="wifi-list"></ul>
+<p id="noWifi" class="empty" hidden>Aucun Wi-Fi trouvé pour l'instant.</p>
+<div class="controls">
+<button id="wifiScan" class="secondary" type="button">Chercher à nouveau</button>
+<button id="wifiOther" class="secondary" type="button">Autre Wi-Fi (caché)</button>
+<button id="wired" class="secondary" type="button">Utiliser le câble réseau</button>
+</div>
+<form id="wifiForm" hidden>
+<label>Nom du Wi-Fi<input name="ssid" maxlength="32" required autocapitalize="none" autocomplete="off"></label>
+<label id="wifiPasswordField">Mot de passe du Wi-Fi<input name="password" type="password" minlength="8" maxlength="64" autocomplete="off"></label>
+<label class="check"><input name="hidden" type="checkbox">Ce Wi-Fi est caché</label>
+<button>Se connecter à ce Wi-Fi</button>
+</form>
+</div>
+</section>
 <section id="servicesSection" hidden>
 <h2>Mes services</h2>
 <ul id="services" class="cards"></ul>

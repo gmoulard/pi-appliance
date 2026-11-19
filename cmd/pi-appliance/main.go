@@ -24,6 +24,7 @@ import (
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/console"
+	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -35,6 +36,7 @@ func main() {
 	data := flag.String("data", "/var/lib/pi-appliance", "dossier des services installés")
 	domain := flag.String("domain", "pi-appliance.local", "adresse de l'appliance, suffixe de l'adresse de chaque service")
 	resetFile := flag.String("reset-file", "/boot/firmware/reset", "fichier déposé sur la carte SD pour réinitialiser le mot de passe administrateur (vide : désactivé)")
+	networkScript := flag.String("network-script", network.DefaultScript, "script du réseau du Pi (vide : réseau non réglable depuis la console)")
 	flag.Parse()
 	catalog, err := marketplace.Builtin()
 	if err != nil {
@@ -50,9 +52,13 @@ func main() {
 		log.Printf("fichier reset trouvé : réinitialisation du mot de passe administrateur ouverte")
 	}
 	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, MemoryMB: services.SystemMemoryMB}
+	var net *network.Client
+	if *networkScript != "" {
+		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}
+	}
 	server := &http.Server{
 		Addr:              *addr,
-		Handler:           console.Handler(version, catalog, manager, accounts),
+		Handler:           console.Handler(version, catalog, manager, accounts, net),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("console pi-appliance %s sur %s%s", version, *addr, console.BasePath)

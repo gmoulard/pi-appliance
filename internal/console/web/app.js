@@ -155,7 +155,7 @@ async function loadCatalog() {
     name.required = true;
     nameLabel.append(name);
     form.append(nameLabel);
-    const asked = app.parameters.filter((parameter) => !parameter.generate);
+    const asked = (app.parameters || []).filter((parameter) => !parameter.generate);
     for (const parameter of asked) {
       const label = element("label", parameter.label);
       const input = element("input");
@@ -179,7 +179,7 @@ async function loadCatalog() {
 async function install(app, form, button) {
   const data = new FormData(form);
   const parameters = {};
-  for (const parameter of app.parameters.filter((p) => !p.generate)) {
+  for (const parameter of (app.parameters || []).filter((p) => !p.generate)) {
     parameters[parameter.name] = data.get(parameter.name);
   }
   button.disabled = true;
@@ -247,6 +247,180 @@ async function uninstall(service, button) {
   }
 }
 
+// Réseau de la maison (spécification, section 4) : choix du Wi-Fi ou du câble,
+// depuis le point d'accès « pi-appliance » du premier démarrage ou plus tard.
+const networkSection = document.getElementById("networkSection");
+const networkState = document.getElementById("networkState");
+const networkAp = document.getElementById("networkAp");
+const networkCert = document.getElementById("networkCert");
+const wifiList = document.getElementById("wifiList");
+const noWifi = document.getElementById("noWifi");
+const wifiForm = document.getElementById("wifiForm");
+const wifiPasswordField = document.getElementById("wifiPasswordField");
+const wifiScanButton = document.getElementById("wifiScan");
+const wifiOtherButton = document.getElementById("wifiOther");
+const wiredButton = document.getElementById("wired");
+const LAST_ERRORS = {
+  "wrong-password": "La dernière connexion a échoué : le Wi-Fi a refusé le mot de passe.",
+  "not-found": "La dernière connexion a échoué : ce Wi-Fi est introuvable. Est-il allumé et assez proche ?",
+  timeout: "La dernière connexion a échoué : le Wi-Fi ne répond pas.",
+  failed: "La dernière connexion a échoué.",
+};
+const SECURITY = { open: "ouvert", wpa: "protégé", wpa3: "protégé", enterprise: "entreprise" };
+let apClosesAt = 0;
+let networkTimer = null;
+
+function signalText(signal) {
+  if (signal >= 70) return "très bon signal";
+  if (signal >= 45) return "bon signal";
+  if (signal >= 20) return "signal faible";
+  return "signal très faible";
+}
+
+function minutesText(seconds) {
+  const minutes = Math.max(1, Math.round(seconds / 60));
+  if (minutes >= 120) return `${Math.round(minutes / 60)} heures`;
+  return minutes === 1 ? "une minute" : `${minutes} minutes`;
+}
+
+function showApCountdown() {
+  const seconds = Math.round((apClosesAt - Date.now()) / 1000);
+  if (seconds > 0) {
+    networkAp.textContent = `Le Wi-Fi de configuration « pi-appliance » se fermera dans ${minutesText(seconds)}. Après, redémarrez le Pi pour le rouvrir.`;
+  }
+}
+
+function showNetworkState(state) {
+  let line;
+  if (state.accessPoint.open) {
+    line = "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.";
+  } else if (state.wifi.connected) {
+    line = `Le Pi est relié au Wi-Fi « ${state.wifi.ssid} ».`;
+  } else if (state.wired.connected) {
+    line = "Le Pi est relié à votre box par le câble réseau.";
+  } else {
+    line = "Le Pi n'est relié à aucun réseau.";
+  }
+  if (state.addresses.length > 0 && !state.accessPoint.open) {
+    line += ` Adresse : ${state.addresses.join(", ")}.`;
+  }
+  const dot = element("span", undefined, `dot ${state.accessPoint.open ? "orange" : (state.wifi.connected || state.wired.connected) ? "green" : "red"}`);
+  networkState.replaceChildren(dot, element("span", line));
+  if (state.lastError) {
+    showMessage([LAST_ERRORS[state.lastError] || LAST_ERRORS.failed], "error");
+  }
+  networkCert.hidden = !state.accessPoint.open;
+  networkAp.hidden = !state.accessPoint.open;
+  apClosesAt = state.accessPoint.open ? Date.now() + state.accessPoint.closesInSeconds * 1000 : 0;
+  showApCountdown();
+  wiredButton.hidden = !state.wired.connected || state.configured === "wired";
+}
+
+function chooseWifi(network, button) {
+  for (const other of wifiList.querySelectorAll("button")) {
+    other.setAttribute("aria-pressed", String(other === button));
+  }
+  wifiForm.elements.ssid.value = network ? network.ssid : "";
+  wifiForm.elements.hidden.checked = !network;
+  wifiForm.elements.password.value = "";
+  const open = network && network.security === "open";
+  wifiPasswordField.hidden = open;
+  wifiForm.elements.password.required = !open;
+  wifiForm.hidden = false;
+  (network ? wifiForm.elements.password : wifiForm.elements.ssid).focus();
+}
+
+function showWifiList({ networks }) {
+  noWifi.hidden = networks.length > 0;
+  wifiList.replaceChildren(...networks.map((network) => {
+    const item = element("li");
+    const button = element("button");
+    button.type = "button";
+    button.setAttribute("aria-pressed", "false");
+    button.append(element("span", network.ssid), element("span", `${SECURITY[network.security] || ""} · ${signalText(network.signal)}`, "meta"));
+    if (network.security === "enterprise") {
+      button.disabled = true;
+      button.title = "Les Wi-Fi d'entreprise ne sont pas encore pris en charge.";
+    } else {
+      button.addEventListener("click", () => chooseWifi(network, button));
+    }
+    item.append(button);
+    return item;
+  }));
+}
+
+async function loadNetwork() {
+  let state;
+  try {
+    state = await api("network");
+  } catch {
+    networkSection.hidden = true;
+    return;
+  }
+  networkSection.hidden = false;
+  showNetworkState(state);
+  showWifiList(await api("network/wifi").catch(() => ({ networks: [] })));
+  clearInterval(networkTimer);
+  networkTimer = setInterval(showApCountdown, 30000);
+}
+
+wifiScanButton.addEventListener("click", async () => {
+  if (apClosesAt && !window.confirm("Pour chercher les Wi-Fi, le Wi-Fi « pi-appliance » se coupe quelques secondes. Votre téléphone s'y reconnectera tout seul. Continuer ?")) {
+    return;
+  }
+  wifiScanButton.disabled = true;
+  showMessage(["Recherche des Wi-Fi…"], "info");
+  try {
+    showWifiList(await api("network/wifi/scan", { method: "POST" }));
+    message.hidden = true;
+  } catch (error) {
+    showMessage([error.message, "Si la page ne répond plus, reconnectez-vous au Wi-Fi « pi-appliance »."], "error");
+  } finally {
+    wifiScanButton.disabled = false;
+  }
+});
+
+wifiOtherButton.addEventListener("click", () => chooseWifi(null, null));
+
+wifiForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = new FormData(wifiForm);
+  const ssid = data.get("ssid");
+  const button = wifiForm.querySelector("button");
+  button.disabled = true;
+  try {
+    await api("network/wifi", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ssid, password: wifiPasswordField.hidden ? "" : data.get("password"), hidden: data.get("hidden") === "on" }),
+    });
+    wifiForm.reset();
+    wifiForm.hidden = true;
+    showMessage(apClosesAt ? [
+      `Le Pi se connecte au Wi-Fi « ${ssid} ». Le Wi-Fi « pi-appliance » va se fermer.`,
+      `Reconnectez votre téléphone ou votre ordinateur au Wi-Fi « ${ssid} », puis ouvrez https://pi-appliance.local/pi-appliance`,
+      "Si le Wi-Fi « pi-appliance » réapparaît dans une minute, la connexion a échoué : reconnectez-vous-y pour réessayer.",
+    ] : [`Le Pi se connecte au Wi-Fi « ${ssid} ». Si cette page ne répond plus, ouvrez https://pi-appliance.local/pi-appliance`], "info");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+wiredButton.addEventListener("click", async () => {
+  wiredButton.disabled = true;
+  try {
+    await api("network/wired", { method: "POST" });
+    showMessage(["C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau."], "success");
+    await loadNetwork();
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    wiredButton.disabled = false;
+  }
+});
+
 // Écrans de compte : création du compte administrateur au premier démarrage,
 // réinitialisation après dépôt du fichier reset, ou connexion (spécification 5.1, 8.5).
 const AUTH_MODES = {
@@ -295,6 +469,8 @@ function showAuth(mode) {
   catalogSection.hidden = true;
   logoutButton.hidden = true;
   emailReminder.hidden = true;
+  networkSection.hidden = true;
+  clearInterval(networkTimer);
 }
 
 authForm.addEventListener("submit", async (event) => {
@@ -342,6 +518,9 @@ async function showConsole(account) {
   catalogSection.hidden = account.role !== "admin";
   emailReminder.hidden = account.email_verified;
   emailReminder.textContent = `Votre adresse ${account.email} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.`;
+  if (account.role === "admin") {
+    await loadNetwork();
+  }
   await loadCatalog();
   await loadServices();
 }

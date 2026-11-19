@@ -396,3 +396,50 @@ button:disabled {
 a {
   color: var(--brand-dark);
 }
+
+.note {
+  border-radius: 1rem;
+  background: var(--info);
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+}
+
+.wifi-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.wifi-list button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--card);
+  color: var(--ink);
+  border: 2px solid var(--line);
+  box-shadow: none;
+  text-align: left;
+}
+
+.wifi-list button[aria-pressed="true"] {
+  border-color: var(--brand);
+}
+
+.wifi-list .meta {
+  flex: none;
+}
+
+label.check {
+  flex-direction: row;
+  align-items: center;
+  font-weight: 400;
+}
+
+label.check input {
+  width: 1.25rem;
+  min-height: 1.25rem;
+}

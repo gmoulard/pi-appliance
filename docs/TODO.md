@@ -9,7 +9,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] Retirer les fichiers générés (`*.log`, `old.ip`, `ipcheck.dat`) et ajouter un `.gitignore`.
 - [x] Supprimer `tmp.uml` (exemple PlantUML sans rapport avec le projet).
 - [x] Choisir une licence et ajouter `LICENSE` : AGPL-3.0 (1.2).
-- [ ] Ajouter l'en-tête de licence aux fichiers de code existants (Go et interface web).
+- [x] Ajouter l'en-tête de licence aux fichiers de code existants (Go et interface web).
 - [ ] Vérifier l'origine et la licence des fichiers repris d'ailleurs (`docker-apache/`, d'après gwendal-orinel ; `linux-tool/dynHost/ipcheck.py`) avant de les reprendre depuis l'historique git.
 
 ## 1. Décisions
@@ -74,7 +74,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 
 - [ ] Première construction réelle de l'image par le workflow « Image » (à lancer à la main une fois le workflow sur `master`) : durée, taille, place sur le disque du runner.
 - [ ] Essai sur un vrai Pi (Pi 5, 4, 3 B+, Zero 2 W) : partition étendue, `pi-appliance.local`, secrets différents sur deux cartes flashées avec la même image, Traefik et console démarrés sans internet, point d'accès ouvert même avec un câble, fermé après le choix du réseau, après 24 heures, rouvert après un redémarrage et après 10 minutes sans réseau, portail captif sur iPhone et Android, mémoire libre sur le Zero 2 W.
-- [ ] API réseau de la console (à brancher sur `/usr/local/lib/pi-appliance/network.sh`, qui répond déjà en JSON), réservée à l'administrateur connecté :
+- [x] API réseau de la console (`internal/network`, branchée sur `/usr/local/lib/pi-appliance/network.sh`, option `-network-script`), réservée à l'administrateur connecté ; essayée contre un faux `network.sh`, reste l'essai sur un vrai Pi (ligne ci-dessus) :
   - `GET api/network` → `network.sh status` : `{"accessPoint": {"open", "ssid", "reason", "closesInSeconds"}, "configured": "" | "wifi" | "wired", "wired": {"connected"}, "wifi": {"connected", "ssid"}, "addresses": ["192.168.1.20"], "lastError": ""}` ;
   - `GET api/network/wifi` → `network.sh wifi-list` : `{"scannedAt", "networks": [{"ssid", "signal" (0 à 100), "security": "open" | "wpa" | "wpa3" | "enterprise"}]}` ;
   - `POST api/network/wifi/scan` → `network.sh wifi-scan` : même réponse ; prévenir que le point d'accès se ferme quelques secondes (le téléphone se reconnecte) ;
