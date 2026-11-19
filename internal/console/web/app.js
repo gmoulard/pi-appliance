@@ -1168,6 +1168,109 @@ wiredButton.addEventListener("click", async () => {
   }
 });
 
+// Adresse sur internet (spécification 7.1) : le jeton n'est jamais relu ni
+// affiché par l'API ; seul le formulaire le reçoit lors de son envoi.
+const duckDNSSection = document.getElementById("duckdnsSection");
+const duckDNSState = document.getElementById("duckdnsState");
+const duckDNSDetails = document.getElementById("duckdnsDetails");
+const duckDNSForm = document.getElementById("duckdnsForm");
+const duckDNSSave = document.getElementById("duckdnsSave");
+const duckDNSForget = document.getElementById("duckdnsForget");
+let duckDNSTimer = null;
+let duckDNSLoaded = false;
+
+function duckDNSDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 2 ? "" : date.toLocaleString(LOCALE);
+}
+
+function showDuckDNS(status) {
+  duckDNSForget.hidden = !status.configured;
+  duckDNSDetails.replaceChildren();
+  if (!status.configured) {
+    duckDNSState.replaceChildren(element("span", undefined, "dot orange"), element("span", t("DuckDNS n'est pas encore configuré.")));
+    if (!duckDNSLoaded) {
+      duckDNSForm.elements.domain.value = "";
+      duckDNSLoaded = true;
+    }
+    return;
+  }
+  if (!duckDNSLoaded) duckDNSForm.elements.domain.value = status.domain || "";
+  const lastAttempt = duckDNSDate(status.last_attempt);
+  const lastSuccess = duckDNSDate(status.last_success);
+  let state;
+  let color;
+  if (status.error) {
+    state = lastAttempt
+      ? t("La dernière mise à jour a échoué le {0} : {1}.", lastAttempt, status.error)
+      : t("La dernière mise à jour a échoué : {0}.", status.error);
+    color = "red";
+  } else if (lastSuccess) {
+    state = t("Dernière mise à jour réussie le {0}.", lastSuccess);
+    color = "green";
+  } else {
+    state = t("La première mise à jour est en cours.");
+    color = "orange";
+  }
+  duckDNSState.replaceChildren(element("span", undefined, `dot ${color}`), element("span", state));
+  duckDNSDetails.append(element("p", t("Nom DuckDNS : {0}.", status.hostname || `${status.domain}.duckdns.org`), "meta"));
+  if (status.ip) {
+    duckDNSDetails.append(element("p", t("Adresse envoyée à DuckDNS : {0}.", status.ip), "meta"));
+  }
+  if (status.error && status.next_attempt) {
+    const nextAttempt = duckDNSDate(status.next_attempt);
+    if (nextAttempt) duckDNSDetails.append(element("p", t("Nouvel essai prévu le {0}.", nextAttempt), "meta"));
+  }
+  duckDNSLoaded = true;
+}
+
+async function loadDuckDNS() {
+  try {
+    showDuckDNS(await api("duckdns"));
+  } catch (error) {
+    duckDNSState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
+    duckDNSLoaded = true;
+  }
+}
+
+duckDNSForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  duckDNSSave.disabled = true;
+  try {
+    const data = new FormData(duckDNSForm);
+    const result = await api("duckdns", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain: data.get("domain"), token: data.get("token") }),
+    });
+    duckDNSForm.elements.token.value = "";
+    duckDNSLoaded = true;
+    showDuckDNS(result);
+    showMessage([t("Les réglages DuckDNS sont enregistrés. La mise à jour démarre.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    duckDNSSave.disabled = false;
+  }
+});
+
+duckDNSForget.addEventListener("click", async () => {
+  if (!window.confirm(t("Effacer les réglages DuckDNS ?"))) return;
+  duckDNSForget.disabled = true;
+  try {
+    await api("duckdns", { method: "DELETE" });
+    duckDNSForm.reset();
+    duckDNSLoaded = true;
+    await loadDuckDNS();
+    showMessage([t("Les réglages DuckDNS sont effacés.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    duckDNSForget.disabled = false;
+  }
+});
+
 // Assistant de premier démarrage (spécification 5.1) : compte administrateur,
 // réseau de la maison, premiers services. Les autres étapes de la
 // spécification (langue, adresse sur internet, utilisateurs, statistiques)
@@ -1292,16 +1395,21 @@ function showAuth(mode) {
   password.autocomplete = mode === "login" ? "current-password" : "new-password";
   password.minLength = mode === "login" ? 0 : ADMIN_PASSWORD_MIN;
   authForm.reset();
+  duckDNSForm.reset();
+  duckDNSLoaded = false;
   authSection.hidden = false;
   servicesSection.hidden = true;
   catalogSection.hidden = true;
   logoutButton.hidden = true;
   emailReminder.hidden = true;
   networkSection.hidden = true;
+  duckDNSSection.hidden = true;
   piSection.hidden = true;
   wizardSection.hidden = true;
   wizardStep = null;
   clearInterval(networkTimer);
+  clearInterval(duckDNSTimer);
+  duckDNSTimer = null;
   clearInterval(wizardTimer);
   clearInterval(dashboardTimer);
   clearInterval(storageTimer);
@@ -1351,6 +1459,9 @@ async function showConsole(account, wizard) {
   logoutButton.hidden = false;
   servicesSection.hidden = false;
   catalogSection.hidden = account.role !== "admin";
+  duckDNSSection.hidden = true;
+  clearInterval(duckDNSTimer);
+  duckDNSTimer = null;
   emailReminder.hidden = account.email_verified;
   emailReminder.textContent = t("Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.", account.email);
   if (account.role === "admin" && wizard) {
@@ -1358,6 +1469,9 @@ async function showConsole(account, wizard) {
     return;
   }
   if (account.role === "admin") {
+    duckDNSSection.hidden = false;
+    await loadDuckDNS();
+    duckDNSTimer = setInterval(loadDuckDNS, 15000);
     await loadNetwork();
     await loadResources();
     startDashboard();

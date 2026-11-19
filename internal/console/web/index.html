@@ -83,6 +83,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 </div>
 </section>
+<section id="duckdnsSection" hidden>
+<h2>Adresse sur internet</h2>
+<div class="card">
+<p>Saisissez le nom DuckDNS choisi sur duckdns.org et le jeton affiché sur votre compte. Le jeton reste sur le Pi.</p>
+<p id="duckdnsState" class="state" aria-live="polite"></p>
+<div id="duckdnsDetails"></div>
+<form id="duckdnsForm">
+<label>Identifiant DuckDNS<input name="domain" maxlength="253" required autocapitalize="none" autocomplete="off"></label>
+<label>Jeton DuckDNS<input name="token" type="password" required autocomplete="off"></label>
+<div class="controls">
+<button id="duckdnsSave">Enregistrer les réglages</button>
+<button id="duckdnsForget" class="secondary" type="button" hidden>Effacer les réglages</button>
+</div>
+</form>
+</div>
+</section>
 <section id="piSection" hidden>
 <h2>Mon Pi</h2>
 <div class="card">
