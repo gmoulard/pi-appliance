@@ -94,15 +94,23 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 ### 5.2 Fonctions courantes
 
 - État de l'appliance : charge, mémoire, température, espace disque, adresse publique, état des certificats, mode d'accès (direct ou relais).
-- Services installés : démarrer, arrêter, redémarrer, mettre à jour, désinstaller, journaux, qui peut y accéder.
-- Utilisateurs : créer, modifier, supprimer, réinitialiser un mot de passe, rôle, date d'expiration des invités.
+- **Graphiques** sur 30 jours : processeur, mémoire, réseau, température, espace disque.
+- Services installés : état vert/orange/rouge, démarrer, arrêter, redémarrer, mettre à jour, désinstaller, journaux téléchargeables, qui peut y accéder.
+- Utilisateurs : inviter, modifier, supprimer, réinitialiser un mot de passe, rôle, date d'expiration des invités, exiger la double authentification.
 - Adresse et accès depuis internet : modifier, tester.
 - Sauvegarde et restauration (section 9).
-- Mises à jour disponibles (section 9.2).
+- Mises à jour disponibles (section 9.2), canal stable ou bêta (section 5.4).
+- Seuls les administrateurs accèdent à ces fonctions ; un utilisateur ne voit que son profil (mot de passe, double authentification) et la liste des services auxquels il a accès.
+
+Une appliance se gère depuis sa propre console : pas de tableau de bord commun à plusieurs appliances.
 
 ### 5.3 Langues
 
 L'interface est traduite dans les 12 langues de Wikipedia2Book : français, anglais, espagnol, portugais, italien, allemand, néerlandais, turc, chinois, japonais, arabe et persan (ces deux dernières de droite à gauche). Langue détectée d'après le navigateur, modifiable à tout moment. Le français fait foi.
+
+### 5.4 Versions
+
+Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta**, au choix de l'administrateur dans la console. La version et le canal sont affichés en bas de chaque page.
 
 ## 6. Marketplace
 
@@ -114,7 +122,10 @@ L'interface est traduite dans les 12 langues de Wikipedia2Book : français, angl
 
 ### 6.2 Installer et désinstaller
 
+- Seuls les **administrateurs** installent, mettent à jour et désinstallent.
 - Installer : télécharger les images, créer les volumes, poser les labels Traefik (routeur, certificat, protection), démarrer les conteneurs, afficher l'adresse du service.
+- **Plusieurs instances** d'une même application sont possibles (deux sites web, deux wikis…) : chacune a son nom, son sous-domaine (`blog.`, `asso.`…) et ses données.
+- Mettre à jour : sauvegarde du service juste avant ; si le service ne redémarre pas, **retour automatique** à la version précédente et alerte par e-mail.
 - Désinstaller : la console **demande à chaque fois** s'il faut garder ou supprimer les données du service ; la suppression demande une confirmation. Les données gardées sont réutilisées si on réinstalle le service.
 
 ### 6.3 Applications de la première version
@@ -128,7 +139,19 @@ L'interface est traduite dans les 12 langues de Wikipedia2Book : français, angl
 | Édition de texte à plusieurs | Etherpad | |
 | VPN | WireGuard | Accès au réseau de la maison depuis l'extérieur ; configuration du téléphone par QR code affiché dans la console. Le trafic internet du téléphone ne passe pas par la maison. |
 
+Règles propres à ces applications :
+
+- **Samba** : un dossier **commun** à tous les comptes et un dossier **personnel** par utilisateur, avec les comptes de l'appliance (LDAP, section 8.1).
+- **Nextcloud et Samba voient les mêmes fichiers** : le dossier commun et les dossiers personnels de Samba apparaissent dans Nextcloud (stockage externe), et inversement.
+- **Site web** : les fichiers du site se déposent, au choix, dans un dossier visible dans Nextcloud, dans un dossier du partage Samba, ou en envoyant un fichier ZIP dans la console. Une instance = un dossier.
+- **Etherpad** : les utilisateurs connectés créent des documents ; un lien de partage permet à une personne sans compte d'éditer un document précis.
+
 Plus tard : caméra (Motion, timelapse : prototypes dans `pi-motion/` et `pi-timelaps/`).
+
+### 6.4 Hors marketplace
+
+- **Réglages avancés** : un écran masqué par défaut permet à un administrateur de modifier les variables, ports et volumes d'un service installé.
+- **Docker Compose libre** : un administrateur peut installer n'importe quel fichier Docker Compose, hors marketplace. La console prévient que ce service n'est ni vérifié ni pris en charge par le projet, lui applique les mêmes règles d'accès (section 8.2) et le sauvegarde comme les autres.
 
 ## 7. Accès depuis internet
 
@@ -152,7 +175,11 @@ Par défaut, la box redirige les ports 80 et 443 vers le Pi. L'appliance tente d
 
 Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance ouvre un tunnel sortant vers un **relais du projet**, qui fait suivre le trafic ; l'adresse de l'appliance pointe alors vers le relais. Bascule automatique, signalée dans la console. Prototype : tunnel autossh dans `all-pi/autossh.sh`.
 
-Offre : **gratuite avec des limites** de débit et de volume mensuel, **payante** au-delà, par abonnement. Les limites, le prix et le moyen de paiement seront fixés à l'étape Internet (section 15).
+Offre :
+
+- **gratuite**, limitée à **5 Mbit/s** et **20 Go par mois** par appliance ;
+- **payante** au-delà, par abonnement ; prix et moyen de paiement fixés à l'étape Internet (section 15) ;
+- dans les deux cas **sans garantie** (*best effort*) : le relais peut être lent ou indisponible, la console le dit clairement.
 
 ## 8. Utilisateurs, accès et sécurité
 
@@ -161,6 +188,11 @@ Offre : **gratuite avec des limites** de débit et de volume mensuel, **payante*
 - Un seul identifiant et mot de passe pour la console et pour tous les services qui acceptent une connexion standard (OpenID Connect).
 - Le **fournisseur d'identité est intégré à la console** : elle est fournisseur OpenID Connect pour les services et point d'authentification déléguée (*forward auth*) pour Traefik. Pas de logiciel d'identité séparé, pour tenir sur un Pi Zero 2 W.
 - Un service sans connexion standard est protégé en amont par Traefik (authentification déléguée à la console) et garde, si besoin, ses propres comptes internes.
+- **LDAP** : la console sert aussi un annuaire LDAP, **activé seulement quand Samba est installé** (Samba ne connaît pas OpenID Connect), désactivé à sa désinstallation.
+- **Nouveau compte** : l'administrateur saisit un nom et une adresse e-mail ; la personne reçoit une **invitation par e-mail** et choisit elle-même son mot de passe.
+- **Mots de passe** : **8 caractères au moins** ; pas d'expiration.
+- **Double authentification** (TOTP) : obligatoire pour ouvrir la console sur internet (section 8.3), **facultative** pour les autres comptes, que l'administrateur peut l'exiger.
+- **Nombre de comptes** : pas de limite fixée ; seul le matériel limite.
 - Rôles : **administrateur** (gère l'appliance), **utilisateur** (accède aux services autorisés), **invité** (comme un utilisateur, avec une date d'expiration).
 
 ### 8.2 Qui accède à un service
@@ -209,13 +241,19 @@ Chaque type d'alerte peut être désactivé dans la console.
   - un **stockage en ligne** compatible S3 ou OVH Swift ;
   - **un autre pi-appliance**, par exemple chez un proche (sauvegarde croisée).
 - Par défaut : **une sauvegarde chaque nuit** ; on garde **7 quotidiennes, 4 hebdomadaires et 6 mensuelles**. Modifiable dans la console ; sauvegarde manuelle possible à tout moment.
-- Les sauvegardes qui quittent la maison sont chiffrées sur l'appliance ; la clé reste chez l'utilisateur.
+- Les sauvegardes qui quittent la maison sont chiffrées sur l'appliance. **La clé de chiffrement est protégée par le mot de passe administrateur** : l'appliance garde la clé, et chaque sauvegarde en contient une copie chiffrée par ce mot de passe. Changer ou réinitialiser le mot de passe rechiffre la copie de la clé, sans perdre l'accès aux sauvegardes existantes. Pour restaurer sur une nouvelle carte SD, il faut le mot de passe administrateur **en vigueur au moment de la sauvegarde** : la console le rappelle à chaque changement de mot de passe.
+- **Sauvegarde croisée** : une appliance affiche un code, l'autre le saisit ; chacune réserve à l'autre un espace limité, fixé par son administrateur, et ne peut pas lire ce qu'elle stocke.
+- **Disque USB** : un disque déjà en ext4 est utilisé tel quel ; sinon la console propose de le formater en ext4, après avertissement que son contenu sera effacé.
+- **Restauration**, au choix :
+  - l'**appliance entière**, sur une nouvelle carte SD, depuis l'assistant de premier démarrage ;
+  - **un service**, à une date choisie ;
+  - **un fichier**, en parcourant une sauvegarde.
 - Restauration sur une nouvelle carte SD à partir d'une sauvegarde.
 - Prototypes : `all-pi/bkp.sh`, `linux-tool/bkp.sh`, `linux-tool/mountSwift.sh`.
 
 ### 9.2 Mises à jour
 
-Les mises à jour de pi-appliance, des services et du système sont **proposées** : la console les signale, l'utilisateur clique pour les appliquer. Rien n'est mis à jour sans son accord, **y compris les correctifs de sécurité** de Raspberry Pi OS : ceux-ci sont signalés en évidence dans la console et rappelés par e-mail (section 8.6) tant qu'ils ne sont pas appliqués.
+Les mises à jour de pi-appliance, des services et du système sont **proposées** : la console les signale, l'utilisateur clique pour les appliquer. Rien n'est mis à jour sans son accord, **y compris les correctifs de sécurité** de Raspberry Pi OS : ceux-ci sont signalés en évidence dans la console et rappelés par e-mail (section 8.6) tant qu'ils ne sont pas appliqués. Une mise à jour de service ratée revient automatiquement à la version précédente (section 6.2).
 
 ## 10. Architecture
 
@@ -278,10 +316,14 @@ Quatre services centraux, hébergés par le projet **sur un Raspberry Pi du prop
 
 Une appliance continue de fonctionner, à la maison comme en accès direct, quand ces services sont arrêtés. Ces services sont eux aussi sous AGPL-3.0, publiés dans ce dépôt.
 
+- **Envoi d'e-mails** : par le relais SMTP de l'offre e-mail d'OVH liée au domaine `pi-appliance.com` (SPF, DKIM et DMARC configurés), jamais directement depuis le Pi, dont l'adresse résidentielle serait bloquée.
+- **Panne** : sauvegarde quotidienne du Pi du projet hors de la maison, et un **Pi de secours** prêt à prendre le relais, mis en service à la main.
+- **Données personnelles** (RGPD) : le projet ne garde que le **minimum** : l'adresse e-mail de l'administrateur et le nom réservé, liés à la clé de l'appliance. Rien d'autre (pas d'adresse IP conservée, pas de contenu des e-mails envoyés). Les statistiques anonymes ne sont reliées à aucune de ces données.
+
 ## 11. Exigences non fonctionnelles
 
 - Objectif de la section 1.3 : 15 minutes jusqu'au premier service sur internet.
-- Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte).
+- Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte ; mesures des graphiques agrégées avant d'être écrites, sur le disque USB s'il y en a un).
 - Fonctionne sur Pi Zero 2 W (512 Mo) : la couche pi-appliance seule (console, Traefik, fournisseur d'identité) doit y laisser de la place pour au moins un service léger.
 - Démarrage de la console en moins de deux minutes après la mise sous tension.
 - Fournisseur d'identité intégré : code de sécurité critique, à couvrir par des tests et à faire relire (bibliothèques OpenID Connect éprouvées plutôt que du code écrit à la main).
@@ -318,15 +360,14 @@ Dans les mêmes langues que la console (section 5.3).
 - Grappe de plusieurs Pi (orchestration Kubernetes, k3s) : pas dans la première version.
 - Hébergement d'un service pour des tiers à grande échelle.
 - Faire passer tout le trafic internet du téléphone par la maison (le VPN donne seulement accès au réseau de la maison).
+- Tableau de bord commun à plusieurs appliances.
 
 ## 15. Questions ouvertes
 
-- Relais : limites de l'offre gratuite (débit, volume mensuel), prix et moyen de paiement de l'offre payante.
-- Services du projet sur un Pi à la maison (10.2) :
-  - le débit montant de la connexion du projet plafonne le relais pour tous les utilisateurs ;
-  - les e-mails envoyés depuis une adresse IP résidentielle sont souvent bloqués ou classés en indésirables : passer par un relais SMTP (offre e-mail d'OVH, service d'envoi transactionnel) ?
-  - un seul Pi est un point unique de panne : sauvegarde et Pi de secours ?
-- Services qui n'acceptent que LDAP (pas OpenID Connect) : la console doit-elle aussi servir LDAP ?
+- Relais : prix et moyen de paiement de l'offre payante.
+- Relais sur un Pi à la maison : le débit montant de la connexion du projet est partagé par toutes les appliances relayées (10.2).
+- Sauvegardes hors de la maison chiffrées avec une clé protégée par un mot de passe de 8 caractères seulement : faut-il exiger plus long pour l'administrateur ?
+- Docker Compose libre (6.4) : un fichier piégé peut prendre la main sur tout le Pi (conteneur privilégié, montage du système). Faut-il refuser ces options, ou seulement prévenir ?
 - Format exact des manifestes de la marketplace.
 
 ## 16. Ordre de construction

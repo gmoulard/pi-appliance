@@ -41,7 +41,15 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] Sauvegarde chaque nuit, 7 quotidiennes, 4 hebdomadaires, 6 mensuelles (9.1).
 - [x] Correctifs de sécurité proposés comme le reste, rappelés par e-mail (9.2).
 - [x] Services du projet hébergés sur un Pi du propriétaire du projet (10.2).
-- [ ] Questions ouvertes de la section 15 : limites et prix du relais, envoi d'e-mails depuis une IP résidentielle, Pi de secours, LDAP, manifestes.
+- [x] E-mails envoyés par le relais SMTP d'OVH ; sauvegarde et Pi de secours pour les services du projet ; minimum de données personnelles (10.2).
+- [x] Relais gratuit : 5 Mbit/s, 20 Go par mois, sans garantie (7.3).
+- [x] LDAP seulement avec Samba ; invitation par e-mail ; mots de passe de 8 caractères ; double authentification facultative ; pas de limite de comptes (8.1).
+- [x] Installation réservée aux administrateurs, plusieurs instances, retour arrière automatique (6.2).
+- [x] Réglages avancés et Docker Compose libre (6.4).
+- [x] Samba (commun + personnel), fichiers partagés avec Nextcloud, dépôt du site web, Etherpad (6.3).
+- [x] Clé des sauvegardes protégée par le mot de passe administrateur, jumelage par code, restauration appliance/service/fichier, formatage ext4 avec accord (9.1).
+- [x] Graphiques sur 30 jours ; une console par appliance (5.2) ; canaux stable et bêta (5.4).
+- [ ] Questions ouvertes de la section 15 : prix du relais, débit du Pi du projet, longueur du mot de passe administrateur, garde-fous du Compose libre, manifestes.
 
 ## 2. Étape 1 — Local
 
@@ -59,7 +67,8 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [ ] Authentification, changement obligatoire du mot de passe initial, e-mail vérifié.
 - [ ] Fichier `reset` sur la carte SD (8.5).
 - [ ] Assistant de premier démarrage.
-- [ ] Tableau de bord : état du Pi et des services.
+- [ ] Tableau de bord : état du Pi et des services, graphiques sur 30 jours.
+- [ ] Canaux de version stable et bêta.
 - [ ] Traduction dans les 12 langues, arabe et persan de droite à gauche.
 - [ ] Disque USB : détection, déplacement des données, alerte de remplissage de la carte SD.
 
@@ -67,9 +76,12 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 - [ ] Format de manifeste et validation.
 - [ ] Dépôt GitHub du catalogue et règles de contribution.
-- [ ] Installation, démarrage, arrêt, désinstallation (question sur les données).
+- [ ] Installation, démarrage, arrêt, désinstallation (question sur les données), plusieurs instances.
+- [ ] Mise à jour d'un service avec retour arrière automatique.
 - [ ] Avertissement mémoire sur les petits Pi.
-- [ ] Applications : Nextcloud, Samba, site web Apache/PHP, DokuWiki, Etherpad.
+- [ ] Applications : Nextcloud, Samba (dossiers commun et personnels), site web Apache/PHP (dépôt par Nextcloud, Samba ou ZIP), DokuWiki, Etherpad (liens de partage).
+- [ ] Fichiers communs à Nextcloud et Samba.
+- [ ] Réglages avancés et Docker Compose libre (6.4).
 
 ## 3. Étape 2 — Internet (7)
 
@@ -85,9 +97,10 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 ## 4. Étape 3 — Le reste
 
-- [ ] Fournisseur d'identité intégré à la console : OpenID Connect, *forward auth* Traefik, double authentification ; rôles et invités (8.1, 8.3).
+- [ ] Fournisseur d'identité intégré à la console : OpenID Connect, *forward auth* Traefik, LDAP pour Samba, double authentification, invitations par e-mail ; rôles et invités (8.1, 8.3).
 - [ ] Alertes par e-mail, désactivables par type (8.6).
-- [ ] Sauvegardes : chaque nuit, rotation 7/4/6, disque USB, cloud, autre pi-appliance, chiffrement, restauration (9.1).
+- [ ] Sauvegardes : chaque nuit, rotation 7/4/6, disque USB, cloud, autre pi-appliance (jumelage par code), chiffrement, restauration de l'appliance, d'un service ou d'un fichier (9.1).
+- [ ] Services du projet : relais SMTP OVH (SPF, DKIM, DMARC), sauvegarde hors de la maison, Pi de secours (10.2).
 - [ ] Mises à jour proposées dans la console (9.2).
 - [ ] VPN WireGuard avec QR code (6.3).
 - [ ] Statistiques anonymes et leur service de réception (8.4, 10.2).
