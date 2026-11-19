@@ -463,7 +463,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `.github/workflows/image.yml` | Construction de l'image et publication avec sa somme de contrôle (étiquette `v…` ou à la demande) |
 | `.yamllint.yml` | Règles `yamllint` des fichiers YAML du système |
 
-Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache/`, `docker-nextcloud/`, `docker-samba/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`) ont été retirés du dépôt ; ils restent dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79).
+Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache/`, `docker-nextcloud/`, `docker-samba/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`) ont été retirés du dépôt ; ils restent dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79). Ce qu'on peut en reprendre a été vérifié (TODO, section 0). `docker-apache/` est réutilisable sous AGPL-3.0, mais pas ses fichiers de site, qui citent des domaines personnels. `linux-tool/dynHost/ipcheck.py` est le programme ipcheck de Kal, sous GPL-2.0 seule, une licence incompatible avec l'AGPL-3.0 : il n'est pas à reprendre.
 
 ## 13. Site www.pi-appliance.com
 
