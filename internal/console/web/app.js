@@ -33,10 +33,10 @@ const TINTS = 6;
 const ADMIN_PASSWORD_MIN = 12;
 let currentAccount = null;
 const CONTROLS = [
-  { action: "start", label: "Démarrer", done: "démarré", when: (color) => color === "red" },
-  { action: "stop", label: "Arrêter", done: "arrêté", when: (color) => color !== "red" },
-  { action: "restart", label: "Redémarrer", done: "redémarré", when: (color) => color !== "red" },
-  { action: "update", label: "Mettre à jour", done: "à jour", when: () => true },
+  { action: "start", label: t("Démarrer"), done: (name, state) => t("{0} est démarré : {1}", name, state), when: (color) => color === "red" },
+  { action: "stop", label: t("Arrêter"), done: (name, state) => t("{0} est arrêté : {1}", name, state), when: (color) => color !== "red" },
+  { action: "restart", label: t("Redémarrer"), done: (name, state) => t("{0} est redémarré : {1}", name, state), when: (color) => color !== "red" },
+  { action: "update", label: t("Mettre à jour"), when: () => true },
 ];
 
 async function api(path, options = {}) {
@@ -46,7 +46,7 @@ async function api(path, options = {}) {
   }
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(body.error || `Erreur ${response.status}`);
+    const error = new Error(body.error || t("Erreur {0}", response.status));
     error.status = response.status;
     error.body = body;
     throw error;
@@ -111,7 +111,7 @@ async function loadServices() {
   servicesList.replaceChildren(...services.map((service) => {
     const card = element("li", undefined, "card");
     tint(card, service.app);
-    const open = element("a", "Ouvrir", "button-outline");
+    const open = element("a", t("Ouvrir"), "button-outline");
     open.href = `https://${service.address}`;
     open.target = "_blank";
     open.rel = "noopener";
@@ -120,7 +120,7 @@ async function loadServices() {
     if (currentAccount && currentAccount.role === "admin") {
       const buttons = element("div", undefined, "controls");
       if (service.app === "site-web") {
-        const upload = element("button", "Déposer un ZIP", "secondary");
+        const upload = element("button", t("Déposer un ZIP"), "secondary");
         upload.addEventListener("click", () => chooseSiteArchive(service, upload));
         buttons.append(upload);
       }
@@ -132,7 +132,7 @@ async function loadServices() {
       }
       const advanced = advancedButton(service, card);
       buttons.append(advanced.button);
-      const remove = element("button", "Désinstaller", "secondary");
+      const remove = element("button", t("Désinstaller"), "secondary");
       remove.addEventListener("click", () => uninstall(service, remove));
       buttons.append(remove);
       actions.append(buttons, advanced.panel);
@@ -142,11 +142,11 @@ async function loadServices() {
     const detail = element("div");
     detail.append(element("p", service.address, "address"), state);
     if (service.update_available) {
-      detail.append(element("p", "Nouvelle version disponible.", "meta"));
+      detail.append(element("p", t("Nouvelle version disponible."), "meta"));
     }
     if (service.app === "site-web") {
-      detail.append(element("p", `Nextcloud : dossier externe /srv/pi-appliance/services/${service.name}/www`, "meta"));
-      detail.append(element("p", "FTP : compte pi sur le port 2121, sauf port personnalisé.", "meta"));
+      detail.append(element("p", t("Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www", service.name), "meta"));
+      detail.append(element("p", t("FTP : compte pi sur le port 2121, sauf port personnalisé."), "meta"));
     }
     card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
     return card;
@@ -158,13 +158,23 @@ async function loadServices() {
 const piSection = document.getElementById("piSection");
 const piGauges = document.getElementById("piGauges");
 let resources = { memory: null, disk: null, usb_disk: null };
-const GAUGE_TITLES = { memory: "Mémoire", disk: "Carte SD", usb: "Disque USB" };
+const GAUGE_TITLES = { memory: t("Mémoire"), disk: t("Carte SD"), usb: t("Disque USB") };
+const GAUGE_LEFT = {
+  memory: (free) => t("Il reste {0} de mémoire.", free),
+  disk: (free) => t("Il reste {0} de place sur la carte SD.", free),
+  usb: (free) => t("Il reste {0} de place sur le disque USB.", free),
+};
+const GAUGE_AFTER = {
+  memory: (share, left) => t("Ce service prendrait {0} : il resterait {1} de mémoire.", share, left),
+  disk: (share, left) => t("Ce service prendrait {0} : il resterait {1} de place sur la carte SD.", share, left),
+  usb: (share, left) => t("Ce service prendrait {0} : il resterait {1} de place sur le disque USB.", share, left),
+};
 
 function sizeText(mb) {
   if (Math.abs(mb) >= 1024) {
-    return `${(mb / 1024).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} Go`;
+    return t("{0} Go", (mb / 1024).toLocaleString(LOCALE, { maximumFractionDigits: 1 }));
   }
-  return `${Math.round(mb)} Mo`;
+  return t("{0} Mo", Math.round(mb));
 }
 
 function gauge(kind, values, shareMB) {
@@ -174,7 +184,7 @@ function gauge(kind, values, shareMB) {
   const color = left < 0 ? "red" : left < values.total_mb * 0.15 ? "orange" : "green";
   const box = element("div", undefined, `gauge ${color}`);
   const title = GAUGE_TITLES[kind];
-  box.append(element("p", `${title} : ${sizeText(values.total_mb)} en tout, ${sizeText(values.used_mb)} déjà pris.`));
+  box.append(element("p", t("{0} : {1} en tout, {2} déjà pris.", title, sizeText(values.total_mb), sizeText(values.used_mb))));
   const bar = element("div", undefined, "bar");
   bar.setAttribute("aria-hidden", "true");
   const used = element("span", undefined, "used");
@@ -186,25 +196,24 @@ function gauge(kind, values, shareMB) {
     bar.append(part);
   }
   box.append(bar);
-  const what = memory ? "de mémoire" : kind === "usb" ? "de place sur le disque USB" : "de place sur la carte SD";
   if (share === 0) {
-    box.append(element("p", `Il reste ${sizeText(values.free_mb)} ${what}.`, "meta"));
+    box.append(element("p", GAUGE_LEFT[kind](sizeText(values.free_mb)), "meta"));
     // Alerte de remplissage (spécification 4) : la carte SD, ou le disque USB.
     if (!memory && color !== "green") {
       box.append(element("p", kind === "usb"
-        ? "Le disque USB se remplit : désinstallez les services dont vous ne vous servez plus, ou utilisez un disque plus grand."
+        ? t("Le disque USB se remplit : désinstallez les services dont vous ne vous servez plus, ou utilisez un disque plus grand.")
         : resources.usb_disk
-          ? "La carte SD se remplit."
-          : "La carte SD se remplit : branchez un disque USB, la console vous proposera d'y placer les données de vos services.", "warning"));
+          ? t("La carte SD se remplit.")
+          : t("La carte SD se remplit : branchez un disque USB, la console vous proposera d'y placer les données de vos services."), "warning"));
     }
   } else if (left >= 0) {
-    box.append(element("p", `Ce service prendrait ${sizeText(share)} : il resterait ${sizeText(left)} ${what}.`, "meta"));
+    box.append(element("p", GAUGE_AFTER[kind](sizeText(share), sizeText(left)), "meta"));
   } else {
     box.append(element("p", memory
-      ? `Ce service demande ${sizeText(share)} de mémoire, il en manquerait ${sizeText(-left)} : il risque d'être lent. Arrêtez un autre service pour lui faire de la place.`
-      : `Ce service demande ${sizeText(share)} sur le disque, il en manquerait ${sizeText(-left)} : il risque de ne pas s'installer. ${resources.usb_disk
-        ? "Désinstallez un service dont vous ne vous servez plus."
-        : "Branchez un disque USB pour avoir plus de place, ou désinstallez un service dont vous ne vous servez plus."}`, "warning"));
+      ? t("Ce service demande {0} de mémoire, il en manquerait {1} : il risque d'être lent. Arrêtez un autre service pour lui faire de la place.", sizeText(share), sizeText(-left))
+      : resources.usb_disk
+        ? t("Ce service demande {0} sur le disque, il en manquerait {1} : il risque de ne pas s'installer. Désinstallez un service dont vous ne vous servez plus.", sizeText(share), sizeText(-left))
+        : t("Ce service demande {0} sur le disque, il en manquerait {1} : il risque de ne pas s'installer. Branchez un disque USB pour avoir plus de place, ou désinstallez un service dont vous ne vous servez plus.", sizeText(share), sizeText(-left)), "warning"));
   }
   return box;
 }
@@ -247,7 +256,7 @@ let historyHours = 24;
 let dashboardTimer = null;
 
 function number(value, digits = 0) {
-  return value.toLocaleString("fr-FR", { maximumFractionDigits: digits });
+  return value.toLocaleString(LOCALE, { maximumFractionDigits: digits });
 }
 
 function nowTile(title, value, advice, color) {
@@ -268,18 +277,18 @@ function nowTiles() {
   const cpu = resources.cpu_percent;
   if (known(cpu)) {
     const color = cpu >= 90 ? "orange" : "green";
-    tiles.push(nowTile("Charge du processeur", `${number(cpu)} %`,
-      color === "green" ? "Le Pi a de la marge." : "Le Pi travaille à plein : les services peuvent ralentir.", color));
+    tiles.push(nowTile(t("Charge du processeur"), `${number(cpu)} %`,
+      color === "green" ? t("Le Pi a de la marge.") : t("Le Pi travaille à plein : les services peuvent ralentir."), color));
   }
   const temperature = resources.temperature_c;
   if (known(temperature)) {
     const color = temperature >= 80 ? "red" : temperature >= 70 ? "orange" : "green";
     const advice = {
-      green: "Température normale.",
-      orange: "Le Pi chauffe : vérifiez qu'il est bien aéré, loin d'une source de chaleur.",
-      red: "Le Pi est trop chaud : il ralentit pour se protéger. Mettez-le dans un endroit aéré ; un boîtier avec ventilateur aide.",
+      green: t("Température normale."),
+      orange: t("Le Pi chauffe : vérifiez qu'il est bien aéré, loin d'une source de chaleur."),
+      red: t("Le Pi est trop chaud : il ralentit pour se protéger. Mettez-le dans un endroit aéré ; un boîtier avec ventilateur aide."),
     }[color];
-    tiles.push(nowTile("Température", `${number(temperature)} °C`, advice, color));
+    tiles.push(nowTile(t("Température"), `${number(temperature)} °C`, advice, color));
   }
   return tiles;
 }
@@ -295,9 +304,9 @@ function showServicesSummary(services) {
   }
   const count = (color) => services.filter((service) => service.status.color === color).length;
   const parts = [];
-  if (count("green")) parts.push(plural(count("green"), "service en marche", "services en marche"));
-  if (count("orange")) parts.push(plural(count("orange"), "service en difficulté", "services en difficulté"));
-  if (count("red")) parts.push(plural(count("red"), "service arrêté", "services arrêtés"));
+  if (count("green")) parts.push(plural(count("green"), t("service en marche"), t("services en marche")));
+  if (count("orange")) parts.push(plural(count("orange"), t("service en difficulté"), t("services en difficulté")));
+  if (count("red")) parts.push(plural(count("red"), t("service arrêté"), t("services arrêtés")));
   const worst = count("red") ? "red" : count("orange") ? "orange" : "green";
   piServices.replaceChildren(element("span", undefined, `dot ${worst}`), element("span", `${parts.join(", ")}.`));
   piServices.hidden = false;
@@ -305,13 +314,13 @@ function showServicesSummary(services) {
 
 // Graphiques : une courbe par mesure, chacune avec sa propre échelle.
 const CHARTS = [
-  { title: "Charge du processeur", unit: "%", max: 100, series: [{ key: "cpu_percent" }] },
-  { title: "Mémoire utilisée", unit: "%", max: 100, series: [{ key: "memory_percent" }] },
-  { title: "Température, au plus haut de chaque heure", unit: "°C", series: [{ key: "temperature_c" }] },
-  { title: "Disque utilisé", unit: "%", max: 100, series: [{ key: "disk_percent" }] },
+  { title: t("Charge du processeur"), unit: "%", max: 100, series: [{ key: "cpu_percent" }] },
+  { title: t("Mémoire utilisée"), unit: "%", max: 100, series: [{ key: "memory_percent" }] },
+  { title: t("Température, au plus haut de chaque heure"), unit: "°C", series: [{ key: "temperature_c" }] },
+  { title: t("Disque utilisé"), unit: "%", max: 100, series: [{ key: "disk_percent" }] },
   {
-    title: "Réseau, par heure", unit: "Mo",
-    series: [{ key: "received_mb", label: "reçus" }, { key: "sent_mb", label: "envoyés", dashed: true }],
+    title: t("Réseau, par heure"), unit: t("Mo"),
+    series: [{ key: "received_mb", label: t("reçus") }, { key: "sent_mb", label: t("envoyés"), dashed: true }],
   },
 ];
 const CHART = { width: 600, height: 150, left: 44, right: 8, top: 10, bottom: 24 };
@@ -327,7 +336,7 @@ function svgNode(tag, attributes) {
 
 function dateText(time, hours) {
   const options = hours <= 24 ? { weekday: "short", hour: "2-digit", minute: "2-digit" } : { day: "numeric", month: "short" };
-  return new Date(time).toLocaleString("fr-FR", options);
+  return new Date(time).toLocaleString(LOCALE, options);
 }
 
 function chart(spec, points, start, end, hours) {
@@ -351,7 +360,7 @@ function chart(spec, points, start, end, hours) {
   const x = (time) => left + ((time - start) / (end - start)) * (width - left - right);
   const y = (value) => height - bottom - (value / top) * (height - bottom - pad);
   const svg = svgNode("svg", { viewBox: `0 0 ${width} ${height}`, role: "img" });
-  svg.setAttribute("aria-label", `${spec.title} : de ${number(Math.min(...values), 1)} à ${number(Math.max(...values), 1)} ${spec.unit}, dernière valeur ${number(values.at(-1), 1)} ${spec.unit}.`);
+  svg.setAttribute("aria-label", t("{0} : de {1} à {2} {3}, dernière valeur {4} {5}.", spec.title, number(Math.min(...values), 1), number(Math.max(...values), 1), spec.unit, number(values.at(-1), 1), spec.unit));
   for (const value of [0, top / 2, top]) {
     svg.append(svgNode("line", { x1: left, x2: width - right, y1: y(value), y2: y(value), class: "grid" }));
     const label = svgNode("text", { x: left - 6, y: y(value) + 4, class: "axis", "text-anchor": "end" });
@@ -393,7 +402,7 @@ function chart(spec, points, start, end, hours) {
   const cross = svgNode("line", { y1: pad, y2: height - bottom, class: "cross", visibility: "hidden" });
   svg.append(cross);
   const tip = element("p", undefined, "tip");
-  tip.textContent = "Passez le doigt ou la souris sur la courbe pour lire les valeurs.";
+  tip.textContent = t("Passez le doigt ou la souris sur la courbe pour lire les valeurs.");
   svg.addEventListener("pointermove", (event) => {
     const box = svg.getBoundingClientRect();
     const at = start + (((event.clientX - box.left) * (width / box.width) - left) / (width - left - right)) * (end - start);
@@ -412,7 +421,7 @@ function chart(spec, points, start, end, hours) {
     const parts = spec.series
       .filter((series) => known(nearest[series.key]))
       .map((series) => `${number(nearest[series.key], 1)} ${spec.unit}${series.label ? ` ${series.label}` : ""}`);
-    const when = new Date(nearest.time).toLocaleString("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    const when = new Date(nearest.time).toLocaleString(LOCALE, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
     tip.textContent = `${when} : ${parts.join(", ")}`;
   });
   svg.addEventListener("pointerleave", () => cross.setAttribute("visibility", "hidden"));
@@ -464,7 +473,7 @@ async function loadCatalog() {
     tint(card, app.id);
     card.append(cardHead(app.id, app.name, element("p", app.description)));
     const form = element("form");
-    const nameLabel = element("label", "Nom du service");
+    const nameLabel = element("label", t("Nom du service"));
     const name = element("input");
     name.name = "name";
     name.value = app.subdomain;
@@ -482,7 +491,7 @@ async function loadCatalog() {
       label.append(input);
       form.append(label);
     }
-    const button = element("button", "Installer");
+    const button = element("button", t("Installer"));
     const fit = gauges(app.memory_mb, app.disk_mb);
     if (fit.length > 0) {
       const box = element("div");
@@ -494,7 +503,7 @@ async function loadCatalog() {
       event.preventDefault();
       install(app, form, button);
     });
-    card.append(form, element("p", `${app.category} · licence ${app.license}`, "meta"));
+    card.append(form, element("p", t("{0} · licence {1}", app.category, app.license), "meta"));
     return card;
   }));
   if (currentAccount && currentAccount.role === "admin") {
@@ -509,16 +518,16 @@ async function install(app, form, button) {
     parameters[parameter.name] = data.get(parameter.name);
   }
   button.disabled = true;
-  showMessage([`Installation de ${app.name}… Le premier téléchargement peut prendre plusieurs minutes.`], "info");
+  showMessage([t("Installation de {0}… Le premier téléchargement peut prendre plusieurs minutes.", app.name)], "info");
   try {
     const result = await api("services", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ app: app.id, name: data.get("name"), parameters }),
     });
-    const lines = [`${app.name} est prêt : https://${result.instance.address}`];
+    const lines = [t("{0} est prêt : https://{1}", app.name, result.instance.address)];
     for (const [label, value] of Object.entries(result.secrets || {})) {
-      lines.push(`${label} : ${value} (notez-le, il ne sera plus affiché)`);
+      lines.push(t("{0} : {1} (notez-le, il ne sera plus affiché)", label, value));
     }
     lines.push(...(result.warnings || []));
     showMessage(lines, "success");
@@ -548,7 +557,7 @@ async function withRisks(send) {
       throw error;
     }
     const lines = risks.map((risk) => `• ${risk.message}`).join("\n");
-    if (!window.confirm(`Attention, ces options donnent la main sur tout le Pi :\n\n${lines}\n\nUn service mal intentionné ou mal écrit pourrait alors abîmer le Pi ou lire toutes vos données. Continuer quand même ?`)) {
+    if (!window.confirm(t("Attention, ces options donnent la main sur tout le Pi :\n\n{0}\n\nUn service mal intentionné ou mal écrit pourrait alors abîmer le Pi ou lire toutes vos données. Continuer quand même ?", lines))) {
       return null;
     }
     return send(true);
@@ -564,19 +573,19 @@ function parseSettings(service, variables, ports, volumes) {
   const settings = { service, environment: {}, ports: [], volumes: [] };
   for (const line of linesOf(variables)) {
     const at = line.indexOf("=");
-    if (at < 1) throw new Error(`Variable illisible : « ${line} » (attendu : NOM=valeur).`);
+    if (at < 1) throw new Error(t("Variable illisible : « {0} » (attendu : NOM=valeur).", line));
     settings.environment[line.slice(0, at).trim()] = line.slice(at + 1).trim();
   }
   for (const line of linesOf(ports)) {
     const match = /^(\d+):(\d+)(?:\/(tcp|udp))?$/.exec(line);
-    if (!match) throw new Error(`Port illisible : « ${line} » (attendu : port du Pi:port du conteneur, par exemple 8443:443 ou 5353:53/udp).`);
+    if (!match) throw new Error(t("Port illisible : « {0} » (attendu : port du Pi:port du conteneur, par exemple 8443:443 ou 5353:53/udp).", line));
     settings.ports.push({ host: Number(match[1]), container: Number(match[2]), protocol: match[3] || "tcp" });
   }
   for (const line of linesOf(volumes)) {
     const parts = line.split(":");
     const readOnly = parts.length === 3 && parts[2] === "ro";
     if (parts.length < 2 || parts.length > 3 || (parts.length === 3 && !readOnly)) {
-      throw new Error(`Volume illisible : « ${line} » (attendu : source:dossier du conteneur, ou source:dossier:ro pour la lecture seule).`);
+      throw new Error(t("Volume illisible : « {0} » (attendu : source:dossier du conteneur, ou source:dossier:ro pour la lecture seule).", line));
     }
     settings.volumes.push({ source: parts[0], target: parts[1], read_only: readOnly });
   }
@@ -599,8 +608,8 @@ function textArea(label, name, value, placeholder) {
 async function advancedPanel(service, panel) {
   const { settings, services } = await api(`services/${encodeURIComponent(service.name)}/advanced`);
   const form = element("form", undefined, "advanced");
-  form.append(element("p", "Écran avancé : ces réglages changent le fonctionnement interne du service. S'il ne démarre plus avec eux, la console remet les réglages d'avant.", "note"));
-  const which = element("label", "Conteneur concerné");
+  form.append(element("p", t("Écran avancé : ces réglages changent le fonctionnement interne du service. S'il ne démarre plus avec eux, la console remet les réglages d'avant."), "note"));
+  const which = element("label", t("Conteneur concerné"));
   const select = element("select");
   select.name = "service";
   for (const name of services) {
@@ -611,13 +620,13 @@ async function advancedPanel(service, panel) {
   select.value = settings.service;
   which.append(select);
   form.append(which,
-    textArea("Variables (une par ligne : NOM=valeur)", "variables",
+    textArea(t("Variables (une par ligne : NOM=valeur)"), "variables",
       Object.entries(settings.environment || {}).map(([key, value]) => `${key}=${value}`).join("\n"), "TZ=Europe/Paris"),
-    textArea("Ports ouverts directement sur le Pi, sans passer par l'adresse du service (port du Pi:port du conteneur)", "ports",
+    textArea(t("Ports ouverts directement sur le Pi, sans passer par l'adresse du service (port du Pi:port du conteneur)"), "ports",
       (settings.ports || []).map((p) => `${p.host}:${p.container}${p.protocol === "udp" ? "/udp" : ""}`).join("\n"), "8443:443"),
-    textArea("Volumes (source:dossier du conteneur, :ro pour la lecture seule ; la source est un nom de volume ou un dossier du Pi)", "volumes",
+    textArea(t("Volumes (source:dossier du conteneur, :ro pour la lecture seule ; la source est un nom de volume ou un dossier du Pi)"), "volumes",
       (settings.volumes || []).map((v) => `${v.source}:${v.target}${v.read_only ? ":ro" : ""}`).join("\n"), "photos:/photos"));
-  const apply = element("button", "Appliquer les réglages");
+  const apply = element("button", t("Appliquer les réglages"));
   form.append(apply);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -630,7 +639,7 @@ async function advancedPanel(service, panel) {
       return;
     }
     apply.disabled = true;
-    showMessage([`Application des réglages de ${service.name}… Le service redémarre.`], "info");
+    showMessage([t("Application des réglages de {0}… Le service redémarre.", service.name)], "info");
     try {
       const result = await withRisks((confirm) => api(`services/${encodeURIComponent(service.name)}/advanced`, {
         method: "PUT",
@@ -638,7 +647,7 @@ async function advancedPanel(service, panel) {
         body: JSON.stringify({ settings: next, confirm_risks: confirm }),
       }));
       if (result) {
-        showMessage([`Les réglages de ${service.name} sont appliqués.`], "success");
+        showMessage([t("Les réglages de {0} sont appliqués.", service.name)], "success");
       } else {
         message.hidden = true;
       }
@@ -653,7 +662,7 @@ async function advancedPanel(service, panel) {
 }
 
 function advancedButton(service, card) {
-  const button = element("button", "Réglages avancés", "secondary");
+  const button = element("button", t("Réglages avancés"), "secondary");
   button.setAttribute("aria-expanded", "false");
   const panel = element("div");
   panel.hidden = true;
@@ -677,19 +686,19 @@ function advancedButton(service, card) {
 function customComposeCard() {
   const card = element("li", undefined, "card app");
   tint(card, CUSTOM_APP);
-  card.append(cardHead(CUSTOM_APP, "Docker Compose libre",
-    element("p", "Pour les personnes qui connaissent Docker : installez votre propre fichier Docker Compose, hors marketplace.")));
+  card.append(cardHead(CUSTOM_APP, t("Docker Compose libre"),
+    element("p", t("Pour les personnes qui connaissent Docker : installez votre propre fichier Docker Compose, hors marketplace."))));
   const details = element("details");
-  details.append(element("summary", "Installer un fichier Docker Compose"));
+  details.append(element("summary", t("Installer un fichier Docker Compose")));
   const form = element("form");
-  form.append(element("p", "Ce service ne sera ni vérifié ni pris en charge par le projet pi-appliance. Les images doivent être prêtes à l'emploi (pas de « build ») et exister pour le Pi (arm64).", "note"));
-  const nameLabel = element("label", "Nom du service (son adresse)");
+  form.append(element("p", t("Ce service ne sera ni vérifié ni pris en charge par le projet pi-appliance. Les images doivent être prêtes à l'emploi (pas de « build ») et exister pour le Pi (arm64)."), "note"));
+  const nameLabel = element("label", t("Nom du service (son adresse)"));
   const name = element("input");
   name.name = "name";
   name.pattern = "[a-z]([a-z0-9\\-]{0,30}[a-z0-9])?";
   name.required = true;
   nameLabel.append(name);
-  const composeLabel = element("label", "Fichier compose.yaml");
+  const composeLabel = element("label", t("Fichier compose.yaml"));
   const compose = element("textarea");
   compose.name = "compose";
   compose.rows = 10;
@@ -698,13 +707,13 @@ function customComposeCard() {
   compose.autocapitalize = "none";
   compose.placeholder = "services:\n  web:\n    image: nginx:1.27";
   composeLabel.append(compose);
-  const serviceLabel = element("label", "Conteneur à ouvrir à l'adresse du service");
+  const serviceLabel = element("label", t("Conteneur à ouvrir à l'adresse du service"));
   const service = element("input");
   service.name = "service";
   service.required = true;
   service.placeholder = "web";
   serviceLabel.append(service);
-  const portLabel = element("label", "Son port dans le conteneur");
+  const portLabel = element("label", t("Son port dans le conteneur"));
   const port = element("input");
   port.name = "port";
   port.type = "number";
@@ -713,13 +722,13 @@ function customComposeCard() {
   port.value = 80;
   port.required = true;
   portLabel.append(port);
-  const button = element("button", "Installer");
+  const button = element("button", t("Installer"));
   form.append(nameLabel, composeLabel, serviceLabel, portLabel, button);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(form);
     button.disabled = true;
-    showMessage([`Installation de ${data.get("name")}… Le premier téléchargement peut prendre plusieurs minutes.`], "info");
+    showMessage([t("Installation de {0}… Le premier téléchargement peut prendre plusieurs minutes.", data.get("name"))], "info");
     try {
       const result = await withRisks((confirm) => api("compose", {
         method: "POST",
@@ -733,7 +742,7 @@ function customComposeCard() {
         message.hidden = true;
         return;
       }
-      showMessage([`${result.instance.name} est prêt : https://${result.instance.address}`, ...(result.warnings || [])], "success");
+      showMessage([t("{0} est prêt : https://{1}", result.instance.name, result.instance.address), ...(result.warnings || [])], "success");
       form.reset();
       await loadServices();
       await refreshResources();
@@ -760,9 +769,9 @@ function chooseSiteArchive(service, button) {
   input.addEventListener("change", async () => {
     const file = input.files && input.files[0];
     if (!file) return;
-    if (!window.confirm(`Remplacer tout le contenu du site ${service.name} par « ${file.name} » ?`)) return;
+    if (!window.confirm(t("Remplacer tout le contenu du site {0} par « {1} » ?", service.name, file.name))) return;
     button.disabled = true;
-    showMessage([`Déploiement du ZIP sur ${service.name}…`], "info");
+    showMessage([t("Déploiement du ZIP sur {0}…", service.name)], "info");
     const data = new FormData();
     data.append("archive", file);
     try {
@@ -778,7 +787,7 @@ function chooseSiteArchive(service, button) {
 }
 
 async function act(service, control, button) {
-  if (control.action === "update" && !window.confirm(`Mettre à jour ${service.name} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.`)) {
+  if (control.action === "update" && !window.confirm(t("Mettre à jour {0} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.", service.name))) {
     return;
   }
   button.disabled = true;
@@ -786,14 +795,14 @@ async function act(service, control, button) {
   try {
     const result = await api(`services/${encodeURIComponent(service.name)}/${control.action}`, { method: "POST" });
     if (control.action === "update") {
-      const lines = [`${service.name} est à jour.`];
+      const lines = [t("{0} est à jour.", service.name)];
       for (const [label, value] of Object.entries(result.secrets || {})) {
-        lines.push(`${label} : ${value} (notez-le, il ne sera plus affiché)`);
+        lines.push(t("{0} : {1} (notez-le, il ne sera plus affiché)", label, value));
       }
       showMessage(lines, "success");
       return;
     }
-    showMessage([`${service.name} est ${control.done} : ${result.message}`], result.color === "red" && control.action !== "stop" ? "error" : "success");
+    showMessage([control.done(service.name, result.message)], result.color === "red" && control.action !== "stop" ? "error" : "success");
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -802,17 +811,17 @@ async function act(service, control, button) {
 }
 
 async function uninstall(service, button) {
-  if (!window.confirm(`Désinstaller ${service.name} ?`)) {
+  if (!window.confirm(t("Désinstaller {0} ?", service.name))) {
     return;
   }
-  const keep = window.confirm(`Garder les données de ${service.name} pour une prochaine installation ?\n\nOK : les garder\nAnnuler : les supprimer`);
-  if (!keep && !window.confirm(`Les données de ${service.name} vont être supprimées définitivement. Continuer ?`)) {
+  const keep = window.confirm(t("Garder les données de {0} pour une prochaine installation ?\n\nOK : les garder\nAnnuler : les supprimer", service.name));
+  if (!keep && !window.confirm(t("Les données de {0} vont être supprimées définitivement. Continuer ?", service.name))) {
     return;
   }
   button.disabled = true;
   try {
     await api(`services/${encodeURIComponent(service.name)}?data=${keep ? "keep" : "delete"}`, { method: "DELETE" });
-    showMessage([`${service.name} est désinstallé${keep ? ", ses données sont gardées" : ""}.`], "success");
+    showMessage([keep ? t("{0} est désinstallé, ses données sont gardées.", service.name) : t("{0} est désinstallé.", service.name)], "success");
     await loadServices();
     await refreshResources();
   } catch (error) {
@@ -829,7 +838,7 @@ const storageDisks = document.getElementById("storageDisks");
 let storageTimer = null;
 
 function diskName(disk) {
-  const name = disk.model || disk.label || "Disque USB";
+  const name = disk.model || disk.label || t("Disque USB");
   return `${name} (${sizeText(disk.sizeMB)})`;
 }
 
@@ -853,8 +862,8 @@ async function startMove(path, body, disk) {
       body: JSON.stringify(body),
     });
     showMessage([
-      `Copie des données sur ${diskName(disk)}… Vos services sont arrêtés pendant la copie, qui peut prendre de quelques minutes à une heure.`,
-      "Cette page peut ne plus répondre pendant ce temps : revenez-y plus tard, elle se mettra à jour toute seule.",
+      t("Copie des données sur {0}… Vos services sont arrêtés pendant la copie, qui peut prendre de quelques minutes à une heure.", diskName(disk)),
+      t("Cette page peut ne plus répondre pendant ce temps : revenez-y plus tard, elle se mettra à jour toute seule."),
     ], "info");
     watchStorage();
   } catch (error) {
@@ -864,26 +873,26 @@ async function startMove(path, body, disk) {
 }
 
 function useDisk(disk) {
-  if (!window.confirm(`Placer les données de vos services sur ${diskName(disk)} ?\n\nVos services seront arrêtés pendant la copie. Ensuite, le disque devra rester branché : sans lui, les services ne démarrent pas.`)) {
+  if (!window.confirm(t("Placer les données de vos services sur {0} ?\n\nVos services seront arrêtés pendant la copie. Ensuite, le disque devra rester branché : sans lui, les services ne démarrent pas.", diskName(disk)))) {
     return;
   }
   startMove("storage/use", { partition: disk.partition }, disk);
 }
 
 function formatDisk(disk) {
-  if (!window.confirm(`Tout le contenu de ${diskName(disk)} va être effacé, pour le préparer à recevoir les données de vos services. Continuer ?`)) {
+  if (!window.confirm(t("Tout le contenu de {0} va être effacé, pour le préparer à recevoir les données de vos services. Continuer ?", diskName(disk)))) {
     return;
   }
-  if (!window.confirm(`Dernière vérification : les fichiers qui sont sur ${diskName(disk)} seront perdus définitivement. Effacer le disque ?`)) {
+  if (!window.confirm(t("Dernière vérification : les fichiers qui sont sur {0} seront perdus définitivement. Effacer le disque ?", diskName(disk)))) {
     return;
   }
   startMove("storage/format", { disk: disk.device, erase: true }, disk);
 }
 
 const MOVE_STATES = {
-  starting: "Préparation de la copie des données sur le disque USB…",
-  formatting: "Préparation du disque USB…",
-  copying: "Copie des données sur le disque USB… Vos services sont arrêtés pendant la copie.",
+  starting: t("Préparation de la copie des données sur le disque USB…"),
+  formatting: t("Préparation du disque USB…"),
+  copying: t("Copie des données sur le disque USB… Vos services sont arrêtés pendant la copie."),
 };
 
 // loadStorage rend vrai quand un déplacement vient de se terminer.
@@ -904,31 +913,31 @@ async function loadStorage() {
     return false;
   }
   if (status.data) {
-    storageState.textContent = "Les données de vos services sont sur le disque USB. Laissez-le branché : sans lui, les services ne démarrent pas.";
+    storageState.textContent = t("Les données de vos services sont sur le disque USB. Laissez-le branché : sans lui, les services ne démarrent pas.");
     if (move && move.state === "done" && storageTimer) {
-      showMessage(["Les données de vos services sont maintenant sur le disque USB. Vos services ont redémarré."], "success");
+      showMessage([t("Les données de vos services sont maintenant sur le disque USB. Vos services ont redémarré.")], "success");
       return true;
     }
     return false;
   }
   if (move && move.state === "failed" && storageTimer) {
-    showMessage([move.message || "Le déplacement des données a échoué : elles restent sur la carte SD."], "error");
+    showMessage([move.message || t("Le déplacement des données a échoué : elles restent sur la carte SD.")], "error");
     clearInterval(storageTimer);
     storageTimer = null;
   }
   if (status.disks.length === 0) {
-    storageState.textContent = "Les données de vos services sont sur la carte SD. Branchez un disque USB pour avoir plus de place : un disque dur ou un SSD est plus rapide et plus durable qu'une carte SD.";
+    storageState.textContent = t("Les données de vos services sont sur la carte SD. Branchez un disque USB pour avoir plus de place : un disque dur ou un SSD est plus rapide et plus durable qu'une carte SD.");
     return false;
   }
   storageState.textContent = status.disks.length > 1
-    ? "Les données de vos services sont sur la carte SD. Vous pouvez les placer sur l'un de ces disques USB :"
-    : "Les données de vos services sont sur la carte SD. Vous pouvez les placer sur ce disque USB :";
+    ? t("Les données de vos services sont sur la carte SD. Vous pouvez les placer sur l'un de ces disques USB :")
+    : t("Les données de vos services sont sur la carte SD. Vous pouvez les placer sur ce disque USB :");
   storageDisks.replaceChildren(...status.disks.map((disk) => {
     const item = element("li");
     const button = element("button");
     button.type = "button";
     const ready = disk.fstype === "ext4" && disk.partition;
-    const detail = ready ? "prêt" : disk.fstype ? "à effacer avant usage" : "vide, à préparer";
+    const detail = ready ? t("prêt") : disk.fstype ? t("à effacer avant usage") : t("vide, à préparer");
     button.append(element("span", diskName(disk)), element("span", detail, "meta"));
     button.addEventListener("click", () => (ready ? useDisk(disk) : formatDisk(disk)));
     item.append(button);
@@ -953,63 +962,60 @@ const wiredButton = document.getElementById("wired");
 const wifiCountry = document.getElementById("wifiCountry");
 // Pays proposés : ceux des langues de l'interface (spécification 5.3) et les voisins
 // de la France ; le code est celui de la norme ISO 3166.
-const COUNTRIES = {
-  DE: "Allemagne", SA: "Arabie saoudite", AT: "Autriche", BE: "Belgique", BR: "Brésil",
-  CA: "Canada", CN: "Chine", DZ: "Algérie", EG: "Égypte", ES: "Espagne", US: "États-Unis",
-  FR: "France", IN: "Inde", IR: "Iran", IT: "Italie", JP: "Japon", LU: "Luxembourg",
-  MA: "Maroc", MC: "Monaco", NL: "Pays-Bas", PT: "Portugal", GB: "Royaume-Uni",
-  RU: "Russie", SN: "Sénégal", CH: "Suisse", TN: "Tunisie",
-};
+// Noms des pays dans la langue de l'interface, donnés par le navigateur.
+const regionNames = new Intl.DisplayNames([LOCALE, "fr"], { type: "region" });
+const COUNTRIES = Object.fromEntries(["DE", "SA", "AT", "BE", "BR", "CA", "CN", "DZ", "EG", "ES", "US", "FR", "IN", "IR",
+  "IT", "JP", "LU", "MA", "MC", "NL", "PT", "GB", "RU", "SN", "CH", "TN", "TR"].map((code) => [code, regionNames.of(code)]));
 wifiCountry.replaceChildren(...Object.entries(COUNTRIES)
-  .sort((a, b) => a[1].localeCompare(b[1], "fr"))
+  .sort((a, b) => a[1].localeCompare(b[1], LOCALE))
   .map(([code, name]) => {
     const option = element("option", name);
     option.value = code;
     return option;
   }));
 const LAST_ERRORS = {
-  "wrong-password": "La dernière connexion a échoué : le Wi-Fi a refusé le mot de passe.",
-  "not-found": "La dernière connexion a échoué : ce Wi-Fi est introuvable. Est-il allumé et assez proche ?",
-  timeout: "La dernière connexion a échoué : le Wi-Fi ne répond pas.",
-  failed: "La dernière connexion a échoué.",
+  "wrong-password": t("La dernière connexion a échoué : le Wi-Fi a refusé le mot de passe."),
+  "not-found": t("La dernière connexion a échoué : ce Wi-Fi est introuvable. Est-il allumé et assez proche ?"),
+  timeout: t("La dernière connexion a échoué : le Wi-Fi ne répond pas."),
+  failed: t("La dernière connexion a échoué."),
 };
-const SECURITY = { open: "ouvert", wpa: "protégé", wpa3: "protégé", enterprise: "entreprise" };
+const SECURITY = { open: t("ouvert"), wpa: t("protégé"), wpa3: t("protégé"), enterprise: t("entreprise") };
 let apClosesAt = 0;
 let networkTimer = null;
 
 function signalText(signal) {
-  if (signal >= 70) return "très bon signal";
-  if (signal >= 45) return "bon signal";
-  if (signal >= 20) return "signal faible";
-  return "signal très faible";
+  if (signal >= 70) return t("très bon signal");
+  if (signal >= 45) return t("bon signal");
+  if (signal >= 20) return t("signal faible");
+  return t("signal très faible");
 }
 
 function minutesText(seconds) {
   const minutes = Math.max(1, Math.round(seconds / 60));
-  if (minutes >= 120) return `${Math.round(minutes / 60)} heures`;
-  return minutes === 1 ? "une minute" : `${minutes} minutes`;
+  if (minutes >= 120) return t("{0} heures", Math.round(minutes / 60));
+  return minutes === 1 ? t("une minute") : t("{0} minutes", minutes);
 }
 
 function showApCountdown() {
   const seconds = Math.round((apClosesAt - Date.now()) / 1000);
   if (seconds > 0) {
-    networkAp.textContent = `Le Wi-Fi de configuration « pi-appliance » se fermera dans ${minutesText(seconds)}. Après, redémarrez le Pi pour le rouvrir.`;
+    networkAp.textContent = t("Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.", minutesText(seconds));
   }
 }
 
 function showNetworkState(state) {
   let line;
   if (state.accessPoint.open) {
-    line = "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.";
+    line = t("Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.");
   } else if (state.wifi.connected) {
-    line = `Le Pi est relié au Wi-Fi « ${state.wifi.ssid} ».`;
+    line = t("Le Pi est relié au Wi-Fi « {0} ».", state.wifi.ssid);
   } else if (state.wired.connected) {
-    line = "Le Pi est relié à votre box par le câble réseau.";
+    line = t("Le Pi est relié à votre box par le câble réseau.");
   } else {
-    line = "Le Pi n'est relié à aucun réseau.";
+    line = t("Le Pi n'est relié à aucun réseau.");
   }
   if (state.addresses.length > 0 && !state.accessPoint.open) {
-    line += ` Adresse : ${state.addresses.join(", ")}.`;
+    line += t(" Adresse : {0}.", state.addresses.join(", "));
   }
   const dot = element("span", undefined, `dot ${state.accessPoint.open ? "orange" : (state.wifi.connected || state.wired.connected) ? "green" : "red"}`);
   networkState.replaceChildren(dot, element("span", line));
@@ -1039,7 +1045,7 @@ wifiCountry.addEventListener("change", async () => {
       body: JSON.stringify({ country: wifiCountry.value }),
     });
     wifiCountry.dataset.current = result.country;
-    showMessage([`Pays du Wi-Fi : ${COUNTRIES[result.country] || result.country}. Cherchez à nouveau les Wi-Fi si le vôtre n'apparaît pas.`], "success");
+    showMessage([t("Pays du Wi-Fi : {0}. Cherchez à nouveau les Wi-Fi si le vôtre n'apparaît pas.", COUNTRIES[result.country] || result.country)], "success");
   } catch (error) {
     wifiCountry.value = wifiCountry.dataset.current;
     showMessage([error.message], "error");
@@ -1072,7 +1078,7 @@ function showWifiList({ networks }) {
     button.append(element("span", network.ssid), element("span", `${SECURITY[network.security] || ""} · ${signalText(network.signal)}`, "meta"));
     if (network.security === "enterprise") {
       button.disabled = true;
-      button.title = "Les Wi-Fi d'entreprise ne sont pas encore pris en charge.";
+      button.title = t("Les Wi-Fi d'entreprise ne sont pas encore pris en charge.");
     } else {
       button.addEventListener("click", () => chooseWifi(network, button));
     }
@@ -1098,16 +1104,16 @@ async function loadNetwork() {
 }
 
 wifiScanButton.addEventListener("click", async () => {
-  if (apClosesAt && !window.confirm("Pour chercher les Wi-Fi, le Wi-Fi « pi-appliance » se coupe quelques secondes. Votre téléphone s'y reconnectera tout seul. Continuer ?")) {
+  if (apClosesAt && !window.confirm(t("Pour chercher les Wi-Fi, le Wi-Fi « pi-appliance » se coupe quelques secondes. Votre téléphone s'y reconnectera tout seul. Continuer ?"))) {
     return;
   }
   wifiScanButton.disabled = true;
-  showMessage(["Recherche des Wi-Fi…"], "info");
+  showMessage([t("Recherche des Wi-Fi…")], "info");
   try {
     showWifiList(await api("network/wifi/scan", { method: "POST" }));
     message.hidden = true;
   } catch (error) {
-    showMessage([error.message, "Si la page ne répond plus, reconnectez-vous au Wi-Fi « pi-appliance »."], "error");
+    showMessage([error.message, t("Si la page ne répond plus, reconnectez-vous au Wi-Fi « pi-appliance ».")], "error");
   } finally {
     wifiScanButton.disabled = false;
   }
@@ -1130,10 +1136,10 @@ wifiForm.addEventListener("submit", async (event) => {
     wifiForm.reset();
     wifiForm.hidden = true;
     showMessage(apClosesAt ? [
-      `Le Pi se connecte au Wi-Fi « ${ssid} ». Le Wi-Fi « pi-appliance » va se fermer.`,
-      `Reconnectez votre téléphone ou votre ordinateur au Wi-Fi « ${ssid} », puis ouvrez https://pi-appliance.local/pi-appliance`,
-      "Si le Wi-Fi « pi-appliance » réapparaît dans une minute, la connexion a échoué : reconnectez-vous-y pour réessayer.",
-    ] : [`Le Pi se connecte au Wi-Fi « ${ssid} ». Si cette page ne répond plus, ouvrez https://pi-appliance.local/pi-appliance`], "info");
+      t("Le Pi se connecte au Wi-Fi « {0} ». Le Wi-Fi « pi-appliance » va se fermer.", ssid),
+      t("Reconnectez votre téléphone ou votre ordinateur au Wi-Fi « {0} », puis ouvrez https://pi-appliance.local/pi-appliance", ssid),
+      t("Si le Wi-Fi « pi-appliance » réapparaît dans une minute, la connexion a échoué : reconnectez-vous-y pour réessayer."),
+    ] : [t("Le Pi se connecte au Wi-Fi « {0} ». Si cette page ne répond plus, ouvrez https://pi-appliance.local/pi-appliance", ssid)], "info");
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -1145,7 +1151,7 @@ wiredButton.addEventListener("click", async () => {
   wiredButton.disabled = true;
   try {
     await api("network/wired", { method: "POST" });
-    showMessage(["C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau."], "success");
+    showMessage([t("C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau.")], "success");
     const state = await loadNetwork();
     if (wizardStep === "network" && state && state.configured) {
       await wizardServices();
@@ -1188,7 +1194,7 @@ async function startWizard() {
     await wizardServices();
     return;
   }
-  wizardHelp.textContent = "Reliez le Pi à votre réseau : choisissez le Wi-Fi de la maison ci-dessous, ou le câble s'il est branché sur votre box.";
+  wizardHelp.textContent = t("Reliez le Pi à votre réseau : choisissez le Wi-Fi de la maison ci-dessous, ou le câble s'il est branché sur votre box.");
   wizardNext.hidden = true;
   wizardSkip.hidden = false;
   // Le choix se fait parfois sans réponse de la page (connexion au Wi-Fi) :
@@ -1205,9 +1211,9 @@ async function startWizard() {
 async function wizardServices() {
   setStep("services");
   networkSection.hidden = true;
-  wizardHelp.textContent = "Choisissez vos premiers services dans la marketplace ci-dessous. Vous pourrez en ajouter d'autres plus tard.";
+  wizardHelp.textContent = t("Choisissez vos premiers services dans la marketplace ci-dessous. Vous pourrez en ajouter d'autres plus tard.");
   wizardSkip.hidden = true;
-  wizardNext.textContent = "Terminer la mise en route";
+  wizardNext.textContent = t("Terminer la mise en route");
   wizardNext.hidden = false;
   servicesSection.hidden = false;
   catalogSection.hidden = false;
@@ -1217,7 +1223,7 @@ async function wizardServices() {
 }
 
 wizardSkip.addEventListener("click", async () => {
-  if (!window.confirm("Passer le choix du réseau ? Le Wi-Fi « pi-appliance » restera ouvert, au plus 24 heures, pour le faire plus tard.")) {
+  if (!window.confirm(t("Passer le choix du réseau ? Le Wi-Fi « pi-appliance » restera ouvert, au plus 24 heures, pour le faire plus tard."))) {
     return;
   }
   await wizardServices();
@@ -1229,7 +1235,7 @@ wizardNext.addEventListener("click", async () => {
     await api("wizard", { method: "POST" });
     wizardStep = null;
     wizardSection.hidden = true;
-    showMessage(["Votre appliance est prête. Vous retrouverez tout ici : vos services, la marketplace et le réseau."], "success");
+    showMessage([t("Votre appliance est prête. Vous retrouverez tout ici : vos services, la marketplace et le réseau.")], "success");
     await showConsole(currentAccount, false);
   } catch (error) {
     showMessage([error.message], "error");
@@ -1242,23 +1248,23 @@ wizardNext.addEventListener("click", async () => {
 // réinitialisation après dépôt du fichier reset, ou connexion (spécification 5.1, 8.5).
 const AUTH_MODES = {
   setup: {
-    title: "Bienvenue ! Créez votre compte administrateur",
-    help: `C'est le compte qui gère l'appliance. Choisissez un mot de passe d'au moins ${ADMIN_PASSWORD_MIN} caractères : une phrase de plusieurs mots est plus facile à retenir. L'adresse e-mail servira à retrouver l'accès et à recevoir les alertes.`,
-    button: "Créer le compte",
+    title: t("Bienvenue ! Créez votre compte administrateur"),
+    help: t("C'est le compte qui gère l'appliance. Choisissez un mot de passe d'au moins {0} caractères : une phrase de plusieurs mots est plus facile à retenir. L'adresse e-mail servira à retrouver l'accès et à recevoir les alertes.", ADMIN_PASSWORD_MIN),
+    button: t("Créer le compte"),
     fields: ["name", "email", "confirm"],
     path: "setup",
   },
   reset: {
-    title: "Nouveau mot de passe administrateur",
-    help: `Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins ${ADMIN_PASSWORD_MIN} caractères : vos services et vos données ne changent pas.`,
-    button: "Changer le mot de passe",
+    title: t("Nouveau mot de passe administrateur"),
+    help: t("Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins {0} caractères : vos services et vos données ne changent pas.", ADMIN_PASSWORD_MIN),
+    button: t("Changer le mot de passe"),
     fields: ["confirm"],
     path: "reset",
   },
   login: {
-    title: "Connexion",
-    help: "Entrez votre identifiant et votre mot de passe.",
-    button: "Se connecter",
+    title: t("Connexion"),
+    help: t("Entrez votre identifiant et votre mot de passe."),
+    button: t("Se connecter"),
     fields: ["name"],
     path: "login",
   },
@@ -1301,7 +1307,7 @@ authForm.addEventListener("submit", async (event) => {
   const config = AUTH_MODES[authMode];
   const data = new FormData(authForm);
   if (config.fields.includes("confirm") && data.get("password") !== data.get("confirm")) {
-    showMessage(["Les deux mots de passe ne sont pas identiques."], "error");
+    showMessage([t("Les deux mots de passe ne sont pas identiques.")], "error");
     return;
   }
   const body = { password: data.get("password") };
@@ -1341,7 +1347,7 @@ async function showConsole(account, wizard) {
   servicesSection.hidden = false;
   catalogSection.hidden = account.role !== "admin";
   emailReminder.hidden = account.email_verified;
-  emailReminder.textContent = `Votre adresse ${account.email} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.`;
+  emailReminder.textContent = t("Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.", account.email);
   if (account.role === "admin" && wizard) {
     await startWizard();
     return;
@@ -1357,7 +1363,7 @@ async function showConsole(account, wizard) {
 
 api("health")
   .then(async (health) => {
-    status.textContent = "Appliance en service.";
+    status.textContent = t("Appliance en service.");
     statusDot.className = "dot ok";
     footer.textContent = `pi-appliance ${health.version}`;
     const session = await api("session");
@@ -1372,6 +1378,6 @@ api("health")
     }
   })
   .catch((error) => {
-    status.textContent = `Appliance injoignable : ${error.message}`;
+    status.textContent = t("Appliance injoignable : {0}", error.message);
     statusDot.className = "dot down";
   });

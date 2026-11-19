@@ -107,7 +107,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-2.22**: Étapes suivantes de l'assistant, avec leurs fonctions : langue, adresse sur internet, test d'accès, utilisateurs, statistiques (5.1).
 - [x] **TODO-2.23**: Tableau de bord : charge, température, mémoire, disque, état des services, graphiques sur 24 heures et 30 jours, historique horaire écrit une fois par heure (`internal/metrics`) ; à vérifier sur un vrai Pi (capteur de température, interfaces réseau, mémoire prise sur le Zero 2 W). Adresse publique, certificats et mode d'accès viendront avec l'étape Internet.
 - [ ] **TODO-2.24**: Canaux de version stable et bêta.
-- [ ] **TODO-2.25**: Traduction dans les 12 langues, arabe et persan de droite à gauche.
+- [x] **TODO-2.25**: Traduction dans les 12 langues, arabe et persan de droite à gauche : interface de la console traduite (`i18n.js`, `i18n/<code>.js`, test de complétude) ; traductions à faire relire par des locuteurs natifs. Restent en français : les messages du serveur Go (erreurs, état des services) et le catalogue des applications.
 - [x] **TODO-2.26**: Disque USB : détection, formatage en ext4 avec accord, déplacement des données de Docker (volumes et images), alerte de remplissage de la carte SD dans la console (`storage.sh`, `internal/storage`) ; à vérifier sur un vrai Pi (copie, redémarrage de Docker et de Traefik, disque débranché au démarrage). Reste : revenir sur la carte SD, changer de disque, alerte par e-mail (avec le service d'e-mails).
 
 ### Marketplace (6)

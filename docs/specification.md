@@ -128,6 +128,14 @@ Une appliance se gère depuis sa propre console : pas de tableau de bord commun 
 
 L'interface est traduite dans les 12 langues de Wikipedia2Book : français, anglais, espagnol, portugais, italien, allemand, néerlandais, turc, chinois, japonais, arabe et persan (ces deux dernières de droite à gauche). Langue détectée d'après le navigateur, modifiable à tout moment. Le français fait foi.
 
+**Réalisé** (interface web de la console, `internal/console/web/` ; traductions à faire relire par des locuteurs natifs) :
+
+- `i18n.js`, chargé avant `app.js`, choisit la langue : celle de l'adresse (`?lang=`), sinon celle choisie dans la console (gardée par le navigateur), sinon la première langue du navigateur parmi les 12, sinon le français. Un sélecteur « Langue », en bas de chaque page, liste les langues sous leur propre nom et recharge la page.
+- La clé d'une traduction est la phrase française elle-même (`t("Il reste {0} de mémoire.", taille)`) : une phrase sans traduction s'affiche en français. Chaque langue est un fichier `i18n/<code>.js`, chargé seulement pour cette langue ; les textes fixes de la page sont traduits au chargement. Nombres et dates suivent la langue (`toLocaleString`), les noms de pays du réglage Wi-Fi viennent du navigateur (`Intl.DisplayNames`).
+- Arabe et persan : page en `dir="rtl"`, styles en propriétés logiques (`margin-inline-start`…) ; les graphiques gardent le temps de gauche à droite.
+- Un test Go vérifie que chaque langue traduit toutes les phrases de `app.js` et de `index.html`, sans phrase inconnue, en gardant les `{0}`, `{1}`… et les retours à la ligne.
+- Pas encore traduits : les messages qui viennent du serveur (erreurs, état des services, avertissements d'installation), les noms et descriptions des applications du catalogue, l'assistant de premier démarrage n'a pas encore son étape « Langue » (le sélecteur du bas de page en tient lieu).
+
 ### 5.4 Versions
 
 Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta**, au choix de l'administrateur dans la console. La version et le canal sont affichés en bas de chaque page.

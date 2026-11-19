@@ -69,7 +69,7 @@ body {
 }
 
 .top .secondary {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 #auth h2 {
@@ -422,7 +422,7 @@ a {
   color: var(--ink);
   border: 2px solid var(--line);
   box-shadow: none;
-  text-align: left;
+  text-align: start;
 }
 
 .wifi-list button[aria-pressed="true"] {
@@ -448,7 +448,7 @@ select {
 
 .steps {
   margin: 0;
-  padding-left: 1.5rem;
+  padding-inline-start: 1.5rem;
   display: grid;
   gap: 0.25rem;
 }
@@ -649,7 +649,7 @@ label.check input {
   content: "";
   display: inline-block;
   width: 1.25rem;
-  margin-right: 0.375rem;
+  margin-inline-end: 0.375rem;
   vertical-align: middle;
   border-top: 2px solid var(--brand);
 }
@@ -695,4 +695,26 @@ details summary {
 
 details form {
   margin-top: 0.5rem;
+}
+
+footer p {
+  margin: 0 0 0.5rem;
+}
+
+footer .language {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+
+footer .language select {
+  width: auto;
+  min-height: 2.25rem;
+}
+
+/* Les graphiques gardent le temps de gauche à droite, même en arabe et en persan. */
+.chart svg {
+  direction: ltr;
 }
