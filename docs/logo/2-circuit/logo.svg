@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 140" role="img" aria-label="pi-appliance">
+<g transform="translate(10 10)"><g stroke="#0F1B2D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M24 38 H96"></path><path d="M46 38 V68 L36 78 V90"></path><path d="M74 38 V90"></path></g><g stroke="#0F1B2D" stroke-width="5" fill="#FFFFFF"><circle cx="20" cy="38" r="7"></circle><circle cx="36" cy="94" r="7"></circle><circle cx="74" cy="94" r="7"></circle></g><circle cx="100" cy="38" r="8" fill="#10B981"></circle></g>
+<text x="138" y="84" font-family="'Space Grotesk', sans-serif" font-size="44" letter-spacing="-0.9" fill="#0F1B2D"><tspan font-weight="700" fill="#0F1B2D">pi</tspan><tspan font-weight="400">appliance</tspan></text>
+</svg>

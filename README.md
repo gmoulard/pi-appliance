@@ -33,7 +33,7 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 |--------|---------|
 | `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services |
 | `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud pour commencer) |
-| [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md) |
+| [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [pistes de logo](docs/logo/) |
 | `all-pi/` | Configuration commune des Pi : alias, crontab, tunnel autossh, sauvegarde |
 | `linux-tool/` | Outils système : DNS dynamique OVH (`dynHost/`), sauvegarde, montage Swift |
 | `docker-apache/`, `docker-nextcloud/`, `docker-samba/` | Services Docker, futures applications de la marketplace |
