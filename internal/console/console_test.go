@@ -44,8 +44,9 @@ func (okRunner) Run(context.Context, string, ...string) ([]byte, error) {
 }
 
 type fixture struct {
-	handler  http.Handler
-	accounts *auth.Store
+	handler       http.Handler
+	accounts      *auth.Store
+	acmeEmailFile string
 }
 
 func newFixture(t *testing.T) fixture {
@@ -60,7 +61,18 @@ func newFixture(t *testing.T) fixture {
 		t.Fatal(err)
 	}
 	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}}
-	return fixture{handler: Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts}), accounts: accounts}
+	acmeEmailFile := filepath.Join(dir, "system", "traefik", "acme-email")
+	return fixture{
+		handler: Handler(Config{
+			Version:       "1.2.3",
+			Catalog:       catalog,
+			Services:      manager,
+			Accounts:      accounts,
+			ACMEEmailFile: acmeEmailFile,
+		}),
+		accounts:      accounts,
+		acmeEmailFile: acmeEmailFile,
+	}
 }
 
 // admin crée le compte administrateur et renvoie le cookie de sa session.
@@ -289,6 +301,18 @@ func TestSignInRequired(t *testing.T) {
 	}
 	if code := f.do(http.MethodDelete, "/pi-appliance/api/services/cloud?data=delete", "", "", nil).Code; code != http.StatusUnauthorized {
 		t.Fatalf("désinstallation sans session : code %d", code)
+	}
+}
+
+func TestSetupSavesACMEContactEmail(t *testing.T) {
+	f := newFixture(t)
+	f.admin(t)
+	email, err := os.ReadFile(f.acmeEmailFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(email) != "marie@example.org\n" {
+		t.Fatalf("adresse de contact ACME %q", email)
 	}
 }
 

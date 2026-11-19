@@ -27,6 +27,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -115,7 +116,8 @@ type Config struct {
 	// History : historique des graphiques sur 30 jours ; nil : pas de graphiques.
 	History *metrics.History
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
-	WizardFile string
+	WizardFile    string
+	ACMEEmailFile string
 }
 
 type console struct {
@@ -212,6 +214,11 @@ func (c *console) setup(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	if err := c.saveACMEEmail(account.Email); err != nil {
+		log.Printf("adresse de contact Let's Encrypt : %v", err)
+		writeError(w, http.StatusInternalServerError, "Le compte est créé, mais l'adresse de contact ACME n'a pas pu être enregistrée. Corrigez le problème puis reconnectez-vous.")
+		return
+	}
 	openSession(w, r, c.Accounts.StartSession(account.Name))
 	writeJSON(w, http.StatusCreated, account.Public())
 }
@@ -240,8 +247,31 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	if account.Role == auth.RoleAdmin {
+		if err := c.saveACMEEmail(account.Email); err != nil {
+			log.Printf("adresse de contact Let's Encrypt : %v", err)
+			writeError(w, http.StatusInternalServerError, "L'adresse de contact ACME n'a pas pu être enregistrée.")
+			return
+		}
+	}
 	openSession(w, r, token)
 	writeJSON(w, http.StatusOK, account.Public())
+}
+
+func (c *console) saveACMEEmail(email string) error {
+	if c.ACMEEmailFile == "" {
+		return nil
+	}
+	if strings.ContainsAny(email, "\r\n") {
+		return errors.New("adresse e-mail invalide pour la configuration ACME")
+	}
+	if err := os.MkdirAll(filepath.Dir(c.ACMEEmailFile), 0o700); err != nil {
+		return err
+	}
+	if err := os.WriteFile(c.ACMEEmailFile, []byte(email+"\n"), 0o600); err != nil {
+		return err
+	}
+	return os.Chmod(c.ACMEEmailFile, 0o600)
 }
 
 func (c *console) logout(w http.ResponseWriter, r *http.Request) {

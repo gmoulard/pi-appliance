@@ -29,6 +29,8 @@ services:
     restart: always
     network_mode: host
     command: ["--configFile=/etc/traefik/traefik.yml"]
+    environment:
+      TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL: ${PI_ACME_EMAIL:-administrateur@example.org}
     volumes:
       - /etc/pi-appliance/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - /etc/pi-appliance/traefik/dynamic:/etc/traefik/dynamic:ro

@@ -22,10 +22,15 @@ set -eu
 
 COMPOSE=${COMPOSE:-/etc/pi-appliance/traefik/compose.yaml}
 ARCHIVE=${ARCHIVE:-/usr/local/share/pi-appliance/traefik-image.tar}
+ACME_EMAIL_FILE=${ACME_EMAIL_FILE:-/var/lib/pi-appliance/system/traefik/acme-email}
 
 case "${1:-}" in
 start)
 	image=$(sed -n 's/^[[:space:]]*image:[[:space:]]*//p' "$COMPOSE" | head -n 1)
+	if [ -s "$ACME_EMAIL_FILE" ]; then
+		PI_ACME_EMAIL=$(sed -n '1p' "$ACME_EMAIL_FILE")
+		export PI_ACME_EMAIL
+	fi
 	# L'image de Traefik est livrée dans l'image du Pi : le portail marche sans internet.
 	if ! docker image inspect "$image" >/dev/null 2>&1 && [ -f "$ARCHIVE" ]; then
 		docker load -i "$ARCHIVE"
