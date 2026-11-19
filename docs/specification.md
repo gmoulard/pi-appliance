@@ -130,6 +130,18 @@ flowchart LR
     Console -- "DNS dynamique" --> DNS[(Fournisseur DNS)]
 ```
 
+### 10.1 Choix techniques
+
+| Partie | Choix |
+|--------|-------|
+| Console (API, Docker, utilisateurs, DNS dynamique) | **Go**, bibliothèque standard `net/http` : un seul binaire statique, peu de mémoire, même langage que Docker, Compose et Traefik |
+| Interface web | HTML, CSS et JavaScript sans framework, intégrés au binaire (`embed`) |
+| Configuration de Traefik | Labels Docker posés sur les conteneurs des services |
+| Manifestes de la marketplace | YAML au format Docker Compose, avec des métadonnées en plus |
+| Fabrication de l'image | Shell et `pi-gen` |
+
+**Réalisé** : squelette de la console (`cmd/pi-appliance`, `internal/console`). Le binaire sert la page d'accueil de la console sous `/pi-appliance/` (`/pi-appliance` redirige vers `/pi-appliance/`) et `GET /pi-appliance/api/health`, qui renvoie `{"status": "ok", "version": "…"}`. Il écoute en HTTP sur `:8080` (option `-addr`) : HTTPS sera assuré par Traefik devant lui. La version est fixée à la compilation (`-ldflags "-X main.version=…"`, `dev` sinon). Le workflow « Go » (`.github/workflows/go.yml`) lance `go vet` et `go test` et construit le binaire `arm64` à chaque push.
+
 ## 11. Exigences non fonctionnelles
 
 - Fonctionne sur carte SD : limiter les écritures (journaux en mémoire ou rotation stricte).
@@ -145,6 +157,10 @@ flowchart LR
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
 | `.claude/skills/` | Sous-module : skills partagés [gmoulard/claude_skills](https://github.com/gmoulard/claude_skills) |
 | `docs/` | Spécification, TODO, notes |
+| `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
+| `cmd/pi-appliance/` | Programme principal de la console |
+| `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
+| `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |
 | `all-pi/` | Prototype : configuration commune des Pi (alias, crontab, autossh, sauvegarde) |
 | `linux-tool/` | Prototype : outils système (DNS dynamique OVH, sauvegarde, montage Swift) |
 | `docker-apache/`, `docker-nextcloud/`, `docker-samba/` | Prototypes de services Docker, futures entrées de la marketplace |
@@ -160,7 +176,6 @@ flowchart LR
 
 ## 14. Questions ouvertes
 
-- Langage et framework de la console (Python/FastAPI, Go, Node…).
 - Format exact des manifestes de la marketplace, et catalogue local ou dépôt distant.
 - Relais pour les accès sans IP publique : serveur fourni par le projet, ou à la charge de l'utilisateur.
 - Comptes utilisateurs : partagés entre les services (SSO, par exemple Authelia ou Authentik), ou propres à chaque service.

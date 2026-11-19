@@ -11,7 +11,7 @@ Feuille de route de pi-appliance. Le produit visé est décrit dans [specificati
 
 ## 1. Décisions (14)
 
-- [ ] Langage et framework de la console.
+- [x] Langage de la console : Go (10.1).
 - [ ] Format des manifestes de la marketplace.
 - [ ] Solution d'accès sans IP publique (relais).
 - [ ] Gestion des comptes : SSO commun ou comptes par service.
@@ -25,7 +25,8 @@ Feuille de route de pi-appliance. Le produit visé est décrit dans [specificati
 
 ## 3. Console (5)
 
-- [ ] Service web sous `/pi-appliance`, en HTTPS, derrière Traefik.
+- [x] Squelette Go : page d'accueil sous `/pi-appliance/`, `api/health`, tests, binaire `arm64` construit par GitHub Actions (10.1).
+- [ ] Service systemd et passage derrière Traefik, en HTTPS.
 - [ ] Authentification, changement obligatoire du mot de passe initial.
 - [ ] Assistant de premier démarrage : domaine, exposition, utilisateurs, premiers services.
 - [ ] Tableau de bord : état du Pi et des services.

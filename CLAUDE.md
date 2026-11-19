@@ -13,10 +13,11 @@ Ne jamais versionner de secret (mot de passe Wi-Fi, clé SSH, jeton DNS, mot de 
 `.claude/skills/` est un sous-module git, le dépôt partagé https://github.com/gmoulard/claude_skills : `git submodule update --init` après un clone. Modifier un skill = commit et push dans ce dépôt-là (demander avant de pousser), puis commit ici du nouveau pointeur du sous-module. Ne jamais y écrire de valeur propre à pi-appliance : elle va ci-dessous. Une valeur absente : la demander à l'utilisateur.
 
 - **`code-style`** :
-  - code : `all-pi/`, `linux-tool/`, `docker-*/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`, `pypy/` ; pièges : `grep -rn "NE PAS" .` ;
+  - code : `cmd/`, `internal/` (Go, `gofmt`, interface web dans `internal/console/web/`), `all-pi/`, `linux-tool/`, `docker-*/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`, `pypy/` ; pièges : `grep -rn "NE PAS" .` ;
   - en-tête de licence : à définir (pas encore de licence).
 - **`spec-sync`** :
   - référence : `docs/specification.md`, en français, qui fait foi ; pas de traduction pour l'instant ;
   - évolutions non implémentées : `docs/TODO.md` et section 14 « Questions ouvertes » ;
-  - schéma Mermaid : section 10 ; arborescence : section 12 et README.
+  - schéma Mermaid et choix techniques : section 10 ; arborescence : section 12 et README.
+- **Tests** : `go vet ./... && go test ./...` ; binaire du Pi : `GOOS=linux GOARCH=arm64 go build ./cmd/pi-appliance`.
 - **`release`** : pas encore de numéro de version ; branche principale : `master`.
