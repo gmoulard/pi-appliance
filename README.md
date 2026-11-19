@@ -6,6 +6,8 @@ On flashe une image système prête à l'emploi sur la carte SD, et le Pi foncti
 
 > **État du projet** : en conception. Le dépôt contient pour l'instant des prototypes (scripts et services Docker utilisés sur de vrais Pi). Le produit visé est décrit dans la [spécification](docs/specification.md), l'avancement dans le [TODO](docs/TODO.md). Pour essayer la première version de la console : [guide utilisateur](docs/guide-utilisateur.md).
 
+> **Logo** : sept pistes sont en cours de choix, voir l'[aperçu des logos](docs/logo/).
+
 ## Comment ça marche
 
 L'image pi-appliance empile trois couches :

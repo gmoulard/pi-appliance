@@ -12,6 +12,18 @@ Sept pistes de logo, en cours de choix. Aucune n'est encore retenue.
 | `6-brouillard` | Un π dans des bandes de brouillard : le Fog Computing | Couleurs de la console |
 | `7-repere` | Un repère de carte avec un π : votre adresse, accessible de partout | Couleurs de la console |
 
+## Aperçu
+
+| Piste | Fond clair | Fond sombre | Icône d'app | Favicon |
+|-------|-----------|-------------|-------------|---------|
+| 1 — Le boîtier | ![](1-boitier/logo.svg) | ![](1-boitier/logo-sombre.svg) | <img src="1-boitier/icone-app.svg" width="64" alt=""> | <img src="1-boitier/favicon.svg" width="24" alt=""> |
+| 2 — Le circuit | ![](2-circuit/logo.svg) | ![](2-circuit/logo-sombre.svg) | <img src="2-circuit/icone-app.svg" width="64" alt=""> | <img src="2-circuit/favicon.svg" width="24" alt=""> |
+| 3 — La prise | ![](3-prise/logo.svg) | ![](3-prise/logo-sombre.svg) | <img src="3-prise/icone-app.svg" width="64" alt=""> | <img src="3-prise/favicon.svg" width="24" alt=""> |
+| 4 — Au bout des doigts | ![](4-doigts/logo.svg) | ![](4-doigts/logo-sombre.svg) | <img src="4-doigts/icone-app.svg" width="64" alt=""> | <img src="4-doigts/favicon.svg" width="24" alt=""> |
+| 5 — La maison | ![](5-maison/logo.svg) | ![](5-maison/logo-sombre.svg) | <img src="5-maison/icone-app.svg" width="64" alt=""> | <img src="5-maison/favicon.svg" width="24" alt=""> |
+| 6 — Le brouillard | ![](6-brouillard/logo.svg) | ![](6-brouillard/logo-sombre.svg) | <img src="6-brouillard/icone-app.svg" width="64" alt=""> | <img src="6-brouillard/favicon.svg" width="24" alt=""> |
+| 7 — Le repère | ![](7-repere/logo.svg) | ![](7-repere/logo-sombre.svg) | <img src="7-repere/icone-app.svg" width="64" alt=""> | <img src="7-repere/favicon.svg" width="24" alt=""> |
+
 Les pistes 5 à 7 reprennent les couleurs de la console (`internal/console/web/styles.css`) : `#1F6F5C` et `#1D2927` en clair, `#5CC2A5` et `#E8EEEC` sur `#151B1A` en sombre.
 
 ## Fichiers de chaque piste
