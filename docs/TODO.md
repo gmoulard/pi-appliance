@@ -144,7 +144,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] Charte graphique (framboise, logo « La maison ») appliquée à la console et au site : `docs/charte-graphique.md`.
 - [x] Page d'accueil du site : `docs/index.html`, `docs/site.css`.
 - [x] Pages de documentation à la charte : `docs/_config.yml`, `docs/_layouts/default.html`.
-- [ ] Activer GitHub Pages pour `www.pi-appliance.com` (source : branche `master`, dossier `/docs`) et corriger la zone DNS chez OVH.
+- [x] GitHub Pages pour `www.pi-appliance.com` (source : branche `master`, dossier `/docs`), zone hébergée `pi-appliance.com` dans AWS Route 53.
 - [x] Guide utilisateur provisoire avec manuel d'installation manuelle : `docs/guide-utilisateur.md`.
 - [ ] Captures d'écran, téléchargement de l'image, FAQ, catalogue complet.
 - [ ] Inscription d'une adresse `<nom>.pi-appliance.com`.

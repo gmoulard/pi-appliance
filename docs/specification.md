@@ -410,7 +410,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `LICENSE` | Texte de la licence AGPL-3.0 |
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
 | `.claude/skills/` | Sous-module : skills partagés [gmoulard/claude_skills](https://github.com/gmoulard/claude_skills) |
-| `docs/` | Source du site GitHub Pages www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) ; guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; charte graphique (`charte-graphique.md`) ; `logo/` : logo du site (`framboise/`), logo photo de la console (`photo/`, PNG) et pistes (SVG) |
+| `docs/` | Source du site GitHub Pages www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) ; guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; environnement du projet : DNS, site, AWS CLI (`environnement.md`) ; charte graphique (`charte-graphique.md`) ; `logo/` : logo du site (`framboise/`), logo photo de la console (`photo/`, PNG) et pistes (SVG) |
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
