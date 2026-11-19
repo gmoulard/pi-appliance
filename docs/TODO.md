@@ -4,12 +4,13 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 ## 0. Ménage du dépôt
 
-- [ ] Retirer les secrets versionnés (mots de passe Wi-Fi de `all-pi/wpa_supplicant.conf`, clés de `all-pi/authorized_keys`, `linux-tool/ssh/`) et les changer : ils restent dans l'historique git (8.4).
-- [ ] Retirer les fichiers générés (`*.log`, `old.ip`, `ipcheck.dat`) et ajouter un `.gitignore`.
-- [ ] Supprimer `tmp.uml` (exemple PlantUML sans rapport avec le projet).
+- [x] Retirer les anciens prototypes (`all-pi/`, `linux-tool/`, `docker-*/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`, `pypy/`) : ils restent dans l'historique git, au commit `4ee13f9` (spécification, section 12).
+- [ ] Changer les secrets qui étaient versionnés (mots de passe Wi-Fi de `all-pi/wpa_supplicant.conf`, clés de `all-pi/authorized_keys`, `linux-tool/ssh/`) : retirés du dépôt, ils restent dans l'historique git (8.4).
+- [x] Retirer les fichiers générés (`*.log`, `old.ip`, `ipcheck.dat`) et ajouter un `.gitignore`.
+- [x] Supprimer `tmp.uml` (exemple PlantUML sans rapport avec le projet).
 - [x] Choisir une licence et ajouter `LICENSE` : AGPL-3.0 (1.2).
-- [ ] Ajouter l'en-tête de licence aux fichiers de code existants.
-- [ ] Vérifier l'origine et la licence des fichiers repris d'ailleurs (`docker-apache/`, d'après gwendal-orinel ; `linux-tool/dynHost/ipcheck.py`) avant de les intégrer au produit.
+- [ ] Ajouter l'en-tête de licence aux fichiers de code existants (Go et interface web).
+- [ ] Vérifier l'origine et la licence des fichiers repris d'ailleurs (`docker-apache/`, d'après gwendal-orinel ; `linux-tool/dynHost/ipcheck.py`) avant de les reprendre depuis l'historique git.
 
 ## 1. Décisions
 
@@ -94,9 +95,9 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [ ] DuckDNS tenu à jour par l'appliance.
 - [ ] Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
 - [ ] Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
-- [ ] Domaine personnel : guide OVH, à partir de `linux-tool/dynHost/`.
+- [ ] Domaine personnel : guide OVH, à partir de l'ancien `linux-tool/dynHost/` (historique git).
 - [ ] Accès direct : UPnP, guide de la box, test depuis internet.
-- [ ] Relais : serveur, tunnel sortant (à partir de `all-pi/autossh.sh`), bascule automatique, limites de l'offre gratuite, offre payante.
+- [ ] Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, offre payante.
 - [ ] Accès par service : public, connectés, maison (8.2).
 - [ ] Console ouverte sur internet avec double authentification (8.3).
 

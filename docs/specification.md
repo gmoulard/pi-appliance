@@ -132,9 +132,9 @@ Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta
 
 | Application | Logiciel | Remarques |
 |-------------|----------|-----------|
-| Fichiers, agenda, contacts | Nextcloud | Prototype dans `docker-nextcloud/` |
-| Partage de fichiers à la maison | Samba | Réseau de la maison seulement ; prototype dans `docker-samba/` |
-| Site web | Apache + PHP | Prototype dans `docker-apache/` |
+| Fichiers, agenda, contacts | Nextcloud | Ancien prototype (section 12) : `docker-nextcloud/` |
+| Partage de fichiers à la maison | Samba | Réseau de la maison seulement ; ancien prototype (section 12) : `docker-samba/` |
+| Site web | Apache + PHP | Ancien prototype (section 12) : `docker-apache/` |
 | Wiki | DokuWiki | Sans base de données, tourne sur tous les modèles |
 | Édition de texte à plusieurs | Etherpad | |
 | VPN | WireGuard | Accès au réseau de la maison depuis l'extérieur ; configuration du téléphone par QR code affiché dans la console. Le trafic internet du téléphone ne passe pas par la maison. |
@@ -146,12 +146,12 @@ Règles propres à ces applications :
 - **Site web** : les fichiers du site se déposent, au choix, dans un dossier visible dans Nextcloud, dans un dossier du partage Samba, ou en envoyant un fichier ZIP dans la console. Une instance = un dossier.
 - **Etherpad** : les utilisateurs connectés créent des documents ; un lien de partage permet à une personne sans compte d'éditer un document précis.
 
-Plus tard : caméra (Motion, timelapse : prototypes dans `pi-motion/` et `pi-timelaps/`).
+Plus tard : caméra (Motion, timelapse : anciens prototypes `pi-motion/` et `pi-timelaps/`, section 12).
 
 ### 6.4 Hors marketplace
 
 - **Réglages avancés** : un écran masqué par défaut permet à un administrateur de modifier les variables, ports et volumes d'un service installé.
-- **Docker Compose libre** : un administrateur peut installer n'importe quel fichier Docker Compose, hors marketplace. La console prévient que ce service n'est ni vérifié ni pris en charge par le projet, lui applique les mêmes règles d'accès (section 8.2) et le sauvegarde comme les autres.
+- **Docker Compose libre** : un administrateur peut installer n'importe quel fichier Docker Compose, hors marketplace. La console prévient que ce service n'est ni vérifié ni pris en charge par le projet. Elle repère les options qui donnent la main sur tout le Pi (conteneur privilégié, montage du système hôte, réseau de l'hôte, accès à Docker) et les signale par un avertissement clair, que l'administrateur doit confirmer ; elles ne sont pas bloquées. Elle lui applique les mêmes règles d'accès (section 8.2) et le sauvegarde comme les autres.
 
 ### 6.5 Format des manifestes
 
@@ -191,7 +191,7 @@ Objectif : chaque service est joignable à `https://<service>.<adresse de l'appl
 
 - **Par défaut : `<nom>.pi-appliance.com`**. Ce nom (et `*.<nom>.pi-appliance.com` pour les services) est un **alias** (CNAME) vers un nom **DuckDNS** (`<identifiant>.duckdns.org`, gratuit), que l'appliance tient à jour avec l'adresse publique de la box. Le projet ne gère que les alias de la zone `pi-appliance.com`, jamais l'adresse IP des utilisateurs.
 - **Réservation** : depuis la console ou depuis le site, auprès du service d'adresses du projet (section 10.2). Le nom est **lié à l'appliance** par une clé propre au Pi, créée au premier démarrage : une seule adresse par appliance ; seule l'appliance qui détient la clé peut la modifier. Une adresse est libérée après **90 jours** sans signe de vie de son appliance. Une liste de noms interdits (marques, termes injurieux, noms réservés au projet comme `www`, `relais`, `mail`) est refusée.
-- **En option : un domaine personnel**, que l'utilisateur fait pointer (alias) vers son adresse `<nom>.pi-appliance.com`, guidé pas à pas pour les principaux bureaux d'enregistrement (OVH d'abord). Prototype de mise à jour OVH dans `linux-tool/dynHost/`.
+- **En option : un domaine personnel**, que l'utilisateur fait pointer (alias) vers son adresse `<nom>.pi-appliance.com`, guidé pas à pas pour les principaux bureaux d'enregistrement (OVH d'abord). Ancien prototype de mise à jour OVH : `linux-tool/dynHost/` (section 12).
 
 ### 7.2 Accès direct
 
@@ -199,12 +199,13 @@ Par défaut, la box redirige les ports 80 et 443 vers le Pi. L'appliance tente d
 
 ### 7.3 Relais
 
-Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance ouvre un tunnel sortant vers un **relais du projet**, qui fait suivre le trafic ; l'adresse de l'appliance pointe alors vers le relais. Bascule automatique, signalée dans la console. Prototype : tunnel autossh dans `all-pi/autossh.sh`.
+Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance ouvre un tunnel sortant vers un **relais du projet**, qui fait suivre le trafic ; l'adresse de l'appliance pointe alors vers le relais. Bascule automatique, signalée dans la console. Ancien prototype : tunnel autossh `all-pi/autossh.sh` (section 12).
 
 Offre :
 
 - **gratuite**, limitée à **5 Mbit/s** et **20 Go par mois** par appliance ;
 - **payante** au-delà, par abonnement ; prix et moyen de paiement fixés à l'étape Internet (section 15) ;
+- **nombre d'appliances relayées limité** : le relais tourne sur le Pi du projet (section 10.2), dont le débit montant est partagé ; au-delà du maximum, les nouvelles appliances attendent une place sur une liste d'attente, la console le leur dit ; le maximum est fixé à l'étape Internet ;
 - dans les deux cas **sans garantie** (*best effort*) : le relais peut être lent ou indisponible, la console le dit clairement.
 
 ## 8. Utilisateurs, accès et sécurité
@@ -216,7 +217,7 @@ Offre :
 - Un service sans connexion standard est protégé en amont par Traefik (authentification déléguée à la console) et garde, si besoin, ses propres comptes internes.
 - **LDAP** : la console sert aussi un annuaire LDAP, **activé seulement quand Samba est installé** (Samba ne connaît pas OpenID Connect), désactivé à sa désinstallation.
 - **Nouveau compte** : l'administrateur saisit un nom et une adresse e-mail ; la personne reçoit une **invitation par e-mail** et choisit elle-même son mot de passe.
-- **Mots de passe** : **8 caractères au moins** ; pas d'expiration.
+- **Mots de passe** : **8 caractères au moins**, **12 pour un administrateur** (son mot de passe protège aussi la clé des sauvegardes, section 9.1) ; la console suggère une phrase de passe ; pas d'expiration.
 - **Double authentification** (TOTP) : obligatoire pour ouvrir la console sur internet (section 8.3), **facultative** pour les autres comptes, que l'administrateur peut l'exiger.
 - **Nombre de comptes** : pas de limite fixée ; seul le matériel limite.
 - Rôles : **administrateur** (gère l'appliance), **utilisateur** (accède aux services autorisés), **invité** (comme un utilisateur, avec une date d'expiration).
@@ -275,7 +276,7 @@ Chaque type d'alerte peut être désactivé dans la console.
   - **un service**, à une date choisie ;
   - **un fichier**, en parcourant une sauvegarde.
 - Restauration sur une nouvelle carte SD à partir d'une sauvegarde.
-- Prototypes : `all-pi/bkp.sh`, `linux-tool/bkp.sh`, `linux-tool/mountSwift.sh`.
+- Anciens prototypes (section 12) : `all-pi/bkp.sh`, `linux-tool/bkp.sh`, `linux-tool/mountSwift.sh`.
 
 ### 9.2 Mises à jour
 
@@ -373,12 +374,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `marketplace/` | Catalogue : un manifeste `<application>/compose.yaml` par application (6.5) |
 | `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |
-| `all-pi/` | Prototype : configuration commune des Pi (alias, crontab, autossh, sauvegarde) |
-| `linux-tool/` | Prototype : outils système (DNS dynamique OVH, sauvegarde, montage Swift) |
-| `docker-apache/`, `docker-nextcloud/`, `docker-samba/` | Prototypes de services Docker, futures entrées de la marketplace |
-| `pi-motion/`, `pi-timelaps/` | Prototypes caméra : vidéosurveillance et timelapse |
-| `RaspController/` | Prototype : GPIO et capteur DHT |
-| `pypy/` | Divers |
+
+Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache/`, `docker-nextcloud/`, `docker-samba/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`) ont été retirés du dépôt ; ils restent dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79).
 
 ## 13. Site www.pi-appliance.com
 
@@ -401,9 +398,7 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 ## 15. Questions ouvertes
 
 - Relais : prix et moyen de paiement de l'offre payante.
-- Relais sur un Pi à la maison : le débit montant de la connexion du projet est partagé par toutes les appliances relayées (10.2).
-- Sauvegardes hors de la maison chiffrées avec une clé protégée par un mot de passe de 8 caractères seulement : faut-il exiger plus long pour l'administrateur ?
-- Docker Compose libre (6.4) : un fichier piégé peut prendre la main sur tout le Pi (conteneur privilégié, montage du système). Faut-il refuser ces options, ou seulement prévenir ?
+- Relais : nombre maximal d'appliances relayées (7.3).
 
 ## 16. Ordre de construction
 

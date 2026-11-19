@@ -38,12 +38,9 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 | `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services |
 | `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud pour commencer) |
 | [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |
-| `all-pi/` | Configuration commune des Pi : alias, crontab, tunnel autossh, sauvegarde |
-| `linux-tool/` | Outils système : DNS dynamique OVH (`dynHost/`), sauvegarde, montage Swift |
-| `docker-apache/`, `docker-nextcloud/`, `docker-samba/` | Services Docker, futures applications de la marketplace |
-| `pi-motion/`, `pi-timelaps/` | Caméra : vidéosurveillance et timelapse |
-| `RaspController/` | GPIO et capteur DHT |
 | `.claude/skills/` | Sous-module : [skills Claude Code](https://github.com/gmoulard/claude_skills) partagés |
+
+Les anciens prototypes (configuration des Pi, tunnel autossh, DNS dynamique OVH, sauvegarde, services Docker, caméra, GPIO) ont été retirés du dépôt ; ils restent consultables dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79).
 
 Après un clone, récupérer les skills :
 
