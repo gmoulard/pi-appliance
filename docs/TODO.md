@@ -49,7 +49,8 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] Samba (commun + personnel), fichiers partagés avec Nextcloud, dépôt du site web, Etherpad (6.3).
 - [x] Clé des sauvegardes protégée par le mot de passe administrateur, jumelage par code, restauration appliance/service/fichier, formatage ext4 avec accord (9.1).
 - [x] Graphiques sur 30 jours ; une console par appliance (5.2) ; canaux stable et bêta (5.4).
-- [ ] Questions ouvertes de la section 15 : prix du relais, débit du Pi du projet, longueur du mot de passe administrateur, garde-fous du Compose libre, manifestes.
+- [x] Format des manifestes : Docker Compose + section `x-pi-appliance` (6.5).
+- [ ] Questions ouvertes de la section 15 : prix du relais, débit du Pi du projet, longueur du mot de passe administrateur, garde-fous du Compose libre.
 
 ## 2. Étape 1 — Local
 
@@ -75,12 +76,15 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 ### Marketplace (6)
 
-- [ ] Format de manifeste et validation.
-- [ ] Dépôt GitHub du catalogue et règles de contribution.
-- [ ] Installation, démarrage, arrêt, désinstallation (question sur les données), plusieurs instances.
+- [x] Format de manifeste et validation (6.5).
+- [ ] Dépôt GitHub du catalogue et règles de contribution ; lecture en ligne (aujourd'hui intégré au binaire).
+- [x] Installation, désinstallation (question sur les données), plusieurs instances (6.5).
+- [ ] Démarrer, arrêter, redémarrer un service ; état vert/orange/rouge.
 - [ ] Mise à jour d'un service avec retour arrière automatique.
-- [ ] Avertissement mémoire sur les petits Pi.
-- [ ] Applications : Nextcloud, Samba (dossiers commun et personnels), site web Apache/PHP (dépôt par Nextcloud, Samba ou ZIP), DokuWiki, Etherpad (liens de partage).
+- [x] Avertissement mémoire sur les petits Pi.
+- [ ] Ouvrir l'installation au réseau une fois l'authentification faite (aujourd'hui depuis le Pi seulement).
+- [x] Application Nextcloud (manifeste `marketplace/nextcloud/`).
+- [ ] Applications : Samba (dossiers commun et personnels), site web Apache/PHP (dépôt par Nextcloud, Samba ou ZIP), DokuWiki, Etherpad (liens de partage).
 - [ ] Fichiers communs à Nextcloud et Samba.
 - [ ] Réglages avancés et Docker Compose libre (6.4).
 

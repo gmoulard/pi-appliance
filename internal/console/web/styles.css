@@ -1,6 +1,29 @@
+/*
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 :root {
   --ink: #1d2927;
   --paper: #ffffff;
+  --muted: #5b6b68;
+  --line: #d5dedc;
+  --accent: #1f6f5c;
+  --info: #e8f1fb;
+  --success: #e6f4ea;
+  --error: #fbe9e7;
   color-scheme: light dark;
 }
 
@@ -8,6 +31,12 @@
   :root {
     --ink: #e8eeec;
     --paper: #151b1a;
+    --muted: #9fb0ad;
+    --line: #2f3a38;
+    --accent: #5cc2a5;
+    --info: #1b2a3a;
+    --success: #1c3324;
+    --error: #3a1f1c;
   }
 }
 
@@ -22,4 +51,88 @@ main {
   max-width: 40rem;
   margin: 0 auto;
   padding: 2rem 1rem;
+}
+
+.cards {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+.meta,
+footer {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+  font: inherit;
+}
+
+button {
+  font: inherit;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 0.375rem;
+  background: var(--accent);
+  color: var(--paper);
+  cursor: pointer;
+}
+
+button.secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+#message {
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  overflow-wrap: anywhere;
+}
+
+#message.info {
+  background: var(--info);
+}
+
+#message.success {
+  background: var(--success);
+}
+
+#message.error {
+  background: var(--error);
+}
+
+a {
+  color: var(--accent);
 }

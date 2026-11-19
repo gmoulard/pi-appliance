@@ -1,0 +1,56 @@
+x-pi-appliance:
+  name: Nextcloud
+  description: Vos fichiers, photos, agenda et contacts, chez vous, sur tous vos appareils.
+  category: Fichiers
+  license: AGPL-3.0
+  subdomain: cloud
+  service: app
+  port: 80
+  memory_mb: 1024
+  disk_mb: 2048
+  login: application
+  access: public
+  parameters:
+    - name: NEXTCLOUD_ADMIN_PASSWORD
+      label: Mot de passe de l'administrateur de Nextcloud
+      generate: true
+    - name: DB_PASSWORD
+      generate: true
+    - name: DB_ROOT_PASSWORD
+      generate: true
+
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    environment:
+      MARIADB_DATABASE: nextcloud
+      MARIADB_USER: nextcloud
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+
+  app:
+    image: nextcloud:30-apache
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      MYSQL_HOST: db
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      NEXTCLOUD_ADMIN_USER: admin
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${PI_HOST}
+      OVERWRITEPROTOCOL: https
+      OVERWRITEHOST: ${PI_HOST}
+      TRUSTED_PROXIES: 172.16.0.0/12
+    volumes:
+      - html:/var/www/html
+
+volumes:
+  db:
+  html:

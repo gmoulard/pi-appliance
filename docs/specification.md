@@ -153,6 +153,31 @@ Plus tard : caméra (Motion, timelapse : prototypes dans `pi-motion/` et `pi-tim
 - **Réglages avancés** : un écran masqué par défaut permet à un administrateur de modifier les variables, ports et volumes d'un service installé.
 - **Docker Compose libre** : un administrateur peut installer n'importe quel fichier Docker Compose, hors marketplace. La console prévient que ce service n'est ni vérifié ni pris en charge par le projet, lui applique les mêmes règles d'accès (section 8.2) et le sauvegarde comme les autres.
 
+### 6.5 Format des manifestes
+
+Un manifeste est un fichier `marketplace/<identifiant>/compose.yaml` : un fichier Docker Compose ordinaire, avec une section `x-pi-appliance` que Docker Compose ignore :
+
+| Clé | Sens |
+|-----|------|
+| `name`, `description`, `category`, `license` | Présentation dans la marketplace |
+| `subdomain` | Nom proposé pour le service, donc son sous-domaine |
+| `service`, `port` | Service Compose publié par Traefik et son port interne |
+| `memory_mb`, `disk_mb` | Mémoire et disque minimaux |
+| `login` | `application` (comptes propres au logiciel) ou `console` (connexion unique, section 8.1) |
+| `access` | Accès par défaut : `public`, `users` ou `home` (section 8.2) |
+| `parameters` | Variables demandées à l'installation : `name` (majuscules), `label`, `default`, ou `generate: true` pour un secret tiré au hasard |
+
+Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du service) et `PI_HOST` (son adresse complète). Les volumes sont des volumes Docker nommés, propres à chaque instance. Le manifeste est refusé (identifiant, sous-domaine, service publié absent, service sans image, port, valeurs inconnues, paramètre invalide ou en double, préfixe `PI_` réservé).
+
+**Réalisé** (première version, paquets `marketplace` et `internal/services`) :
+
+- Catalogue **intégré au binaire** pour l'instant, avec Nextcloud (et MariaDB) ; la lecture en ligne du dépôt (6.1) reste à faire.
+- Installation : pour chaque instance, un dossier `<données>/services/<nom>/` (option `-data`, `/var/lib/pi-appliance` par défaut) avec le manifeste, un fichier `.env` (droits 600) et `pi-appliance.override.json`, qui ajoute les labels Traefik (routeur `Host(<nom>.<adresse>)`, entrée `websecure`, TLS) et le réseau Docker commun `pi-appliance`, créé s'il manque ; puis `docker compose up --detach --wait`. En cas d'échec, le service est arrêté et l'erreur de Docker affichée. Les secrets générés qui ont un libellé (mot de passe administrateur de Nextcloud) sont affichés une seule fois.
+- Plusieurs instances d'une même application, sous des noms différents ; avertissement quand la mémoire du Pi est inférieure à `memory_mb`.
+- Désinstallation : la console demande s'il faut garder les données ; gardées, elles (volumes et secrets) sont réutilisées à la réinstallation sous le même nom ; supprimées, après une seconde confirmation.
+- API de la console : `GET api/catalog`, `GET api/services`, `POST api/services` (`{"app", "name", "parameters"}`, JSON seulement), `DELETE api/services/<nom>?data=keep|delete`. Tant que l'authentification (8.1) n'existe pas, l'installation et la désinstallation ne sont acceptées que depuis le Pi lui-même (adresse de bouclage).
+- Pas encore : lecture en ligne du catalogue, démarrer/arrêter, mise à jour avec retour arrière, adresse affichée réellement joignable (Traefik n'est pas encore installé), traductions.
+
 ## 7. Accès depuis internet
 
 Objectif : chaque service est joignable à `https://<service>.<adresse de l'appliance>`, depuis la maison comme depuis internet, avec un certificat valide.
@@ -344,6 +369,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
+| `internal/services/` | Installation et désinstallation des services (Docker Compose) |
+| `marketplace/` | Catalogue : un manifeste `<application>/compose.yaml` par application (6.5) |
 | `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |
 | `all-pi/` | Prototype : configuration commune des Pi (alias, crontab, autossh, sauvegarde) |
 | `linux-tool/` | Prototype : outils système (DNS dynamique OVH, sauvegarde, montage Swift) |
@@ -375,7 +402,6 @@ Dans les mêmes langues que la console (section 5.3).
 - Relais sur un Pi à la maison : le débit montant de la connexion du projet est partagé par toutes les appliances relayées (10.2).
 - Sauvegardes hors de la maison chiffrées avec une clé protégée par un mot de passe de 8 caractères seulement : faut-il exiger plus long pour l'administrateur ?
 - Docker Compose libre (6.4) : un fichier piégé peut prendre la main sur tout le Pi (conteneur privilégié, montage du système). Faut-il refuser ces options, ou seulement prévenir ?
-- Format exact des manifestes de la marketplace.
 
 ## 16. Ordre de construction
 

@@ -1,0 +1,117 @@
+// This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+// Copyright (c) 2026 Guillaume Moulard.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+package marketplace
+
+import (
+	"strings"
+	"testing"
+	"testing/fstest"
+)
+
+const valid = `x-pi-appliance:
+  name: Wiki
+  description: Un wiki.
+  category: Documents
+  license: GPL-2.0
+  subdomain: wiki
+  service: web
+  port: 8080
+  memory_mb: 128
+  disk_mb: 256
+  login: application
+  access: users
+  parameters:
+    - name: TITLE
+      label: Titre
+      default: Mon wiki
+services:
+  web:
+    image: example/wiki:1
+`
+
+func TestBuiltinCatalog(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, ok := catalog.Get("nextcloud")
+	if !ok {
+		t.Fatal("nextcloud absent du catalogue")
+	}
+	if app.Subdomain != "cloud" || app.Service != "app" || app.Port != 80 || len(app.Compose) == 0 {
+		t.Fatalf("nextcloud %+v", app)
+	}
+}
+
+func TestLoadSortsByName(t *testing.T) {
+	other := strings.Replace(valid, "name: Wiki", "name: Agenda", 1)
+	catalog, err := Load(fstest.MapFS{
+		"wiki/compose.yaml":   {Data: []byte(valid)},
+		"agenda/compose.yaml": {Data: []byte(other)},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	apps := catalog.Apps()
+	if len(apps) != 2 || apps[0].ID != "agenda" || apps[1].ID != "wiki" {
+		t.Fatalf("apps %+v", apps)
+	}
+}
+
+func TestLoadEmpty(t *testing.T) {
+	if _, err := Load(fstest.MapFS{}); err == nil {
+		t.Fatal("catalogue vide accepté")
+	}
+}
+
+func TestParseRejects(t *testing.T) {
+	cases := map[string]struct{ old, new, want string }{
+		"sans métadonnées":    {"x-pi-appliance:", "x-other:", "x-pi-appliance absente"},
+		"service inconnu":     {"service: web", "service: db", "service exposé"},
+		"sous-domaine":        {"subdomain: wiki", "subdomain: Wiki_1", "sous-domaine"},
+		"port":                {"port: 8080", "port: 0", "port 0"},
+		"image":               {"image: example/wiki:1", "image: ''", "sans image"},
+		"paramètre minuscule": {"name: TITLE", "name: title", "paramètre \"title\""},
+		"préfixe réservé":     {"name: TITLE", "name: PI_HOST", "préfixe PI_"},
+		"accès":               {"access: users", "access: everyone", "access"},
+		"connexion":           {"login: application", "login: sso", "login"},
+		"mémoire":             {"memory_mb: 128", "memory_mb: 0", "memory_mb"},
+		"licence":             {"license: GPL-2.0", "license: ''", "license manquant"},
+		"yaml":                {"services:", "services: [", "manifeste wiki"},
+	}
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			_, err := Parse("wiki", []byte(strings.Replace(valid, c.old, c.new, 1)))
+			if err == nil || !strings.Contains(err.Error(), c.want) {
+				t.Fatalf("erreur %v, attendu %q", err, c.want)
+			}
+		})
+	}
+}
+
+func TestParseBadID(t *testing.T) {
+	if _, err := Parse("Wiki", []byte(valid)); err == nil || !strings.Contains(err.Error(), "identifiant") {
+		t.Fatalf("erreur %v", err)
+	}
+}
+
+func TestValidLabel(t *testing.T) {
+	for label, want := range map[string]bool{"cloud": true, "blog-2": true, "a": true, "-a": false, "a-": false, "2a": false, "A": false, "": false} {
+		if ValidLabel(label) != want {
+			t.Errorf("ValidLabel(%q) != %v", label, want)
+		}
+	}
+}

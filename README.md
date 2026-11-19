@@ -31,7 +31,8 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 
 | Chemin | Contenu |
 |--------|---------|
-| `cmd/pi-appliance/`, `internal/console/` | Console pi-appliance, en Go |
+| `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services |
+| `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud pour commencer) |
 | [`docs/`](docs/) | [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md) |
 | `all-pi/` | Configuration commune des Pi : alias, crontab, tunnel autossh, sauvegarde |
 | `linux-tool/` | Outils système : DNS dynamique OVH (`dynHost/`), sauvegarde, montage Swift |
@@ -52,9 +53,11 @@ Avec Go 1.24 ou plus :
 
 ```shell
 go test ./...
-go run ./cmd/pi-appliance            # puis http://localhost:8080/pi-appliance/
+go run ./cmd/pi-appliance -data ./tmp   # puis http://localhost:8080/pi-appliance/
 GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance   # binaire pour le Pi
 ```
+
+Options : `-addr` (adresse d'écoute, `:8080`), `-data` (dossier des services installés, `/var/lib/pi-appliance`), `-domain` (adresse de l'appliance, `pi-appliance.local`). L'installation des services demande Docker et Docker Compose ; pour l'instant, elle n'est possible que depuis le Pi lui-même (`http://localhost:8080/pi-appliance/`).
 
 ## Pour qui
 
