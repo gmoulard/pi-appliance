@@ -1,0 +1,36 @@
+#!/usr/sbin/nft -f
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Wi-Fi de configuration sans accès à la maison ni à internet (spécification 4).
+# Le point d'accès est ouvert et NetworkManager (« ipv4.method=shared ») partage
+# la connexion du Pi avec ses clients : sans cette règle, tout appareil à portée
+# passerait par le Pi vers la box et internet. Les clients du point d'accès
+# (10.42.0.0/24) ne joignent que le Pi lui-même (portail, console) : rien n'est
+# relayé, dans un sens comme dans l'autre. Chargé par pi-appliance-firewall.service.
+
+# NE PAS retirer : le point d'accès est ouvert, sans mot de passe.
+
+# Détruire l'ancienne table si elle existe, pour permettre un rechargement propre.
+destroy table inet pi_appliance_ap
+
+table inet pi_appliance_ap {
+	chain forward {
+		# Avant les règles de NetworkManager et de Docker (priorité 0) ; « drop » est définitif.
+		type filter hook forward priority -10; policy accept;
+		ip saddr 10.42.0.0/24 counter drop
+		ip daddr 10.42.0.0/24 counter drop
+	}
+}

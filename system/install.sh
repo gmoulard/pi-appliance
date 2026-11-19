@@ -46,7 +46,7 @@ apt-get update
 apt-get install -y --no-install-recommends \
 	ca-certificates curl gnupg jq openssl iw \
 	network-manager dnsmasq-base avahi-daemon \
-	fdisk e2fsprogs
+	fdisk e2fsprogs nftables
 
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc.tmp
@@ -100,7 +100,7 @@ fi
 
 systemctl enable docker.service NetworkManager.service avahi-daemon.service \
 	pi-appliance-secrets.service pi-appliance-traefik.service \
-	pi-appliance-ap.service pi-appliance.service
+	pi-appliance-firewall.service pi-appliance-ap.service pi-appliance.service
 
 # Sur un Pi en marche (pas dans le chroot de pi-gen) : démarrer tout de suite.
 if [ -d /run/systemd/system ] && ! systemd-detect-virt --chroot >/dev/null 2>&1; then

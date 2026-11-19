@@ -38,7 +38,7 @@ jobs:
         run: |
           set -eu
           sudo apt-get update
-          sudo apt-get install -y shellcheck yamllint jq
+          sudo apt-get install -y shellcheck yamllint jq iproute2 nftables iputils-ping
           shellcheck --version
       - name: shellcheck
         run: |
@@ -63,6 +63,8 @@ jobs:
         run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml system
       - name: Règles du point d'accès
         run: sh system/tests/ap-rules-test.sh
+      - name: Pare-feu du point d'accès
+        run: sudo sh system/tests/ap-firewall-test.sh
       - name: Disques USB
         run: sh system/tests/storage-test.sh
       - name: pi-gen (préparation, sans construction)

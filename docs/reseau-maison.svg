@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" role="img" aria-labelledby="title description">
+  <title id="title">Réseau de la maison avec plusieurs Pi et controlTower</title>
+  <desc id="description">Internet rejoint la box. La box relie le réseau local de la maison, où se trouvent controlTower et plusieurs Raspberry Pi pi-appliance indépendants. controlTower ne pilote pas les autres Pi.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#6b3d4e"/>
+    </marker>
+    <style>
+      text { font-family: system-ui, sans-serif; fill: #33141f; }
+      .title { font-size: 24px; font-weight: 700; }
+      .label { font-size: 18px; font-weight: 700; }
+      .detail { font-size: 14px; }
+      .node { fill: #fff5f7; stroke: #c71f5d; stroke-width: 3; }
+      .network { fill: #fff; stroke: #d9a8b8; stroke-width: 2; stroke-dasharray: 8 6; }
+      .link { fill: none; stroke: #6b3d4e; stroke-width: 3; }
+      .arrow { marker-end: url(#arrow); }
+      .planned { stroke-dasharray: 8 6; }
+    </style>
+  </defs>
+  <rect x="2" y="2" width="956" height="496" rx="24" fill="#fff5f7"/>
+  <text x="36" y="44" class="title">Réseau local de la maison</text>
+
+  <ellipse cx="145" cy="145" rx="94" ry="48" class="node"/>
+  <text x="145" y="151" text-anchor="middle" class="label">Internet</text>
+
+  <rect x="340" y="95" width="190" height="100" rx="18" class="node"/>
+  <text x="435" y="137" text-anchor="middle" class="label">Box / routeur</text>
+  <text x="435" y="164" text-anchor="middle" class="detail">Wi-Fi et réseau local</text>
+  <path d="M240 145H330" class="link"/>
+
+  <rect x="580" y="75" width="345" height="370" rx="24" class="network"/>
+  <text x="752" y="110" text-anchor="middle" class="label">Réseau interne (maison)</text>
+  <text x="565" y="132" text-anchor="middle" class="detail">LAN</text>
+
+  <rect x="620" y="140" width="265" height="105" rx="16" class="node"/>
+  <text x="752" y="176" text-anchor="middle" class="label">Raspberry Pi controlTower</text>
+  <text x="752" y="202" text-anchor="middle" class="detail">Console réservée au concepteur</text>
+  <text x="752" y="224" text-anchor="middle" class="detail">ne pilote pas les autres Pi</text>
+
+  <rect x="620" y="270" width="265" height="70" rx="16" class="node"/>
+  <text x="752" y="301" text-anchor="middle" class="label">Raspberry Pi pi-appliance 2</text>
+  <text x="752" y="324" text-anchor="middle" class="detail">Console et services indépendants</text>
+
+  <rect x="620" y="365" width="265" height="60" rx="16" class="node"/>
+  <text x="752" y="402" text-anchor="middle" class="label">Autres Raspberry Pi…</text>
+
+  <path d="M530 145H605V395" class="link"/>
+  <path d="M605 192H620M605 305H620M605 395H620" class="link arrow"/>
+
+  <path d="M145 210V275H435V205" class="link planned"/>
+  <text x="286" y="267" text-anchor="middle" class="detail">Accès depuis Internet : à venir</text>
+
+  <text x="36" y="476" class="detail">Chaque Pi est administré séparément ; les noms réseau doivent être uniques.</text>
+</svg>

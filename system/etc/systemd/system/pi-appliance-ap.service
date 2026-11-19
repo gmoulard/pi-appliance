@@ -18,8 +18,9 @@
 [Unit]
 Description=Point d'accès Wi-Fi de configuration pi-appliance
 Documentation=https://github.com/gmoulard/pi-appliance
-Requires=NetworkManager.service
-After=NetworkManager.service
+# Jamais de Wi-Fi ouvert sans le pare-feu qui l'isole de la maison et d'internet.
+Requires=NetworkManager.service pi-appliance-firewall.service
+After=NetworkManager.service pi-appliance-firewall.service
 
 [Service]
 Type=simple
