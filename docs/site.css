@@ -200,6 +200,24 @@ main > .address-band {
 .address-band > * { max-width: 62rem; margin-left: auto; margin-right: auto; }
 .address-band p { color: #f6dce5; }
 .mono { font-family: var(--mono); overflow-wrap: anywhere; color: #ffffff; }
+.reserve { display: grid; gap: 0.5rem; margin-top: 1rem; max-width: 30rem; }
+.reserve label { font-weight: 700; font-size: 0.9375rem; }
+.reserve .field { display: flex; align-items: center; border-radius: 1rem; background: #ffffff; overflow: hidden; }
+.reserve input { flex: 1; min-width: 0; border: 0; padding: 0.875rem; font: inherit; color: var(--ink); background: transparent; }
+.reserve .field span { padding: 0 0.75rem; color: var(--muted); font-size: 0.9375rem; }
+.reserve button {
+  min-height: 3.25rem;
+  margin-top: 0.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  box-shadow: 0 4px 0 #e8789f;
+}
+.reserve button:disabled, .reserve input:disabled { cursor: not-allowed; }
+.soon-note { font-size: 0.875rem; }
 
 .download { padding-top: 2.25rem; padding-bottom: 2.25rem; }
 .panel { border-radius: 1.375rem; background: #ffffff; padding: 1.125rem; display: grid; gap: 0.75rem; max-width: 32rem; box-shadow: 0 2px 0 var(--line); }

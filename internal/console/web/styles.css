@@ -171,13 +171,45 @@ h2 {
   flex: none;
   border-radius: 1rem;
   background: var(--tint);
-  color: #ffffff;
-  font-family: var(--title);
-  font-size: 1.5rem;
-  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.tile svg {
+  width: 1.75rem;
+  height: 1.75rem;
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+}
+
+.button-outline {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.button-outline:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--ink);
 }
 
 .card h3 {
@@ -191,9 +223,15 @@ h2 {
   margin: 0;
 }
 
-.address a {
+.card.app .card-head p {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.address {
   font-family: var(--mono);
   font-size: 0.875rem;
+  color: var(--muted);
   overflow-wrap: anywhere;
 }
 
@@ -266,7 +304,6 @@ button:active {
 }
 
 button.secondary {
-  align-self: flex-start;
   min-height: 2.75rem;
   background: var(--brand-pale);
   color: var(--brand-dark);

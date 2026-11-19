@@ -55,13 +55,26 @@ function tint(card, appId) {
   card.style.setProperty("--pale", `var(--tint-${n}-pale)`);
 }
 
-function cardHead(appId, appName, title, detail) {
+const icons = {};
+const SVG = "http://www.w3.org/2000/svg";
+
+function tile(appId) {
+  const box = element("span", undefined, "tile");
+  box.setAttribute("aria-hidden", "true");
+  const svg = document.createElementNS(SVG, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  const path = document.createElementNS(SVG, "path");
+  path.setAttribute("d", icons[appId] || "");
+  svg.append(path);
+  box.append(svg);
+  return box;
+}
+
+function cardHead(appId, title, detail) {
   const head = element("div", undefined, "card-head");
-  const tile = element("span", Array.from(appName)[0].toUpperCase(), "tile");
-  tile.setAttribute("aria-hidden", "true");
   const text = element("div");
   text.append(element("h3", title), detail);
-  head.append(tile, text);
+  head.append(tile(appId), text);
   return head;
 }
 
@@ -77,25 +90,28 @@ async function loadServices() {
   servicesList.replaceChildren(...services.map((service) => {
     const card = element("li", undefined, "card");
     tint(card, service.app);
-    const link = element("a", `https://${service.address}`);
-    link.href = `https://${service.address}`;
-    link.target = "_blank";
-    link.rel = "noopener";
-    const address = element("p", undefined, "address");
-    address.append(link);
+    const open = element("a", "Ouvrir", "button-outline");
+    open.href = `https://${service.address}`;
+    open.target = "_blank";
+    open.rel = "noopener";
     const remove = element("button", "Désinstaller", "secondary");
     remove.addEventListener("click", () => uninstall(service, remove));
-    card.append(cardHead(service.app, service.app_name, `${service.name} (${service.app_name})`, address), remove);
+    const actions = element("div", undefined, "actions");
+    actions.append(open, remove);
+    card.append(cardHead(service.app, `${service.name} (${service.app_name})`, element("p", service.address, "address")), actions);
     return card;
   }));
 }
 
 async function loadCatalog() {
   const { apps } = await api("catalog");
+  for (const app of apps) {
+    icons[app.id] = app.icon;
+  }
   catalogList.replaceChildren(...apps.map((app) => {
     const card = element("li", undefined, "card app");
     tint(card, app.id);
-    card.append(cardHead(app.id, app.name, app.name, element("p", app.description)), element("p", `${app.category} · licence ${app.license}`, "meta"));
+    card.append(cardHead(app.id, app.name, element("p", app.description)));
     const form = element("form");
     const nameLabel = element("label", "Nom du service");
     const name = element("input");
@@ -121,7 +137,7 @@ async function loadCatalog() {
       event.preventDefault();
       install(app, form, button);
     });
-    card.append(form);
+    card.append(form, element("p", `${app.category} · licence ${app.license}`, "meta"));
     return card;
   }));
 }
@@ -178,7 +194,7 @@ api("health")
     status.textContent = "Appliance en service.";
     statusDot.className = "dot ok";
     footer.textContent = `pi-appliance ${health.version}`;
-    return Promise.all([loadServices(), loadCatalog()]);
+    return loadCatalog().then(loadServices);
   })
   .catch((error) => {
     status.textContent = `Appliance injoignable : ${error.message}`;

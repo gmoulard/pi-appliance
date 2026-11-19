@@ -34,6 +34,7 @@ var builtin embed.FS
 var (
 	labelPattern    = regexp.MustCompile(`^[a-z]([a-z0-9-]{0,30}[a-z0-9])?$`)
 	variablePattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
+	iconPattern     = regexp.MustCompile(`^[MmLlHhVvCcSsQqTtAaZz][MmLlHhVvCcSsQqTtAaZz0-9 ,.-]*$`)
 	logins          = map[string]bool{"console": true, "application": true}
 	accesses        = map[string]bool{"public": true, "users": true, "home": true}
 )
@@ -49,6 +50,7 @@ type App struct {
 	ID          string      `yaml:"-" json:"id"`
 	Name        string      `yaml:"name" json:"name"`
 	Description string      `yaml:"description" json:"description"`
+	Icon        string      `yaml:"icon" json:"icon"`
 	Category    string      `yaml:"category" json:"category"`
 	License     string      `yaml:"license" json:"license"`
 	Subdomain   string      `yaml:"subdomain" json:"subdomain"`
@@ -133,6 +135,9 @@ func check(app App, file composeFile) []string {
 		if strings.TrimSpace(value) == "" {
 			fail("%s manquant", field)
 		}
+	}
+	if len(app.Icon) > 2000 || !iconPattern.MatchString(app.Icon) {
+		fail("icon invalide (tracé SVG sur 24 × 24 : lettres de commande, chiffres, espaces, virgules, points, tirets)")
 	}
 	if !ValidLabel(app.Subdomain) {
 		fail("sous-domaine %q invalide", app.Subdomain)

@@ -24,6 +24,7 @@ import (
 const valid = `x-pi-appliance:
   name: Wiki
   description: Un wiki.
+  icon: M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5
   category: Documents
   license: GPL-2.0
   subdomain: wiki
@@ -51,7 +52,7 @@ func TestBuiltinCatalog(t *testing.T) {
 	if !ok {
 		t.Fatal("nextcloud absent du catalogue")
 	}
-	if app.Subdomain != "cloud" || app.Service != "app" || app.Port != 80 || len(app.Compose) == 0 {
+	if app.Subdomain != "cloud" || app.Service != "app" || app.Port != 80 || app.Icon == "" || len(app.Compose) == 0 {
 		t.Fatalf("nextcloud %+v", app)
 	}
 }
@@ -91,6 +92,8 @@ func TestParseRejects(t *testing.T) {
 		"mémoire":             {"memory_mb: 128", "memory_mb: 0", "memory_mb"},
 		"licence":             {"license: GPL-2.0", "license: ''", "license manquant"},
 		"yaml":                {"services:", "services: [", "manifeste wiki"},
+		"icône absente":       {"  icon: M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5\n", "", "icon invalide"},
+		"icône piégée":        {"icon: M4 5", "icon: M4 5\"/><script>", "icon invalide"},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {

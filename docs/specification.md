@@ -160,6 +160,7 @@ Un manifeste est un fichier `marketplace/<identifiant>/compose.yaml` : un fichie
 | Clé | Sens |
 |-----|------|
 | `name`, `description`, `category`, `license` | Présentation dans la marketplace |
+| `icon` | Icône : tracé SVG (attribut `d`) sur 24 × 24, dessiné en trait blanc sur la couleur de l'application (charte graphique) |
 | `subdomain` | Nom proposé pour le service, donc son sous-domaine |
 | `service`, `port` | Service Compose publié par Traefik et son port interne |
 | `memory_mb`, `disk_mb` | Mémoire et disque minimaux |
@@ -167,7 +168,7 @@ Un manifeste est un fichier `marketplace/<identifiant>/compose.yaml` : un fichie
 | `access` | Accès par défaut : `public`, `users` ou `home` (section 8.2) |
 | `parameters` | Variables demandées à l'installation : `name` (majuscules), `label`, `default`, ou `generate: true` pour un secret tiré au hasard |
 
-Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du service) et `PI_HOST` (son adresse complète). Les volumes sont des volumes Docker nommés, propres à chaque instance. Le manifeste est refusé (identifiant, sous-domaine, service publié absent, service sans image, port, valeurs inconnues, paramètre invalide ou en double, préfixe `PI_` réservé).
+Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du service) et `PI_HOST` (son adresse complète). Les volumes sont des volumes Docker nommés, propres à chaque instance. Le manifeste est refusé (identifiant, icône, sous-domaine, service publié absent, service sans image, port, valeurs inconnues, paramètre invalide ou en double, préfixe `PI_` réservé).
 
 **Réalisé** (première version, paquets `marketplace` et `internal/services`) :
 

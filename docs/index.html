@@ -103,7 +103,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <section class="address-band">
 <h2>Votre adresse sur internet</h2>
-<p>Chaque service aura la sienne : <span class="mono">cloud.<b>votre-nom</b>.pi-appliance.com</span>. La réservation d’une adresse ouvrira bientôt sur ce site.</p>
+<p>Chaque service aura la sienne : <span class="mono">cloud.<b>votre-nom</b>.pi-appliance.com</span>.</p>
+<form class="reserve" aria-describedby="reserveSoon">
+<label for="reserveName">Nom de votre adresse</label>
+<span class="field"><input id="reserveName" type="text" placeholder="votre-nom" disabled><span>.pi-appliance.com</span></span>
+<button type="button" disabled>Réserver cette adresse</button>
+<p id="reserveSoon" class="soon-note">La réservation ouvrira bientôt.</p>
+</form>
 </section>
 
 <section id="telecharger" class="download">

@@ -57,6 +57,6 @@ Polices du système seulement, aucune police téléchargée (ni Google Fonts ni 
 - Bouton principal : framboise, texte blanc, ombre pleine `#7E0F39` de 4 px dessous, qui s'enfonce au clic.
 - Bouton secondaire : rose clair, texte framboise foncée, sans ombre.
 - Champs : bordure aubergine de 2 px, 48 px de haut.
-- Cartes : blanches sur le rose pâle, ombre pleine rose ligne ; cartes d'application sur la teinte pâle de l'application, avec une tuile de couleur (icône sur le site, initiale dans la console).
+- Cartes : blanches sur le rose pâle, ombre pleine rose ligne ; cartes d'application sur la teinte pâle de l'application, avec une tuile de couleur et l'icône de l'application en trait blanc (clé `icon` du manifeste dans la console).
 - Zones tactiles de 44 px au moins ; contour de focus framboise de 3 px.
 - États : vert « en marche », jaune « en cours », framboise « arrêté ».
