@@ -146,6 +146,20 @@ Règles propres à ces applications :
 - **Site web** : les fichiers du site se déposent, au choix, dans un dossier visible dans Nextcloud, dans un dossier du partage Samba, ou en envoyant un fichier ZIP dans la console. Une instance = un dossier.
 - **Etherpad** : les utilisateurs connectés créent des documents ; un lien de partage permet à une personne sans compte d'éditer un document précis.
 
+**Réalisé** (manifestes de la marketplace, section 6.5) :
+
+| Application | Manifeste | Image | Accès par défaut | Mémoire, disque |
+|-------------|-----------|-------|------------------|-----------------|
+| Nextcloud | `marketplace/nextcloud/` | `nextcloud:30-apache` et `mariadb:11.4` | public | 1 024 Mo, 2 048 Mo |
+| Site web | `marketplace/site-web/` | `php:8.4-apache` (image officielle PHP avec Apache) | public | 128 Mo, 1 024 Mo |
+| DokuWiki | `marketplace/dokuwiki/` | `dokuwiki/dokuwiki:2026-07-14c` (image officielle ; DokuWiki numérote ses versions par date) | utilisateurs connectés | 128 Mo, 1 024 Mo |
+| Etherpad | `marketplace/etherpad/` | `etherpad/etherpad:3` (image officielle) | utilisateurs connectés | 384 Mo, 1 024 Mo |
+
+- **Site web** : les fichiers du site sont dans un volume propre à l'instance ; tant qu'il est vide, une page « Site en construction » s'affiche. Le dépôt des fichiers par Nextcloud, Samba ou ZIP reste à faire.
+- **DokuWiki** : au premier démarrage, le compte `admin` est créé avec un mot de passe tiré au hasard, affiché une seule fois ; l'assistant d'installation de DokuWiki est donc fermé (sinon le premier visiteur choisirait le compte administrateur). Tout le monde lit, les comptes du wiki écrivent ; pas d'inscription libre ; wiki en français.
+- **Etherpad** : documents gardés dans une base SQLite du volume ; mot de passe de l'administrateur (`/admin`) tiré au hasard et affiché une seule fois ; les secrets internes de connexion d'Etherpad sont aussi tirés au hasard ; sa propre vérification des mises à jour est coupée (elles passeront par la console, section 9.2). Etherpad demande environ 350 Mo de mémoire : sur un Pi Zero 2 W, la console prévient qu'il risque d'être lent. Les liens de partage pour une personne sans compte restent à faire : ils demandent que l'accès « utilisateurs connectés » (section 8.2) laisse passer l'adresse d'un document précis.
+- **Samba : pas encore**. Le format des manifestes ne sait publier qu'un service web (Traefik, `service` et `port`) ; Samba parle SMB sur le port 445 du Pi, que seul un service peut occuper, et l'accès « maison seulement » ne peut pas s'appuyer sur Traefik pour lui. Voir section 15.
+
 Plus tard : caméra (Motion, timelapse : anciens prototypes `pi-motion/` et `pi-timelaps/`, section 12).
 
 ### 6.4 Hors marketplace
@@ -172,7 +186,7 @@ Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du servi
 
 **Réalisé** (première version, paquets `marketplace` et `internal/services`) :
 
-- Catalogue **intégré au binaire** pour l'instant, avec Nextcloud (et MariaDB) ; la lecture en ligne du dépôt (6.1) reste à faire.
+- Catalogue **intégré au binaire** pour l'instant, avec Nextcloud (et MariaDB), Site web, DokuWiki et Etherpad (section 6.3) ; la lecture en ligne du dépôt (6.1) reste à faire. Un test vérifie que chaque manifeste livré se lit, fixe la version de ses images et n'utilise que des variables déclarées.
 - Installation : pour chaque instance, un dossier `<données>/services/<nom>/` (option `-data`, `/var/lib/pi-appliance` par défaut) avec le manifeste, un fichier `.env` (droits 600) et `pi-appliance.override.json`, qui ajoute les labels Traefik (routeur `Host(<nom>.<adresse>)`, entrée `websecure`, TLS) et le réseau Docker commun `pi-appliance`, créé s'il manque ; puis `docker compose up --detach --wait`. En cas d'échec, le service est arrêté et l'erreur de Docker affichée. Les secrets générés qui ont un libellé (mot de passe administrateur de Nextcloud) sont affichés une seule fois.
 - Plusieurs instances d'une même application, sous des noms différents ; avertissement quand la mémoire du Pi est inférieure à `memory_mb`.
 - Désinstallation : la console demande s'il faut garder les données ; gardées, elles (volumes et secrets) sont réutilisées à la réinstallation sous le même nom ; supprimées, après une seconde confirmation.
@@ -224,7 +238,7 @@ Offre :
 
 ### 8.2 Qui accède à un service
 
-À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (Samba : maison seulement ; site web : public ; Nextcloud : utilisateurs connectés). Modifiable ensuite dans la console.
+À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (Samba : maison seulement ; site web : public ; Nextcloud, DokuWiki, Etherpad : utilisateurs connectés). Modifiable ensuite dans la console.
 
 ### 8.3 Console
 
@@ -409,6 +423,7 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 
 - Relais : prix et moyen de paiement de l'offre payante.
 - Relais : nombre maximal d'appliances relayées (7.3).
+- Samba (6.3) : comment décrire dans le manifeste un service qui n'est pas un site web (port SMB 445 ouvert sur le Pi, une seule instance possible, accès « maison seulement » appliqué sans Traefik), et que doit faire la console pour lui (pas d'adresse web à afficher).
 
 ## 16. Ordre de construction
 

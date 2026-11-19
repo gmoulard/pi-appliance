@@ -93,7 +93,10 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] Avertissement mémoire sur les petits Pi.
 - [x] Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.
 - [x] Application Nextcloud (manifeste `marketplace/nextcloud/`).
-- [ ] Applications : Samba (dossiers commun et personnels), site web Apache/PHP (dépôt par Nextcloud, Samba ou ZIP), DokuWiki, Etherpad (liens de partage).
+- [x] Applications site web Apache/PHP, DokuWiki, Etherpad (manifestes `marketplace/site-web/`, `dokuwiki/`, `etherpad/`).
+- [ ] Application Samba (dossiers commun et personnels) : le format des manifestes ne sait pas encore publier un service qui n'est pas un site web (section 15).
+- [ ] Site web : dépôt des fichiers par Nextcloud, Samba ou ZIP.
+- [ ] Etherpad : liens de partage pour une personne sans compte.
 - [ ] Fichiers communs à Nextcloud et Samba.
 - [ ] Réglages avancés et Docker Compose libre (6.4).
 

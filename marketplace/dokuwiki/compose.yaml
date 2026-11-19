@@ -1,0 +1,49 @@
+x-pi-appliance:
+  name: DokuWiki
+  description: Un wiki simple pour écrire et partager des pages, sans base de données.
+  icon: M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2.5zM4 19.5A2 2 0 0 0 6 21h14M8 7h8M8 11h6
+  category: Documents
+  license: GPL-2.0
+  subdomain: wiki
+  service: wiki
+  port: 8080
+  memory_mb: 128
+  disk_mb: 1024
+  login: application
+  access: users
+  parameters:
+    - name: DOKUWIKI_ADMIN_PASSWORD
+      label: Mot de passe de l'administrateur de DokuWiki
+      generate: true
+
+services:
+  wiki:
+    image: dokuwiki/dokuwiki:2026-07-14c
+    restart: unless-stopped
+    environment:
+      DOKUWIKI_ADMIN_PASSWORD: ${DOKUWIKI_ADMIN_PASSWORD}
+      PHP_MEMORYLIMIT: 128M
+      PHP_TIMEZONE: Europe/Paris
+    # Au premier démarrage, crée le compte « admin » avec le mot de passe
+    # généré, à la place de l'assistant d'installation de DokuWiki : sinon le
+    # premier visiteur choisirait lui-même le compte administrateur.
+    # Tout le monde lit, les comptes du wiki écrivent ; pas d'inscription libre.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        conf=/storage/conf
+        mkdir -p "$$conf"
+        if [ ! -e "$$conf/local.php" ]; then
+          hash=$$(php -r 'echo password_hash(getenv("DOKUWIKI_ADMIN_PASSWORD"), PASSWORD_BCRYPT);')
+          printf 'admin:%s:Administrateur:admin@localhost:admin,user\n' "$$hash" > "$$conf/users.auth.php"
+          printf '*\t@ALL\t1\n*\t@user\t8\n' > "$$conf/acl.auth.php"
+          printf '%s\n' '<?php' '$$conf["title"] = "Wiki";' '$$conf["lang"] = "fr";' '$$conf["useacl"] = 1;' '$$conf["superuser"] = "@admin";' '$$conf["disableactions"] = "register";' > "$$conf/local.php"
+        fi
+        exec /dokuwiki-entrypoint.sh
+    volumes:
+      - storage:/storage
+
+volumes:
+  storage:

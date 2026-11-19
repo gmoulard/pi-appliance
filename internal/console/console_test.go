@@ -297,7 +297,7 @@ func TestCatalog(t *testing.T) {
 	body := decode[struct {
 		Apps []map[string]any `json:"apps"`
 	}](t, f.do(http.MethodGet, "/pi-appliance/api/catalog", "", "", f.admin(t)))
-	if len(body.Apps) == 0 || body.Apps[0]["id"] != "nextcloud" {
+	if len(body.Apps) == 0 || body.Apps[0]["id"] != "dokuwiki" {
 		t.Fatalf("catalogue %v", body.Apps)
 	}
 	if _, leaked := body.Apps[0]["Compose"]; leaked {

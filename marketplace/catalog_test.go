@@ -16,9 +16,14 @@
 package marketplace
 
 import (
+	"io/fs"
+	"path"
+	"regexp"
 	"strings"
 	"testing"
 	"testing/fstest"
+
+	"gopkg.in/yaml.v3"
 )
 
 const valid = `x-pi-appliance:
@@ -54,6 +59,56 @@ func TestBuiltinCatalog(t *testing.T) {
 	}
 	if app.Subdomain != "cloud" || app.Service != "app" || app.Port != 80 || app.Icon == "" || len(app.Compose) == 0 {
 		t.Fatalf("nextcloud %+v", app)
+	}
+}
+
+var composeVariable = regexp.MustCompile(`\$\{([A-Za-z0-9_]+)\}`)
+
+// Chaque manifeste livré se lit, vise une image à version fixée et n'utilise
+// que des variables déclarées (paramètres ou PI_INSTANCE, PI_HOST).
+func TestBuiltinManifests(t *testing.T) {
+	paths, err := fs.Glob(builtin, "*/compose.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ids := map[string]bool{}
+	for _, file := range paths {
+		id := path.Dir(file)
+		ids[id] = true
+		t.Run(id, func(t *testing.T) {
+			data, err := fs.ReadFile(builtin, file)
+			if err != nil {
+				t.Fatal(err)
+			}
+			app, err := Parse(id, data)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var compose composeFile
+			if err := yaml.Unmarshal(data, &compose); err != nil {
+				t.Fatal(err)
+			}
+			for name, service := range compose.Services {
+				_, tag, ok := strings.Cut(service.Image, ":")
+				if !ok || tag == "latest" || tag == "stable" {
+					t.Errorf("service %s : image %q sans version fixée", name, service.Image)
+				}
+			}
+			declared := map[string]bool{"PI_INSTANCE": true, "PI_HOST": true}
+			for _, parameter := range app.Parameters {
+				declared[parameter.Name] = true
+			}
+			for _, match := range composeVariable.FindAllStringSubmatch(strings.ReplaceAll(string(data), "$$", ""), -1) {
+				if !declared[match[1]] {
+					t.Errorf("variable %s utilisée mais non déclarée", match[1])
+				}
+			}
+		})
+	}
+	for _, id := range []string{"nextcloud", "site-web", "dokuwiki", "etherpad"} {
+		if !ids[id] {
+			t.Errorf("manifeste %s absent", id)
+		}
 	}
 }
 

@@ -1,0 +1,49 @@
+x-pi-appliance:
+  name: Etherpad
+  description: Écrire un texte à plusieurs, en même temps, chacun depuis son appareil.
+  icon: M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5
+  category: Documents
+  license: Apache-2.0
+  subdomain: pad
+  service: pad
+  port: 9001
+  memory_mb: 384
+  disk_mb: 1024
+  login: application
+  access: users
+  parameters:
+    - name: ETHERPAD_ADMIN_PASSWORD
+      label: Mot de passe de l'administrateur d'Etherpad
+      generate: true
+    - name: ADMIN_SECRET
+      generate: true
+    - name: USER_SECRET
+      generate: true
+
+services:
+  pad:
+    image: etherpad/etherpad:3
+    restart: unless-stopped
+    # ADMIN_SECRET et USER_SECRET remplacent les secrets par défaut
+    # (« admin », « user ») de la connexion interne d'Etherpad.
+    # Les mises à jour passent par la console (UPDATES_TIER off).
+    environment:
+      TITLE: Etherpad
+      ADMIN_PASSWORD: ${ETHERPAD_ADMIN_PASSWORD}
+      DB_TYPE: sqlite
+      DB_FILENAME: var/etherpad.db
+      TRUST_PROXY: "true"
+      PAD_OPTIONS_LANG: fr
+      SSO_ISSUER: https://${PI_HOST}
+      ADMIN_SECRET: ${ADMIN_SECRET}
+      ADMIN_REDIRECT: https://${PI_HOST}/admin/
+      USER_SECRET: ${USER_SECRET}
+      USER_REDIRECT: https://${PI_HOST}/
+      UPDATES_TIER: "off"
+      PRIVACY_UPDATE_CHECK: "false"
+      PRIVACY_PLUGIN_CATALOG: "false"
+    volumes:
+      - var:/opt/etherpad-lite/var
+
+volumes:
+  var:
