@@ -47,7 +47,7 @@ if [ "$(od -An -t x1 -j 18 -N 2 "${ROOTFS_DIR}/usr/local/bin/pi-appliance" | tr 
 fi
 # NE PAS tester avec -e : les liens de systemd sont absolus (/usr/lib/...) et -e
 # les suivrait dans le conteneur de pi-gen, pas dans l'image ; -L teste le lien.
-for unit in docker pi-appliance-secrets pi-appliance-traefik pi-appliance-ap pi-appliance; do
+for unit in docker pi-appliance-secrets pi-appliance-traefik pi-appliance-firewall pi-appliance-ap pi-appliance; do
 	if [ ! -L "${ROOTFS_DIR}/etc/systemd/system/multi-user.target.wants/${unit}.service" ]; then
 		fail "${unit}.service n'est pas activé au démarrage"
 	fi

@@ -472,6 +472,9 @@ async function loadCatalog() {
     const card = element("li", undefined, "card app");
     tint(card, app.id);
     card.append(cardHead(app.id, app.name, element("p", app.description)));
+    const details = element("details", undefined, "install-details");
+    const summary = element("summary", t("Installer"));
+    details.append(summary);
     const form = element("form");
     const nameLabel = element("label", t("Nom du service"));
     const name = element("input");
@@ -501,9 +504,10 @@ async function loadCatalog() {
     form.append(button);
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      install(app, form, button);
+      install(app, form, button, details);
     });
-    card.append(form, element("p", t("{0} · licence {1}", app.category, app.license), "meta"));
+    details.append(form);
+    card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"));
     return card;
   }));
   if (currentAccount && currentAccount.role === "admin") {
@@ -511,7 +515,7 @@ async function loadCatalog() {
   }
 }
 
-async function install(app, form, button) {
+async function install(app, form, button, details) {
   const data = new FormData(form);
   const parameters = {};
   for (const parameter of (app.parameters || []).filter((p) => !p.generate)) {
@@ -531,6 +535,7 @@ async function install(app, form, button) {
     }
     lines.push(...(result.warnings || []));
     showMessage(lines, "success");
+    details.open = false;
     await loadServices();
     await refreshResources();
   } catch (error) {

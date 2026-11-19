@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 590" role="img" aria-labelledby="title description">
+  <title id="title">Architecture de pi-appliance sur un Raspberry Pi</title>
+  <desc id="description">Le Raspberry Pi matériel exécute Raspberry Pi OS. Sur ce système, pi-appliance fournit une console et une marketplace qui pilotent Docker Engine et Docker Compose. Docker exécute Traefik et les applications dans des conteneurs séparés.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#6b3d4e"/>
+    </marker>
+    <style>
+      text { font-family: system-ui, sans-serif; fill: #33141f; }
+      .title { font-size: 24px; font-weight: 700; }
+      .label { font-size: 18px; font-weight: 700; }
+      .detail { font-size: 14px; }
+      .hardware { fill: #fff5f7; stroke: #c71f5d; stroke-width: 4; }
+      .os { fill: #fff; stroke: #d9a8b8; stroke-width: 3; }
+      .product { fill: #fce4ec; stroke: #c71f5d; stroke-width: 2; stroke-dasharray: 8 6; }
+      .engine { fill: #fff; stroke: #6b3d4e; stroke-width: 3; }
+      .container { fill: #e6eefc; stroke: #2f6fd6; stroke-width: 2; }
+      .app { fill: #e2f4ea; stroke: #1e8a52; stroke-width: 2; }
+      .link { fill: none; stroke: #6b3d4e; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect x="2" y="2" width="996" height="586" rx="24" fill="#fff5f7"/>
+  <text x="36" y="42" class="title">Du Raspberry Pi aux applications</text>
+
+  <rect x="36" y="66" width="928" height="488" rx="24" class="hardware"/>
+  <text x="64" y="102" class="label">Raspberry Pi — le matériel</text>
+
+  <rect x="64" y="122" width="872" height="400" rx="20" class="os"/>
+  <text x="90" y="158" class="label">Raspberry Pi OS — le système hôte</text>
+
+  <rect x="88" y="180" width="310" height="310" rx="18" class="product"/>
+  <text x="243" y="214" text-anchor="middle" class="label">pi-appliance</text>
+  <rect x="112" y="232" width="262" height="94" rx="14" class="container"/>
+  <text x="243" y="266" text-anchor="middle" class="label">Console de contrôle</text>
+  <text x="243" y="292" text-anchor="middle" class="detail">programme Go, service système</text>
+  <text x="243" y="313" text-anchor="middle" class="detail">configuration réseau et stockage</text>
+  <rect x="112" y="354" width="262" height="92" rx="14" class="app"/>
+  <text x="243" y="390" text-anchor="middle" class="label">Marketplace</text>
+  <text x="243" y="418" text-anchor="middle" class="detail">catalogue et gestion des services</text>
+
+  <rect x="438" y="180" width="470" height="310" rx="18" class="engine"/>
+  <text x="673" y="214" text-anchor="middle" class="label">Docker Engine + Docker Compose</text>
+  <text x="673" y="238" text-anchor="middle" class="detail">moteur et outil qui créent et gèrent les conteneurs</text>
+
+  <rect x="464" y="266" width="186" height="174" rx="14" class="container"/>
+  <text x="557" y="302" text-anchor="middle" class="label">Conteneur</text>
+  <text x="557" y="332" text-anchor="middle" class="detail">Traefik</text>
+  <text x="557" y="362" text-anchor="middle" class="detail">reçoit et dirige</text>
+  <text x="557" y="384" text-anchor="middle" class="detail">les connexions web</text>
+
+  <rect x="676" y="266" width="206" height="76" rx="14" class="app"/>
+  <text x="779" y="298" text-anchor="middle" class="label">Conteneur service A</text>
+  <text x="779" y="322" text-anchor="middle" class="detail">ex. Nextcloud</text>
+
+  <rect x="676" y="364" width="206" height="76" rx="14" class="app"/>
+  <text x="779" y="396" text-anchor="middle" class="label">Conteneur service B</text>
+  <text x="779" y="420" text-anchor="middle" class="detail">ex. DokuWiki</text>
+
+  <path d="M398 282H426" class="link"/>
+  <text x="412" y="266" text-anchor="middle" class="detail">pilote</text>
+  <path d="M398 400H426" class="link"/>
+  <text x="412" y="425" text-anchor="middle" class="detail">décrit</text>
+  <path d="M650 353H667V304H676" class="link"/>
+  <path d="M667 353V402H676" class="link"/>
+
+  <text x="88" y="516" class="detail">La console n'est pas un conteneur : elle commande Docker, qui exécute les applications isolées.</text>
+</svg>

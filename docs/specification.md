@@ -16,6 +16,10 @@ L'image repose sur trois couches :
 | Conteneurs | Docker Engine et Docker Compose |
 | Produit | La couche pi-appliance : console d'administration, marketplace, reverse proxy Traefik, exposition sur internet |
 
+![Schéma des couches : matériel Raspberry Pi, Raspberry Pi OS, pi-appliance, Docker et ses conteneurs](architecture-pi-docker.svg)
+
+*La console pi-appliance tourne comme un service du système hôte ; elle utilise Docker Compose pour piloter Docker Engine. Traefik et les applications de la marketplace tournent dans des conteneurs distincts.*
+
 ### 1.1 Public visé
 
 pi-appliance s'adresse au **grand public** : des personnes sans connaissances techniques, qui ne savent ni ce qu'est Docker ni ce qu'est un DNS. En découle, pour toute la suite :
@@ -40,7 +44,7 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 |-------|------|
 | **Appliance** | Le Raspberry Pi équipé de l'image pi-appliance. |
 | **Console** | L'interface web d'administration de l'appliance, servie sous `/pi-appliance`. |
-| **Service de contrôle (controlTower)** | La console et les composants système de pi-appliance, fournis avec l'image et réservés au compte administrateur de l'appliance ; ce n'est pas une application de la marketplace. |
+| **controlTower** | Le Raspberry Pi pi-appliance dédié au concepteur du projet. Il dispose de sa propre console d'administration ; il ne pilote pas les autres Pi du domicile. |
 | **Administrateur** | Compte qui gère l'appliance ; le premier est créé au premier démarrage. |
 | **Utilisateur** | Compte qui accède aux services autorisés. |
 | **Invité** | Compte à durée limitée, pour un partage ponctuel. |
@@ -73,6 +77,12 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 - Contient Docker, Docker Compose, la console pi-appliance et Traefik, démarrés au premier boot.
 - Premier démarrage : extension de la partition, nom d'hôte `pi-appliance`, annonce mDNS (`pi-appliance.local`), génération des secrets propres au boîtier (certificat local auto-signé, clés de session). Aucun secret n'est commun à deux images.
 - **Modèles pris en charge** : Raspberry Pi 5, Pi 4, Pi 3 B+ et Pi Zero 2 W, avec une seule image 64 bits. Sur les petits modèles (Pi 3 B+ : 1 Go, Zero 2 W : 512 Mo), une application dont la mémoire minimale dépasse celle du Pi s'installe quand même, après un avertissement sur les performances.
+- **Plusieurs Pi dans un domicile** : plusieurs appliances indépendantes peuvent fonctionner sur le même réseau local, dont un Pi dédié au concepteur du projet et nommé controlTower. Chaque Pi conserve sa propre console, ses comptes, ses services et ses données ; controlTower ne fournit pas de tableau de bord commun et ne pilote pas les autres Pi. Chaque appareil doit avoir un nom réseau unique pour éviter les conflits et permettre d'ouvrir la bonne console. La cohabitation et la procédure de configuration restent à valider (TODO-2.48).
+
+![Schéma cible du réseau domestique : Internet, box, controlTower et plusieurs Pi indépendants sur le réseau interne](reseau-maison.svg)
+
+*Schéma cible : tous les Pi, y compris controlTower, sont sur le réseau interne derrière la box. L'accès depuis Internet reste à mettre en place ; controlTower n'administre pas les autres Pi.*
+
 - **Réseau au premier démarrage** : le Pi ouvre **toujours** un point d'accès Wi-Fi « pi-appliance » avec un portail de configuration, même si un câble Ethernet est branché, pour que le parcours soit le même pour tous. Le portail propose les Wi-Fi visibles et, si un câble est branché, le réseau filaire. Le point d'accès est **ouvert** (sans mot de passe) mais **limité à 24 heures** : il se referme une fois le Pi connecté, ou au bout de 24 heures ; redémarrer le Pi le rouvre pour 24 heures, et il se rouvre de même si le Pi perd durablement le réseau. Rien de sensible n'y transite avant la création du compte administrateur. Le Pi Zero 2 W n'a pas de prise Ethernet.
 - **Stockage** : tout fonctionne sur la carte SD. Quand un disque USB est branché, la console propose d'y placer les données des services ; elle prévient quand la carte SD se remplit.
 - L'image est publiée sur www.pi-appliance.com avec sa somme de contrôle.
