@@ -37,6 +37,8 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 |--------|---------|
 | `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services |
 | `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud, site web, DokuWiki, Etherpad) |
+| `image/` | Construction de l'image système avec pi-gen (`image/build.sh`) |
+| `system/` | Couche système installée sur le Pi : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage (`system/install.sh`) |
 | [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |
 | `.claude/skills/` | Sous-module : [skills Claude Code](https://github.com/gmoulard/claude_skills) partagés |
 
@@ -56,6 +58,13 @@ Avec Go 1.24 ou plus :
 go test ./...
 go run ./cmd/pi-appliance -data ./tmp   # puis http://localhost:8080/pi-appliance/
 GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance   # binaire pour le Pi
+```
+
+Image système à flasher, avec Docker (environ une heure, voir `image/build.sh`) :
+
+```shell
+GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance
+image/build.sh pi-appliance-arm64   # puis image/deploy/pi-appliance-<date>.img.xz et .sha256
 ```
 
 Options : `-addr` (adresse d'écoute, `:8080`), `-data` (dossier des services installés, `/var/lib/pi-appliance`), `-domain` (adresse de l'appliance, `pi-appliance.local`). L'installation des services demande Docker et Docker Compose ; pour l'instant, elle n'est possible que depuis le Pi lui-même (`http://localhost:8080/pi-appliance/`).

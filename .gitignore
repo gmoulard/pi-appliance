@@ -1,3 +1,7 @@
 /pi-appliance
 /pi-appliance-*
 /tmp
+
+# Construction de l'image (image/build.sh)
+image/work/
+image/deploy/

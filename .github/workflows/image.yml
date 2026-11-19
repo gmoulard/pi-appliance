@@ -1,0 +1,72 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Image système pi-appliance (pi-gen), publiée avec sa somme de contrôle.
+# Seulement sur une étiquette de version (v…) ou à la demande : une
+# construction prend environ une heure.
+
+---
+name: Image
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    permissions:
+      contents: write  # publication de la version (gh release)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Console arm64
+        run: |
+          set -eu
+          go test ./...
+          GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=${GITHUB_REF_NAME}-${GITHUB_SHA::7}" -o pi-appliance-arm64 ./cmd/pi-appliance
+      - name: Place sur le disque
+        run: |
+          set -eu
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+      - name: Image (pi-gen)
+        run: |
+          set -eu
+          if [ "${GITHUB_REF_TYPE}" = tag ]; then version=${GITHUB_REF_NAME}; else version=$(date +%Y-%m-%d)-${GITHUB_SHA::7}; fi
+          IMG_VERSION=$version image/build.sh pi-appliance-arm64 deploy
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pi-appliance-image
+          path: deploy/*
+          retention-days: 14
+          compression-level: 0
+      - name: Publication
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          gh release create "${GITHUB_REF_NAME}" deploy/*.img.xz deploy/*.img.xz.sha256 \
+            --title "pi-appliance ${GITHUB_REF_NAME}" \
+            --notes "Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).
+          Vérifier le fichier avec sa somme de contrôle : sha256sum -c *.sha256"

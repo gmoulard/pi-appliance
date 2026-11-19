@@ -76,6 +76,15 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 - **Stockage** : tout fonctionne sur la carte SD. Quand un disque USB est branché, la console propose d'y placer les données des services ; elle prévient quand la carte SD se remplit.
 - L'image est publiée sur www.pi-appliance.com avec sa somme de contrôle.
 
+**Réalisé** (code écrit, pas encore essayé sur un vrai Pi ; dossiers `image/` et `system/`) :
+
+- **Construction** : `image/build.sh` part de pi-gen (Raspberry Pi OS Lite 64 bits, Trixie, version de pi-gen fixée) et ajoute une étape `image/stage-pi-appliance/`, qui lance `system/install.sh` dans l'image : Docker et Docker Compose (dépôt officiel de Docker, clé vérifiée), la console (`/usr/local/bin/pi-appliance`), Traefik (image Docker embarquée, pour que le portail marche sans internet), NetworkManager, avahi. Une vérification refuse l'image si un secret s'y trouve (clé du Pi, certificat, comptes, clés SSH) ou si la console n'est pas un binaire `arm64`. Le même `system/install.sh` installe tout sur un Raspberry Pi OS déjà en place. Réglages de l'image : nom d'hôte `pi-appliance`, pas de SSH, aucun mot de passe (le compte système `pi` est verrouillé ; Raspberry Pi OS ne propose d'en créer un qu'avec un écran branché au Pi), langue et clavier français, pays du Wi-Fi : France.
+- **Publication** : le workflow « Image » (`.github/workflows/image.yml`) construit l'image à la demande ou pour une étiquette `v…`, et la publie alors comme version GitHub : `pi-appliance-<version>.img.xz` et sa somme de contrôle `.sha256`. Pas encore sur www.pi-appliance.com.
+- **Premier démarrage** : extension de la partition par Raspberry Pi OS lui-même (`rpi-resize`) ; `pi-appliance.local` annoncé par avahi, sur les seules interfaces du Pi (pas celles de Docker), avec la console annoncée en `_https._tcp`. `pi-appliance-secrets.service` crée, à chaque démarrage s'ils manquent, la **clé du Pi** (Ed25519, `/var/lib/pi-appliance/system/device.key`, section 7.1) et le **certificat local auto-signé** (`/var/lib/pi-appliance/system/tls/`, valable 825 jours, refait 30 jours avant la fin) pour `pi-appliance.local`, `*.pi-appliance.local`, `localhost`, `127.0.0.1` et `10.42.0.1`.
+- **Démarrage** : services systemd `pi-appliance-secrets`, `pi-appliance-traefik`, `pi-appliance-ap` et `pi-appliance` (console), activés dans l'image.
+- **Point d'accès** : connexion NetworkManager `pi-appliance-ap` (ouverte, 2,4 GHz, canal 6, adresse du Pi `10.42.0.1`), ouverte et fermée par `pi-appliance-ap.service` selon la règle des 24 heures : ouverte au démarrage tant qu'aucun réseau n'a été choisi dans le portail, même avec un câble ; fermée dès que le réseau choisi est actif, ou au bout de 24 heures ; rouverte pour 24 heures si ce réseau manque plus de 10 minutes (2 minutes juste après un redémarrage). La puce Wi-Fi ne peut pas à la fois servir le point d'accès et chercher les Wi-Fi : la liste est faite juste avant l'ouverture, et le Wi-Fi de la maison est retenté toutes les 10 minutes quand personne n'est connecté au point d'accès. **Portail captif** : sur le point d'accès, tous les noms mènent au Pi et toute page demandée en HTTP renvoie vers `https://10.42.0.1/pi-appliance/` ; les téléphones ouvrent alors d'eux-mêmes la page de connexion au réseau.
+- **Pour la console** : `/usr/local/lib/pi-appliance/network.sh` donne en JSON l'état du réseau, la liste des Wi-Fi visibles, la connexion à un Wi-Fi (mot de passe par l'entrée standard, jamais dans une ligne de commande) et le choix du câble. La console ne l'utilise pas encore (voir le TODO).
+
 ## 5. Console d'administration
 
 Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
@@ -257,6 +266,8 @@ Offre :
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
 - **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
 
+**Réalisé** (couche système, à vérifier sur un vrai Pi) : Traefik redirige tout HTTP vers HTTPS et présente le certificat local auto-signé propre au Pi (section 4) ; la console n'écoute que sur `127.0.0.1:8080`, joignable seulement par Traefik. Let's Encrypt est prêt à activer dans `system/etc/pi-appliance/traefik/traefik.yml` (étape Internet). L'explication de l'alerte du navigateur reste à écrire dans le portail et le guide.
+
 **Réalisé** (première version, paquet `internal/auth`) :
 
 - Compte administrateur créé dans la console tant qu'aucun compte n'existe (`POST api/setup`, `{"name", "email", "password"}`), puis session ouverte ; refusé dès qu'un compte existe. Identifiant de 1 à 32 caractères (minuscules, chiffres, `.`, `-`, `_`), e-mail enregistré mais pas encore vérifié : la console le rappelle.
@@ -316,6 +327,7 @@ flowchart LR
     Internet -. "sans accès direct" .-> Relais[Relais du projet]
     Relais -. "tunnel sortant" .-> Traefik
     LAN((Réseau de la maison)) --> Traefik
+    Telephone((Téléphone<br/>premier démarrage)) -. "Wi-Fi « pi-appliance »<br/>portail captif" .-> Traefik
     Box -- "80 / 443" --> Traefik
     subgraph Pi["Appliance — Raspberry Pi OS + Docker"]
         Traefik[Traefik<br/>reverse proxy + Let's Encrypt]
@@ -355,9 +367,14 @@ flowchart LR
 | Fabrication de l'image | Shell et `pi-gen` |
 | Fournisseur d'identité | Intégré à la console Go (OpenID Connect, *forward auth* Traefik, TOTP) |
 | DNS dynamique | DuckDNS |
+| Traefik | Conteneur Docker en réseau hôte (ports 80 et 443 du Pi) ; configuration par fichiers (console, portail captif, certificat local) et par labels Docker (services) |
+| Réseau du Pi | NetworkManager (point d'accès, Wi-Fi de la maison, câble), avahi (`pi-appliance.local`) |
+| Services du système | systemd ; scripts POSIX `sh` vérifiés par `shellcheck` |
 
 
 **Réalisé** : squelette de la console (`cmd/pi-appliance`, `internal/console`). Le binaire sert la page d'accueil de la console sous `/pi-appliance/` (`/pi-appliance` redirige vers `/pi-appliance/`) et `GET /pi-appliance/api/health`, qui renvoie `{"status": "ok", "version": "…"}`. Il écoute en HTTP sur `:8080` (option `-addr`) : HTTPS sera assuré par Traefik devant lui. La version est fixée à la compilation (`-ldflags "-X main.version=…"`, `dev` sinon). Le workflow « Go » (`.github/workflows/go.yml`) lance `go vet` et `go test` et construit le binaire `arm64` à chaque push.
+
+**Réalisé** (couche système, dossier `system/`, à vérifier sur un vrai Pi) : la console tourne en service systemd `pi-appliance.service` (relancée en cas d'échec, données dans `/var/lib/pi-appliance`, `-addr 127.0.0.1:8080`), en root parce qu'elle pilote Docker. Traefik (`pi-appliance-traefik.service`, `system/etc/pi-appliance/traefik/`) est le seul point d'entrée, sur les ports 80 et 443 : HTTP redirigé vers HTTPS, `/pi-appliance` vers la console quelle que soit l'adresse (`pi-appliance.local`, adresse IP), `/` vers `/pi-appliance/`, et les services de la marketplace par leurs labels Docker sur le réseau `pi-appliance` ; un routeur `Host(...)` d'un service passe avant la console. Les en-têtes au nom trompeur (`X_Forwarded_For`) sont supprimés. Fichiers de configuration du Pi dans `/etc/pi-appliance/`, données propres au Pi dans `/var/lib/pi-appliance/system/` (à côté des données de la console), scripts dans `/usr/local/lib/pi-appliance/`. Le workflow « Système » (`.github/workflows/system.yml`) passe `shellcheck` sur tous les scripts, vérifie `set -eu` et l'en-tête de licence, `yamllint`, les règles du point d'accès (`system/tests/ap-rules-test.sh`) et prépare pi-gen sans construire.
 
 ### 10.2 Services du projet
 
@@ -400,7 +417,12 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `internal/auth/` | Comptes de la console : compte administrateur, connexion, sessions, fichier `reset` (8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `marketplace/` | Catalogue : un manifeste `<application>/compose.yaml` par application (6.5) |
+| `image/` | Construction de l'image avec pi-gen : `build.sh`, `config` (réglages de pi-gen), `stage-pi-appliance/` (étape ajoutée à Raspberry Pi OS Lite) (4) |
+| `system/` | Couche système, aux mêmes chemins que sur le Pi (`etc/`, `usr/`) : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage ; `install.sh` l'installe (image ou Pi déjà en place) ; `tests/` : tests sans Pi (4, 8.4, 10) |
 | `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |
+| `.github/workflows/system.yml` | Vérification de `image/` et `system/` : `shellcheck`, `yamllint`, tests, préparation de pi-gen |
+| `.github/workflows/image.yml` | Construction de l'image et publication avec sa somme de contrôle (étiquette `v…` ou à la demande) |
+| `.yamllint.yml` | Règles `yamllint` des fichiers YAML du système |
 
 Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache/`, `docker-nextcloud/`, `docker-samba/`, `pi-motion/`, `pi-timelaps/`, `RaspController/`) ont été retirés du dépôt ; ils restent dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79).
 

@@ -70,10 +70,23 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [ ] Point d'accès Wi-Fi « pi-appliance » ouvert, limité à 24 heures, et portail de configuration avec création du compte administrateur.
 - [ ] Construction automatique de l'image (GitHub Actions) et publication avec somme de contrôle.
 
+Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécification, section 4), vérifié sans Pi seulement (`shellcheck`, `yamllint`, Traefik essayé dans Docker, pi-gen préparé sans construire). À cocher après :
+
+- [ ] Première construction réelle de l'image par le workflow « Image » (à lancer à la main une fois le workflow sur `master`) : durée, taille, place sur le disque du runner.
+- [ ] Essai sur un vrai Pi (Pi 5, 4, 3 B+, Zero 2 W) : partition étendue, `pi-appliance.local`, secrets différents sur deux cartes flashées avec la même image, Traefik et console démarrés sans internet, point d'accès ouvert même avec un câble, fermé après le choix du réseau, après 24 heures, rouvert après un redémarrage et après 10 minutes sans réseau, portail captif sur iPhone et Android, mémoire libre sur le Zero 2 W.
+- [ ] API réseau de la console (à brancher sur `/usr/local/lib/pi-appliance/network.sh`, qui répond déjà en JSON), réservée à l'administrateur connecté :
+  - `GET api/network` → `network.sh status` : `{"accessPoint": {"open", "ssid", "reason", "closesInSeconds"}, "configured": "" | "wifi" | "wired", "wired": {"connected"}, "wifi": {"connected", "ssid"}, "addresses": ["192.168.1.20"], "lastError": ""}` ;
+  - `GET api/network/wifi` → `network.sh wifi-list` : `{"scannedAt", "networks": [{"ssid", "signal" (0 à 100), "security": "open" | "wpa" | "wpa3" | "enterprise"}]}` ;
+  - `POST api/network/wifi/scan` → `network.sh wifi-scan` : même réponse ; prévenir que le point d'accès se ferme quelques secondes (le téléphone se reconnecte) ;
+  - `POST api/network/wifi` `{"ssid", "password", "hidden"}` → `network.sh wifi-join` (corps passé tel quel sur l'entrée standard) : répondre `202` **avant** de lancer la commande (quelques secondes plus tard), car le point d'accès se ferme et le téléphone perd la réponse ; dire à l'utilisateur de rejoindre le Wi-Fi de la maison puis d'ouvrir `https://pi-appliance.local/pi-appliance`. En cas d'échec, le point d'accès se rouvre et `lastError` vaut `wrong-password`, `not-found`, `timeout` ou `failed` ;
+  - `POST api/network/wired` → `network.sh wired` : `{"ok": true}` ou `{"ok": false, "error": "no-cable", "message"}` ;
+  - écrans du portail : liste des Wi-Fi, mot de passe, choix du câble, temps restant avant la fermeture du point d'accès, explication de l'alerte du certificat.
+- [ ] Choix du pays du Wi-Fi dans le portail (l'image part sur la France ; le point d'accès reste sur le canal 6, permis partout).
+
 ### Console (5)
 
 - [x] Squelette Go : page d'accueil sous `/pi-appliance/`, `api/health`, tests, binaire `arm64` construit par GitHub Actions (10.1).
-- [ ] Service systemd et passage derrière Traefik, en HTTPS.
+- [ ] Service systemd et passage derrière Traefik, en HTTPS : code écrit (`system/etc/systemd/system/pi-appliance.service`, `system/etc/pi-appliance/traefik/`), Traefik et console essayés ensemble dans Docker ; à cocher après l'essai sur un vrai Pi.
 - [x] Authentification : compte administrateur créé au premier démarrage, connexion, sessions, limitation des tentatives (5.1, 8.1, 8.4).
 - [ ] Vérification de l'e-mail par un code, dès que le service d'e-mails est joignable (5.1, étape 2).
 - [x] Fichier `reset` sur la carte SD (8.5).
@@ -104,7 +117,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 ## 3. Étape 2 — Internet (7)
 
-- [ ] Traefik : point d'entrée unique, routage par sous-domaine, certificats Let's Encrypt.
+- [ ] Traefik : point d'entrée unique, routage par sous-domaine (faits à l'étape Local, `system/`), certificats Let's Encrypt (bloc prêt dans `system/etc/pi-appliance/traefik/traefik.yml`, plus le label `tls.certresolver` à poser par `internal/services`).
 - [ ] DuckDNS tenu à jour par l'appliance.
 - [ ] Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
 - [ ] Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
@@ -112,6 +125,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [ ] Accès direct : UPnP, guide de la box, test depuis internet.
 - [ ] Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente, offre payante.
 - [ ] Accès par service : public, connectés, maison (8.2).
+- [ ] Console fermée sur internet par défaut (8.3) : aujourd'hui Traefik sert `/pi-appliance` à toute adresse (`system/etc/pi-appliance/traefik/dynamic/console.yml`). Avant d'ouvrir les ports 80/443 ou le relais, limiter ce routeur au réseau de la maison et au VPN (`ClientIP`, en gardant une priorité plus basse que les routeurs des services), sans oublier que le trafic du relais arrivera par le tunnel.
 - [ ] Console ouverte sur internet avec double authentification (8.3).
 
 ## 4. Étape 3 — Le reste

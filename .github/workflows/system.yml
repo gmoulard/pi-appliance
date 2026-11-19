@@ -1,0 +1,70 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Vérification de la couche système : shellcheck sur tous les scripts, YAML,
+# règles du point d'accès Wi-Fi, préparation de pi-gen sans construction.
+
+---
+name: Système
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: Outils
+        run: |
+          set -eu
+          sudo apt-get update
+          sudo apt-get install -y shellcheck yamllint jq
+          shellcheck --version
+      - name: shellcheck
+        run: |
+          set -eu
+          scripts=$(grep -rlE '^#!/bin/(ba)?sh' image system)
+          echo "$scripts"
+          # shellcheck disable=SC2086
+          shellcheck -x $scripts system/usr/local/lib/pi-appliance/*.sh
+          shellcheck -s bash image/config image/stage-pi-appliance/EXPORT_IMAGE
+      - name: set -eu et licence
+        run: |
+          set -eu
+          status=0
+          for f in $(grep -rlE '^#!/bin/(ba)?sh' image system) system/usr/local/lib/pi-appliance/*.sh; do
+            grep -qx 'set -eu' "$f" || { echo "$f : « set -eu » manquant"; status=1; }
+          done
+          for f in $(find image system -type f ! -name '*.json') .github/workflows/image.yml .github/workflows/system.yml; do
+            grep -q 'GNU Affero General Public License' "$f" || { echo "$f : en-tête de licence manquant"; status=1; }
+          done
+          exit "$status"
+      - name: YAML
+        run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml system
+      - name: Règles du point d'accès
+        run: sh system/tests/ap-rules-test.sh
+      - name: pi-gen (préparation, sans construction)
+        run: |
+          set -eu
+          GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance
+          DRY_RUN=1 image/build.sh pi-appliance-arm64
