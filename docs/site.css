@@ -1,0 +1,214 @@
+/*
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+:root {
+  --brand: #c71f5d;
+  --brand-dark: #a8174e;
+  --brand-shadow: #7e0f39;
+  --brand-pale: #fce4ec;
+  --ink: #33141f;
+  --muted: #6b3d4e;
+  --paper: #fff5f7;
+  --line: #f0d3dc;
+  --title: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --tint-0: #2f6fd6;
+  --tint-0-pale: #e6eefc;
+  --tint-1: #d9561c;
+  --tint-1-pale: #fdebe1;
+  --tint-2: #1e8a52;
+  --tint-2-pale: #e2f4ea;
+  --tint-3: #7445cc;
+  --tint-3-pale: #eee7fb;
+  --tint-4: #b57f00;
+  --tint-4-pale: #fff4d1;
+  --tint-5: #117f80;
+  --tint-5-pale: #dff3f3;
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+.tint-0 { --tint: var(--tint-0); --pale: var(--tint-0-pale); }
+.tint-1 { --tint: var(--tint-1); --pale: var(--tint-1-pale); }
+.tint-2 { --tint: var(--tint-2); --pale: var(--tint-2-pale); }
+.tint-3 { --tint: var(--tint-3); --pale: var(--tint-3-pale); }
+.tint-4 { --tint: var(--tint-4); --pale: var(--tint-4-pale); }
+.tint-5 { --tint: var(--tint-5); --pale: var(--tint-5-pale); }
+.tint-brand { --tint: var(--brand); --pale: var(--brand-pale); }
+
+a { color: var(--brand-dark); }
+a:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+
+.top, main > section, footer {
+  box-sizing: border-box;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding-top: 0.875rem;
+}
+
+.brand img { display: block; height: 3.5rem; width: auto; }
+
+nav { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; }
+nav a { display: inline-block; padding: 0.625rem 0; font-weight: 700; text-decoration: none; }
+nav a:hover { text-decoration: underline; }
+
+h1, h2, h3 { font-family: var(--title); line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(2.5rem, 8vw, 4rem); font-weight: 800; letter-spacing: -0.03em; }
+h1 span { color: var(--brand); }
+h2 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 1rem; }
+h3 { font-size: 1.125rem; font-weight: 800; }
+p { margin: 0; }
+
+.hero {
+  display: grid;
+  gap: 1.125rem;
+  padding-top: 1.25rem;
+  padding-bottom: 2.25rem;
+}
+
+.pill {
+  justify-self: start;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--brand-dark);
+  box-shadow: 0 2px 0 var(--line);
+}
+
+.lead { font-size: 1.125rem; max-width: 34rem; }
+
+.hero-card {
+  border-radius: 1.75rem;
+  background: var(--brand);
+  color: #ffffff;
+  padding: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.hero-tiles { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.625rem; }
+.hero-tiles li, .tile {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.875rem;
+  background: var(--tint);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hero-tiles li { box-shadow: 0 3px 0 var(--brand-shadow); }
+.hero-tiles svg, .tile svg { fill: none; stroke: #ffffff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.actions { display: grid; gap: 0.25rem; max-width: 24rem; }
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0 1.5rem;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 0 var(--brand-shadow);
+}
+.button.dark { min-height: 3.5rem; font-size: 1.125rem; background: var(--ink); box-shadow: 0 4px 0 var(--brand); }
+.button:active { transform: translateY(2px); }
+.link { text-align: center; font-weight: 700; padding: 0.625rem; }
+
+.steps-band, .apps-band { background: #ffffff; padding-top: 2rem; padding-bottom: 2rem; }
+.steps-band { border-radius: 2rem 2rem 0 0; }
+.apps-band { padding-top: 0.5rem; padding-bottom: 2.25rem; }
+
+.steps, .apps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+.steps { grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+.steps li { display: flex; gap: 0.875rem; align-items: flex-start; border-radius: 1.375rem; background: var(--pale); padding: 1.125rem; }
+.steps li div { display: grid; gap: 0.25rem; }
+.num {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex: none;
+  border-radius: 50%;
+  background: var(--tint);
+  color: #ffffff;
+  font-family: var(--title);
+  font-size: 1.375rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apps { grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); }
+.app { position: relative; border-radius: 1.375rem; background: var(--pale); padding: 1rem; display: grid; gap: 0.625rem; align-content: start; }
+.app p { font-size: 0.875rem; line-height: 1.4; }
+.soon {
+  position: absolute;
+  top: 0.875rem;
+  right: 0.875rem;
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+main > .address-band {
+  max-width: none;
+  background: var(--ink);
+  color: #ffffff;
+  padding-top: 2.25rem;
+  padding-bottom: 2.25rem;
+}
+.address-band > * { max-width: 62rem; margin-left: auto; margin-right: auto; }
+.address-band p { color: #f6dce5; }
+.mono { font-family: var(--mono); overflow-wrap: anywhere; color: #ffffff; }
+
+.download { padding-top: 2.25rem; padding-bottom: 2.25rem; }
+.panel { border-radius: 1.375rem; background: #ffffff; padding: 1.125rem; display: grid; gap: 0.75rem; max-width: 32rem; box-shadow: 0 2px 0 var(--line); }
+
+footer { border-top: 2px solid var(--line); padding-top: 1.5rem; padding-bottom: 2rem; color: var(--muted); font-size: 0.875rem; display: grid; gap: 0.5rem; }
+
+@media (min-width: 48rem) {
+  .hero { grid-template-columns: 1.2fr 1fr; align-items: center; column-gap: 2.5rem; }
+  .hero .pill, .hero h1, .hero .lead, .hero .actions { grid-column: 1; }
+  .hero-card { grid-column: 2; grid-row: 1 / span 4; }
+  .apps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

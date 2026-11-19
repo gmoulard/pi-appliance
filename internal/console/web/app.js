@@ -19,6 +19,8 @@ const servicesList = document.getElementById("services");
 const noServices = document.getElementById("noServices");
 const catalogList = document.getElementById("catalog");
 const footer = document.getElementById("version");
+const statusDot = document.getElementById("statusDot");
+const TINTS = 6;
 
 async function api(path, options = {}) {
   const response = await fetch(`api/${path}`, options);
@@ -43,6 +45,26 @@ function element(tag, text, className) {
   return node;
 }
 
+function tint(card, appId) {
+  let sum = 0;
+  for (const char of appId) {
+    sum = (sum * 31 + char.codePointAt(0)) % 9973;
+  }
+  const n = sum % TINTS;
+  card.style.setProperty("--tint", `var(--tint-${n})`);
+  card.style.setProperty("--pale", `var(--tint-${n}-pale)`);
+}
+
+function cardHead(appId, appName, title, detail) {
+  const head = element("div", undefined, "card-head");
+  const tile = element("span", Array.from(appName)[0].toUpperCase(), "tile");
+  tile.setAttribute("aria-hidden", "true");
+  const text = element("div");
+  text.append(element("h3", title), detail);
+  head.append(tile, text);
+  return head;
+}
+
 function showMessage(lines, kind) {
   message.replaceChildren(...lines.map((line) => element("p", line)));
   message.className = kind;
@@ -54,16 +76,16 @@ async function loadServices() {
   noServices.hidden = services.length > 0;
   servicesList.replaceChildren(...services.map((service) => {
     const card = element("li", undefined, "card");
-    card.append(element("h3", `${service.name} (${service.app_name})`));
+    tint(card, service.app);
     const link = element("a", `https://${service.address}`);
     link.href = `https://${service.address}`;
     link.target = "_blank";
     link.rel = "noopener";
-    const address = element("p");
+    const address = element("p", undefined, "address");
     address.append(link);
     const remove = element("button", "Désinstaller", "secondary");
     remove.addEventListener("click", () => uninstall(service, remove));
-    card.append(address, remove);
+    card.append(cardHead(service.app, service.app_name, `${service.name} (${service.app_name})`, address), remove);
     return card;
   }));
 }
@@ -71,8 +93,9 @@ async function loadServices() {
 async function loadCatalog() {
   const { apps } = await api("catalog");
   catalogList.replaceChildren(...apps.map((app) => {
-    const card = element("li", undefined, "card");
-    card.append(element("h3", app.name), element("p", app.description), element("p", `${app.category} · licence ${app.license}`, "meta"));
+    const card = element("li", undefined, "card app");
+    tint(card, app.id);
+    card.append(cardHead(app.id, app.name, app.name, element("p", app.description)), element("p", `${app.category} · licence ${app.license}`, "meta"));
     const form = element("form");
     const nameLabel = element("label", "Nom du service");
     const name = element("input");
@@ -153,9 +176,11 @@ async function uninstall(service, button) {
 api("health")
   .then((health) => {
     status.textContent = "Appliance en service.";
+    statusDot.className = "dot ok";
     footer.textContent = `pi-appliance ${health.version}`;
     return Promise.all([loadServices(), loadCatalog()]);
   })
   .catch((error) => {
     status.textContent = `Appliance injoignable : ${error.message}`;
+    statusDot.className = "dot down";
   });

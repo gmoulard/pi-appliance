@@ -82,7 +82,7 @@ func TestHealth(t *testing.T) {
 
 func TestConsolePage(t *testing.T) {
 	response := get(t, "/pi-appliance/")
-	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), "<h1>pi-appliance</h1>") {
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `<h1 class="wordmark"><b>pi</b>-appliance</h1>`) {
 		t.Fatalf("code %d, page %q", response.Code, response.Body.String())
 	}
 }

@@ -365,7 +365,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `LICENSE` | Texte de la licence AGPL-3.0 |
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
 | `.claude/skills/` | Sous-module : skills partagés [gmoulard/claude_skills](https://github.com/gmoulard/claude_skills) |
-| `docs/` | Guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; `logo/` : pistes de logo (SVG) |
+| `docs/` | Source du site GitHub Pages www.pi-appliance.com (`index.html`, `site.css`, `CNAME`) ; guide utilisateur (`guide-utilisateur.md`), spécification, TODO, notes ; charte graphique (`charte-graphique.md`) ; `logo/` : logo retenu (`framboise/`) et pistes (SVG) |
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
@@ -378,7 +378,6 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `pi-motion/`, `pi-timelaps/` | Prototypes caméra : vidéosurveillance et timelapse |
 | `RaspController/` | Prototype : GPIO et capteur DHT |
 | `pypy/` | Divers |
-| `CNAME` | Domaine du site GitHub Pages (`www.pi-appliance.com`) |
 
 ## 13. Site www.pi-appliance.com
 
@@ -388,6 +387,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 - **Inscription** : réservation d'une adresse `<nom>.pi-appliance.com`.
 
 Dans les mêmes langues que la console (section 5.3).
+
+Site et console suivent la même [charte graphique](charte-graphique.md) : framboise, ludique et colorée, pensée d'abord pour le téléphone, polices du système seulement. Le site est publié par GitHub Pages depuis le dossier `docs/` (`docs/index.html`, `docs/CNAME`). Réalisé : la page d'accueil (présentation, trois étapes, applications, adresse, téléchargement), en français ; l'image prête à flasher et la réservation d'adresse y sont annoncées pour plus tard.
 
 ## 14. Hors périmètre
 

@@ -1,6 +1,6 @@
 # Logo pi-appliance — pistes
 
-Sept pistes de logo, en cours de choix. Aucune n'est encore retenue.
+Sept pistes de logo. **Piste retenue : 5, « La maison », en framboise**, fichiers définitifs dans [`framboise/`](framboise/), voir la [charte graphique](../charte-graphique.md). Les pistes ci-dessous restent pour mémoire.
 
 | Piste | Idée | Couleurs |
 |-------|------|----------|

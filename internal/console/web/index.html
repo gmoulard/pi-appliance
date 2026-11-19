@@ -20,20 +20,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>pi-appliance</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<header class="top">
+<img src="symbole.svg" alt="" width="40" height="40">
+<h1 class="wordmark"><b>pi</b>-appliance</h1>
+</header>
 <main>
-<h1>pi-appliance</h1>
-<p id="status">Connexion à l'appliance…</p>
+<section class="hero" aria-live="polite">
+<p class="hero-state"><span class="dot" id="statusDot"></span><span id="status">Connexion à l'appliance…</span></p>
+</section>
 <div id="message" role="status" hidden></div>
-
 <section>
 <h2>Mes services</h2>
 <ul id="services" class="cards"></ul>
-<p id="noServices" hidden>Aucun service installé pour l'instant : choisissez-en un ci-dessous.</p>
+<p id="noServices" class="empty" hidden>Aucun service installé pour l'instant : choisissez-en un ci-dessous.</p>
 </section>
-
 <section>
 <h2>Marketplace</h2>
 <ul id="catalog" class="cards"></ul>

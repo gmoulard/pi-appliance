@@ -6,7 +6,7 @@ On flashe une image système prête à l'emploi sur la carte SD, et le Pi foncti
 
 > **État du projet** : en conception. Le dépôt contient pour l'instant des prototypes (scripts et services Docker utilisés sur de vrais Pi). Le produit visé est décrit dans la [spécification](docs/specification.md), l'avancement dans le [TODO](docs/TODO.md). Pour essayer la première version de la console : [guide utilisateur](docs/guide-utilisateur.md).
 
-> **Logo** : sept pistes sont en cours de choix, voir l'[aperçu des logos](docs/logo/).
+> **Logo et charte** : la maison au π, en framboise, voir la [charte graphique](docs/charte-graphique.md).
 
 ## Comment ça marche
 
@@ -35,7 +35,7 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 |--------|---------|
 | `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services |
 | `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud pour commencer) |
-| [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [pistes de logo](docs/logo/) |
+| [`docs/`](docs/) | [Guide utilisateur et manuel d'installation](docs/guide-utilisateur.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`) |
 | `all-pi/` | Configuration commune des Pi : alias, crontab, tunnel autossh, sauvegarde |
 | `linux-tool/` | Outils système : DNS dynamique OVH (`dynHost/`), sauvegarde, montage Swift |
 | `docker-apache/`, `docker-nextcloud/`, `docker-samba/` | Services Docker, futures applications de la marketplace |
@@ -71,4 +71,4 @@ pi-appliance est un logiciel libre, sous licence [GNU AGPL-3.0](LICENSE).
 
 ## Site
 
-Le site du projet est publié par GitHub Pages sur [www.pi-appliance.com](https://www.pi-appliance.com) (fichier `CNAME`).
+Le site du projet est publié par GitHub Pages sur [www.pi-appliance.com](https://www.pi-appliance.com) (source : dossier `docs/`, fichier `docs/CNAME`), avec la [charte graphique](docs/charte-graphique.md).

@@ -113,8 +113,10 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 
 ## 5. Site www.pi-appliance.com (13)
 
-- [ ] Activer GitHub Pages pour `www.pi-appliance.com` et corriger la zone DNS chez OVH.
+- [x] Charte graphique (framboise, logo « La maison ») appliquée à la console et au site : `docs/charte-graphique.md`.
+- [x] Page d'accueil du site : `docs/index.html`, `docs/site.css`.
+- [ ] Activer GitHub Pages pour `www.pi-appliance.com` (source : branche `master`, dossier `/docs`) et corriger la zone DNS chez OVH.
 - [x] Guide utilisateur provisoire avec manuel d'installation manuelle : `docs/guide-utilisateur.md`.
-- [ ] Présentation, téléchargement, documentation, FAQ, catalogue.
+- [ ] Captures d'écran, téléchargement de l'image, FAQ, catalogue complet.
 - [ ] Inscription d'une adresse `<nom>.pi-appliance.com`.
 - [ ] Traduction dans les 12 langues.
