@@ -100,6 +100,7 @@ func Handler(version string, catalog marketplace.Catalog, manager *services.Mana
 	mux.HandleFunc("GET "+BasePath+"/api/services", c.signedIn(c.listServices))
 	mux.HandleFunc("POST "+BasePath+"/api/services", c.adminOnly(c.install))
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
+	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/{action}", c.adminOnly(c.control))
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
@@ -300,14 +301,42 @@ func (c *console) listCatalog(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"apps": c.catalog.Apps()})
 }
 
-func (c *console) listServices(w http.ResponseWriter, _ *http.Request) {
+// ServiceView est un service installé avec son état vert, orange ou rouge.
+type ServiceView struct {
+	services.Instance
+	Status services.Status `json:"status"`
+}
+
+func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 	instances, err := c.services.List()
 	if err != nil {
 		log.Printf("liste des services : %v", err)
 		writeError(w, http.StatusInternalServerError, "La liste des services est illisible.")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"services": instances})
+	views := make([]ServiceView, 0, len(instances))
+	for _, instance := range instances {
+		status, err := c.services.Status(r.Context(), instance.Name)
+		if err != nil {
+			status = services.Status{Color: services.Orange, Message: "État inconnu."}
+		}
+		views = append(views, ServiceView{Instance: instance, Status: status})
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"services": views})
+}
+
+func (c *console) control(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	if err := c.services.Control(r.Context(), name, services.Action(r.PathValue("action"))); err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	status, err := c.services.Status(r.Context(), name)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, status)
 }
 
 func (c *console) install(w http.ResponseWriter, r *http.Request) {

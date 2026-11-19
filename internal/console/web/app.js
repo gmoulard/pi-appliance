@@ -31,6 +31,12 @@ const servicesSection = document.getElementById("servicesSection");
 const catalogSection = document.getElementById("catalogSection");
 const TINTS = 6;
 const ADMIN_PASSWORD_MIN = 12;
+let currentAccount = null;
+const CONTROLS = [
+  { action: "start", label: "Démarrer", done: "démarré", when: (color) => color === "red" },
+  { action: "stop", label: "Arrêter", done: "arrêté", when: (color) => color !== "red" },
+  { action: "restart", label: "Redémarrer", done: "redémarré", when: (color) => color !== "red" },
+];
 
 async function api(path, options = {}) {
   const response = await fetch(`api/${path}`, options);
@@ -104,11 +110,25 @@ async function loadServices() {
     open.href = `https://${service.address}`;
     open.target = "_blank";
     open.rel = "noopener";
-    const remove = element("button", "Désinstaller", "secondary");
-    remove.addEventListener("click", () => uninstall(service, remove));
     const actions = element("div", undefined, "actions");
-    actions.append(open, remove);
-    card.append(cardHead(service.app, `${service.name} (${service.app_name})`, element("p", service.address, "address")), actions);
+    actions.append(open);
+    if (currentAccount && currentAccount.role === "admin") {
+      const buttons = element("div", undefined, "controls");
+      for (const control of CONTROLS.filter((c) => c.when(service.status.color))) {
+        const button = element("button", control.label, "secondary");
+        button.addEventListener("click", () => act(service, control, button));
+        buttons.append(button);
+      }
+      const remove = element("button", "Désinstaller", "secondary");
+      remove.addEventListener("click", () => uninstall(service, remove));
+      buttons.append(remove);
+      actions.append(buttons);
+    }
+    const state = element("p", undefined, "state");
+    state.append(element("span", undefined, `dot ${service.status.color}`), element("span", service.status.message));
+    const detail = element("div");
+    detail.append(element("p", service.address, "address"), state);
+    card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
     return card;
   }));
 }
@@ -177,6 +197,19 @@ async function install(app, form, button) {
     showMessage([error.message], "error");
   } finally {
     button.disabled = false;
+  }
+}
+
+async function act(service, control, button) {
+  button.disabled = true;
+  showMessage([`${control.label} ${service.name}…`], "info");
+  try {
+    const status = await api(`services/${encodeURIComponent(service.name)}/${control.action}`, { method: "POST" });
+    showMessage([`${service.name} est ${control.done} : ${status.message}`], status.color === "red" && control.action !== "stop" ? "error" : "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    await loadServices().catch(() => null);
   }
 }
 
@@ -287,6 +320,7 @@ logoutButton.addEventListener("click", async () => {
 });
 
 async function showConsole(account) {
+  currentAccount = account;
   authSection.hidden = true;
   logoutButton.hidden = false;
   servicesSection.hidden = false;

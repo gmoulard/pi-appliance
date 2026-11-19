@@ -360,3 +360,35 @@ func TestInstallErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestControlService(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	if code := f.install(`{"app": "nextcloud"}`, cookie).Code; code != http.StatusCreated {
+		t.Fatalf("installation : code %d", code)
+	}
+	list := decode[struct {
+		Services []ServiceView `json:"services"`
+	}](t, f.do(http.MethodGet, "/pi-appliance/api/services", "", "", cookie))
+	if len(list.Services) != 1 || list.Services[0].Name != "cloud" || list.Services[0].Status.Color != services.Red {
+		t.Fatalf("liste %+v", list.Services)
+	}
+	response := f.do(http.MethodPost, "/pi-appliance/api/services/cloud/restart", "", "", cookie)
+	if response.Code != http.StatusOK || decode[services.Status](t, response).Message == "" {
+		t.Fatalf("redémarrage : code %d : %s", response.Code, response.Body.String())
+	}
+	cases := map[string]struct {
+		path   string
+		cookie *http.Cookie
+		code   int
+	}{
+		"action inconnue": {"/pi-appliance/api/services/cloud/kill", cookie, http.StatusBadRequest},
+		"service inconnu": {"/pi-appliance/api/services/autre/stop", cookie, http.StatusNotFound},
+		"sans session":    {"/pi-appliance/api/services/cloud/stop", nil, http.StatusUnauthorized},
+	}
+	for label, c := range cases {
+		if code := f.do(http.MethodPost, c.path, "", "", c.cookie).Code; code != c.code {
+			t.Fatalf("%s : code %d, attendu %d", label, code, c.code)
+		}
+	}
+}

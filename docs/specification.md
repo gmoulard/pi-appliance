@@ -177,7 +177,8 @@ Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du servi
 - Plusieurs instances d'une même application, sous des noms différents ; avertissement quand la mémoire du Pi est inférieure à `memory_mb`.
 - Désinstallation : la console demande s'il faut garder les données ; gardées, elles (volumes et secrets) sont réutilisées à la réinstallation sous le même nom ; supprimées, après une seconde confirmation.
 - API de la console : `GET api/catalog`, `GET api/services`, `POST api/services` (`{"app", "name", "parameters"}`, JSON seulement), `DELETE api/services/<nom>?data=keep|delete`. Il faut être connecté pour lire le catalogue et les services, et administrateur pour installer ou désinstaller (section 8.1).
-- Pas encore : lecture en ligne du catalogue, démarrer/arrêter, mise à jour avec retour arrière, adresse affichée réellement joignable (Traefik n'est pas encore installé), traductions.
+- Démarrer, arrêter, redémarrer (`POST api/services/<nom>/start|stop|restart`, administrateurs) : `docker compose up --detach --wait`, `stop`, `restart`. État de chaque service dans `GET api/services`, d'après `docker compose ps` : **vert** si tous ses conteneurs marchent, **orange** s'ils démarrent, sont en difficulté (contrôle de santé raté), en partie arrêtés ou si Docker ne répond pas, **rouge** si tout est arrêté ; avec une phrase en langage courant.
+- Pas encore : lecture en ligne du catalogue, journaux téléchargeables, mise à jour avec retour arrière, adresse affichée réellement joignable (Traefik n'est pas encore installé), traductions.
 
 ## 7. Accès depuis internet
 
