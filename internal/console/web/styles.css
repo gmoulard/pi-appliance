@@ -159,6 +159,37 @@ h2 {
   opacity: 1;
 }
 
+.state {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.state .dot {
+  width: 0.625rem;
+  height: 0.625rem;
+  opacity: 1;
+}
+
+.dot.green {
+  background: #1f9d55;
+}
+
+.dot.orange {
+  background: #f08c00;
+}
+
+.dot.red {
+  background: #d62839;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .cards {
   list-style: none;
   margin: 0;

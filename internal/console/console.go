@@ -100,6 +100,7 @@ func Handler(version string, catalog marketplace.Catalog, manager *services.Mana
 	mux.HandleFunc("GET "+BasePath+"/api/services", c.signedIn(c.listServices))
 	mux.HandleFunc("POST "+BasePath+"/api/services", c.adminOnly(c.install))
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
+	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/{action}", c.adminOnly(c.control))
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
@@ -300,14 +301,51 @@ func (c *console) listCatalog(w http.ResponseWriter, _ *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"apps": c.catalog.Apps()})
 }
 
-func (c *console) listServices(w http.ResponseWriter, _ *http.Request) {
+// ServiceView est un service installé avec son état vert, orange ou rouge.
+type ServiceView struct {
+	services.Instance
+	Status          services.Status `json:"status"`
+	UpdateAvailable bool            `json:"update_available"`
+}
+
+func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 	instances, err := c.services.List()
 	if err != nil {
 		log.Printf("liste des services : %v", err)
 		writeError(w, http.StatusInternalServerError, "La liste des services est illisible.")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"services": instances})
+	views := make([]ServiceView, 0, len(instances))
+	for _, instance := range instances {
+		status, err := c.services.Status(r.Context(), instance.Name)
+		if err != nil {
+			status = services.Status{Color: services.Orange, Message: "État inconnu."}
+		}
+		view := ServiceView{Instance: instance, Status: status}
+		if app, ok := c.catalog.Get(instance.App); ok {
+			view.UpdateAvailable = c.services.UpdateAvailable(app, instance.Name)
+		}
+		views = append(views, view)
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"services": views})
+}
+
+func (c *console) control(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	if r.PathValue("action") == "update" {
+		c.update(w, r, name)
+		return
+	}
+	if err := c.services.Control(r.Context(), name, services.Action(r.PathValue("action"))); err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	status, err := c.services.Status(r.Context(), name)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, status)
 }
 
 func (c *console) install(w http.ResponseWriter, r *http.Request) {
@@ -348,8 +386,37 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// update met un service à jour depuis le catalogue, avec retour arrière automatique en cas d'échec.
+func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
+	instances, err := c.services.List()
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	for _, instance := range instances {
+		if instance.Name != name {
+			continue
+		}
+		app, ok := c.catalog.Get(instance.App)
+		if !ok {
+			writeError(w, http.StatusNotFound, "Cette application n'est plus dans la marketplace : pas de mise à jour possible.")
+			return
+		}
+		result, err := c.services.Update(r.Context(), app, name)
+		if err != nil {
+			writeServiceError(w, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, result)
+		return
+	}
+	writeServiceError(w, fmt.Errorf("%w : %s", services.ErrNotFound, name))
+}
+
 func writeServiceError(w http.ResponseWriter, err error) {
 	switch {
+	case errors.Is(err, services.ErrRolledBack):
+		writeError(w, http.StatusConflict, "La mise à jour n'a pas marché : le service est revenu à sa version précédente. "+strings.TrimPrefix(err.Error(), services.ErrRolledBack.Error()+" : "))
 	case errors.Is(err, services.ErrInvalid):
 		writeError(w, http.StatusBadRequest, err.Error())
 	case errors.Is(err, services.ErrExists):

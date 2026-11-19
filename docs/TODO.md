@@ -88,8 +88,9 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] Format de manifeste et validation (6.5).
 - [ ] Dépôt GitHub du catalogue et règles de contribution ; lecture en ligne (aujourd'hui intégré au binaire).
 - [x] Installation, désinstallation (question sur les données), plusieurs instances (6.5).
-- [ ] Démarrer, arrêter, redémarrer un service ; état vert/orange/rouge.
-- [ ] Mise à jour d'un service avec retour arrière automatique.
+- [x] Démarrer, arrêter, redémarrer un service ; état vert/orange/rouge.
+- [x] Mise à jour d'un service avec retour arrière automatique.
+- [ ] Copie des données d'un service avant sa mise à jour, pour un retour arrière complet (avec les sauvegardes, 9.1).
 - [x] Avertissement mémoire sur les petits Pi.
 - [x] Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.
 - [x] Application Nextcloud (manifeste `marketplace/nextcloud/`).
