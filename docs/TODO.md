@@ -7,10 +7,13 @@ Feuille de route de pi-appliance. Le produit visé est décrit dans [specificati
 - [ ] Retirer les secrets versionnés (mots de passe Wi-Fi de `all-pi/wpa_supplicant.conf`, clés de `all-pi/authorized_keys`, `linux-tool/ssh/`) et les changer : ils restent dans l'historique git (8).
 - [ ] Retirer les fichiers générés (`*.log`, `old.ip`, `ipcheck.dat`) et ajouter un `.gitignore`.
 - [ ] Supprimer `tmp.uml` (exemple PlantUML sans rapport avec le projet).
-- [ ] Choisir une licence et ajouter `LICENSE`.
+- [x] Choisir une licence et ajouter `LICENSE` : AGPL-3.0 (1.2).
+- [ ] Ajouter l'en-tête de licence aux fichiers de code existants.
+- [ ] Vérifier l'origine et la licence des fichiers repris d'ailleurs (`docker-apache/`, d'après gwendal-orinel ; `linux-tool/dynHost/ipcheck.py`) avant de les intégrer au produit.
 
 ## 1. Décisions (14)
 
+- [x] Public visé : grand public (1.1).
 - [ ] Langage et framework de la console.
 - [ ] Format des manifestes de la marketplace.
 - [ ] Solution d'accès sans IP publique (relais).

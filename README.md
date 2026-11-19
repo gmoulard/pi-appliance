@@ -42,6 +42,14 @@ Après un clone, récupérer les skills :
 git submodule update --init
 ```
 
+## Pour qui
+
+Pour tout le monde : aucune connaissance technique n'est nécessaire. Tout se fait depuis la console, dans un navigateur, sans ligne de commande.
+
+## Licence
+
+pi-appliance est un logiciel libre, sous licence [GNU AGPL-3.0](LICENSE).
+
 ## Site
 
 Le site du projet est publié par GitHub Pages sur [www.pi-appliance.com](https://www.pi-appliance.com) (fichier `CNAME`).

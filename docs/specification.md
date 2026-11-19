@@ -16,6 +16,20 @@ L'image repose sur trois couches :
 | Conteneurs | Docker Engine et Docker Compose |
 | Produit | La couche pi-appliance : console d'administration, marketplace, reverse proxy Traefik, exposition sur internet |
 
+### 1.1 Public visé
+
+pi-appliance s'adresse au **grand public** : des personnes sans connaissances techniques, qui ne savent ni ce qu'est Docker ni ce qu'est un DNS. En découle, pour toute la suite :
+
+- tout se fait depuis la console, dans un navigateur : jamais de ligne de commande, de connexion SSH ni de fichier de configuration à modifier ;
+- chaque choix a une valeur par défaut raisonnable ; l'utilisateur peut tout accepter sans comprendre ;
+- l'interface parle de « services », d'« adresse », de « sauvegarde », pas de conteneurs, de ports ni de certificats ; les termes techniques restent dans les écrans avancés ;
+- une erreur dit ce qui ne va pas et quoi faire, en langage courant ;
+- une étape qui sort de la console (réglage de la box, achat d'un domaine) est guidée pas à pas.
+
+### 1.2 Licence
+
+pi-appliance est un logiciel libre sous licence **GNU Affero General Public License version 3** (AGPL-3.0), fichier [`LICENSE`](../LICENSE). Toute personne qui modifie pi-appliance et le met à disposition d'autres utilisateurs, y compris à travers le réseau, doit publier ses modifications sous la même licence. Les applications de la marketplace gardent leur propre licence.
+
 ## 2. Vocabulaire
 
 | Terme | Sens |
@@ -142,6 +156,7 @@ flowchart LR
 | Chemin | Contenu |
 |--------|---------|
 | `README.md` | Présentation du projet |
+| `LICENSE` | Texte de la licence AGPL-3.0 |
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
 | `.claude/skills/` | Sous-module : skills partagés [gmoulard/claude_skills](https://github.com/gmoulard/claude_skills) |
 | `docs/` | Spécification, TODO, notes |
@@ -165,3 +180,4 @@ flowchart LR
 - Relais pour les accès sans IP publique : serveur fourni par le projet, ou à la charge de l'utilisateur.
 - Comptes utilisateurs : partagés entre les services (SSO, par exemple Authelia ou Authentik), ou propres à chaque service.
 - Fournisseurs DNS gérés automatiquement au-delà d'OVH.
+- Domaine : le grand public n'en possède généralement pas. Faut-il fournir un sous-domaine (par exemple `<nom>.pi-appliance.com`), le domaine personnel devenant une option ?
