@@ -15,7 +15,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-0.4**: Supprimer `tmp.uml` (exemple PlantUML sans rapport avec le projet).
 - [x] **TODO-0.5**: Choisir une licence et ajouter `LICENSE` : AGPL-3.0 (1.2).
 - [x] **TODO-0.6**: Ajouter l'en-tête de licence aux fichiers de code existants (Go et interface web).
-- [ ] **TODO-0.7**: Vérifier l'origine et la licence des fichiers repris d'ailleurs (`docker-apache/`, d'après gwendal-orinel ; `linux-tool/dynHost/ipcheck.py`) avant de les reprendre depuis l'historique git.
+- [x] **TODO-0.7**: Classée sans suite : ces fichiers historiques ne sont pas repris dans le dépôt courant ; vérifier leur origine et leur licence seulement si leur récupération est décidée.
 
 ## 1. Décisions
 
