@@ -1,0 +1,4 @@
+# robots.txt de www.pi-appliance.com
+# Autorise tous les robots (moteurs de recherche, assistants IA) à lire tout le site.
+User-agent: *
+Allow: /
