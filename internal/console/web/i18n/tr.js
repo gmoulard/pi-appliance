@@ -402,6 +402,8 @@ piTranslations("tr", {
   "Tout le monde, sur internet": "Herkes, internette",
   "Les personnes qui ont un compte sur ce Pi": "Bu Pi'de hesabı olan kişiler",
   "La maison seulement (et le VPN)": "Yalnızca evde (ve VPN üzerinden)",
+  "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "Bu Pi'nin yöneticileri, yalnızca evde (ve VPN üzerinden)",
+  "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "Dikkat: bu uygulama Pi'nin tamamını kontrol eder. Yalnızca yöneticilere, evden açıktır. Konsolun kurduğu hizmetleri bu uygulamada değiştirmeyin: güncellemeleri ve yedekleri artık çalışmayabilir.",
   "Qui peut l'ouvrir": "Kim açabilir",
   "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Ev dışındayken önce burada, evde oturum açın: konsolun oturum açma sayfası henüz internetten açılmıyor.",
   "Changement de l'accès à {0}… Le service redémarre.": "{0} erişimi değiştiriliyor… Hizmet yeniden başlıyor.",

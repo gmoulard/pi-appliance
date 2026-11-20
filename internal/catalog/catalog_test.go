@@ -238,3 +238,35 @@ func TestPublishedCatalogAccepted(t *testing.T) {
 		t.Fatalf("refusés : %v", refused)
 	}
 }
+
+// Portainer (accès à Docker) n'est accepté en ligne que par une console qui
+// l'a dans son catalogue intégré : une console plus ancienne le refuse.
+func TestPortainerNeedsBuiltinVersion(t *testing.T) {
+	catalog := builtin(t)
+	portainer, ok := catalog.Get("portainer")
+	if !ok {
+		t.Fatal("Portainer absent du catalogue intégré")
+	}
+	document := publish(t, map[string]string{"portainer": string(portainer.Compose)})
+	var older []marketplace.App
+	for _, app := range catalog.Apps() {
+		if app.ID != "portainer" {
+			older = append(older, app)
+		}
+	}
+	s := source(t, &github{document: document})
+	s.Builtin = marketplace.NewCatalog(older)
+	if err := s.Refresh(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := s.Get("portainer"); ok || strings.Join(s.Status().Refused, ",") != "portainer" {
+		t.Fatalf("Portainer accepté par une console qui ne l'a pas : %v", s.Status().Refused)
+	}
+	s = source(t, &github{document: document})
+	if err := s.Refresh(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := s.Get("portainer"); !ok {
+		t.Fatalf("Portainer refusé : %v", s.Status().Refused)
+	}
+}

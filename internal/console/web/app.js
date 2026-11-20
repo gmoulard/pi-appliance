@@ -698,11 +698,15 @@ async function install(app, form, button, details) {
   const stop = watchInstall(data.get("name"), button);
   let succeeded = false;
   try {
-    const result = await api("services", {
+    const result = await withRisks((confirm) => api("services", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ app: app.id, name: data.get("name"), parameters, access: data.get("access") || undefined }),
-    });
+      body: JSON.stringify({ app: app.id, name: data.get("name"), parameters, access: data.get("access") || undefined, confirm_risks: confirm }),
+    }));
+    if (!result) {
+      message.hidden = true;
+      return;
+    }
     const lines = [app.web ? t("{0} est prêt : https://{1}", app.name, result.instance.address) : t("{0} est prêt.", app.name)];
     for (const [label, value] of Object.entries(result.secrets || {})) {
       lines.push(t("{0} : {1} (notez-le, il ne sera plus affiché)", label, value));
@@ -728,6 +732,15 @@ const ACCESS_LABELS = {
   users: t("Les personnes qui ont un compte sur ce Pi"),
   home: t("La maison seulement (et le VPN)"),
 };
+// Applications qui ont la main sur tout le Pi (Portainer) : niveau posé par
+// leur manifeste, ni choisi ni changé.
+const ADMINS_ACCESS = "admins";
+const ADMINS_LABEL = t("Les administrateurs de ce Pi, à la maison seulement (et le VPN)");
+const ADMINS_WARNING = t("Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.");
+
+function accessLabel(access) {
+  return access === ADMINS_ACCESS ? ADMINS_LABEL : ACCESS_LABELS[access] || ACCESS_LABELS.public;
+}
 
 function accessSelect(value) {
   const select = element("select");
@@ -742,6 +755,11 @@ function accessSelect(value) {
 }
 
 function accessField(value) {
+  if (value === ADMINS_ACCESS) {
+    const box = element("div");
+    box.append(element("p", `${t("Qui peut l'ouvrir")} : ${ADMINS_LABEL}`, "meta"), element("p", ADMINS_WARNING, "note"));
+    return box;
+  }
   const label = element("label", t("Qui peut l'ouvrir"));
   label.append(accessSelect(value));
   return label;
@@ -753,8 +771,12 @@ function accessChooser(service) {
   const box = element("div", undefined, "access");
   const hint = element("p", t("Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet."), "meta");
   hint.hidden = service.access !== "users";
+  if (service.access === ADMINS_ACCESS) {
+    box.append(element("p", `${t("Qui peut l'ouvrir")} : ${ADMINS_LABEL}`, "meta"), element("p", ADMINS_WARNING, "note"));
+    return box;
+  }
   if (!currentAccount || currentAccount.role !== "admin") {
-    box.append(element("p", `${t("Qui peut l'ouvrir")} : ${ACCESS_LABELS[service.access] || ACCESS_LABELS.public}`, "meta"), hint);
+    box.append(element("p", `${t("Qui peut l'ouvrir")} : ${accessLabel(service.access)}`, "meta"), hint);
     return box;
   }
   const label = element("label", t("Qui peut l'ouvrir"));

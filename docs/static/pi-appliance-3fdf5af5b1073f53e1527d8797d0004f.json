@@ -143,6 +143,32 @@
       "compose": "x-pi-appliance:\n  name: Nextcloud\n  description: Vos fichiers, photos, agenda et contacts, chez vous, sur tous vos appareils.\n  icon: M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z\n  category: Fichiers\n  license: AGPL-3.0\n  subdomain: cloud\n  service: app\n  port: 80\n  memory_mb: 1024\n  disk_mb: 2048\n  login: application\n  access: public\n  parameters:\n    - name: NEXTCLOUD_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur de Nextcloud\n      generate: true\n    - name: DB_PASSWORD\n      generate: true\n    - name: DB_ROOT_PASSWORD\n      generate: true\n\nservices:\n  db:\n    image: mariadb:11.4\n    restart: unless-stopped\n    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW\n    environment:\n      MARIADB_DATABASE: nextcloud\n      MARIADB_USER: nextcloud\n      MARIADB_PASSWORD: ${DB_PASSWORD}\n      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    volumes:\n      - db:/var/lib/mysql\n\n  app:\n    image: nextcloud:30-apache\n    restart: unless-stopped\n    depends_on:\n      - db\n    environment:\n      MYSQL_HOST: db\n      MYSQL_DATABASE: nextcloud\n      MYSQL_USER: nextcloud\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n      NEXTCLOUD_ADMIN_USER: admin\n      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}\n      NEXTCLOUD_TRUSTED_DOMAINS: ${PI_HOST}\n      OVERWRITEPROTOCOL: https\n      OVERWRITEHOST: ${PI_HOST}\n      TRUSTED_PROXIES: 172.16.0.0/12\n    volumes:\n      - html:/var/www/html\n\nvolumes:\n  db:\n  html:\n"
     },
     {
+      "id": "portainer",
+      "name": "Portainer",
+      "description": "Voir et gérer les conteneurs Docker du Pi depuis le navigateur, pour les utilisateurs avertis. Portainer a la main sur tout le Pi, il n'est donc ouvert qu'aux administrateurs, à la maison. Ne modifiez pas dans Portainer les services installés par la console, sinon leurs mises à jour et leurs sauvegardes peuvent ne plus marcher.",
+      "icon": "M4 10h16v10H4zM7 10V6h10v4M10 14h4",
+      "category": "Administration",
+      "tags": [
+        "administration"
+      ],
+      "license": "Zlib",
+      "subdomain": "portainer",
+      "memory_mb": 128,
+      "disk_mb": 512,
+      "login": "application",
+      "access": "admins",
+      "parameters": [
+        {
+          "name": "PORTAINER_ADMIN_PASSWORD",
+          "label": "Mot de passe de l'administrateur de Portainer (identifiant admin)",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Portainer\n  description: Voir et gérer les conteneurs Docker du Pi depuis le navigateur, pour les utilisateurs avertis. Portainer a la main sur tout le Pi, il n'est donc ouvert qu'aux administrateurs, à la maison. Ne modifiez pas dans Portainer les services installés par la console, sinon leurs mises à jour et leurs sauvegardes peuvent ne plus marcher.\n  icon: M4 10h16v10H4zM7 10V6h10v4M10 14h4\n  category: Administration\n  license: Zlib\n  subdomain: portainer\n  service: portainer\n  port: 9000\n  memory_mb: 128\n  disk_mb: 512\n  login: application\n  access: admins\n  parameters:\n    - name: PORTAINER_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur de Portainer (identifiant admin)\n      generate: true\n\nservices:\n  # Portainer pilote Docker par son socket : il a la main sur tout le Pi.\n  # Le manifeste demande donc l'accès « administrateurs, à la maison »\n  # (access: admins), que la console garde et ne laisse pas changer.\n  portainer:\n    image: portainer/portainer-ce:2.45.4\n    restart: unless-stopped\n    # Compte admin créé au premier démarrage avec le mot de passe tiré au\n    # hasard : personne ne peut prendre la place de l'administrateur.\n    command: [\"--admin-password-file\", \"/run/pi-appliance/admin-password\"]\n    configs:\n      - source: admin-password\n        target: /run/pi-appliance/admin-password\n    volumes:\n      - data:/data\n      - /var/run/docker.sock:/var/run/docker.sock\n\nconfigs:\n  admin-password:\n    content: ${PORTAINER_ADMIN_PASSWORD}\n\nvolumes:\n  data:\n"
+    },
+    {
       "id": "postgresql",
       "name": "PostgreSQL",
       "description": "Une base de données pour vos tableaux, projets et applications, que vous consultez et modifiez depuis votre navigateur.",
@@ -298,17 +324,6 @@
         "maison"
       ],
       "todo": "TODO-4.9"
-    },
-    {
-      "id": "portainer",
-      "name": "Portainer",
-      "description": "Voir et gérer les conteneurs Docker du Pi depuis le navigateur, pour les utilisateurs avertis.",
-      "icon": "M4 10h16v10H4zM7 10V6h10v4M10 14h4",
-      "category": "Administration",
-      "tags": [
-        "administration"
-      ],
-      "todo": "TODO-2.49"
     },
     {
       "id": "cockpit",

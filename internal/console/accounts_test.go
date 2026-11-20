@@ -252,6 +252,32 @@ func TestForwardAdmin(t *testing.T) {
 	}
 }
 
+// Service réservé aux administrateurs (accès « admins », Portainer) : sur son
+// sous-domaine, connexion sur l'adresse parente, celle de la console.
+func TestForwardServiceAdmin(t *testing.T) {
+	f := newFixture(t)
+	admin := f.admin(t)
+	portainer := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "portainer.maison.example.org", "X-Forwarded-Uri": "/", "X-Forwarded-Method": "GET"}
+	const path = "/pi-appliance/api/auth/forward-service-admin"
+
+	if response := forwardTo(f, path, "192.168.1.20:5000", nil, portainer); response.Code != http.StatusForbidden {
+		t.Fatalf("appel hors de Traefik : %d", response.Code)
+	}
+	response := forwardTo(f, path, "127.0.0.1:5000", nil, portainer)
+	want := "https://maison.example.org/pi-appliance/?return=" + url.QueryEscape("https://portainer.maison.example.org/")
+	if response.Code != http.StatusFound || response.Header().Get("Location") != want {
+		t.Fatalf("sans session : %d %q", response.Code, response.Header().Get("Location"))
+	}
+	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, admin), portainer); response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" {
+		t.Fatalf("administrateur : %d %v", response.Code, response.Header())
+	}
+	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
+	paul := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil))
+	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, paul), portainer); response.Code != http.StatusForbidden || response.Header().Get("Remote-User") != "" {
+		t.Fatalf("utilisateur : %d %v", response.Code, response.Header())
+	}
+}
+
 func TestReturnURL(t *testing.T) {
 	for _, test := range []struct {
 		raw, host string

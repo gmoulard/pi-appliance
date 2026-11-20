@@ -73,6 +73,15 @@ http:
       forwardAuth:
         address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward"
         authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups]
+    # Service réservé aux administrateurs (accès « admins » d'un manifeste,
+    # Portainer : il a la main sur tout le Pi). Toujours après
+    # pi-appliance-home : label
+    # traefik.http.routers.<routeur>.middlewares=pi-appliance-home@file,pi-appliance-admins@file.
+    # Un autre compte reçoit « 403 » ; sans session, connexion à la console.
+    pi-appliance-admins:
+      forwardAuth:
+        address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward-service-admin"
+        authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups]
     # Service « maison seulement » (spécification 8.2) : mêmes plages que la
     # console ci-dessus, adresse TCP vue par Traefik (pas d'en-tête). Ailleurs :
     # 403. Label traefik.http.routers.<routeur>.middlewares=pi-appliance-home@file.

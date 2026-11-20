@@ -402,6 +402,8 @@ piTranslations("ja", {
   "Tout le monde, sur internet": "誰でも（インターネット上）",
   "Les personnes qui ont un compte sur ce Pi": "このPiにアカウントがある人",
   "La maison seulement (et le VPN)": "自宅のみ（VPN経由も可）",
+  "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "このPiの管理者のみ、自宅からのみ（とVPN）",
+  "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "注意：このアプリはPi全体を操作できます。管理者だけが、自宅からのみ開けます。コンソールがインストールしたサービスをこのアプリで変更しないでください。更新やバックアップが動かなくなるおそれがあります。",
   "Qui peut l'ouvrir": "開ける人",
   "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "外出先から使うには、まず自宅でここにログインしてください。コンソールのログインページはまだインターネットからは開けません。",
   "Changement de l'accès à {0}… Le service redémarre.": "{0} のアクセスを変更しています… サービスを再起動します。",

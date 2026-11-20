@@ -402,6 +402,8 @@ piTranslations("pt", {
   "Tout le monde, sur internet": "Toda a gente, na internet",
   "Les personnes qui ont un compte sur ce Pi": "As pessoas com uma conta neste Pi",
   "La maison seulement (et le VPN)": "Só em casa (e pela VPN)",
+  "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "Os administradores deste Pi, apenas em casa (e pela VPN)",
+  "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "Atenção: esta aplicação tem o controlo de todo o Pi. Só está aberta aos administradores, a partir de casa. Não altere nesta aplicação os serviços instalados pela consola: as suas atualizações e cópias de segurança poderiam deixar de funcionar.",
   "Qui peut l'ouvrir": "Quem pode abri-lo",
   "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Fora de casa, inicie sessão primeiro aqui, em casa: a página de início de sessão da consola ainda não abre a partir da internet.",
   "Changement de l'accès à {0}… Le service redémarre.": "A alterar o acesso a {0}… O serviço vai reiniciar.",

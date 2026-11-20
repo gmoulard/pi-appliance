@@ -68,6 +68,9 @@ type InstallRequest struct {
 	Parameters map[string]string `json:"parameters"`
 	// Access : qui ouvre le service (public, users, home) ; vide : valeur du manifeste.
 	Access string `json:"access,omitempty"`
+	// ConfirmRisks : l'administrateur a confirmé qu'une application qui a la
+	// main sur tout le Pi (Portainer) s'installe.
+	ConfirmRisks bool `json:"confirm_risks"`
 }
 
 type SetupRequest struct {
@@ -610,12 +613,24 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 	if request.Name == "" {
 		request.Name = app.Subdomain
 	}
-	if request.Access != "" {
+	if request.Access != "" && request.Access != app.Access {
+		if app.Access == services.AccessAdmins {
+			writeError(w, http.StatusBadRequest, app.Name+" a la main sur tout le Pi : il reste réservé aux administrateurs, à la maison.")
+			return
+		}
 		if !services.ValidAccess(request.Access) {
 			writeError(w, http.StatusBadRequest, "Choisissez qui ouvre le service : tout le monde, les personnes connectées ou la maison seulement.")
 			return
 		}
 		app.Access = request.Access
+	}
+	risks, err := services.MarketplaceRisks(app)
+	if err == nil && len(risks) > 0 && !request.ConfirmRisks {
+		err = services.RisksError{Risks: risks}
+	}
+	if err != nil {
+		writeServiceError(w, err)
+		return
 	}
 	result, err := c.Services.Install(r.Context(), app, request.Name, request.Parameters)
 	if err != nil {
