@@ -149,7 +149,7 @@ piTranslations("zh", {
   "{0} heures": "{0} 小时",
   "une minute": "一分钟",
   "{0} minutes": "{0} 分钟",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "配置用 Wi-Fi “pi-appliance” 将在 {0}后关闭。之后请重启 Pi 以重新打开它。",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "Wi-Fi“pi-appliance”仅用于设置 Pi：Pi 一连上您的网络就会关闭，最迟在 {0} 后关闭。之后请重启 Pi 以重新打开它。",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "Pi 还没有连接到你的网络：请选择家里的 Wi-Fi，或插上网线。",
   "Le Pi est relié au Wi-Fi « {0} ».": "Pi 已连接到 Wi-Fi “{0}”。",
   "Le Pi est relié à votre box par le câble réseau.": "Pi 已通过网线连接到你的路由器。",
@@ -420,5 +420,9 @@ piTranslations("zh", {
   "{0} n'est pas libre : {1}.": "{0} 不可用：{1}。",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "地址 {0} 已预订。几分钟后即可从互联网使用。",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "释放地址 {0}？您的服务将无法再通过该地址访问，30 天后其他设备可以使用它。",
-  "L'adresse est libérée.": "地址已释放。"
+  "L'adresse est libérée.": "地址已释放。",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "欢迎！本向导分三步准备您的 Pi：您的账户（已完成）、家庭网络，然后是您的第一批服务。大约需要五分钟。在您完成之前，每次登录都会再次显示；以后可以随时更改。",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "Wi-Fi 规则（允许的信道和功率）因国家而异：选对国家，Pi 才能找到您的 Wi-Fi。",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "如果此地址无法打开（部分 Android 手机和 Windows 电脑找不到 .local 地址），请在路由器的设备列表中找到“pi-appliance”设备，然后打开 https://<它的地址>/pi-appliance。浏览器会显示证书警告：可以继续。",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "您也可以打开 {0}：浏览器会显示证书警告，可以继续。"
 });

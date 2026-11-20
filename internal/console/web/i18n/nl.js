@@ -149,7 +149,7 @@ piTranslations("nl", {
   "{0} heures": "{0} uur",
   "une minute": "één minuut",
   "{0} minutes": "{0} minuten",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "De installatie-wifi ‘pi-appliance’ sluit over {0}. Herstart daarna de Pi om hem weer te openen.",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "De wifi „pi-appliance” dient alleen om de Pi in te stellen: hij sluit zodra de Pi met uw netwerk verbonden is, of uiterlijk over {0}. Start de Pi daarna opnieuw om hem weer te openen.",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "De Pi is nog niet met uw netwerk verbonden: kies de wifi van thuis, of sluit een kabel aan.",
   "Le Pi est relié au Wi-Fi « {0} ».": "De Pi is verbonden met de wifi ‘{0}’.",
   "Le Pi est relié à votre box par le câble réseau.": "De Pi is via de netwerkkabel met uw router verbonden.",
@@ -420,5 +420,9 @@ piTranslations("nl", {
   "{0} n'est pas libre : {1}.": "{0} is niet vrij: {1}.",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "Het adres {0} is gereserveerd. Het werkt binnen enkele minuten via internet.",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "Het adres {0} vrijgeven? Uw diensten zijn daar dan niet meer bereikbaar, en een andere appliance kan het over 30 dagen nemen.",
-  "L'adresse est libérée.": "Het adres is vrijgegeven."
+  "L'adresse est libérée.": "Het adres is vrijgegeven.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "Welkom! Deze assistent stelt uw Pi in drie stappen in: uw account (klaar), het thuisnetwerk en daarna uw eerste diensten. Reken op ongeveer vijf minuten. Hij komt bij elke aanmelding terug tot u hem afrondt; u kunt later alles wijzigen.",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "De wifiregels (toegestane kanalen en vermogen) verschillen per land: met het juiste land vindt de Pi uw wifi.",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "Opent dit adres niet (sommige Android-telefoons en Windows-computers vinden geen .local-adressen), zoek dan het apparaat „pi-appliance” in de apparatenlijst van uw router en open https://<zijn adres>/pi-appliance. De browser toont een certificaatwaarschuwing: u kunt doorgaan.",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "U kunt ook {0} openen: de browser toont een certificaatwaarschuwing, u kunt doorgaan."
 });

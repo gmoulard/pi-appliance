@@ -149,7 +149,7 @@ piTranslations("ar", {
   "{0} heures": "{0} ساعة",
   "une minute": "دقيقة واحدة",
   "{0} minutes": "{0} دقيقة",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "ستُغلق شبكة Wi-Fi الإعداد «pi-appliance» بعد {0}. بعد ذلك أعد تشغيل الـPi لفتحها من جديد.",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "شبكة Wi-Fi «pi-appliance» مخصّصة فقط لإعداد الـPi: ستُغلق بمجرد اتصال الـPi بشبكتك، أو خلال {0} على الأكثر. أعد بعدها تشغيل الـPi لفتحها من جديد.",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "الـPi غير متصل بشبكتك بعد: اختر شبكة Wi-Fi المنزل، أو صِل كابلًا.",
   "Le Pi est relié au Wi-Fi « {0} ».": "الـPi متصل بشبكة Wi-Fi «{0}».",
   "Le Pi est relié à votre box par le câble réseau.": "الـPi متصل بالراوتر عبر كابل الشبكة.",
@@ -420,5 +420,9 @@ piTranslations("ar", {
   "{0} n'est pas libre : {1}.": "{0} غير متاح: {1}.",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "تم حجز العنوان {0}. سيعمل من الإنترنت خلال بضع دقائق.",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "تحرير العنوان {0}؟ لن تكون خدماتك متاحة عليه بعد الآن، ويمكن لجهاز آخر أخذه بعد 30 يومًا.",
-  "L'adresse est libérée.": "تم تحرير العنوان."
+  "L'adresse est libérée.": "تم تحرير العنوان.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "مرحبًا! يجهّز هذا المساعد جهاز Pi في ثلاث خطوات: حسابك (تم)، وشبكة المنزل، ثم خدماتك الأولى. يستغرق ذلك نحو خمس دقائق. يظهر من جديد عند كل تسجيل دخول إلى أن تُنهيه؛ ويمكنك تغيير كل شيء لاحقًا.",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "تختلف قواعد Wi-Fi (القنوات والقدرة المسموح بها) من بلد إلى آخر: مع البلد الصحيح يجد الـPi شبكتك.",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "إذا لم يُفتح هذا العنوان (بعض هواتف Android وحواسيب Windows لا تجد عناوين ‎.local)، ابحث عن الجهاز «pi-appliance» في قائمة الأجهزة في الراوتر وافتح https://<عنوانه>/pi-appliance. سيعرض المتصفح تحذيرًا بشأن الشهادة: يمكنك المتابعة.",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "يمكنك أيضًا فتح {0}: سيعرض المتصفح تحذيرًا بشأن الشهادة، ويمكنك المتابعة."
 });

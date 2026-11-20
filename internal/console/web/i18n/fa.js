@@ -149,7 +149,7 @@ piTranslations("fa", {
   "{0} heures": "{0} ساعت",
   "une minute": "یک دقیقه",
   "{0} minutes": "{0} دقیقه",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "Wi-Fi پیکربندی «pi-appliance» تا {0} دیگر بسته می‌شود. پس از آن، Pi را دوباره راه‌اندازی کنید تا دوباره باز شود.",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "وای‌فای «pi-appliance» فقط برای پیکربندی Pi است: به‌محض اتصال Pi به شبکهٔ شما، یا حداکثر تا {0} دیگر، بسته می‌شود. سپس برای باز کردن دوباره، Pi را راه‌اندازی مجدد کنید.",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "Pi هنوز به شبکهٔ شما وصل نیست: Wi-Fi خانه را انتخاب کنید، یا کابل وصل کنید.",
   "Le Pi est relié au Wi-Fi « {0} ».": "Pi به Wi-Fi «{0}» وصل است.",
   "Le Pi est relié à votre box par le câble réseau.": "Pi با کابل شبکه به مودم شما وصل است.",
@@ -420,5 +420,9 @@ piTranslations("fa", {
   "{0} n'est pas libre : {1}.": "{0} آزاد نیست: {1}.",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "نشانی {0} رزرو شد. تا چند دقیقهٔ دیگر از اینترنت کار خواهد کرد.",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "نشانی {0} آزاد شود؟ سرویس‌های شما دیگر در آن در دسترس نخواهند بود و دستگاه دیگری می‌تواند پس از ۳۰ روز آن را بگیرد.",
-  "L'adresse est libérée.": "نشانی آزاد شد."
+  "L'adresse est libérée.": "نشانی آزاد شد.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "خوش آمدید! این دستیار Pi شما را در سه گام آماده می‌کند: حساب شما (انجام شد)، شبکهٔ خانه و سپس نخستین سرویس‌ها. حدود پنج دقیقه زمان می‌برد. تا وقتی آن را تمام نکنید، در هر ورود دوباره نمایش داده می‌شود؛ بعداً می‌توانید همه‌چیز را تغییر دهید.",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "قوانین وای‌فای (کانال‌ها و توان مجاز) از کشوری به کشور دیگر فرق می‌کند: با کشور درست، Pi وای‌فای شما را پیدا می‌کند.",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "اگر این نشانی باز نشد (برخی گوشی‌های Android و رایانه‌های Windows نشانی‌های ‎.local را پیدا نمی‌کنند)، دستگاه «pi-appliance» را در فهرست دستگاه‌های مودم خود پیدا کنید و https://<نشانی آن>/pi-appliance را باز کنید. مرورگر هشداری دربارهٔ گواهی نشان می‌دهد: می‌توانید ادامه دهید.",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "می‌توانید {0} را هم باز کنید: مرورگر هشداری دربارهٔ گواهی نشان می‌دهد، می‌توانید ادامه دهید."
 });

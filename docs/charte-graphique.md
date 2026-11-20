@@ -16,14 +16,14 @@ Piste 5, « La maison » : une maison avec un π à l'intérieur, en framboise. 
 
 Le nom « pi-appliance » est converti en tracés (dessiné avec Inter, licence OFL) : le logo ne dépend d'aucune police installée. « pi » en framboise et en gras, « -appliance » en aubergine.
 
-**Console** : la console `/pi-appliance` affiche le **logo photo** (PNG), dans [`docs/logo/photo/`](logo/photo/) et copié dans `internal/console/web/` :
+**Console** : la console `/pi-appliance` affiche le même logo framboise « La maison » que le site, copié dans `internal/console/web/` :
 
 | Fichier | Usage |
 |---------|-------|
-| `logo.png` | Logo en tête de la console, affiché en 64 px à côté du nom « pi-appliance » |
-| `favicon.png` | Icône de l'onglet de la console |
+| `symbole.svg` | Maison en tête de la console, en 40 px, suivie du nom « **pi**-appliance » en texte (classe `wordmark`) |
+| `favicon.svg` | Icône de l'onglet de la console |
 
-Le site www.pi-appliance.com garde le logo framboise en SVG. Le reste de la charte (couleurs, polices, formes) s'applique à la console sans changement.
+Le logo photo (une main tenant des framboises, [`docs/logo/photo/`](logo/photo/)) n'est plus utilisé : jugé hors charte au premier essai sur un vrai Pi (2026-11-20). Le reste de la charte (couleurs, polices, formes) s'applique à la console sans changement.
 
 ## Couleurs
 

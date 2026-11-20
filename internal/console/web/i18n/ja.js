@@ -149,7 +149,7 @@ piTranslations("ja", {
   "{0} heures": "{0} 時間",
   "une minute": "1 分",
   "{0} minutes": "{0} 分",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "設定用 Wi-Fi「pi-appliance」はあと {0} で閉じます。その後は Pi を再起動すると再び開きます。",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "Wi-Fi「pi-appliance」は Pi の設定専用です。Pi がご自宅のネットワークにつながるとすぐに、遅くとも {0} 後に閉じます。再び開くには Pi を再起動してください。",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "Pi はまだネットワークにつながっていません：家の Wi-Fi を選ぶか、ケーブルをつないでください。",
   "Le Pi est relié au Wi-Fi « {0} ».": "Pi は Wi-Fi「{0}」につながっています。",
   "Le Pi est relié à votre box par le câble réseau.": "Pi はネットワークケーブルでルーターにつながっています。",
@@ -420,5 +420,9 @@ piTranslations("ja", {
   "{0} n'est pas libre : {1}.": "{0} は使えません：{1}",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "アドレス {0} を予約しました。数分後にインターネットから使えるようになります。",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "アドレス {0} を解放しますか？サービスはこのアドレスで利用できなくなり、30 日後には別のアプライアンスが使えるようになります。",
-  "L'adresse est libérée.": "アドレスを解放しました。"
+  "L'adresse est libérée.": "アドレスを解放しました。",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "ようこそ！このアシスタントは 3 つのステップで Pi を準備します：アカウント（完了）、自宅のネットワーク、最初のサービス。所要時間は約 5 分です。完了するまでログインのたびに表示されます。あとからすべて変更できます。",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "Wi-Fi の規則（使えるチャンネルと出力）は国によって異なります。正しい国を選ぶと、Pi がご自宅の Wi-Fi を見つけられます。",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "このアドレスが開かない場合（一部の Android スマートフォンや Windows パソコンは .local アドレスを見つけられません）、ルーターの機器一覧で「pi-appliance」を探し、https://<そのアドレス>/pi-appliance を開いてください。ブラウザーに証明書の警告が表示されますが、続行できます。",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "{0} を開くこともできます。ブラウザーに証明書の警告が表示されますが、続行できます。"
 });

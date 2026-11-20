@@ -149,7 +149,7 @@ piTranslations("en", {
   "{0} heures": "{0} hours",
   "une minute": "one minute",
   "{0} minutes": "{0} minutes",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "The “pi-appliance” setup Wi-Fi will close in {0}. After that, restart the Pi to open it again.",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "The “pi-appliance” Wi-Fi is only used to set up the Pi: it will close as soon as the Pi is connected to your network, or at the latest in {0}. Then restart the Pi to open it again.",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "The Pi is not connected to your network yet: choose your home Wi-Fi, or plug in a cable.",
   "Le Pi est relié au Wi-Fi « {0} ».": "The Pi is connected to the Wi-Fi “{0}”.",
   "Le Pi est relié à votre box par le câble réseau.": "The Pi is connected to your router by the network cable.",
@@ -420,5 +420,9 @@ piTranslations("en", {
   "{0} n'est pas libre : {1}.": "{0} is not available: {1}.",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "The address {0} is reserved. It will work from the internet within a few minutes.",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "Release the address {0}? Your services will no longer be reachable there, and another appliance will be able to take it in 30 days.",
-  "L'adresse est libérée.": "The address has been released."
+  "L'adresse est libérée.": "The address has been released.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "Welcome! This assistant prepares your Pi in three steps: your account (done), your home network, then your first services. Allow about five minutes. It comes back at each sign-in until you finish it; you can change everything later.",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "Wi-Fi rules (allowed channels and power) differ from one country to another: with the right country, the Pi finds your Wi-Fi.",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "If this address does not open (some Android phones and Windows computers cannot find .local addresses), look for the “pi-appliance” device in your router's list of devices and open https://<its address>/pi-appliance. The browser will show a certificate warning: you can continue.",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "You can also open {0}: the browser will show a certificate warning, you can continue."
 });

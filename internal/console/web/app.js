@@ -1746,7 +1746,7 @@ function minutesText(seconds) {
 function showApCountdown() {
   const seconds = Math.round((apClosesAt - Date.now()) / 1000);
   if (seconds > 0) {
-    networkAp.textContent = named(t("Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.", minutesText(seconds)));
+    networkAp.textContent = named(t("Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.", minutesText(seconds)));
   }
 }
 
@@ -1924,6 +1924,7 @@ wifiForm.addEventListener("submit", async (event) => {
     showMessage(apClosesAt ? [
       named(t("Le Pi se connecte au Wi-Fi « {0} ». Le Wi-Fi « pi-appliance » va se fermer.", ssid)),
       named(t("Reconnectez votre téléphone ou votre ordinateur au Wi-Fi « {0} », puis ouvrez https://pi-appliance.local/pi-appliance", ssid)),
+      named(t("Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.")),
       named(t("Si le Wi-Fi « pi-appliance » réapparaît dans une minute, la connexion a échoué : reconnectez-vous-y pour réessayer.")),
     ] : [named(t("Le Pi se connecte au Wi-Fi « {0} ». Si cette page ne répond plus, ouvrez https://pi-appliance.local/pi-appliance", ssid))], "info");
   } catch (error) {
@@ -1937,8 +1938,12 @@ wiredButton.addEventListener("click", async () => {
   wiredButton.disabled = true;
   try {
     await api("network/wired", { method: "POST" });
-    showMessage([named(t("C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau."))], "success");
     const state = await loadNetwork();
+    const lines = [named(t("C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau."))];
+    if (state && state.addresses.length > 0) {
+      lines.push(t("Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.", state.addresses.map((address) => `https://${address}/pi-appliance`).join(", ")));
+    }
+    showMessage(lines, "success");
     if (wizardStep === "network" && state && state.configured) {
       await wizardServices();
     }
@@ -2257,6 +2262,7 @@ async function startWizard() {
   servicesSection.hidden = true;
   catalogSection.hidden = true;
   piSection.hidden = true;
+  accountSection.hidden = true;
   setStep("network");
   const state = await loadNetwork();
   if (!state || state.configured) {

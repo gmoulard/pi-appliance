@@ -67,9 +67,27 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 3. Décompressez le fichier `.img.xz` avec 7-Zip pour obtenir le fichier `.img`.
 4. Téléchargez et ouvrez [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
 5. Insérez la carte dans le Raspberry Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement. Avec les images construites à partir du 20 novembre 2026, ce Wi-Fi porte le nom propre du Pi, `pi-appliance-XXXX` (quatre caractères qui changent d'un Pi à l'autre), et ne donne plus accès à internet ni à votre réseau : seulement au portail.
-6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, ouvrez `https://pi-appliance.local/pi-appliance/` depuis le réseau de la maison.
+6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, le Wi-Fi de configuration se ferme : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison, puis ouvrez `https://pi-appliance-XXXX.local/pi-appliance/` (`https://pi-appliance.local/pi-appliance/` avec l'image du 19 novembre 2026). Voir [Retrouver la console](#retrouver-la-console) si cette adresse ne s'ouvre pas.
 
 7. Dans la console, faites défiler la page sous **Mes services** jusqu'à la rubrique **Marketplace**. Si vous êtes encore dans l'assistant de première mise en route, choisissez **Vos premiers services** : il affiche cette même rubrique. Sélectionnez une application, choisissez son nom puis cliquez sur **Installer**. Une adresse locale comme `www.pi-appliance.local` apparaît dans **Mes services** quand l'installation réussit. Pour un site web, les fichiers se déposent par **Nextcloud** : depuis un compte administrateur Nextcloud, ajoutez dans les paramètres de stockage externe le dossier `/srv/pi-appliance/services/<nom-du-site>/www`, accessible au conteneur Nextcloud. Les fichiers placés dans ce dossier sont servis directement par le site.
+
+### Ce qui se passe au premier démarrage {#premier-demarrage}
+
+![Premier démarrage : flasher la carte, démarrer le Pi, se connecter au Wi-Fi pi-appliance-XXXX, ouvrir le portail, créer le compte, choisir le Wi-Fi de la maison, retrouver la console](premier-demarrage.svg)
+
+1. **Flashage** : Raspberry Pi Imager écrit l'image sur la carte micro-SD, depuis votre ordinateur.
+2. **Démarrage** : au premier démarrage, le Pi agrandit sa partition, se donne son nom `pi-appliance-XXXX` et crée ses clés ; comptez quelques minutes.
+3. **Wi-Fi de configuration** : le Pi ouvre le Wi-Fi `pi-appliance-XXXX`, sans mot de passe, pendant 24 heures au plus. Il ne sert qu'à configurer le Pi : il ne donne accès ni à internet ni à votre réseau.
+4. **Portail** : une fois connecté à ce Wi-Fi, le téléphone ouvre souvent le portail tout seul ; sinon, ouvrez `https://10.42.0.1/pi-appliance/`. Le navigateur affiche une alerte sur le certificat : vous pouvez continuer.
+5. **Compte** : choisissez un identifiant (un nom court, par exemple `marie` : ce n'est pas l'adresse e-mail), votre adresse e-mail et un mot de passe d'au moins 12 caractères. L'assistant « Mise en route » s'ouvre ensuite ; il revient à chaque connexion tant qu'il n'est pas terminé.
+6. **Wi-Fi de la maison** : choisissez le pays, puis votre Wi-Fi et son mot de passe, ou le câble réseau s'il est branché sur la box. Avant de couper le Wi-Fi de configuration, la console affiche l'adresse où la retrouver ; avec le câble, elle donne aussi l'adresse IP du Pi.
+7. **Retrouver la console** : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison et ouvrez l'adresse indiquée (ci-dessous).
+
+### Retrouver la console sur le réseau de la maison {#retrouver-la-console}
+
+- Ouvrez `https://pi-appliance-XXXX.local/pi-appliance/`, où `pi-appliance-XXXX` est le nom du Wi-Fi de configuration de votre Pi (ou le nom que vous lui avez donné dans « Mon Pi »).
+- Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en `.local`), utilisez l'adresse IP du Pi : la console la donne avant la bascule si le Pi est relié par câble ; sinon, cherchez l'appareil `pi-appliance-XXXX` dans la liste des appareils connectés de votre box (son interface d'administration, souvent `http://192.168.1.1`). Ouvrez alors `https://<adresse du Pi>/pi-appliance/`, par exemple `https://192.168.1.127/pi-appliance/`. **N'oubliez pas `/pi-appliance/` à la fin.**
+- Le navigateur affiche une alerte (« La connexion n'est pas privée », « Avertissement : risque probable de sécurité ») : le Pi protège la connexion avec son propre certificat, que le navigateur ne connaît pas encore. Choisissez « Paramètres avancés », puis « Continuer ».
 
 La partition, le démarrage et le portail de cette image restent à valider sur du matériel réel. L'accès aux applications depuis internet n'est pas encore disponible.
 

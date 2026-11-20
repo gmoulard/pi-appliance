@@ -164,7 +164,7 @@ But : plusieurs Pi allumés ensemble, chacun joignable à son nom, sans conflit 
 
 ### 4.1 Nommer controlTower
 
-1. Sur le Pi 1 configuré à l'essai A, ouvrir la console, section « Réseau de la maison », « Nom du Pi sur le réseau », saisir `controltower`, puis « Changer le nom ».
+1. Sur le Pi 1 configuré à l'essai A, ouvrir la console, section « Mon Pi », « Nom du Pi sur le réseau », saisir `controltower`, puis « Changer le nom ».
 2. Attendre une dizaine de secondes, puis ouvrir `https://controltower.local/pi-appliance/`. Le navigateur affiche une nouvelle alerte : le certificat a été refait pour le nouveau nom.
 3. Sur le Pi :
 

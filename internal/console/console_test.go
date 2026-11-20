@@ -150,15 +150,15 @@ func TestHealth(t *testing.T) {
 
 func TestConsolePage(t *testing.T) {
 	response := get(t, "/pi-appliance/")
-	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `<img src="logo.png" alt="" width="64" height="64">pi-appliance</h1>`) {
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `<h1 class="wordmark"><b>pi</b>-appliance</h1>`) {
 		t.Fatalf("code %d, page %q", response.Code, response.Body.String())
 	}
 }
 
 func TestLogo(t *testing.T) {
-	for _, path := range []string{"/pi-appliance/logo.png", "/pi-appliance/favicon.png"} {
+	for _, path := range []string{"/pi-appliance/symbole.svg", "/pi-appliance/favicon.svg"} {
 		response := get(t, path)
-		if response.Code != http.StatusOK || response.Header().Get("Content-Type") != "image/png" {
+		if response.Code != http.StatusOK || response.Header().Get("Content-Type") != "image/svg+xml" {
 			t.Fatalf("%s : code %d, type %q", path, response.Code, response.Header().Get("Content-Type"))
 		}
 	}

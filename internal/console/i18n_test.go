@@ -68,7 +68,7 @@ func sourceKeys(t *testing.T) []string {
 	html := commentPattern.ReplaceAllString(readWeb(t, "index.html"), "")
 	body := html[strings.Index(html, "<body"):]
 	for _, match := range textPattern.FindAllStringSubmatch(body, -1) {
-		if text := strings.TrimSpace(match[1]); letterPattern.MatchString(text) && text != "pi-appliance" {
+		if text := strings.TrimSpace(match[1]); letterPattern.MatchString(text) && !slices.Contains([]string{"pi-appliance", "pi", "-appliance"}, text) {
 			add(text)
 		}
 	}

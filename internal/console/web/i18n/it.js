@@ -149,7 +149,7 @@ piTranslations("it", {
   "{0} heures": "{0} ore",
   "une minute": "un minuto",
   "{0} minutes": "{0} minuti",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "Il Wi-Fi di configurazione «pi-appliance» si chiuderà tra {0}. Dopo, riavvia il Pi per riaprirlo.",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "Il Wi-Fi «pi-appliance» serve solo a configurare il Pi: si chiuderà appena il Pi sarà collegato alla tua rete, o al più tardi tra {0}. Riavvia poi il Pi per riaprirlo.",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "Il Pi non è ancora collegato alla tua rete: scegli il Wi-Fi di casa, o collega un cavo.",
   "Le Pi est relié au Wi-Fi « {0} ».": "Il Pi è collegato al Wi-Fi «{0}».",
   "Le Pi est relié à votre box par le câble réseau.": "Il Pi è collegato al tuo router con il cavo di rete.",
@@ -420,5 +420,9 @@ piTranslations("it", {
   "{0} n'est pas libre : {1}.": "{0} non è libero: {1}.",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "L'indirizzo {0} è prenotato. Funzionerà da internet entro pochi minuti.",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "Liberare l'indirizzo {0}? I tuoi servizi non saranno più raggiungibili lì, e un'altra appliance potrà prenderlo tra 30 giorni.",
-  "L'adresse est libérée.": "L'indirizzo è stato liberato."
+  "L'adresse est libérée.": "L'indirizzo è stato liberato.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "Benvenuto! Questa procedura prepara il tuo Pi in tre passi: il tuo account (fatto), la rete di casa e i tuoi primi servizi. Ci vogliono circa cinque minuti. Ricompare a ogni accesso finché non la completi; potrai cambiare tutto in seguito.",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "Le regole del Wi-Fi (canali e potenza consentiti) cambiano da un paese all'altro: con il paese giusto, il Pi trova il tuo Wi-Fi.",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "Se questo indirizzo non si apre (alcuni telefoni Android e computer Windows non trovano gli indirizzi .local), cerca il dispositivo «pi-appliance» nell'elenco dei dispositivi del tuo router e apri https://<il suo indirizzo>/pi-appliance. Il browser mostrerà un avviso sul certificato: puoi continuare.",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "Puoi anche aprire {0}: il browser mostrerà un avviso sul certificato, puoi continuare."
 });

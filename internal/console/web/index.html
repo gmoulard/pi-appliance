@@ -20,12 +20,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>pi-appliance</title>
-<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="top">
-<h1 class="brand"><img src="logo.png" alt="" width="64" height="64">pi-appliance</h1>
+<img src="symbole.svg" alt="" width="40" height="40">
+<h1 class="wordmark"><b>pi</b>-appliance</h1>
 <button id="logout" class="secondary" type="button" hidden>Se déconnecter</button>
 </header>
 <main>
@@ -48,6 +49,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p id="emailReminder" class="empty" hidden></p>
 <section id="wizard" class="card" hidden>
 <h2>Mise en route</h2>
+<p>Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.</p>
 <ol class="steps">
 <li id="stepAccount" class="done">Votre compte administrateur</li>
 <li id="stepNetwork">Le réseau de la maison</li>
@@ -65,11 +67,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p id="networkState" class="state"></p>
 <p id="networkAp" class="meta" hidden></p>
 <label>Pays où se trouve le Pi<select id="wifiCountry"></select></label>
-<form id="nameForm" class="inline-form">
-<label>Nom du Pi sur le réseau<input name="name" maxlength="32" pattern="[a-z0-9]([a-z0-9\-]{0,30}[a-z0-9])?" required autocapitalize="none" autocomplete="off" spellcheck="false"></label>
-<p class="meta">Il donne l'adresse de la console (nom.local) et le nom du Wi-Fi de configuration : lettres minuscules, chiffres et tirets.</p>
-<button class="secondary">Changer le nom</button>
-</form>
+<p class="meta">Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.</p>
 <div id="networkCert" class="note" hidden>
 <p><strong>Pourquoi le navigateur affiche une alerte ?</strong> Votre appliance protège la connexion avec son propre certificat, créé pour elle seule. Le navigateur ne le connaît pas encore, d'où l'alerte : vous pouvez continuer (« Paramètres avancés », puis « Continuer »). L'alerte disparaîtra quand l'appliance sera accessible sur internet avec un certificat reconnu.</p>
 </div>
@@ -145,6 +143,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <div id="piNow" class="tiles"></div>
 <p id="piServices" class="state" hidden></p>
 <div id="piGauges"></div>
+</div>
+<div class="card">
+<form id="nameForm" class="inline-form">
+<label>Nom du Pi sur le réseau<input name="name" maxlength="32" pattern="[a-z0-9]([a-z0-9\-]{0,30}[a-z0-9])?" required autocapitalize="none" autocomplete="off" spellcheck="false"></label>
+<p class="meta">Il donne l'adresse de la console (nom.local) et le nom du Wi-Fi de configuration : lettres minuscules, chiffres et tirets.</p>
+<button class="secondary">Changer le nom</button>
+</form>
 </div>
 <div id="updatesBox" class="card" hidden>
 <h3>Mises à jour</h3>

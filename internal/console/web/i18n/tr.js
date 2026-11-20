@@ -149,7 +149,7 @@ piTranslations("tr", {
   "{0} heures": "{0} saat",
   "une minute": "bir dakika",
   "{0} minutes": "{0} dakika",
-  "Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.": "“pi-appliance” kurulum Wi-Fi'si {0} içinde kapanacak. Sonra yeniden açmak için Pi'yi yeniden başlatın.",
+  "Le Wi-Fi « pi-appliance » ne sert qu'à configurer le Pi : il se fermera dès que le Pi sera relié à votre réseau, ou au plus tard dans {0}. Redémarrez alors le Pi pour le rouvrir.": "“pi-appliance” Wi-Fi'ı yalnızca Pi'yi kurmak içindir: Pi ağınıza bağlanır bağlanmaz, en geç {0} içinde kapanır. Yeniden açmak için Pi'yi yeniden başlatın.",
   "Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.": "Pi henüz ağınıza bağlı değil: evinizin Wi-Fi'sini seçin veya bir kablo takın.",
   "Le Pi est relié au Wi-Fi « {0} ».": "Pi, “{0}” Wi-Fi'sine bağlı.",
   "Le Pi est relié à votre box par le câble réseau.": "Pi, ağ kablosuyla modeminize bağlı.",
@@ -420,5 +420,9 @@ piTranslations("tr", {
   "{0} n'est pas libre : {1}.": "{0} boşta değil: {1}.",
   "L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.": "{0} adresi ayrıldı. Birkaç dakika içinde internetten çalışacak.",
   "Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.": "{0} adresi bırakılsın mı? Hizmetlerinize artık bu adresten ulaşılamayacak ve 30 gün sonra başka bir cihaz bu adresi alabilecek.",
-  "L'adresse est libérée.": "Adres bırakıldı."
+  "L'adresse est libérée.": "Adres bırakıldı.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "Hoş geldiniz! Bu yardımcı Pi'nizi üç adımda hazırlar: hesabınız (tamam), ev ağı, ardından ilk hizmetleriniz. Yaklaşık beş dakika sürer. Bitirene kadar her girişte yeniden açılır; her şeyi daha sonra değiştirebilirsiniz.",
+  "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "Wi-Fi kuralları (izin verilen kanallar ve güç) ülkeden ülkeye değişir: doğru ülkeyle Pi, Wi-Fi'ınızı bulur.",
+  "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "Bu adres açılmazsa (bazı Android telefonlar ve Windows bilgisayarlar .local adreslerini bulamaz), modeminizin cihaz listesinde “pi-appliance” cihazını arayın ve https://<cihazın adresi>/pi-appliance adresini açın. Tarayıcı bir sertifika uyarısı gösterecek: devam edebilirsiniz.",
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "{0} adresini de açabilirsiniz: tarayıcı bir sertifika uyarısı gösterecek, devam edebilirsiniz."
 });

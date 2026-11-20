@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 880" role="img" aria-labelledby="title description">
+  <title id="title">Premier démarrage d'un Pi pi-appliance</title>
+  <desc id="description">Sept étapes dans l'ordre : flasher la carte, démarrer le Pi, se connecter au Wi-Fi de configuration pi-appliance-XXXX, ouvrir le portail, créer le compte administrateur, choisir le Wi-Fi de la maison, puis retrouver la console sur le réseau de la maison à l'adresse pi-appliance-XXXX.local ou à l'adresse IP du Pi.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#6b3d4e"/>
+    </marker>
+    <style>
+      text { font-family: system-ui, sans-serif; fill: #33141f; }
+      .title { font-size: 24px; font-weight: 700; }
+      .label { font-size: 18px; font-weight: 700; }
+      .detail { font-size: 14px; }
+      .group-label { font-size: 14px; font-weight: 700; fill: #a8174e; }
+      .number { font-size: 18px; font-weight: 700; fill: #ffffff; }
+      .node { fill: #ffffff; stroke: #c71f5d; stroke-width: 3; }
+      .circle { fill: #c71f5d; }
+      .network { fill: #ffffff; fill-opacity: 0.5; stroke: #d9a8b8; stroke-width: 2; stroke-dasharray: 8 6; }
+      .link { fill: none; stroke: #6b3d4e; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect x="2" y="2" width="736" height="876" rx="24" fill="#fff5f7"/>
+  <text x="36" y="44" class="title">Premier démarrage, dans l'ordre</text>
+
+  <rect x="120" y="70" width="580" height="74" rx="16" class="node"/>
+  <circle cx="80" cy="107" r="22" class="circle"/>
+  <text x="80" y="113" text-anchor="middle" class="number">1</text>
+  <text x="140" y="100" class="label">Flasher la carte micro-SD</text>
+  <text x="140" y="126" class="detail">Sur l'ordinateur, avec Raspberry Pi Imager et l'image pi-appliance.</text>
+
+  <rect x="120" y="170" width="580" height="74" rx="16" class="node"/>
+  <circle cx="80" cy="207" r="22" class="circle"/>
+  <text x="80" y="213" text-anchor="middle" class="number">2</text>
+  <text x="140" y="200" class="label">Démarrer le Pi</text>
+  <text x="140" y="226" class="detail">Carte dans le Pi, puis l'alimentation ; patientez quelques minutes.</text>
+
+  <rect x="24" y="262" width="692" height="426" rx="20" class="network"/>
+  <text x="44" y="286" class="group-label">Téléphone ou ordinateur sur le Wi-Fi de configuration pi-appliance-XXXX</text>
+
+  <rect x="120" y="300" width="580" height="74" rx="16" class="node"/>
+  <circle cx="80" cy="337" r="22" class="circle"/>
+  <text x="80" y="343" text-anchor="middle" class="number">3</text>
+  <text x="140" y="330" class="label">Se connecter au Wi-Fi pi-appliance-XXXX</text>
+  <text x="140" y="356" class="detail">Ouvert, sans mot de passe, pendant 24 heures au plus.</text>
+
+  <rect x="120" y="400" width="580" height="74" rx="16" class="node"/>
+  <circle cx="80" cy="437" r="22" class="circle"/>
+  <text x="80" y="443" text-anchor="middle" class="number">4</text>
+  <text x="140" y="430" class="label">Ouvrir le portail</text>
+  <text x="140" y="456" class="detail">Il s'affiche souvent seul, sinon https://10.42.0.1/pi-appliance/</text>
+
+  <rect x="120" y="500" width="580" height="74" rx="16" class="node"/>
+  <circle cx="80" cy="537" r="22" class="circle"/>
+  <text x="80" y="543" text-anchor="middle" class="number">5</text>
+  <text x="140" y="530" class="label">Créer le compte administrateur</text>
+  <text x="140" y="556" class="detail">Identifiant (pas l'adresse e-mail), adresse e-mail, mot de passe.</text>
+
+  <rect x="120" y="600" width="580" height="74" rx="16" class="node"/>
+  <circle cx="80" cy="637" r="22" class="circle"/>
+  <text x="80" y="643" text-anchor="middle" class="number">6</text>
+  <text x="140" y="630" class="label">Choisir le Wi-Fi de la maison (ou le câble)</text>
+  <text x="140" y="656" class="detail">Le Wi-Fi pi-appliance-XXXX se ferme : notez l'adresse affichée.</text>
+
+  <rect x="24" y="708" width="692" height="152" rx="20" class="network"/>
+  <text x="44" y="732" class="group-label">Téléphone ou ordinateur de retour sur le Wi-Fi de la maison</text>
+
+  <rect x="120" y="746" width="580" height="100" rx="16" class="node"/>
+  <circle cx="80" cy="796" r="22" class="circle"/>
+  <text x="80" y="802" text-anchor="middle" class="number">7</text>
+  <text x="140" y="776" class="label">Retrouver la console</text>
+  <text x="140" y="802" class="detail">https://pi-appliance-XXXX.local/pi-appliance/</text>
+  <text x="140" y="826" class="detail">ou https://&lt;adresse du Pi&gt;/pi-appliance/ (liste des appareils de la box)</text>
+
+  <path d="M80 129V183M80 229V313M80 359V413M80 459V513M80 559V613M80 659V772" class="link"/>
+</svg>

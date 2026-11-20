@@ -1,6 +1,6 @@
 # Logo pi-appliance — pistes
 
-Sept pistes de logo. **Piste retenue : 5, « La maison », en framboise**, fichiers définitifs dans [`framboise/`](framboise/), voir la [charte graphique](../charte-graphique.md). La console utilise le **logo photo** (PNG), dans [`photo/`](photo/). Les pistes ci-dessous restent pour mémoire.
+Sept pistes de logo. **Piste retenue : 5, « La maison », en framboise**, fichiers définitifs dans [`framboise/`](framboise/), voir la [charte graphique](../charte-graphique.md). La console et le site utilisent ce même logo ; l'ancien logo photo (PNG), dans [`photo/`](photo/), n'est plus utilisé. Les pistes ci-dessous restent pour mémoire.
 
 | Piste | Idée | Couleurs |
 |-------|------|----------|
