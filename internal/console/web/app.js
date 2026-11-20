@@ -18,6 +18,7 @@ const message = document.getElementById("message");
 const servicesList = document.getElementById("services");
 const noServices = document.getElementById("noServices");
 const catalogList = document.getElementById("catalog");
+const catalogSource = document.getElementById("catalogSource");
 const footer = document.getElementById("version");
 const statusDot = document.getElementById("statusDot");
 const authSection = document.getElementById("auth");
@@ -486,7 +487,8 @@ function startDashboard() {
 }
 
 async function loadCatalog() {
-  const { apps } = await api("catalog");
+  const { apps, source } = await api("catalog");
+  showCatalogSource(source);
   for (const app of apps) {
     icons[app.id] = app.icon;
   }
@@ -880,6 +882,19 @@ function customComposeCard() {
 async function refreshResources() {
   await loadResources();
   await loadCatalog();
+}
+
+// D'où vient le catalogue : lu en ligne (date) ou intégré à la console.
+function showCatalogSource(source) {
+  catalogSource.hidden = !source;
+  if (!source) return;
+  const lines = [source.online
+    ? t("Catalogue mis à jour en ligne le {0}.", new Date(source.updated_at).toLocaleString(LOCALE))
+    : t("Catalogue intégré à la console : il n'a pas encore pu être lu en ligne.")];
+  if (source.refused && source.refused.length) {
+    lines.push(t("Pas encore disponibles sur cette console : {0}.", source.refused.join(", ")));
+  }
+  catalogSource.textContent = lines.join(" ");
 }
 
 // Dernière construction d'un générateur de site statique (Hugo, MkDocs…).

@@ -16,6 +16,7 @@
 package marketplace
 
 import (
+	"bytes"
 	"embed"
 	"errors"
 	"fmt"
@@ -134,6 +135,17 @@ func Load(fsys fs.FS) (Catalog, error) {
 func Parse(id string, data []byte) (App, error) {
 	var file composeFile
 	if err := yaml.Unmarshal(data, &file); err != nil {
+		return App{}, fmt.Errorf("manifeste %s : %w", id, err)
+	}
+	// Clé inconnue de x-pi-appliance refusée : une console plus ancienne que
+	// le catalogue en ligne n'installe pas un manifeste qu'elle comprendrait mal.
+	var strict struct {
+		Meta  *App           `yaml:"x-pi-appliance"`
+		Other map[string]any `yaml:",inline"`
+	}
+	decoder := yaml.NewDecoder(bytes.NewReader(data))
+	decoder.KnownFields(true)
+	if err := decoder.Decode(&strict); err != nil {
 		return App{}, fmt.Errorf("manifeste %s : %w", id, err)
 	}
 	if file.Meta == nil {

@@ -34,6 +34,7 @@ import (
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
+	"github.com/gmoulard/pi-appliance/internal/catalog"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
@@ -130,9 +131,16 @@ type SessionState struct {
 }
 
 // Config rassemble ce dont la console a besoin.
+// Catalog : le catalogue de la marketplace, intégré (marketplace.Catalog) ou
+// tenu à jour en ligne (catalog.Source).
+type Catalog interface {
+	Apps() []marketplace.App
+	Get(id string) (marketplace.App, bool)
+}
+
 type Config struct {
 	Version  string
-	Catalog  marketplace.Catalog
+	Catalog  Catalog
 	Services *services.Manager
 	Accounts *auth.Store
 	// Network peut être nil (poste de développement) : les écrans du réseau
@@ -511,7 +519,11 @@ func (c *console) health(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (c *console) listCatalog(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]any{"apps": c.Catalog.Apps()})
+	body := map[string]any{"apps": c.Catalog.Apps()}
+	if source, ok := c.Catalog.(interface{ Status() catalog.Status }); ok {
+		body["source"] = source.Status()
+	}
+	writeJSON(w, http.StatusOK, body)
 }
 
 // ServiceView est un service installé avec son état vert, orange ou rouge.

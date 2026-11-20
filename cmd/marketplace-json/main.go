@@ -13,6 +13,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// marketplace-json écrit le catalogue publié (docs/static) à partir des
+// manifestes de marketplace/ et de marketplace/planned.yaml. Le site et les
+// consoles le lisent ; un test vérifie qu'il est à jour.
 package main
 
 import (
@@ -21,52 +24,74 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
-type catalogDocument struct {
-	Apps []marketplace.App `json:"apps"`
-}
+const indexName = "pi-appliance-catalog.json"
+
+var catalogName = regexp.MustCompile(`^pi-appliance-[0-9a-f]{32}\.json$`)
 
 type catalogIndex struct {
 	File string `json:"file"`
 }
 
 func main() {
-	if err := generate(); err != nil {
+	if err := generate(filepath.Join("docs", "static")); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func generate() error {
+// render : nom du fichier du catalogue (MD5 de son contenu), son contenu et l'index.
+func render() (string, []byte, []byte, error) {
 	catalog, err := marketplace.Builtin()
 	if err != nil {
-		return fmt.Errorf("lecture du catalogue : %w", err)
+		return "", nil, nil, fmt.Errorf("lecture du catalogue : %w", err)
 	}
-	data, err := json.MarshalIndent(catalogDocument{Apps: catalog.Apps()}, "", "  ")
+	planned, err := marketplace.BuiltinPlanned(catalog)
 	if err != nil {
-		return fmt.Errorf("encodage du catalogue : %w", err)
+		return "", nil, nil, err
+	}
+	data, err := json.MarshalIndent(marketplace.Publish(catalog, planned), "", "  ")
+	if err != nil {
+		return "", nil, nil, fmt.Errorf("encodage du catalogue : %w", err)
 	}
 	data = append(data, '\n')
-
 	filename := fmt.Sprintf("pi-appliance-%x.json", md5.Sum(data))
-	directory := filepath.Join("docs", "static")
+	index, err := json.MarshalIndent(catalogIndex{File: filename}, "", "  ")
+	if err != nil {
+		return "", nil, nil, fmt.Errorf("encodage de l'index du catalogue : %w", err)
+	}
+	return filename, data, append(index, '\n'), nil
+}
+
+func generate(directory string) error {
+	filename, data, index, err := render()
+	if err != nil {
+		return err
+	}
 	if err := os.MkdirAll(directory, 0o755); err != nil {
 		return fmt.Errorf("création de %s : %w", directory, err)
 	}
 	if err := os.WriteFile(filepath.Join(directory, filename), data, 0o644); err != nil {
 		return fmt.Errorf("écriture du catalogue : %w", err)
 	}
-
-	index, err := json.MarshalIndent(catalogIndex{File: filename}, "", "  ")
-	if err != nil {
-		return fmt.Errorf("encodage de l'index du catalogue : %w", err)
-	}
-	index = append(index, '\n')
-	if err := os.WriteFile(filepath.Join(directory, "pi-appliance-catalog.json"), index, 0o644); err != nil {
+	if err := os.WriteFile(filepath.Join(directory, indexName), index, 0o644); err != nil {
 		return fmt.Errorf("écriture de l'index du catalogue : %w", err)
+	}
+	// Les anciennes versions du catalogue ne sont plus lues par personne.
+	entries, err := os.ReadDir(directory)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if catalogName.MatchString(entry.Name()) && entry.Name() != filename {
+			if err := os.Remove(filepath.Join(directory, entry.Name())); err != nil {
+				return err
+			}
+		}
 	}
 	fmt.Printf("Catalogue écrit dans %s\n", filepath.Join(directory, filename))
 	return nil

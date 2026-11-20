@@ -18,19 +18,19 @@ La marketplace regroupe les applications que l'on peut installer et gérer depui
 </table>
 </div>
 
-Cette liste est chargée depuis le catalogue JSON généré à partir des manifestes de [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). Après toute modification d'un manifeste, régénérez le fichier avec `go run ./cmd/marketplace-json` depuis la racine du dépôt. Le nom du fichier contient le MD5 de son contenu ; l'index `docs/static/pi-appliance-catalog.json` indique la version courante.
+Cette liste est chargée depuis le catalogue JSON généré à partir des manifestes de [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). Les consoles lisent ce même fichier dans le dépôt GitHub : une application acceptée apparaît sur les Pi sans nouvelle version de pi-appliance. Après toute modification d'un manifeste ou de `marketplace/planned.yaml`, régénérez le fichier avec `go run ./cmd/marketplace-json` depuis la racine du dépôt ; les tests (`go test ./...`) échouent sinon. Le nom du fichier contient le MD5 de son contenu ; l'index `docs/static/pi-appliance-catalog.json` indique la version courante.
 
 La console gère plusieurs instances, leur démarrage et leur arrêt, les mises à jour avec retour arrière, ainsi que la conservation ou la suppression des données à la désinstallation.
 
 ## Ce qui est prévu ou à l'étude
 
-Ces pistes ne sont pas encore installables depuis la marketplace :
+Ces applications ne sont pas encore installables depuis la marketplace. La liste vient du même catalogue JSON (`marketplace/planned.yaml`) :
 
-- **Bases de données** : PostgreSQL est disponible, avec l'interface web Adminer. MongoDB (Pi 5 seulement), Redis, MSSQL (pas d'image pour le Pi) et SQLite (un simple fichier) ne sont pas proposés seuls : voir la [spécification](specification.html), section 6.3.
-- **Samba** : partage de fichiers sur le réseau local.
-- **Caméra et timelapse** : applications autour de Motion et de la capture d'images.
+<ul id="marketplace-planned" hidden></ul>
 
-Les liens publics de partage Etherpad et les réglages avancés sont aussi des améliorations prévues. Consultez la [feuille de route](TODO.html) pour connaître leur avancement.
+Bases de données : PostgreSQL est disponible, avec l'interface web Adminer. MongoDB (Pi 5 seulement), Redis, MSSQL (pas d'image pour le Pi) et SQLite (un simple fichier) ne sont pas proposés seuls : voir la [spécification](specification.html), section 6.3.
+
+Les liens publics de partage Etherpad sont aussi une amélioration prévue. Consultez la [feuille de route](TODO.html) pour connaître leur avancement.
 
 ## Ajouter une application : tout le monde peut contribuer
 
@@ -82,6 +82,9 @@ volumes:
 - Déclarez les paramètres en majuscules dans `parameters`. Pour les secrets, utilisez `generate: true` plutôt que de mettre un mot de passe dans le manifeste ou dans une image.
 - Stockez les données persistantes dans des volumes Docker nommés. Ne mettez ni secret, ni donnée personnelle, ni configuration propre à un utilisateur dans le dépôt.
 - Renseignez la licence de l'application et vérifiez que sa redistribution est compatible avec le projet.
+- N'utilisez que les clés documentées dans `x-pi-appliance` : une clé inconnue fait refuser le manifeste.
+- Évitez les options qui donnent la main sur tout le Pi (conteneur privilégié, accès à Docker, dossier du Pi, réseau de l'hôte, droits ajoutés) : une nouvelle application qui en a ne sera pas installable depuis le catalogue en ligne, seulement après une nouvelle version de pi-appliance.
+- Une application prévue mais pas encore prête va dans `marketplace/planned.yaml` (nom, description, icône, catégorie et ligne de la feuille de route) : le site l'affiche « À venir ».
 
 La définition complète des champs et les règles de validation sont dans la [spécification, section 6.5](specification.html).
 
@@ -90,12 +93,13 @@ La définition complète des champs et les règles de validation sont dans la [s
 Depuis la racine du dépôt, lancez :
 
 ```shell
+go run ./cmd/marketplace-json
 go test ./...
 ```
 
 Les tests vérifient notamment que les manifestes sont valides, que les images ont une version fixée et que les variables Compose sont déclarées. Si possible, essayez aussi l'installation, l'arrêt, le redémarrage et la désinstallation de votre application avec Docker sur une machine de test.
 
-Ouvrez ensuite une pull request vers `master`, avec une description de l'application, les ressources nécessaires, les étapes de test et les éventuelles limites connues. Comme le catalogue est intégré au binaire, une application acceptée apparaîtra dans une version ultérieure de pi-appliance, pas immédiatement sur les installations existantes.
+Ouvrez ensuite une pull request vers `master`, avec une description de l'application, les ressources nécessaires, les étapes de test et les éventuelles limites connues. Une fois la pull request acceptée sur `master`, les appliances lisent le nouveau catalogue en ligne dans les 6 heures, sans nouvelle version de pi-appliance.
 
 ## Liens utiles
 

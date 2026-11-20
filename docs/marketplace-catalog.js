@@ -24,11 +24,47 @@
     if (!response.ok) throw new Error(`Catalogue : HTTP ${response.status}`);
     const catalog = await response.json();
     if (!Array.isArray(catalog.apps)) throw new Error("Format du catalogue invalide.");
-    return catalog.apps;
+    return { apps: catalog.apps, planned: Array.isArray(catalog.planned) ? catalog.planned : [] };
   }
 
-  function populateMarketplace(apps) {
+  function appCard(app, index, label) {
+    const card = document.createElement("li");
+    card.className = `app tint-${index % 6}`;
+    const tile = document.createElement("span");
+    tile.className = "tile";
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("width", "26");
+    svg.setAttribute("height", "26");
+    svg.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", app.icon);
+    svg.append(path);
+    tile.append(svg);
+    const title = document.createElement("h3");
+    title.textContent = app.name;
+    const description = document.createElement("p");
+    description.textContent = app.description;
+    const state = document.createElement("span");
+    state.className = "soon";
+    state.textContent = label;
+    card.append(tile, title, description, state);
+    return card;
+  }
+
+  function populateMarketplace(apps, planned) {
     if (!marketplaceRoot) return;
+    const plannedList = document.getElementById("marketplace-planned");
+    if (plannedList) {
+      plannedList.replaceChildren(...planned.map((app) => {
+        const item = document.createElement("li");
+        const name = document.createElement("strong");
+        name.textContent = app.name;
+        item.append(name, ` : ${app.description} (${app.todo})`);
+        return item;
+      }));
+      plannedList.hidden = planned.length === 0;
+    }
     const status = document.getElementById("marketplace-catalog-status");
     const table = document.getElementById("marketplace-catalog-table");
     const body = table.querySelector("tbody");
@@ -51,42 +87,21 @@
     table.hidden = false;
   }
 
-  function populateHome(apps) {
+  function populateHome(apps, planned) {
     if (!homeRoot) return;
     const list = homeRoot.querySelector(".apps");
-    const placeholder = document.getElementById("planned-wireguard");
     const status = document.getElementById("home-catalog-status");
-    apps.forEach((app, index) => {
-      const card = document.createElement("li");
-      card.className = `app tint-${index % 6}`;
-      const tile = document.createElement("span");
-      tile.className = "tile";
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 24 24");
-      svg.setAttribute("width", "26");
-      svg.setAttribute("height", "26");
-      svg.setAttribute("aria-hidden", "true");
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", app.icon);
-      svg.append(path);
-      tile.append(svg);
-      const title = document.createElement("h3");
-      title.textContent = app.name;
-      const description = document.createElement("p");
-      description.textContent = app.description;
-      const state = document.createElement("span");
-      state.className = "soon";
-      state.textContent = "Dans le prototype";
-      card.append(tile, title, description, state);
-      list.insertBefore(card, placeholder);
-    });
+    list.replaceChildren(
+      ...apps.map((app, index) => appCard(app, index, "Dans le prototype")),
+      ...planned.map((app, index) => appCard(app, apps.length + index, "À venir")),
+    );
     status.hidden = true;
   }
 
   loadCatalog()
-    .then((apps) => {
-      populateMarketplace(apps);
-      populateHome(apps);
+    .then(({ apps, planned }) => {
+      populateMarketplace(apps, planned);
+      populateHome(apps, planned);
     })
     .catch((error) => {
       console.error("Chargement du catalogue impossible :", error);

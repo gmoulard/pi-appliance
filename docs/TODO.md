@@ -124,7 +124,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 
 - [x] **TODO-2.27**: Les services de la marketplace sont décrits dans le fichier `docs/static/pi-appliance-<MD5Fichier>.json` ; chaque fois qu'il faut lister les services, se référer à ce document.
 - [x] **TODO-2.28**: Format de manifeste et validation (6.5).
-- [ ] **TODO-2.29**: Dépôt GitHub du catalogue et règles de contribution ; lecture en ligne (aujourd'hui intégré au binaire).
+- [x] **TODO-2.29**: Dépôt GitHub du catalogue et règles de contribution ; lecture en ligne : catalogue publié `docs/static/pi-appliance-<MD5>.json` (manifestes complets et applications prévues de `marketplace/planned.yaml`), vérifié à jour par `go test`, seule source des listes du site ; console qui le lit dans le dépôt GitHub toutes les 6 heures, revérifie chaque manifeste, refuse les options dangereuses ajoutées et les clés inconnues, garde le catalogue précédent en cas d'échec (`internal/catalog`, spécification 6.1). À vérifier sur un vrai Pi, une fois sur `master`.
+  - [ ] Signer le catalogue publié avec une clé du projet (Ed25519, clé privée en secret GitHub, signature faite par un workflow, clé publique dans le binaire) : aujourd'hui la confiance repose sur HTTPS, GitHub et la relecture des pull requests.
 - [x] **TODO-2.30**: Installation, désinstallation (question sur les données), plusieurs instances (6.5).
 - [x] **TODO-2.31**: Démarrer, arrêter, redémarrer un service ; état vert/orange/rouge.
 - [x] **TODO-2.32**: Mise à jour d'un service avec retour arrière automatique.

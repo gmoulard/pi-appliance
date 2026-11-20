@@ -27,6 +27,7 @@ import (
 	"testing"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/catalog"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -334,6 +335,20 @@ func TestCatalog(t *testing.T) {
 	}
 	if !ids["dokuwiki"] || !ids["hugo"] {
 		t.Fatalf("catalogue %v", body.Apps)
+	}
+}
+
+// Avec le catalogue en ligne, la console dit d'où il vient.
+func TestCatalogSource(t *testing.T) {
+	f := newFixture(t)
+	builtin, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.handler = Handler(Config{Version: "1.2.3", Catalog: &catalog.Source{Builtin: builtin}, Services: f.manager, Accounts: f.accounts})
+	response := f.do(http.MethodGet, "/pi-appliance/api/catalog", "", "", f.admin(t))
+	if body := response.Body.String(); response.Code != http.StatusOK || !strings.Contains(body, `"source":{"online":false}`) || !strings.Contains(body, `"id":"nextcloud"`) {
+		t.Fatalf("code %d : %s", response.Code, body)
 	}
 }
 

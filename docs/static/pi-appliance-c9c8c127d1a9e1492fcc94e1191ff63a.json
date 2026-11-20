@@ -1,0 +1,288 @@
+{
+  "format": 1,
+  "apps": [
+    {
+      "id": "jekyll",
+      "name": "Blog Jekyll",
+      "description": "Un blog ou un site en Markdown avec Jekyll, comme sur GitHub Pages. Déposez les fichiers source : il est reconstruit tout seul.",
+      "icon": "M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7.5 15h9",
+      "category": "Site web",
+      "license": "MIT (Jekyll) et BSD-2-Clause (nginx)",
+      "subdomain": "blog",
+      "memory_mb": 512,
+      "disk_mb": 3072,
+      "login": "application",
+      "access": "public",
+      "parameters": null,
+      "site_files": true,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Blog Jekyll\n  description: \"Un blog ou un site en Markdown avec Jekyll, comme sur GitHub Pages. Déposez les fichiers source : il est reconstruit tout seul.\"\n  icon: M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7.5 15h9\n  category: Site web\n  license: MIT (Jekyll) et BSD-2-Clause (nginx)\n  subdomain: blog\n  service: web\n  port: 80\n  memory_mb: 512\n  disk_mb: 3072\n  login: application\n  access: public\n  # Fichiers source déposés par ZIP ou Nextcloud.\n  files:\n    - service: builder\n      path: /src\n\nservices:\n  web:\n    image: nginx:1.30-alpine\n    restart: unless-stopped\n    # Sert le dernier site construit sans erreur (volume public, dossier site).\n    command:\n      - sh\n      - -c\n      - |\n        printf '%s\\n' 'server {' '  listen 80;' '  absolute_redirect off;' '  root /srv/site;' '  index index.html;' '  location / { try_files $$uri $$uri/ $$uri.html =404; }' '  error_page 404 /404.html;' '}' \u003e /etc/nginx/conf.d/default.conf\n        exec nginx -g 'daemon off;'\n    volumes:\n      - public:/srv:ro\n\n  # Construit le site à chaque changement des fichiers source (vérifié toutes\n  # les 10 secondes). En cas d'échec, le site précédent reste en ligne ;\n  # l'état et le journal sont écrits dans le dossier des fichiers source\n  # (.pi-appliance-build, .pi-appliance-build.log).\n  builder:\n    image: jekyll/jekyll:4.4.1\n    restart: unless-stopped\n    environment:\n      SITE_URL: https://${PI_HOST}/\n      SITE_GENERATOR: Jekyll\n    entrypoint:\n      - sh\n      - -c\n      - |\n        build() {\n          export JEKYLL_ENV=production\n          printf 'url: \"%s\"\\n' \"$${SITE_URL%/}\" \u003e /tmp/pi-appliance.yml\n          config=/tmp/pi-appliance.yml\n          for file in _config.yaml _config.yml; do\n            if [ -f \"$$file\" ]; then config=\"$$file,$$config\"; fi\n          done\n          if [ -f Gemfile ]; then\n            export BUNDLE_PATH=/cache/bundle\n            bundle install \u0026\u0026 bundle exec jekyll build --config \"$$config\" --destination /public/next\n          else\n            jekyll build --config \"$$config\" --destination /public/next\n          fi\n        }\n        signature() {\n          find /src \\( -name node_modules -o -name .git -o -name '.pi-appliance-build*' \\) -prune -o -type f -exec stat -c '%n %s %Y' {} + 2\u003e/dev/null | md5sum\n        }\n        status() {\n          printf '%s\\n%s\\n' \"$$1\" \"$$(date -u +%Y-%m-%dT%H:%M:%SZ)\" \u003e /src/.pi-appliance-build\n        }\n        publish() {\n          rm -rf /public/old\n          if [ -d /public/site ]; then mv /public/site /public/old; fi\n          mv /public/next /public/site\n          rm -rf /public/old\n        }\n        placeholder() {\n          rm -rf /public/next\n          mkdir -p /public/next\n          printf '%s\\n' '\u003c!doctype html\u003e' '\u003chtml lang=\"fr\"\u003e\u003cmeta charset=\"utf-8\"\u003e\u003ctitle\u003eSite en construction\u003c/title\u003e' '\u003cbody style=\"font-family:sans-serif;text-align:center;margin-top:20vh\"\u003e' \"\u003ch1\u003eSite en construction\u003c/h1\u003e\u003cp\u003eDéposez les fichiers source de votre site $$SITE_GENERATOR.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e\" \u003e /public/next/index.html\n          publish\n        }\n        mkdir -p /src /work /public /cache\n        last=\n        while :; do\n          current=$$(signature)\n          if [ \"$$current\" != \"$$last\" ]; then\n            last=$$current\n            if [ -z \"$$(find /src -mindepth 1 -maxdepth 1 ! -name '.pi-appliance-build*' | head -n 1)\" ]; then\n              rm -f /src/.pi-appliance-build /src/.pi-appliance-build.log\n              placeholder\n            else\n              status building\n              find /work -mindepth 1 -maxdepth 1 ! -name node_modules -exec rm -rf {} +\n              cp -a /src/. /work/\n              rm -f /work/.pi-appliance-build /work/.pi-appliance-build.log\n              rm -rf /public/next\n              if ! (cd /work \u0026\u0026 build) \u003e /src/.pi-appliance-build.log 2\u003e\u00261; then\n                echo \"La construction a échoué : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              elif [ ! -f /public/next/index.html ]; then\n                echo \"Aucune page d'accueil (index.html) produite : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              else\n                publish\n                status ok\n              fi\n            fi\n          fi\n          sleep 10\n        done\n    volumes:\n      - public:/public\n      - work:/work\n      - cache:/cache\n\nvolumes:\n  public:\n  work:\n  cache:\n"
+    },
+    {
+      "id": "mkdocs",
+      "name": "Documentation MkDocs",
+      "description": "Une documentation en Markdown avec MkDocs et le thème Material. Déposez les fichiers source : elle est reconstruite toute seule.",
+      "icon": "M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z",
+      "category": "Site web",
+      "license": "BSD-2-Clause (MkDocs, nginx) et MIT (Material for MkDocs)",
+      "subdomain": "docs",
+      "memory_mb": 256,
+      "disk_mb": 1024,
+      "login": "application",
+      "access": "public",
+      "parameters": null,
+      "site_files": true,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Documentation MkDocs\n  description: \"Une documentation en Markdown avec MkDocs et le thème Material. Déposez les fichiers source : elle est reconstruite toute seule.\"\n  icon: M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z\n  category: Site web\n  license: BSD-2-Clause (MkDocs, nginx) et MIT (Material for MkDocs)\n  subdomain: docs\n  service: web\n  port: 80\n  memory_mb: 256\n  disk_mb: 1024\n  login: application\n  access: public\n  # Fichiers source déposés par ZIP ou Nextcloud.\n  files:\n    - service: builder\n      path: /src\n\nservices:\n  web:\n    image: nginx:1.30-alpine\n    restart: unless-stopped\n    # Sert le dernier site construit sans erreur (volume public, dossier site).\n    command:\n      - sh\n      - -c\n      - |\n        printf '%s\\n' 'server {' '  listen 80;' '  absolute_redirect off;' '  root /srv/site;' '  index index.html;' '  location / { try_files $$uri $$uri/ $$uri.html =404; }' '  error_page 404 /404.html;' '}' \u003e /etc/nginx/conf.d/default.conf\n        exec nginx -g 'daemon off;'\n    volumes:\n      - public:/srv:ro\n\n  # Construit le site à chaque changement des fichiers source (vérifié toutes\n  # les 10 secondes). En cas d'échec, le site précédent reste en ligne ;\n  # l'état et le journal sont écrits dans le dossier des fichiers source\n  # (.pi-appliance-build, .pi-appliance-build.log).\n  builder:\n    image: squidfunk/mkdocs-material:9.8.2\n    restart: unless-stopped\n    environment:\n      SITE_URL: https://${PI_HOST}/\n      SITE_GENERATOR: MkDocs\n    entrypoint:\n      - sh\n      - -c\n      - |\n        build() {\n          mkdocs build --config-file /work/mkdocs.yml --site-dir /public/next\n        }\n        signature() {\n          find /src \\( -name node_modules -o -name .git -o -name '.pi-appliance-build*' \\) -prune -o -type f -exec stat -c '%n %s %Y' {} + 2\u003e/dev/null | md5sum\n        }\n        status() {\n          printf '%s\\n%s\\n' \"$$1\" \"$$(date -u +%Y-%m-%dT%H:%M:%SZ)\" \u003e /src/.pi-appliance-build\n        }\n        publish() {\n          rm -rf /public/old\n          if [ -d /public/site ]; then mv /public/site /public/old; fi\n          mv /public/next /public/site\n          rm -rf /public/old\n        }\n        placeholder() {\n          rm -rf /public/next\n          mkdir -p /public/next\n          printf '%s\\n' '\u003c!doctype html\u003e' '\u003chtml lang=\"fr\"\u003e\u003cmeta charset=\"utf-8\"\u003e\u003ctitle\u003eSite en construction\u003c/title\u003e' '\u003cbody style=\"font-family:sans-serif;text-align:center;margin-top:20vh\"\u003e' \"\u003ch1\u003eSite en construction\u003c/h1\u003e\u003cp\u003eDéposez les fichiers source de votre site $$SITE_GENERATOR.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e\" \u003e /public/next/index.html\n          publish\n        }\n        mkdir -p /src /work /public /cache\n        last=\n        while :; do\n          current=$$(signature)\n          if [ \"$$current\" != \"$$last\" ]; then\n            last=$$current\n            if [ -z \"$$(find /src -mindepth 1 -maxdepth 1 ! -name '.pi-appliance-build*' | head -n 1)\" ]; then\n              rm -f /src/.pi-appliance-build /src/.pi-appliance-build.log\n              placeholder\n            else\n              status building\n              find /work -mindepth 1 -maxdepth 1 ! -name node_modules -exec rm -rf {} +\n              cp -a /src/. /work/\n              rm -f /work/.pi-appliance-build /work/.pi-appliance-build.log\n              rm -rf /public/next\n              if ! (cd /work \u0026\u0026 build) \u003e /src/.pi-appliance-build.log 2\u003e\u00261; then\n                echo \"La construction a échoué : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              elif [ ! -f /public/next/index.html ]; then\n                echo \"Aucune page d'accueil (index.html) produite : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              else\n                publish\n                status ok\n              fi\n            fi\n          fi\n          sleep 10\n        done\n    volumes:\n      - public:/public\n      - work:/work\n      - cache:/cache\n\nvolumes:\n  public:\n  work:\n  cache:\n"
+    },
+    {
+      "id": "dokuwiki",
+      "name": "DokuWiki",
+      "description": "Un wiki simple pour écrire et partager des pages, sans base de données.",
+      "icon": "M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2.5zM4 19.5A2 2 0 0 0 6 21h14M8 7h8M8 11h6",
+      "category": "Documents",
+      "license": "GPL-2.0",
+      "subdomain": "wiki",
+      "memory_mb": 128,
+      "disk_mb": 1024,
+      "login": "application",
+      "access": "users",
+      "parameters": [
+        {
+          "name": "DOKUWIKI_ADMIN_PASSWORD",
+          "label": "Mot de passe de l'administrateur de DokuWiki",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: DokuWiki\n  description: Un wiki simple pour écrire et partager des pages, sans base de données.\n  icon: M4 19.5V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2.5zM4 19.5A2 2 0 0 0 6 21h14M8 7h8M8 11h6\n  category: Documents\n  license: GPL-2.0\n  subdomain: wiki\n  service: wiki\n  port: 8080\n  memory_mb: 128\n  disk_mb: 1024\n  login: application\n  access: users\n  parameters:\n    - name: DOKUWIKI_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur de DokuWiki\n      generate: true\n\nservices:\n  wiki:\n    image: dokuwiki/dokuwiki:2026-07-14c\n    restart: unless-stopped\n    environment:\n      DOKUWIKI_ADMIN_PASSWORD: ${DOKUWIKI_ADMIN_PASSWORD}\n      PHP_MEMORYLIMIT: 128M\n      PHP_TIMEZONE: Europe/Paris\n    # Au premier démarrage, crée le compte « admin » avec le mot de passe\n    # généré, à la place de l'assistant d'installation de DokuWiki : sinon le\n    # premier visiteur choisirait lui-même le compte administrateur.\n    # Tout le monde lit, les comptes du wiki écrivent ; pas d'inscription libre.\n    entrypoint:\n      - sh\n      - -c\n      - |\n        set -e\n        conf=/storage/conf\n        mkdir -p \"$$conf\"\n        if [ ! -e \"$$conf/local.php\" ]; then\n          hash=$$(php -r 'echo password_hash(getenv(\"DOKUWIKI_ADMIN_PASSWORD\"), PASSWORD_BCRYPT);')\n          printf 'admin:%s:Administrateur:admin@localhost:admin,user\\n' \"$$hash\" \u003e \"$$conf/users.auth.php\"\n          printf '*\\t@ALL\\t1\\n*\\t@user\\t8\\n' \u003e \"$$conf/acl.auth.php\"\n          printf '%s\\n' '\u003c?php' '$$conf[\"title\"] = \"Wiki\";' '$$conf[\"lang\"] = \"fr\";' '$$conf[\"useacl\"] = 1;' '$$conf[\"superuser\"] = \"@admin\";' '$$conf[\"disableactions\"] = \"register\";' \u003e \"$$conf/local.php\"\n        fi\n        exec /dokuwiki-entrypoint.sh\n    volumes:\n      - storage:/storage\n\nvolumes:\n  storage:\n"
+    },
+    {
+      "id": "etherpad",
+      "name": "Etherpad",
+      "description": "Écrire un texte à plusieurs, en même temps, chacun depuis son appareil.",
+      "icon": "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5",
+      "category": "Documents",
+      "license": "Apache-2.0",
+      "subdomain": "pad",
+      "memory_mb": 384,
+      "disk_mb": 1024,
+      "login": "application",
+      "access": "users",
+      "parameters": [
+        {
+          "name": "ETHERPAD_ADMIN_PASSWORD",
+          "label": "Mot de passe de l'administrateur d'Etherpad",
+          "generate": true
+        },
+        {
+          "name": "ADMIN_SECRET",
+          "label": "",
+          "generate": true
+        },
+        {
+          "name": "USER_SECRET",
+          "label": "",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Etherpad\n  description: Écrire un texte à plusieurs, en même temps, chacun depuis son appareil.\n  icon: M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5\n  category: Documents\n  license: Apache-2.0\n  subdomain: pad\n  service: pad\n  port: 9001\n  memory_mb: 384\n  disk_mb: 1024\n  login: application\n  access: users\n  parameters:\n    - name: ETHERPAD_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur d'Etherpad\n      generate: true\n    - name: ADMIN_SECRET\n      generate: true\n    - name: USER_SECRET\n      generate: true\n\nservices:\n  pad:\n    image: etherpad/etherpad:3\n    restart: unless-stopped\n    # ADMIN_SECRET et USER_SECRET remplacent les secrets par défaut\n    # (« admin », « user ») de la connexion interne d'Etherpad.\n    # Les mises à jour passent par la console (UPDATES_TIER off).\n    environment:\n      TITLE: Etherpad\n      ADMIN_PASSWORD: ${ETHERPAD_ADMIN_PASSWORD}\n      DB_TYPE: sqlite\n      DB_FILENAME: var/etherpad.db\n      TRUST_PROXY: \"true\"\n      PAD_OPTIONS_LANG: fr\n      SSO_ISSUER: https://${PI_HOST}\n      ADMIN_SECRET: ${ADMIN_SECRET}\n      ADMIN_REDIRECT: https://${PI_HOST}/admin/\n      USER_SECRET: ${USER_SECRET}\n      USER_REDIRECT: https://${PI_HOST}/\n      UPDATES_TIER: \"off\"\n      PRIVACY_UPDATE_CHECK: \"false\"\n      PRIVACY_PLUGIN_CATALOG: \"false\"\n    volumes:\n      - var:/opt/etherpad-lite/var\n\nvolumes:\n  var:\n"
+    },
+    {
+      "id": "nextcloud",
+      "name": "Nextcloud",
+      "description": "Vos fichiers, photos, agenda et contacts, chez vous, sur tous vos appareils.",
+      "icon": "M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z",
+      "category": "Fichiers",
+      "license": "AGPL-3.0",
+      "subdomain": "cloud",
+      "memory_mb": 1024,
+      "disk_mb": 2048,
+      "login": "application",
+      "access": "public",
+      "parameters": [
+        {
+          "name": "NEXTCLOUD_ADMIN_PASSWORD",
+          "label": "Mot de passe de l'administrateur de Nextcloud",
+          "generate": true
+        },
+        {
+          "name": "DB_PASSWORD",
+          "label": "",
+          "generate": true
+        },
+        {
+          "name": "DB_ROOT_PASSWORD",
+          "label": "",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Nextcloud\n  description: Vos fichiers, photos, agenda et contacts, chez vous, sur tous vos appareils.\n  icon: M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z\n  category: Fichiers\n  license: AGPL-3.0\n  subdomain: cloud\n  service: app\n  port: 80\n  memory_mb: 1024\n  disk_mb: 2048\n  login: application\n  access: public\n  parameters:\n    - name: NEXTCLOUD_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur de Nextcloud\n      generate: true\n    - name: DB_PASSWORD\n      generate: true\n    - name: DB_ROOT_PASSWORD\n      generate: true\n\nservices:\n  db:\n    image: mariadb:11.4\n    restart: unless-stopped\n    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW\n    environment:\n      MARIADB_DATABASE: nextcloud\n      MARIADB_USER: nextcloud\n      MARIADB_PASSWORD: ${DB_PASSWORD}\n      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    volumes:\n      - db:/var/lib/mysql\n\n  app:\n    image: nextcloud:30-apache\n    restart: unless-stopped\n    depends_on:\n      - db\n    environment:\n      MYSQL_HOST: db\n      MYSQL_DATABASE: nextcloud\n      MYSQL_USER: nextcloud\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n      NEXTCLOUD_ADMIN_USER: admin\n      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}\n      NEXTCLOUD_TRUSTED_DOMAINS: ${PI_HOST}\n      OVERWRITEPROTOCOL: https\n      OVERWRITEHOST: ${PI_HOST}\n      TRUSTED_PROXIES: 172.16.0.0/12\n    volumes:\n      - html:/var/www/html\n\nvolumes:\n  db:\n  html:\n"
+    },
+    {
+      "id": "postgresql",
+      "name": "PostgreSQL",
+      "description": "Une base de données pour vos tableaux, projets et applications, que vous consultez et modifiez depuis votre navigateur.",
+      "icon": "M4 6c0-1.66 3.58-3 8-3s8 1.34 8 3-3.58 3-8 3-8-1.34-8-3zM4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3",
+      "category": "Données",
+      "license": "PostgreSQL",
+      "subdomain": "base",
+      "memory_mb": 256,
+      "disk_mb": 1024,
+      "login": "application",
+      "access": "home",
+      "parameters": [
+        {
+          "name": "POSTGRES_PASSWORD",
+          "label": "Mot de passe de la base (utilisateur postgres)",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: PostgreSQL\n  description: Une base de données pour vos tableaux, projets et applications, que vous consultez et modifiez depuis votre navigateur.\n  icon: M4 6c0-1.66 3.58-3 8-3s8 1.34 8 3-3.58 3-8 3-8-1.34-8-3zM4 6v12c0 1.66 3.58 3 8 3s8-1.34 8-3V6M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3\n  category: Données\n  license: PostgreSQL\n  subdomain: base\n  service: adminer\n  port: 8080\n  memory_mb: 256\n  disk_mb: 1024\n  login: application\n  access: home\n  parameters:\n    - name: POSTGRES_PASSWORD\n      label: Mot de passe de la base (utilisateur postgres)\n      generate: true\n\nservices:\n  # La base n'est pas publiée par Traefik : elle n'est joignable que par\n  # l'interface web (Adminer) et, au besoin, par un port ouvert dans les\n  # réglages avancés de la console (5432).\n  db:\n    image: postgres:18-alpine\n    restart: unless-stopped\n    environment:\n      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}\n    # À partir de PostgreSQL 18, le volume se monte sur /var/lib/postgresql\n    # (les données vont dans 18/docker) : un changement de version majeure\n    # demandera une migration (pg_upgrade), pas un simple changement d'image.\n    volumes:\n      - data:/var/lib/postgresql\n    healthcheck:\n      test: [\"CMD-SHELL\", \"pg_isready -U postgres\"]\n      interval: 10s\n      timeout: 5s\n      retries: 6\n\n  # Interface web officielle Adminer : choisir « PostgreSQL » comme système,\n  # serveur « db », utilisateur « postgres » et le mot de passe généré.\n  adminer:\n    image: adminer:5\n    restart: unless-stopped\n    depends_on:\n      db:\n        condition: service_healthy\n    environment:\n      ADMINER_DEFAULT_SERVER: db\n\nvolumes:\n  data:\n"
+    },
+    {
+      "id": "astro",
+      "name": "Site Astro",
+      "description": "Un site moderne construit avec Astro. Déposez le projet (package.json et src) : il est reconstruit tout seul.",
+      "icon": "M12 2c3 3 4 7 3 11H9c-1-4 0-8 3-11zM9 13l-3 4h4M15 13l3 4h-4M11 19h2",
+      "category": "Site web",
+      "license": "MIT (Astro, Node.js) et BSD-2-Clause (nginx)",
+      "subdomain": "astro",
+      "memory_mb": 1024,
+      "disk_mb": 2048,
+      "login": "application",
+      "access": "public",
+      "parameters": null,
+      "site_files": true,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Site Astro\n  description: \"Un site moderne construit avec Astro. Déposez le projet (package.json et src) : il est reconstruit tout seul.\"\n  icon: M12 2c3 3 4 7 3 11H9c-1-4 0-8 3-11zM9 13l-3 4h4M15 13l3 4h-4M11 19h2\n  category: Site web\n  license: MIT (Astro, Node.js) et BSD-2-Clause (nginx)\n  subdomain: astro\n  service: web\n  port: 80\n  memory_mb: 1024\n  disk_mb: 2048\n  login: application\n  access: public\n  # Fichiers source déposés par ZIP ou Nextcloud.\n  files:\n    - service: builder\n      path: /src\n\nservices:\n  web:\n    image: nginx:1.30-alpine\n    restart: unless-stopped\n    # Sert le dernier site construit sans erreur (volume public, dossier site).\n    command:\n      - sh\n      - -c\n      - |\n        printf '%s\\n' 'server {' '  listen 80;' '  absolute_redirect off;' '  root /srv/site;' '  index index.html;' '  location / { try_files $$uri $$uri/ $$uri.html =404; }' '  error_page 404 /404.html;' '}' \u003e /etc/nginx/conf.d/default.conf\n        exec nginx -g 'daemon off;'\n    volumes:\n      - public:/srv:ro\n\n  # Construit le site à chaque changement des fichiers source (vérifié toutes\n  # les 10 secondes). En cas d'échec, le site précédent reste en ligne ;\n  # l'état et le journal sont écrits dans le dossier des fichiers source\n  # (.pi-appliance-build, .pi-appliance-build.log).\n  builder:\n    image: node:24-alpine\n    restart: unless-stopped\n    environment:\n      SITE_URL: https://${PI_HOST}/\n      SITE_GENERATOR: Astro\n      ASTRO_TELEMETRY_DISABLED: \"1\"\n    entrypoint:\n      - sh\n      - -c\n      - |\n        build() {\n          npm install --no-audit --no-fund \u0026\u0026\n            npx astro build --site \"$$SITE_URL\" \u0026\u0026\n            cp -a dist /public/next\n        }\n        signature() {\n          find /src \\( -name node_modules -o -name .git -o -name '.pi-appliance-build*' \\) -prune -o -type f -exec stat -c '%n %s %Y' {} + 2\u003e/dev/null | md5sum\n        }\n        status() {\n          printf '%s\\n%s\\n' \"$$1\" \"$$(date -u +%Y-%m-%dT%H:%M:%SZ)\" \u003e /src/.pi-appliance-build\n        }\n        publish() {\n          rm -rf /public/old\n          if [ -d /public/site ]; then mv /public/site /public/old; fi\n          mv /public/next /public/site\n          rm -rf /public/old\n        }\n        placeholder() {\n          rm -rf /public/next\n          mkdir -p /public/next\n          printf '%s\\n' '\u003c!doctype html\u003e' '\u003chtml lang=\"fr\"\u003e\u003cmeta charset=\"utf-8\"\u003e\u003ctitle\u003eSite en construction\u003c/title\u003e' '\u003cbody style=\"font-family:sans-serif;text-align:center;margin-top:20vh\"\u003e' \"\u003ch1\u003eSite en construction\u003c/h1\u003e\u003cp\u003eDéposez les fichiers source de votre site $$SITE_GENERATOR.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e\" \u003e /public/next/index.html\n          publish\n        }\n        mkdir -p /src /work /public /cache\n        last=\n        while :; do\n          current=$$(signature)\n          if [ \"$$current\" != \"$$last\" ]; then\n            last=$$current\n            if [ -z \"$$(find /src -mindepth 1 -maxdepth 1 ! -name '.pi-appliance-build*' | head -n 1)\" ]; then\n              rm -f /src/.pi-appliance-build /src/.pi-appliance-build.log\n              placeholder\n            else\n              status building\n              find /work -mindepth 1 -maxdepth 1 ! -name node_modules -exec rm -rf {} +\n              cp -a /src/. /work/\n              rm -f /work/.pi-appliance-build /work/.pi-appliance-build.log\n              rm -rf /public/next\n              if ! (cd /work \u0026\u0026 build) \u003e /src/.pi-appliance-build.log 2\u003e\u00261; then\n                echo \"La construction a échoué : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              elif [ ! -f /public/next/index.html ]; then\n                echo \"Aucune page d'accueil (index.html) produite : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              else\n                publish\n                status ok\n              fi\n            fi\n          fi\n          sleep 10\n        done\n    volumes:\n      - public:/public\n      - work:/work\n      - cache:/cache\n\nvolumes:\n  public:\n  work:\n  cache:\n"
+    },
+    {
+      "id": "hugo",
+      "name": "Site Hugo",
+      "description": "Un site rapide écrit en Markdown avec Hugo. Déposez les fichiers source du site : il est reconstruit tout seul.",
+      "icon": "M12 2l9 5v10l-9 5l-9-5V7zM9 8v8M15 8v8M9 12h6",
+      "category": "Site web",
+      "license": "Apache-2.0 (Hugo) et BSD-2-Clause (nginx)",
+      "subdomain": "hugo",
+      "memory_mb": 256,
+      "disk_mb": 1024,
+      "login": "application",
+      "access": "public",
+      "parameters": null,
+      "site_files": true,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Site Hugo\n  description: \"Un site rapide écrit en Markdown avec Hugo. Déposez les fichiers source du site : il est reconstruit tout seul.\"\n  icon: M12 2l9 5v10l-9 5l-9-5V7zM9 8v8M15 8v8M9 12h6\n  category: Site web\n  license: Apache-2.0 (Hugo) et BSD-2-Clause (nginx)\n  subdomain: hugo\n  service: web\n  port: 80\n  memory_mb: 256\n  disk_mb: 1024\n  login: application\n  access: public\n  # Fichiers source déposés par ZIP ou Nextcloud.\n  files:\n    - service: builder\n      path: /src\n\nservices:\n  web:\n    image: nginx:1.30-alpine\n    restart: unless-stopped\n    # Sert le dernier site construit sans erreur (volume public, dossier site).\n    command:\n      - sh\n      - -c\n      - |\n        printf '%s\\n' 'server {' '  listen 80;' '  absolute_redirect off;' '  root /srv/site;' '  index index.html;' '  location / { try_files $$uri $$uri/ $$uri.html =404; }' '  error_page 404 /404.html;' '}' \u003e /etc/nginx/conf.d/default.conf\n        exec nginx -g 'daemon off;'\n    volumes:\n      - public:/srv:ro\n\n  # Construit le site à chaque changement des fichiers source (vérifié toutes\n  # les 10 secondes). En cas d'échec, le site précédent reste en ligne ;\n  # l'état et le journal sont écrits dans le dossier des fichiers source\n  # (.pi-appliance-build, .pi-appliance-build.log).\n  builder:\n    image: hugomods/hugo:std-0.165.0\n    restart: unless-stopped\n    environment:\n      SITE_URL: https://${PI_HOST}/\n      SITE_GENERATOR: Hugo\n    entrypoint:\n      - sh\n      - -c\n      - |\n        build() {\n          hugo --source /work --destination /public/next --baseURL \"$$SITE_URL\" --minify\n        }\n        signature() {\n          find /src \\( -name node_modules -o -name .git -o -name '.pi-appliance-build*' \\) -prune -o -type f -exec stat -c '%n %s %Y' {} + 2\u003e/dev/null | md5sum\n        }\n        status() {\n          printf '%s\\n%s\\n' \"$$1\" \"$$(date -u +%Y-%m-%dT%H:%M:%SZ)\" \u003e /src/.pi-appliance-build\n        }\n        publish() {\n          rm -rf /public/old\n          if [ -d /public/site ]; then mv /public/site /public/old; fi\n          mv /public/next /public/site\n          rm -rf /public/old\n        }\n        placeholder() {\n          rm -rf /public/next\n          mkdir -p /public/next\n          printf '%s\\n' '\u003c!doctype html\u003e' '\u003chtml lang=\"fr\"\u003e\u003cmeta charset=\"utf-8\"\u003e\u003ctitle\u003eSite en construction\u003c/title\u003e' '\u003cbody style=\"font-family:sans-serif;text-align:center;margin-top:20vh\"\u003e' \"\u003ch1\u003eSite en construction\u003c/h1\u003e\u003cp\u003eDéposez les fichiers source de votre site $$SITE_GENERATOR.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e\" \u003e /public/next/index.html\n          publish\n        }\n        mkdir -p /src /work /public /cache\n        last=\n        while :; do\n          current=$$(signature)\n          if [ \"$$current\" != \"$$last\" ]; then\n            last=$$current\n            if [ -z \"$$(find /src -mindepth 1 -maxdepth 1 ! -name '.pi-appliance-build*' | head -n 1)\" ]; then\n              rm -f /src/.pi-appliance-build /src/.pi-appliance-build.log\n              placeholder\n            else\n              status building\n              find /work -mindepth 1 -maxdepth 1 ! -name node_modules -exec rm -rf {} +\n              cp -a /src/. /work/\n              rm -f /work/.pi-appliance-build /work/.pi-appliance-build.log\n              rm -rf /public/next\n              if ! (cd /work \u0026\u0026 build) \u003e /src/.pi-appliance-build.log 2\u003e\u00261; then\n                echo \"La construction a échoué : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              elif [ ! -f /public/next/index.html ]; then\n                echo \"Aucune page d'accueil (index.html) produite : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              else\n                publish\n                status ok\n              fi\n            fi\n          fi\n          sleep 10\n        done\n    volumes:\n      - public:/public\n      - work:/work\n      - cache:/cache\n\nvolumes:\n  public:\n  work:\n  cache:\n"
+    },
+    {
+      "id": "nextjs",
+      "name": "Site Next.js",
+      "description": "Un site React construit avec Next.js, en export statique (output: 'export'). Déposez le projet : il est reconstruit tout seul.",
+      "icon": "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM9 16V8l6 8V8",
+      "category": "Site web",
+      "license": "MIT (Next.js, Node.js) et BSD-2-Clause (nginx)",
+      "subdomain": "next",
+      "memory_mb": 1536,
+      "disk_mb": 2048,
+      "login": "application",
+      "access": "public",
+      "parameters": null,
+      "site_files": true,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Site Next.js\n  description: \"Un site React construit avec Next.js, en export statique (output: 'export'). Déposez le projet : il est reconstruit tout seul.\"\n  icon: M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM9 16V8l6 8V8\n  category: Site web\n  license: MIT (Next.js, Node.js) et BSD-2-Clause (nginx)\n  subdomain: next\n  service: web\n  port: 80\n  memory_mb: 1536\n  disk_mb: 2048\n  login: application\n  access: public\n  # Fichiers source déposés par ZIP ou Nextcloud.\n  files:\n    - service: builder\n      path: /src\n\nservices:\n  web:\n    image: nginx:1.30-alpine\n    restart: unless-stopped\n    # Sert le dernier site construit sans erreur (volume public, dossier site).\n    command:\n      - sh\n      - -c\n      - |\n        printf '%s\\n' 'server {' '  listen 80;' '  absolute_redirect off;' '  root /srv/site;' '  index index.html;' '  location / { try_files $$uri $$uri/ $$uri.html =404; }' '  error_page 404 /404.html;' '}' \u003e /etc/nginx/conf.d/default.conf\n        exec nginx -g 'daemon off;'\n    volumes:\n      - public:/srv:ro\n\n  # Construit le site à chaque changement des fichiers source (vérifié toutes\n  # les 10 secondes). En cas d'échec, le site précédent reste en ligne ;\n  # l'état et le journal sont écrits dans le dossier des fichiers source\n  # (.pi-appliance-build, .pi-appliance-build.log).\n  builder:\n    image: node:24-alpine\n    restart: unless-stopped\n    environment:\n      SITE_URL: https://${PI_HOST}/\n      SITE_GENERATOR: Next.js\n      NEXT_TELEMETRY_DISABLED: \"1\"\n    entrypoint:\n      - sh\n      - -c\n      - |\n        build() {\n          npm install --no-audit --no-fund \u0026\u0026 npx next build || return 1\n          if [ ! -d out ]; then\n            echo \"Next.js n'a pas produit de site statique : ajoutez output: 'export' dans next.config.\"\n            return 1\n          fi\n          cp -a out /public/next\n        }\n        signature() {\n          find /src \\( -name node_modules -o -name .git -o -name '.pi-appliance-build*' \\) -prune -o -type f -exec stat -c '%n %s %Y' {} + 2\u003e/dev/null | md5sum\n        }\n        status() {\n          printf '%s\\n%s\\n' \"$$1\" \"$$(date -u +%Y-%m-%dT%H:%M:%SZ)\" \u003e /src/.pi-appliance-build\n        }\n        publish() {\n          rm -rf /public/old\n          if [ -d /public/site ]; then mv /public/site /public/old; fi\n          mv /public/next /public/site\n          rm -rf /public/old\n        }\n        placeholder() {\n          rm -rf /public/next\n          mkdir -p /public/next\n          printf '%s\\n' '\u003c!doctype html\u003e' '\u003chtml lang=\"fr\"\u003e\u003cmeta charset=\"utf-8\"\u003e\u003ctitle\u003eSite en construction\u003c/title\u003e' '\u003cbody style=\"font-family:sans-serif;text-align:center;margin-top:20vh\"\u003e' \"\u003ch1\u003eSite en construction\u003c/h1\u003e\u003cp\u003eDéposez les fichiers source de votre site $$SITE_GENERATOR.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e\" \u003e /public/next/index.html\n          publish\n        }\n        mkdir -p /src /work /public /cache\n        last=\n        while :; do\n          current=$$(signature)\n          if [ \"$$current\" != \"$$last\" ]; then\n            last=$$current\n            if [ -z \"$$(find /src -mindepth 1 -maxdepth 1 ! -name '.pi-appliance-build*' | head -n 1)\" ]; then\n              rm -f /src/.pi-appliance-build /src/.pi-appliance-build.log\n              placeholder\n            else\n              status building\n              find /work -mindepth 1 -maxdepth 1 ! -name node_modules -exec rm -rf {} +\n              cp -a /src/. /work/\n              rm -f /work/.pi-appliance-build /work/.pi-appliance-build.log\n              rm -rf /public/next\n              if ! (cd /work \u0026\u0026 build) \u003e /src/.pi-appliance-build.log 2\u003e\u00261; then\n                echo \"La construction a échoué : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              elif [ ! -f /public/next/index.html ]; then\n                echo \"Aucune page d'accueil (index.html) produite : le site précédent reste en ligne.\" \u003e\u003e /src/.pi-appliance-build.log\n                rm -rf /public/next\n                [ -d /public/site ] || placeholder\n                status failed\n              else\n                publish\n                status ok\n              fi\n            fi\n          fi\n          sleep 10\n        done\n    volumes:\n      - public:/public\n      - work:/work\n      - cache:/cache\n\nvolumes:\n  public:\n  work:\n  cache:\n"
+    },
+    {
+      "id": "site-web",
+      "name": "Site web",
+      "description": "Votre site internet, hébergé chez vous. Pages simples ou en PHP.",
+      "icon": "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9M12 3c-2.5 2.5-3.8 5.5-3.8 9s1.3 6.5 3.8 9",
+      "category": "Site web",
+      "license": "Apache-2.0 et PHP-3.01",
+      "subdomain": "www",
+      "memory_mb": 128,
+      "disk_mb": 1024,
+      "login": "application",
+      "access": "public",
+      "parameters": [
+        {
+          "name": "FTP_PASSWORD",
+          "label": "Mot de passe FTP",
+          "generate": true
+        },
+        {
+          "name": "FTP_PORT",
+          "label": "Port FTP",
+          "generate": false,
+          "default": "2121"
+        }
+      ],
+      "site_files": true,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: Site web\n  description: Votre site internet, hébergé chez vous. Pages simples ou en PHP.\n  icon: M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9s-1.3 6.5-3.8 9M12 3c-2.5 2.5-3.8 5.5-3.8 9s1.3 6.5 3.8 9\n  category: Site web\n  license: Apache-2.0 et PHP-3.01\n  subdomain: www\n  service: web\n  port: 80\n  memory_mb: 128\n  disk_mb: 1024\n  login: application\n  access: public\n  # Dossier du site (ZIP, Nextcloud, FTP), le même pour Apache et pour FTP.\n  files:\n    - service: web\n      path: /var/www/html\n    - service: ftp\n      path: /var/www/html\n  parameters:\n    - name: FTP_PASSWORD\n      label: Mot de passe FTP\n      generate: true\n    - name: FTP_PORT\n      label: Port FTP\n      default: \"2121\"\n\nservices:\n  web:\n    image: php:8.4-apache\n    restart: unless-stopped\n    # Tant que le dossier du site est vide, une page « Site en construction »\n    # s'affiche à la place d'une erreur.\n    command:\n      - sh\n      - -c\n      - |\n        if [ -z \"$$(ls -A /var/www/html)\" ]; then\n          printf '%s\\n' '\u003c!doctype html\u003e' '\u003chtml lang=\"fr\"\u003e\u003cmeta charset=\"utf-8\"\u003e\u003ctitle\u003eSite en construction\u003c/title\u003e' '\u003cbody style=\"font-family:sans-serif;text-align:center;margin-top:20vh\"\u003e' '\u003ch1\u003eSite en construction\u003c/h1\u003e\u003cp\u003eCe site est hébergé sur un pi-appliance.\u003c/p\u003e\u003c/body\u003e\u003c/html\u003e' \u003e /var/www/html/index.html\n        fi\n        exec apache2-foreground\n    volumes:\n      - site:/var/www/html\n\n  ftp:\n    image: stilliard/pure-ftpd:hardened-1.0.52\n    restart: unless-stopped\n    environment:\n      FTP_USER_NAME: pi\n      FTP_USER_PASS: ${FTP_PASSWORD}\n      FTP_USER_HOME: /var/www/html\n      ADDED_FLAGS: -d -d\n    ports:\n      - \"${FTP_PORT}:21\"\n    volumes:\n      - site:/var/www/html\n\nvolumes:\n  site:\n"
+    },
+    {
+      "id": "wireguard",
+      "name": "VPN WireGuard",
+      "description": "Retrouvez depuis l'extérieur les appareils de la maison (imprimante, disque réseau, ce Pi) avec votre téléphone, configuré en scannant un QR code. Votre navigation sur internet ne passe pas par la maison.",
+      "icon": "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4",
+      "category": "Réseau",
+      "license": "GPL-3.0",
+      "subdomain": "vpn",
+      "memory_mb": 64,
+      "disk_mb": 256,
+      "login": "application",
+      "access": "public",
+      "parameters": null,
+      "host_ports": [
+        {
+          "port": 51820,
+          "protocol": "udp"
+        }
+      ],
+      "site_files": false,
+      "web": false,
+      "compose": "x-pi-appliance:\n  name: VPN WireGuard\n  description: Retrouvez depuis l'extérieur les appareils de la maison (imprimante, disque réseau, ce Pi) avec votre téléphone, configuré en scannant un QR code. Votre navigation sur internet ne passe pas par la maison.\n  icon: M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4\n  category: Réseau\n  license: GPL-3.0\n  subdomain: vpn\n  # Pas de page web : rien n'est publié par Traefik. La console ouvre le port\n  # UDP 51820 du Pi, à rediriger aussi sur la box (accès direct, section 7.2).\n  service: wireguard\n  host_ports:\n    - port: 51820\n      protocol: udp\n  memory_mb: 64\n  disk_mb: 256\n  # Pas de comptes : chaque appareil a sa clé, créée dans la console.\n  login: application\n  access: public\n\nservices:\n  # Image linuxserver.io en « mode client » (PEERS absent) : elle démarre les\n  # fichiers de /config/wg_confs. La console écrit wg0.conf (clés tirées sur le\n  # Pi, un [Peer] par appareil) dans \u003cdonnées\u003e/services/\u003cnom\u003e/wireguard, monté\n  # là par pi-appliance.override.json, puis redémarre le service.\n  wireguard:\n    image: linuxserver/wireguard:1.0.20260223\n    restart: unless-stopped\n    cap_add:\n      - NET_ADMIN\n    sysctls:\n      - net.ipv4.ip_forward=1\n      - net.ipv4.conf.all.src_valid_mark=1\n    environment:\n      TZ: Etc/UTC\n    volumes:\n      - config:/config\n\nvolumes:\n  config:\n"
+    }
+  ],
+  "planned": [
+    {
+      "id": "samba",
+      "name": "Samba",
+      "description": "Un lecteur réseau à la maison, avec un dossier commun et un dossier par personne.",
+      "icon": "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+      "category": "Fichiers",
+      "todo": "TODO-4.8"
+    },
+    {
+      "id": "camera",
+      "name": "Caméra et timelapse",
+      "description": "Surveiller une pièce ou filmer en accéléré avec la caméra du Pi (Motion).",
+      "icon": "M4 7h3l2-2h6l2 2h3v12H4zM12 10a3 3 0 1 0 0 6a3 3 0 1 0 0-6z",
+      "category": "Maison",
+      "todo": "TODO-4.9"
+    },
+    {
+      "id": "portainer",
+      "name": "Portainer",
+      "description": "Voir et gérer les conteneurs Docker du Pi depuis le navigateur, pour les utilisateurs avertis.",
+      "icon": "M4 10h16v10H4zM7 10V6h10v4M10 14h4",
+      "category": "Administration",
+      "todo": "TODO-2.49"
+    },
+    {
+      "id": "cockpit",
+      "name": "Cockpit",
+      "description": "Administrer le système du Pi depuis le navigateur (journaux, services, disques), pour les utilisateurs avertis.",
+      "icon": "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 12l4-4M12 7v1M7 12h1M16 12h1",
+      "category": "Administration",
+      "todo": "TODO-2.50"
+    }
+  ]
+}

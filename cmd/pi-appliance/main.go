@@ -30,6 +30,7 @@ import (
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
+	"github.com/gmoulard/pi-appliance/internal/catalog"
 	"github.com/gmoulard/pi-appliance/internal/console"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
@@ -63,11 +64,14 @@ func main() {
 	backupScript := flag.String("backup-script", backup.DefaultScript, "script du disque USB des sauvegardes (vide : disque non réglable depuis la console)")
 	updatesScript := flag.String("updates-script", updates.DefaultScript, "script des correctifs du système (vide : système non mis à jour depuis la console)")
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
+	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
 	flag.Parse()
-	catalog, err := marketplace.Builtin()
+	builtin, err := marketplace.Builtin()
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Catalogue lu en ligne et gardé sur le Pi ; l'intégré tant qu'il n'est pas lu (spécification 6.1).
+	market := &catalog.Source{Builtin: builtin, URL: *catalogURL, CacheFile: filepath.Join(*data, "catalog.json"), Version: version, Logf: log.Printf}
 	accounts, err := auth.Open(filepath.Join(*data, "accounts.json"))
 	if err != nil {
 		log.Fatal(err)
@@ -135,7 +139,7 @@ func main() {
 		for _, instance := range instances {
 			apps = append(apps, instance.App)
 		}
-		known := func(app string) bool { _, found := catalog.Get(app); return found }
+		known := func(app string) bool { _, found := market.Get(app); return found }
 		return apps, known, err
 	}
 	if err := reporter.Start(); err != nil {
@@ -143,6 +147,7 @@ func main() {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	go market.Run(ctx)
 	measured := make(chan struct{})
 	go func() {
 		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(resources()) }, log.Printf)
@@ -156,7 +161,7 @@ func main() {
 		Addr: *addr,
 		Handler: reporter.Guard(console.Handler(console.Config{
 			Version:       version,
-			Catalog:       catalog,
+			Catalog:       market,
 			Services:      manager,
 			Accounts:      accounts,
 			Network:       net,
