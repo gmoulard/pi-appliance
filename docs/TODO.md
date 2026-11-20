@@ -220,3 +220,5 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [ ] Installer le service sur le Pi du projet derrière son reverse proxy (`X-Real-IP` posé, journal des accès coupé), créer l'utilisateur IAM et ses clés, `adresses.pi-appliance.com` dans la zone (avec TODO-4.4).
 - [ ] **TODO-5.11**: Traduction dans les 12 langues.
 - [x] **TODO-5.12**: Ajouter à la TODO une option pour masquer et réafficher les actions réalisées.
+- [x] **TODO-5.13**: Pied de page du site : dépôt, version et sa date, commit et sa date (section 13).
+- [x] **TODO-5.14**: Gestion des versions : fichier `VERSION`, historique `CHANGELOG.md`, contrôle de l'étiquette dans le workflow « Image », paramètres du skill `release` dans `CLAUDE.md` (9.2).

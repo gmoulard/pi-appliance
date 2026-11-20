@@ -1,0 +1,31 @@
+<!--
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{%- comment -%}
+Pied de page : dépôt, version publiée, commit du site et sa date.
+Rempli à la construction par GitHub Pages (site.github) ; site-footer.js
+complète la version et la date du commit avec l'API GitHub et met les
+dates en français, à l'heure de Paris.
+{%- endcomment -%}
+{%- assign repo = site.github.repository_nwo | default: "gmoulard/pi-appliance" -%}
+{%- assign sha = site.github.build_revision -%}
+{%- assign release = site.github.latest_release -%}
+<dl class="build-info" id="build-info" data-repo="{{ repo }}" data-commit="{{ sha }}">
+<div><dt>Projet</dt><dd><a href="https://github.com/{{ repo }}">github.com/{{ repo }}</a></dd></div>
+<div><dt>Version</dt><dd><span data-field="version">{% if release %}{{ release.tag_name }}{% else %}pas encore publiée{% endif %}</span>{% if release %}, du <time data-field="version-date" datetime="{{ release.published_at }}">{{ release.published_at | date: "%d/%m/%Y" }}</time>{% else %}<span data-field="version-date"></span>{% endif %}</dd></div>
+<div><dt>Commit</dt><dd>{% if sha and sha != "" %}<a data-field="commit" href="https://github.com/{{ repo }}/commit/{{ sha }}"><code>{{ sha | slice: 0, 7 }}</code></a>, du <time data-field="commit-date" datetime="{{ site.time | date_to_xmlschema }}">{{ site.time | date: "%d/%m/%Y à %H:%M" }}</time>{% else %}copie locale, du <time data-field="commit-date" datetime="{{ site.time | date_to_xmlschema }}">{{ site.time | date: "%d/%m/%Y à %H:%M" }}</time>{% endif %}</dd></div>
+</dl>
+<script src="{{ '/site-footer.js' | relative_url }}" defer></script>

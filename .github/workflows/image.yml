@@ -39,6 +39,17 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      # NE PAS déplacer l'étiquette quand ce contrôle échoue : publier une
+      # nouvelle version (skill release).
+      - name: Étiquette et fichier VERSION
+        if: github.ref_type == 'tag'
+        run: |
+          set -eu
+          expected="v$(tr -d '[:space:]' <VERSION)"
+          if [ "${GITHUB_REF_NAME}" != "$expected" ]; then
+            echo "::error::étiquette ${GITHUB_REF_NAME}, fichier VERSION $expected"
+            exit 1
+          fi
       # Sur une étiquette, la console porte exactement son numéro (v1.2.3) :
       # elle le compare à la dernière version publiée et l'annonce après une
       # mise à jour (updates.sh appliance).

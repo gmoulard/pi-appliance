@@ -75,6 +75,8 @@ Pour tout le monde : aucune connaissance technique n'est nécessaire. Tout se fa
 
 ## Licence
 
+Version : [`VERSION`](VERSION), historique : [`CHANGELOG.md`](CHANGELOG.md).
+
 pi-appliance est un logiciel libre, sous licence [GNU AGPL-3.0](LICENSE).
 
 ## Site

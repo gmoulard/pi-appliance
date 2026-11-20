@@ -41,4 +41,11 @@ Ne jamais versionner de secret (mot de passe Wi-Fi, clé SSH, jeton DNS, mot de 
   - évolutions non implémentées : `docs/TODO.md`, section 15 « Questions ouvertes » et section 16 « Ordre de construction » ;
   - schéma Mermaid et choix techniques : section 10 ; arborescence : section 12 et README.
 - **Tests** : `go vet ./... && go test ./...` ; binaire du Pi : `GOOS=linux GOARCH=arm64 go build ./cmd/pi-appliance`.
-- **`release`** : pas encore de numéro de version ; branche principale : `master`.
+- **`release`** :
+  - fichier de version : `VERSION` à la racine, `x.y.z` sans `v` (extraction : `cat VERSION`) ; étiquette `vX.Y.Z` ;
+  - historique : `CHANGELOG.md` à la racine, en français, une ligne `- **X.Y.Z** — AAAA-MM-JJ — auteur — résumé` ajoutée en bas ;
+  - auteur des commits de version : l'identité git locale, sans `--author` ;
+  - branche principale : `master` ; tests : ceux de la ligne « Tests » ci-dessus ;
+  - application déployée : `cmd/`, `internal/`, `marketplace/`, `system/`, `image/` ; `docs/` (site www.pi-appliance.com, catalogue publié `docs/static/`) et `.github/` n'appellent pas de version ;
+  - contrôle de l'étiquette : première étape du workflow « Image » (`.github/workflows/image.yml`), qui refuse une étiquette différente de `VERSION` ; ce workflow construit l'image et crée lui-même la version GitHub : ne pas la créer à la main ;
+  - angles morts : rien n'est encore essayé sur un vrai Pi ; l'image n'est construite que par le workflow « Image » (plusieurs dizaines de minutes) ; l'installation depuis la console (Mon Pi, Mises à jour) n'est vérifiable que sur un Pi déjà installé.
