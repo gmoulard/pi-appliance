@@ -211,7 +211,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-4.11**: Sauvegarde croisée avec un autre pi-appliance (9.1) : jumelage par code, espace réservé fixé par chaque administrateur, archives déjà chiffrées.
 - [ ] **TODO-4.12**: Restauration de l'appliance entière sur une nouvelle carte SD depuis l'assistant de premier démarrage (9.1) : choisir le disque, saisir le mot de passe en vigueur à la date de la sauvegarde, remettre `config.enc` puis chaque service.
 - [ ] **TODO-4.13**: Restauration d'un fichier en parcourant une sauvegarde (9.1) ; les archives se lisent déjà entrée par entrée (`readArchive`).
-- [ ] **TODO-4.14**: Écran des sauvegardes complet : nombres de sauvegardes gardées et arrêt de la sauvegarde de la nuit (déjà dans l'API `PUT /api/backups/settings`), changement du mot de passe administrateur dans la console avec rappel que les sauvegardes déjà faites gardent l'ancien (9.1, à faire avec TODO-4.1) ; un changement de mot de passe doit appeler `backup.Manager.Protect`.
+- [x] **TODO-4.14**: Écran des sauvegardes complet : nombres de sauvegardes gardées et arrêt de la sauvegarde de la nuit (« Réglages des sauvegardes »), changement du mot de passe dans « Mon compte » (`POST api/account/password`, 8.1) avec rappel que les sauvegardes déjà faites gardent l'ancien (9.1) ; le mot de passe du premier administrateur (celui de l'assistant et du fichier `reset`) protège la clé des sauvegardes et la rechiffre par `backup.Manager.Protect` ; à vérifier sur un vrai Pi.
 
 ## 5. Site www.pi-appliance.com (13)
 

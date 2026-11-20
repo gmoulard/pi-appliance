@@ -348,15 +348,18 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "L'adresse de contact ACME n'a pas pu être enregistrée.")
 			return
 		}
-		c.protectBackups(request.Password, true)
+		if c.Accounts.FirstAdmin(account.Name) {
+			c.protectBackups(request.Password, true)
+		}
 	}
 	openSession(w, r, token)
 	writeJSON(w, http.StatusOK, account.Public())
 }
 
-// protectBackups (re)chiffre la clé des sauvegardes par le mot de passe
-// administrateur (spécification 9.1) : à la création du compte et à la
-// réinitialisation ; à la connexion, seulement si ce n'est pas encore fait.
+// protectBackups (re)chiffre la clé des sauvegardes par le mot de passe du
+// premier administrateur (spécification 9.1) : à la création du compte, à la
+// réinitialisation et au changement du mot de passe ; à la connexion, seulement
+// si ce n'est pas encore fait.
 func (c *console) protectBackups(password string, ifMissing bool) {
 	if c.Backups == nil {
 		return

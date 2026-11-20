@@ -65,6 +65,19 @@ type PasswordRequest struct {
 	Password string `json:"password"`
 }
 
+// PasswordChangeRequest : son propre mot de passe, l'actuel puis le nouveau.
+type PasswordChangeRequest struct {
+	Current  string `json:"current"`
+	Password string `json:"password"`
+}
+
+// PasswordChangeReply : Backups vrai si ce mot de passe protège aussi les
+// sauvegardes : la console rappelle que celles déjà faites gardent l'ancien.
+type PasswordChangeReply struct {
+	Account auth.Public `json:"account"`
+	Backups bool        `json:"backups"`
+}
+
 // ForwardRequest : l'adresse du service où retourner une fois connecté.
 type ForwardRequest struct {
 	Return string `json:"return"`
@@ -82,6 +95,7 @@ func (c *console) accountRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST "+BasePath+"/api/account/totp", c.ownAccount(c.beginTOTP))
 	mux.HandleFunc("POST "+BasePath+"/api/account/totp/confirm", c.ownAccount(c.confirmTOTP))
 	mux.HandleFunc("POST "+BasePath+"/api/account/totp/disable", c.ownAccount(c.disableTOTP))
+	mux.HandleFunc("POST "+BasePath+"/api/account/password", c.ownAccount(c.changePassword))
 	mux.HandleFunc("POST "+BasePath+"/api/auth/return", c.signedIn(c.forwardReturn))
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward", c.forward)
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-admin", c.forwardAdmin)
@@ -252,6 +266,24 @@ func (c *console) disableTOTP(w http.ResponseWriter, r *http.Request, account au
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (c *console) changePassword(w http.ResponseWriter, r *http.Request, account auth.Account) {
+	var request PasswordChangeRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	token, account, err := c.Accounts.ChangePassword(account.Name, request.Current, request.Password)
+	if err != nil {
+		writeAuthError(w, err)
+		return
+	}
+	backups := c.Backups != nil && account.Role == auth.RoleAdmin && c.Accounts.FirstAdmin(account.Name)
+	if backups {
+		c.protectBackups(request.Password, false)
+	}
+	openSession(w, r, token)
+	writeJSON(w, http.StatusOK, PasswordChangeReply{Account: account.Public(), Backups: backups})
 }
 
 // forwardReturn : la personne, connectée à la console, voulait ouvrir un service

@@ -243,3 +243,58 @@ func tokenHash(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
 }
+
+// ChangePassword change le mot de passe de son propre compte, après
+// vérification de l'actuel ; les autres sessions du compte sont fermées et une
+// nouvelle est rendue.
+func (s *Store) ChangePassword(name, current, next string) (string, Account, error) {
+	key := []string{"account:" + name}
+	s.mu.Lock()
+	now := s.Now()
+	if wait := s.blocked(key[0], now); wait > 0 {
+		s.mu.Unlock()
+		return "", Account{}, TooManyError{Wait: wait}
+	}
+	account, ok := s.accounts[name]
+	s.mu.Unlock()
+	if !ok {
+		return "", Account{}, ErrNotFound
+	}
+	if err := checkPassword(next, account.Role); err != nil {
+		return "", Account{}, err
+	}
+	valid := account.Hash != "" && checkHash(account.Hash, current)
+	hash, err := hashPassword(next)
+	if err != nil {
+		return "", Account{}, err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if latest, still := s.accounts[name]; !still || latest.Hash != account.Hash {
+		valid = false
+	}
+	if !valid {
+		s.fail(key, now)
+		return "", Account{}, ErrCredentials
+	}
+	account = s.accounts[name]
+	account.Hash = hash
+	if err := s.put(account); err != nil {
+		return "", Account{}, err
+	}
+	delete(s.failures, key[0])
+	s.closeSessions(name)
+	token := randomToken()
+	s.sessions[token] = session{name: name, expires: now.Add(SessionLifetime)}
+	return token, account, nil
+}
+
+// FirstAdmin dit si name est le premier administrateur, celui de l'assistant de
+// premier démarrage et du fichier reset : son mot de passe protège la clé des
+// sauvegardes (spécification 9.1).
+func (s *Store) FirstAdmin(name string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	admin, ok := s.firstAdmin()
+	return ok && admin.Name == name
+}

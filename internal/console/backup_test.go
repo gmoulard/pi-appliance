@@ -89,3 +89,45 @@ func TestBackupsKeyProtectedAtSetup(t *testing.T) {
 		t.Fatalf("sauvegarde inconnue : code %d : %s", response.Code, response.Body.String())
 	}
 }
+
+// Le changement du mot de passe du premier administrateur rechiffre la clé des sauvegardes.
+func TestPasswordChangeProtectsBackups(t *testing.T) {
+	f, dir := newBackupFixture(t)
+	cookie := f.admin(t)
+	next := "une autre phrase de passe"
+	response := f.do(http.MethodPost, "/pi-appliance/api/account/password", "application/json", `{"current":"mauvais mot de passe","password":"`+next+`"}`, cookie)
+	if response.Code != http.StatusUnauthorized {
+		t.Fatalf("mot de passe actuel faux : code %d", response.Code)
+	}
+	response = f.do(http.MethodPost, "/pi-appliance/api/account/password", "application/json", `{"current":"`+adminPassword+`","password":"`+next+`"}`, cookie)
+	if response.Code != http.StatusOK {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+	var reply PasswordChangeReply
+	if err := json.Unmarshal(response.Body.Bytes(), &reply); err != nil {
+		t.Fatal(err)
+	}
+	if !reply.Backups {
+		t.Fatal("pas de rappel pour les sauvegardes")
+	}
+	if f.do(http.MethodGet, "/pi-appliance/api/backups", "", "", cookie).Code != http.StatusUnauthorized {
+		t.Fatal("l'ancienne session reste ouverte")
+	}
+	if f.do(http.MethodGet, "/pi-appliance/api/backups", "", "", sessionCookie(t, response)).Code != http.StatusOK {
+		t.Fatal("nouvelle session refusée")
+	}
+	data, err := os.ReadFile(filepath.Join(dir, "backup", "envelope.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var envelope backup.Envelope
+	if err := json.Unmarshal(data, &envelope); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := envelope.Open(next); err != nil {
+		t.Fatalf("le nouveau mot de passe n'ouvre pas la clé : %v", err)
+	}
+	if _, err := envelope.Open(adminPassword); err == nil {
+		t.Fatal("l'ancien mot de passe ouvre encore la clé de l'appliance")
+	}
+}

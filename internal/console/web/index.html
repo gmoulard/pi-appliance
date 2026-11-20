@@ -179,8 +179,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <ul id="backupDisks" class="wifi-list"></ul>
 <div id="backupActions" class="backup-actions" hidden>
 <button type="button" id="backupNow">Sauvegarder maintenant</button>
-<label>Heure de la sauvegarde de la nuit <select id="backupHour"></select></label>
 </div>
+<details id="backupSettingsBox" class="backup-settings" hidden>
+<summary>Réglages des sauvegardes</summary>
+<form id="backupSettings">
+<label class="check"><input name="enabled" type="checkbox">Sauvegarder chaque nuit</label>
+<label>Heure de la sauvegarde de la nuit <select id="backupHour" name="hour"></select></label>
+<p class="meta">Sauvegardes gardées : la plus récente de chaque jour, de chaque semaine et de chaque mois. Plus on en garde, plus on peut revenir loin en arrière, et plus le disque se remplit.</p>
+<div class="backup-counts">
+<label>Jours<input name="daily" type="number" min="0" max="100" inputmode="numeric" required></label>
+<label>Semaines<input name="weekly" type="number" min="0" max="100" inputmode="numeric" required></label>
+<label>Mois<input name="monthly" type="number" min="0" max="100" inputmode="numeric" required></label>
+</div>
+<button class="secondary">Enregistrer les réglages</button>
+</form>
+</details>
 <ul id="backupList" class="backup-list"></ul>
 </div>
 <div id="cockpitBox" class="card" hidden>
@@ -272,6 +285,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <form id="totpDisable" hidden>
 <label>Mot de passe<input name="password" type="password" autocomplete="current-password" maxlength="256" required></label>
 <button class="secondary">Désactiver la double authentification</button>
+</form>
+</div>
+<div class="card">
+<h3>Mot de passe</h3>
+<form id="passwordForm">
+<label>Mot de passe actuel<input name="current" type="password" autocomplete="current-password" maxlength="256" required></label>
+<label>Nouveau mot de passe<input name="password" type="password" autocomplete="new-password" maxlength="256" required></label>
+<label>Nouveau mot de passe, encore une fois<input name="confirm" type="password" autocomplete="new-password" maxlength="256" required></label>
+<button>Changer le mot de passe</button>
 </form>
 </div>
 </section>

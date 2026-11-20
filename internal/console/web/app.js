@@ -1205,6 +1205,8 @@ const backupDisks = document.getElementById("backupDisks");
 const backupActions = document.getElementById("backupActions");
 const backupNow = document.getElementById("backupNow");
 const backupHour = document.getElementById("backupHour");
+const backupSettingsBox = document.getElementById("backupSettingsBox");
+const backupSettingsForm = document.getElementById("backupSettings");
 const backupList = document.getElementById("backupList");
 let backupTimer = null;
 let backupSettings = null;
@@ -1286,16 +1288,43 @@ backupNow.addEventListener("click", async () => {
   await loadBackups().catch(() => null);
 });
 
-backupHour.addEventListener("change", async () => {
+function showBackupSettings(settings) {
+  const fields = backupSettingsForm.elements;
+  fields.enabled.checked = settings.enabled;
+  backupHour.value = String(settings.hour);
+  backupHour.disabled = !settings.enabled;
+  for (const name of ["daily", "weekly", "monthly"]) fields[name].value = String(settings[name]);
+}
+
+backupSettingsForm.elements.enabled.addEventListener("change", () => {
+  backupHour.disabled = !backupSettingsForm.elements.enabled.checked;
+});
+
+backupSettingsForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const fields = backupSettingsForm.elements;
+  const settings = {
+    enabled: fields.enabled.checked,
+    hour: Number(backupHour.value),
+    daily: Number(fields.daily.value),
+    weekly: Number(fields.weekly.value),
+    monthly: Number(fields.monthly.value),
+  };
+  if (!settings.enabled && backupSettings.enabled
+    && !window.confirm(t("Sans sauvegarde de la nuit, vos services ne sont sauvegardés que quand vous cliquez sur « Sauvegarder maintenant ». Arrêter la sauvegarde de la nuit ?"))) {
+    showBackupSettings(backupSettings);
+    return;
+  }
+  const button = backupSettingsForm.querySelector("button");
+  button.disabled = true;
   try {
-    backupSettings = await api("backups/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...backupSettings, hour: Number(backupHour.value) }),
-    });
-    showMessage([t("Heure de la sauvegarde enregistrée.")], "success");
+    backupSettings = await api("backups/settings", jsonBody("PUT", settings));
+    showMessage([t("Réglages des sauvegardes enregistrés.")], "success");
+    await loadBackups();
   } catch (error) {
     showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
   }
 });
 
@@ -1312,7 +1341,7 @@ async function loadBackups() {
   }
   backupBox.hidden = false;
   backupSettings = status.settings;
-  backupHour.value = String(status.settings.hour);
+  if (!backupSettingsForm.contains(document.activeElement)) showBackupSettings(status.settings);
   backupDisks.replaceChildren();
   backupLast.hidden = !status.last;
   if (status.last) {
@@ -1349,6 +1378,7 @@ async function loadBackups() {
       : t("La sauvegarde de la nuit est désactivée.");
   }
   backupActions.hidden = !status.destination;
+  backupSettingsBox.hidden = !status.destination;
   backupList.replaceChildren(...status.snapshots.map((snapshot) => {
     const item = element("li");
     const when = new Date(snapshot.created).toLocaleString(LOCALE);
@@ -2482,6 +2512,7 @@ const totpQR = document.getElementById("totpQR");
 const totpSecret = document.getElementById("totpSecret");
 const totpConfirm = document.getElementById("totpConfirm");
 const totpDisable = document.getElementById("totpDisable");
+const passwordForm = document.getElementById("passwordForm");
 const recoveryBox = document.getElementById("recoveryBox");
 const recoveryList = document.getElementById("recoveryCodes");
 const codeField = document.getElementById("codeField");
@@ -2537,6 +2568,8 @@ function showAccount(account) {
   totpStart.hidden = account.totp;
   totpDisable.hidden = !account.totp || account.totp_required;
   totpDisable.reset();
+  passwordForm.reset();
+  passwordForm.elements.password.minLength = account.role === "admin" ? ADMIN_PASSWORD_MIN : USER_PASSWORD_MIN;
   if (account.totp) {
     totpState.textContent = t("La double authentification est activée : à chaque connexion, la console demande aussi le code affiché par votre application. Codes de secours restants : {0}.", account.recovery_codes);
   } else if (account.totp_required) {
@@ -2595,6 +2628,30 @@ totpDisable.addEventListener("submit", async (event) => {
     currentAccount = session.account;
     recoveryBox.hidden = true;
     showAccount(session.account);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+passwordForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const fields = passwordForm.elements;
+  if (fields.password.value !== fields.confirm.value) {
+    showMessage([t("Les deux nouveaux mots de passe sont différents.")], "error");
+    return;
+  }
+  const button = passwordForm.querySelector("button");
+  button.disabled = true;
+  try {
+    const reply = await api("account/password", jsonBody("POST", { current: fields.current.value, password: fields.password.value }));
+    passwordForm.reset();
+    const lines = [t("Votre mot de passe est changé. Vos autres connexions sont fermées.")];
+    if (reply.backups) {
+      lines.push(t("Ce mot de passe protège aussi vos sauvegardes. Les sauvegardes déjà faites gardent l'ancien : notez-le et gardez-le en lieu sûr. Pour remettre une de ces sauvegardes sur une nouvelle carte SD, il faudra le mot de passe en vigueur à sa date."));
+    }
+    showMessage(lines, "success");
   } catch (error) {
     showMessage([error.message], "error");
   } finally {

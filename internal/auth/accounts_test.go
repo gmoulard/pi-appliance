@@ -232,3 +232,45 @@ func TestAccountsSurviveRestart(t *testing.T) {
 		t.Fatalf("comptes relus : %+v", list)
 	}
 }
+
+func TestChangePassword(t *testing.T) {
+	store, _ := withAdmin(t)
+	old, _, err := store.Login("marie", password, "", "client")
+	if err != nil {
+		t.Fatal(err)
+	}
+	next := "une toute nouvelle phrase"
+	if _, _, err := store.ChangePassword("marie", "faux mot de passe", next); !errors.Is(err, ErrCredentials) {
+		t.Fatalf("mauvais mot de passe actuel accepté : %v", err)
+	}
+	if _, _, err := store.ChangePassword("marie", password, "court"); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("mot de passe trop court accepté : %v", err)
+	}
+	token, _, err := store.ChangePassword("marie", password, next)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := store.Session(old); ok {
+		t.Fatal("l'ancienne session reste ouverte")
+	}
+	if _, ok := store.Session(token); !ok {
+		t.Fatal("la nouvelle session n'est pas ouverte")
+	}
+	if _, _, err := store.Login("marie", password, "", "client"); !errors.Is(err, ErrCredentials) {
+		t.Fatalf("l'ancien mot de passe marche encore : %v", err)
+	}
+	if _, _, err := store.Login("marie", next, "", "client"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestFirstAdmin(t *testing.T) {
+	store, c := withAdmin(t)
+	c.now = c.now.Add(time.Hour)
+	if _, _, err := store.Create("paul", "paul@example.org", RoleAdmin, nil); err != nil {
+		t.Fatal(err)
+	}
+	if !store.FirstAdmin("marie") || store.FirstAdmin("paul") || store.FirstAdmin("inconnu") {
+		t.Fatal("premier administrateur mal reconnu")
+	}
+}
