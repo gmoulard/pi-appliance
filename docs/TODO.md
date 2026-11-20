@@ -154,6 +154,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Cohabitation : NetworkManager garde la main (Cockpit passe par lui) ; la console prévient de ne pas toucher au point d'accès `pi-appliance-ap`, au disque USB des données ni à celui des sauvegardes ; pas de mise à jour automatique (pas de PackageKit).
   - [x] API `api/cockpit` (administrateur) et carte « Administration du système » dans « Mon Pi », traduite dans les 12 langues.
   - [ ] À vérifier sur un vrai Pi : installation des paquets sous Raspberry Pi OS, connexion par `https://<Pi>/cockpit/` (en-tête `Origin` accepté derrière Traefik, WebSocket), terminal, page réseau sans casser le point d'accès, page des disques avec le disque USB monté par la console.
+- [ ] **TODO-2.51**:Faire une actions dans github pour mettre a jours le fichier pi-appliance-….json et les fichier qui y font reference quans cela est necessaire
 
 ## 3. Étape 2 — Internet (7)
 
