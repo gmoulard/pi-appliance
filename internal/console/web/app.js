@@ -1741,6 +1741,72 @@ duckDNSForget.addEventListener("click", async () => {
   }
 });
 
+// Statistiques anonymes (spécification 8.4) : désactivées par défaut ;
+// l'administrateur voit exactement ce qui part avant de les accepter.
+const statsSection = document.getElementById("statsSection");
+const statsState = document.getElementById("statsState");
+const statsList = document.getElementById("statsList");
+const statsPreview = document.getElementById("statsPreview");
+const statsToggle = document.getElementById("statsToggle");
+let statsEnabled = false;
+
+function showStats(status) {
+  statsEnabled = status.enabled;
+  const report = status.report;
+  const crashes = report.crashes.reduce((total, crash) => total + crash.count, 0);
+  statsList.replaceChildren(
+    element("li", t("Version de la console : {0}", report.version)),
+    element("li", t("Modèle du Pi : {0}", report.model || t("inconnu"))),
+    element("li", t("Applications de la marketplace installées : {0}", report.services.join(", ") || t("aucune"))),
+    element("li", t("Services ajoutés hors marketplace : {0} (leur nom et leur contenu ne sont pas envoyés)", report.custom_services)),
+    element("li", t("Plantages de la console depuis le dernier envoi : {0}", crashes)),
+  );
+  statsPreview.textContent = JSON.stringify(report, null, 2);
+  statsToggle.textContent = status.enabled ? t("Ne plus envoyer les statistiques") : t("Envoyer les statistiques");
+  statsToggle.className = status.enabled ? "secondary" : "";
+  let state;
+  let color;
+  if (!status.enabled) {
+    state = t("Les statistiques ne sont pas envoyées.");
+    color = "orange";
+  } else if (status.error) {
+    state = t("Le dernier envoi a échoué : {0}. Nouvel essai dans l'heure.", status.error);
+    color = "red";
+  } else if (status.last_sent) {
+    state = t("Statistiques acceptées. Dernier envoi le {0}.", duckDNSDate(status.last_sent));
+    color = "green";
+  } else {
+    state = t("Statistiques acceptées. Le premier envoi part dans l'heure.");
+    color = "green";
+  }
+  statsState.replaceChildren(element("span", undefined, `dot ${color}`), element("span", state));
+}
+
+async function loadStats() {
+  try {
+    showStats(await api("stats"));
+  } catch (error) {
+    statsState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
+  }
+}
+
+statsToggle.addEventListener("click", async () => {
+  statsToggle.disabled = true;
+  try {
+    const enabled = !statsEnabled;
+    showStats(await api("stats", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled }),
+    }));
+    showMessage([enabled ? t("Merci : les statistiques anonymes seront envoyées une fois par jour.") : t("Les statistiques ne seront plus envoyées.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    statsToggle.disabled = false;
+  }
+});
+
 // Assistant de premier démarrage (spécification 5.1) : compte administrateur,
 // réseau de la maison, premiers services. Les autres étapes de la
 // spécification (langue, adresse sur internet, utilisateurs, statistiques)
@@ -2237,6 +2303,7 @@ async function showConsole(account, wizard) {
   servicesSection.hidden = false;
   catalogSection.hidden = account.role !== "admin";
   duckDNSSection.hidden = true;
+  statsSection.hidden = true;
   clearInterval(duckDNSTimer);
   duckDNSTimer = null;
   emailReminder.hidden = account.email_verified;
@@ -2260,6 +2327,8 @@ async function showConsole(account, wizard) {
     duckDNSSection.hidden = false;
     await loadDuckDNS();
     duckDNSTimer = setInterval(loadDuckDNS, 15000);
+    statsSection.hidden = false;
+    await loadStats();
     await loadNetwork();
     await loadResources();
     startDashboard();

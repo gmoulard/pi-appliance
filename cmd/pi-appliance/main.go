@@ -35,6 +35,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/internal/updates"
@@ -57,6 +58,7 @@ func main() {
 	domain := flag.String("domain", defaultDomain(), "adresse de l'appliance, suffixe de l'adresse de chaque service")
 	resetFile := flag.String("reset-file", "/boot/firmware/reset", "fichier déposé sur la carte SD pour réinitialiser le mot de passe administrateur (vide : désactivé)")
 	networkScript := flag.String("network-script", network.DefaultScript, "script du réseau du Pi (vide : réseau non réglable depuis la console)")
+	statsURL := flag.String("stats-url", stats.DefaultURL, "service de réception des statistiques anonymes, si l'administrateur les accepte")
 	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")
 	backupScript := flag.String("backup-script", backup.DefaultScript, "script du disque USB des sauvegardes (vide : disque non réglable depuis la console)")
 	updatesScript := flag.String("updates-script", updates.DefaultScript, "script des correctifs du système (vide : système non mis à jour depuis la console)")
@@ -113,6 +115,27 @@ func main() {
 	if *releaseRepo != "" {
 		checker.Releases = updates.GitHub{Repo: *releaseRepo}
 	}
+	// Statistiques anonymes : désactivées tant que l'administrateur ne les accepte pas.
+	reporter, err := stats.Open(filepath.Join(*data, "stats.json"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	reporter.RunningFile = filepath.Join(*data, "running")
+	reporter.Version = version
+	reporter.URL = *statsURL
+	reporter.Logf = log.Printf
+	reporter.Installed = func() ([]string, func(string) bool, error) {
+		instances, err := manager.List()
+		apps := make([]string, 0, len(instances))
+		for _, instance := range instances {
+			apps = append(apps, instance.App)
+		}
+		known := func(app string) bool { _, found := catalog.Get(app); return found }
+		return apps, known, err
+	}
+	if err := reporter.Start(); err != nil {
+		log.Printf("statistiques : %v", err)
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	measured := make(chan struct{})
@@ -123,9 +146,10 @@ func main() {
 	go duckdns.Run(ctx)
 	go backups.Run(ctx)
 	go checker.Run(ctx, 5*time.Minute)
+	go reporter.Run(ctx)
 	server := &http.Server{
 		Addr: *addr,
-		Handler: console.Handler(console.Config{
+		Handler: reporter.Guard(console.Handler(console.Config{
 			Version:       version,
 			Catalog:       catalog,
 			Services:      manager,
@@ -137,9 +161,10 @@ func main() {
 			DuckDNS:       duckdns,
 			Backups:       backups,
 			Updates:       checker,
+			Stats:         reporter,
 			WizardFile:    filepath.Join(*data, "wizard-done"),
 			ACMEEmailFile: filepath.Join(*data, "system", "traefik", "acme-email"),
-		}),
+		})),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	log.Printf("console pi-appliance %s sur %s%s", version, *addr, console.BasePath)
@@ -154,4 +179,7 @@ func main() {
 	}
 	// L'historique est écrit avant de quitter, heure en cours comprise.
 	<-measured
+	if err := reporter.Stop(); err != nil {
+		log.Printf("statistiques : %v", err)
+	}
 }
