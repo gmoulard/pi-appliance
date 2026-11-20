@@ -67,7 +67,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.43**: E-mail de l'administrateur vérifié dès que le service d'e-mails est joignable (5.1).
 - [x] **TODO-1.44**: Certificat auto-signé avant Let's Encrypt, alerte expliquée (8.4).
 - [ ] **TODO-1.45**: Questions ouvertes de la section 15 : prix et paiement du relais, nombre maximal d'appliances relayées (à l'étape Internet).
-- [ ] **TODO-1.46**: Accès par défaut de Nextcloud : la spécification 8.2 dit « utilisateurs connectés », le manifeste dit `public`. Derrière l'authentification de la console, ses applications de synchronisation (ordinateur, téléphone) ne passent plus ; Nextcloud a déjà ses propres comptes. Trancher, puis aligner la spécification ou le manifeste.
+- [x] **TODO-1.46**: Accès par défaut de Nextcloud : la spécification 8.2 dit « utilisateurs connectés », le manifeste dit `public`. Derrière l'authentification de la console, ses applications de synchronisation (ordinateur, téléphone) ne passent plus ; Nextcloud a déjà ses propres comptes. Trancher, puis aligner la spécification ou le manifeste. Tranché le 2026-11-20 : public, comme le manifeste ; spécification 8.2 alignée.
 
 ## 2. Étape 1 — Local
 

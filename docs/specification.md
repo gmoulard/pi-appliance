@@ -366,7 +366,7 @@ Offre :
 
 ### 8.2 Qui accède à un service
 
-À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (site web : public ; Nextcloud, DokuWiki, Etherpad : utilisateurs connectés). Modifiable ensuite dans la console.
+À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (site web, Nextcloud : public ; DokuWiki, Etherpad : utilisateurs connectés). Nextcloud est public parce qu'il a ses propres comptes et que ses applications de synchronisation (ordinateur, téléphone) ne passent pas derrière la connexion de la console (TODO-1.46, tranché le 2026-11-20). Modifiable ensuite dans la console.
 
 **Réalisé** (paquet `internal/services`, fichier `access.go` ; à vérifier sur un vrai Pi) :
 
@@ -374,7 +374,7 @@ Offre :
 - Le niveau est gardé dans `instance.json` (champ `access`, rendu par `GET api/services` ; un service installé avant cette fonction est public) et reste le même après une mise à jour du service. L'administrateur le change sur la fiche du service (`PUT api/services/{nom}/access`, `{"access": "public"|"users"|"home"}`) : les labels Traefik sont réécrits et le service redémarre ; s'il ne redémarre pas, l'ancien niveau est remis.
 - **Utilisateurs connectés** : label `middlewares=pi-appliance-auth@file` sur le routeur du service, authentification déléguée à la console (section 8.1) ; toute session valide ouvre le service (pas encore de liste des services autorisés par compte).
 - **Maison seulement** : middleware Traefik `pi-appliance-home@file` (`ipAllowList`), mêmes plages que la console (section 8.3) : IPv4 privées, boucle locale, plages locales IPv6 ; ailleurs, réponse 403. Le test `system/tests/traefik-console-test.sh` le vérifie sur Traefik.
-- Limites : celles de la console (section 8.3) valent aussi pour « maison seulement » (plages du VPN et du relais à définir, LAN IPv6 à adresse globale refusé). Pour « utilisateurs connectés », la page de connexion de la console ne s'ouvre pas encore depuis internet (TODO-3.12) : hors de la maison, il faut s'être connecté avant, à la maison ; la fiche du service le dit. Nextcloud est public dans son manifeste, à trancher (TODO-1.46).
+- Limites : celles de la console (section 8.3) valent aussi pour « maison seulement » (plages du VPN et du relais à définir, LAN IPv6 à adresse globale refusé). Pour « utilisateurs connectés », la page de connexion de la console ne s'ouvre pas encore depuis internet (TODO-3.12) : hors de la maison, il faut s'être connecté avant, à la maison ; la fiche du service le dit.
 
 ### 8.3 Console
 
