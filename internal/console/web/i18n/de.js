@@ -177,7 +177,7 @@ piTranslations("de", {
   "Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins {0} caractères : vos services et vos données ne changent pas.": "Die Datei reset wurde auf der SD-Karte gefunden. Wählen Sie ein neues Passwort mit mindestens {0} Zeichen: Ihre Dienste und Daten bleiben unverändert.",
   "Changer le mot de passe": "Passwort ändern",
   "Connexion": "Anmeldung",
-  "Entrez votre identifiant et votre mot de passe.": "Geben Sie Ihren Benutzernamen und Ihr Passwort ein.",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail. Mot de passe administrateur oublié : le guide explique comment le changer avec le fichier reset.": "Geben Sie Ihren Benutzernamen und Ihr Passwort ein. Der Benutzername ist der beim Anlegen des Kontos gewählte Name, nicht die E-Mail-Adresse. Administratorpasswort vergessen: Die Anleitung erklärt, wie Sie es mit der Datei reset ändern.",
   "Se connecter": "Anmelden",
   "Les deux mots de passe ne sont pas identiques.": "Die beiden Passwörter stimmen nicht überein.",
   "Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.": "Ihre Adresse {0} wird mit einem per E-Mail gesendeten Code bestätigt, sobald die Appliance E-Mails senden kann.",

@@ -177,7 +177,7 @@ piTranslations("nl", {
   "Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins {0} caractères : vos services et vos données ne changent pas.": "Het bestand reset is op de SD-kaart gevonden. Kies een nieuw wachtwoord van minstens {0} tekens: uw diensten en gegevens blijven ongewijzigd.",
   "Changer le mot de passe": "Wachtwoord wijzigen",
   "Connexion": "Aanmelden",
-  "Entrez votre identifiant et votre mot de passe.": "Voer uw gebruikersnaam en wachtwoord in.",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail. Mot de passe administrateur oublié : le guide explique comment le changer avec le fichier reset.": "Voer uw gebruikersnaam en wachtwoord in. De gebruikersnaam is de naam die bij het aanmaken van het account is gekozen, niet het e-mailadres. Beheerderswachtwoord vergeten? De handleiding legt uit hoe u het met het bestand reset wijzigt.",
   "Se connecter": "Aanmelden",
   "Les deux mots de passe ne sont pas identiques.": "De twee wachtwoorden zijn niet gelijk.",
   "Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.": "Uw adres {0} wordt gecontroleerd met een code per e-mail zodra de appliance e-mails kan versturen.",

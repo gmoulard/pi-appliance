@@ -2604,7 +2604,7 @@ const AUTH_MODES = {
   },
   login: {
     title: t("Connexion"),
-    help: t("Entrez votre identifiant et votre mot de passe."),
+    help: t("Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail. Mot de passe administrateur oublié : le guide explique comment le changer avec le fichier reset."),
     button: t("Se connecter"),
     fields: ["name"],
     path: "login",

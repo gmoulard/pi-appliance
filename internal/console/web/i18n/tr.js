@@ -177,7 +177,7 @@ piTranslations("tr", {
   "Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins {0} caractères : vos services et vos données ne changent pas.": "reset dosyası SD kartta bulundu. En az {0} karakterli yeni bir parola seçin: hizmetleriniz ve verileriniz değişmez.",
   "Changer le mot de passe": "Parolayı değiştir",
   "Connexion": "Giriş",
-  "Entrez votre identifiant et votre mot de passe.": "Kullanıcı adınızı ve parolanızı girin.",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail. Mot de passe administrateur oublié : le guide explique comment le changer avec le fichier reset.": "Kullanıcı adınızı ve parolanızı girin. Kullanıcı adı, hesap oluşturulurken seçilen addır, e-posta adresi değildir. Yönetici parolasını mı unuttunuz? Kılavuz, reset dosyasıyla nasıl değiştirileceğini açıklar.",
   "Se connecter": "Giriş yap",
   "Les deux mots de passe ne sont pas identiques.": "İki parola aynı değil.",
   "Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.": "{0} adresiniz, cihaz e-posta gönderebildiği anda e-postayla gönderilen bir kodla doğrulanacak.",

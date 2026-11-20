@@ -73,6 +73,18 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 
 La partition, le démarrage et le portail de cette image restent à valider sur du matériel réel. L'accès aux applications depuis internet n'est pas encore disponible.
 
+## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
+
+Si la console répond « identifiant ou mot de passe incorrect », vérifiez d'abord l'identifiant : c'est le nom choisi à la création du compte (par exemple `marie`), **pas l'adresse e-mail**. Si le mot de passe administrateur est vraiment perdu, le fichier `reset` permet d'en choisir un nouveau sans rien perdre : les services installés, leurs données et les autres comptes sont conservés.
+
+1. Éteignez le Pi en débranchant son alimentation, puis retirez la carte micro-SD et insérez-la dans un ordinateur.
+2. Ouvrez la partition de démarrage de la carte, qui apparaît comme un disque nommé **`bootfs`**. Si l'ordinateur propose de formater la carte ou de réparer d'autres partitions, refusez : seule `bootfs` est lisible sous Windows, et c'est la bonne.
+3. Créez à la racine de `bootfs` un fichier vide nommé exactement **`reset`**, sans extension. Sous Windows, affichez d'abord les extensions (Explorateur de fichiers, **Affichage > Afficher > Extensions de noms de fichiers**) : un « nouveau document texte » renommé `reset` s'appelle en réalité `reset.txt` et ne marche pas. Sous macOS ou Linux, dans un terminal : `touch /Volumes/bootfs/reset` (macOS) ou `touch /media/$USER/bootfs/reset` (Linux).
+4. Éjectez proprement la carte, remettez-la dans le Pi et rebranchez son alimentation.
+5. Ouvrez la console : elle affiche « Le fichier reset a été trouvé sur la carte SD ». Choisissez le nouveau mot de passe du premier compte administrateur (12 caractères au moins), puis connectez-vous avec votre identifiant et ce mot de passe. Toutes les sessions ouvertes auparavant sont fermées. Si la double authentification était activée, le code vous est encore demandé.
+
+Le Pi efface le fichier `reset` dès qu'il l'a lu, mais garde la demande jusqu'au choix du nouveau mot de passe : un redémarrage entre-temps ne la perd pas (images construites après le 20 novembre 2026 ; avec les précédentes, il faut redéposer le fichier).
+
 ## Lancer la console depuis les sources
 
 Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.24 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.

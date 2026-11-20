@@ -177,7 +177,7 @@ piTranslations("ja", {
   "Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins {0} caractères : vos services et vos données ne changent pas.": "SD カードで reset ファイルが見つかりました。{0} 文字以上の新しいパスワードを選んでください：サービスとデータは変わりません。",
   "Changer le mot de passe": "パスワードを変更",
   "Connexion": "ログイン",
-  "Entrez votre identifiant et votre mot de passe.": "ユーザー名とパスワードを入力してください。",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail. Mot de passe administrateur oublié : le guide explique comment le changer avec le fichier reset.": "ユーザー名とパスワードを入力してください。ユーザー名はアカウント作成時に選んだ名前で、メールアドレスではありません。管理者パスワードを忘れた場合は、reset ファイルで変更する方法がガイドに書かれています。",
   "Se connecter": "ログイン",
   "Les deux mots de passe ne sont pas identiques.": "2 つのパスワードが一致しません。",
   "Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.": "アプライアンスがメールを送れるようになりしだい、メールで送るコードでアドレス {0} を確認します。",
