@@ -1352,6 +1352,278 @@ wizardNext.addEventListener("click", async () => {
   }
 });
 
+// Comptes créés par l'administrateur, invitations, double authentification et
+// retour vers un service protégé après la connexion (spécification 8.1, 8.3).
+const accountSection = document.getElementById("accountSection");
+const accountsSection = document.getElementById("accountsSection");
+const accountsList = document.getElementById("accountsList");
+const accountForm = document.getElementById("accountForm");
+const expiresField = document.getElementById("expiresField");
+const inviteBox = document.getElementById("inviteBox");
+const inviteHelp = document.getElementById("inviteHelp");
+const inviteLink = document.getElementById("inviteLink");
+const inviteCopy = document.getElementById("inviteCopy");
+const totpState = document.getElementById("totpState");
+const totpStart = document.getElementById("totpStart");
+const totpSetup = document.getElementById("totpSetup");
+const totpQR = document.getElementById("totpQR");
+const totpSecret = document.getElementById("totpSecret");
+const totpConfirm = document.getElementById("totpConfirm");
+const totpDisable = document.getElementById("totpDisable");
+const recoveryBox = document.getElementById("recoveryBox");
+const recoveryList = document.getElementById("recoveryCodes");
+const codeField = document.getElementById("codeField");
+const USER_PASSWORD_MIN = 8;
+const DAY = 24 * 3600 * 1000;
+const ROLE_NAMES = { admin: t("Administrateur"), user: t("Utilisateur"), guest: t("Invité") };
+// ?return= : adresse du service protégé qui a renvoyé vers la connexion.
+let returnTo = new URLSearchParams(window.location.search).get("return");
+let inviteToken = null;
+
+function jsonBody(method, body) {
+  return { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+}
+
+function needsTOTP(account) {
+  return account.totp_required && !account.totp;
+}
+
+// Ouvre le service demandé ; faux si l'adresse est refusée (la console s'affiche alors).
+async function goBackToService() {
+  try {
+    const { url } = await api("auth/return", jsonBody("POST", { return: returnTo }));
+    window.location.assign(url);
+    return true;
+  } catch (error) {
+    showMessage([error.message], "error");
+    returnTo = null;
+    window.history.replaceState(null, "", window.location.pathname);
+    return false;
+  }
+}
+
+async function startInvitation(token) {
+  try {
+    const account = await api("invitation/check", jsonBody("POST", { token }));
+    inviteToken = token;
+    showAuth("invite");
+    const minimum = account.role === "admin" ? ADMIN_PASSWORD_MIN : USER_PASSWORD_MIN;
+    authTitle.textContent = t("Bienvenue {0} !", account.name);
+    authHelp.textContent = t("Choisissez votre mot de passe, d'au moins {0} caractères : une phrase de plusieurs mots est plus facile à retenir.", minimum);
+    authForm.elements.password.minLength = minimum;
+    return true;
+  } catch (error) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    showMessage([error.message], "error");
+    return false;
+  }
+}
+
+function showAccount(account) {
+  accountSection.hidden = false;
+  totpSetup.hidden = true;
+  totpStart.hidden = account.totp;
+  totpDisable.hidden = !account.totp || account.totp_required;
+  totpDisable.reset();
+  if (account.totp) {
+    totpState.textContent = t("La double authentification est activée : à chaque connexion, la console demande aussi le code affiché par votre application. Codes de secours restants : {0}.", account.recovery_codes);
+  } else if (account.totp_required) {
+    totpState.textContent = t("L'administrateur demande la double authentification pour votre compte : activez-la pour continuer.");
+  } else {
+    totpState.textContent = t("La double authentification protège votre compte même si quelqu'un apprend votre mot de passe : la console demande en plus un code affiché par une application de votre téléphone.");
+  }
+}
+
+totpStart.addEventListener("click", async () => {
+  totpStart.disabled = true;
+  try {
+    const setup = await api("account/totp", { method: "POST" });
+    totpQR.src = setup.qr;
+    totpSecret.textContent = t("Sans appareil photo, saisissez cette clé dans l'application : {0}", setup.secret);
+    totpConfirm.reset();
+    recoveryBox.hidden = true;
+    totpSetup.hidden = false;
+    totpStart.hidden = true;
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    totpStart.disabled = false;
+  }
+});
+
+totpConfirm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = totpConfirm.querySelector("button");
+  button.disabled = true;
+  try {
+    const { recovery_codes: codes } = await api("account/totp/confirm", jsonBody("POST", { code: new FormData(totpConfirm).get("code") }));
+    showMessage([t("La double authentification est activée.")], "success");
+    // Rester ici le temps de noter les codes de secours, sans repartir vers un service.
+    returnTo = null;
+    const session = await api("session");
+    await showConsole(session.account, session.wizard);
+    recoveryList.replaceChildren(...codes.map((code) => element("li", code)));
+    recoveryBox.hidden = false;
+    recoveryBox.scrollIntoView({ block: "nearest" });
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+totpDisable.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = totpDisable.querySelector("button");
+  button.disabled = true;
+  try {
+    await api("account/totp/disable", jsonBody("POST", { password: new FormData(totpDisable).get("password") }));
+    showMessage([t("La double authentification est désactivée.")], "success");
+    const session = await api("session");
+    currentAccount = session.account;
+    recoveryBox.hidden = true;
+    showAccount(session.account);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+function dayText(time) {
+  return new Date(time).toLocaleDateString(LOCALE, { dateStyle: "long" });
+}
+
+function showInvite(reply) {
+  inviteBox.hidden = false;
+  inviteLink.hidden = reply.sent;
+  inviteCopy.hidden = reply.sent;
+  inviteLink.value = reply.link || "";
+  inviteHelp.textContent = reply.sent
+    ? t("Invitation envoyée par e-mail à {0}.", reply.account.email)
+    : t("L'appliance ne sait pas encore envoyer d'e-mail : transmettez vous-même ce lien à {0}. Il est valable 7 jours et ne sert qu'une fois.", reply.account.email);
+  inviteBox.scrollIntoView({ block: "nearest" });
+}
+
+inviteCopy.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(inviteLink.value);
+    showMessage([t("Lien copié.")], "success");
+  } catch {
+    inviteLink.select();
+  }
+});
+
+async function updateAccount(account, changes) {
+  const body = { role: account.role, expires: account.expires_at || null, totp_required: account.totp_required, ...changes };
+  await api(`accounts/${encodeURIComponent(account.name)}`, jsonBody("PUT", body));
+  await loadAccounts();
+}
+
+function accountCard(account) {
+  const card = element("li", undefined, "card");
+  card.append(element("h3", `${account.name} (${ROLE_NAMES[account.role] || account.role})`), element("p", account.email, "address"));
+  const facts = [];
+  if (account.invited) {
+    facts.push(t("Invitation en attente : pas encore de mot de passe."));
+  }
+  if (account.expires_at) {
+    // expires_at est le début du jour qui suit le dernier jour d'accès.
+    const ended = new Date(account.expires_at) <= new Date();
+    facts.push(ended ? t("Accès terminé depuis le {0}.", dayText(account.expires_at)) : t("Accès jusqu'au {0} inclus.", dayText(new Date(account.expires_at).getTime() - 1)));
+  }
+  if (account.totp) {
+    facts.push(t("Double authentification activée."));
+  } else if (account.totp_required) {
+    facts.push(t("Double authentification exigée, pas encore activée."));
+  } else {
+    facts.push(t("Sans double authentification."));
+  }
+  for (const fact of facts) {
+    card.append(element("p", fact, "meta"));
+  }
+  const buttons = element("div", undefined, "controls");
+  const add = (label, run) => {
+    const button = element("button", label, "secondary");
+    button.type = "button";
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      try {
+        await run();
+      } catch (error) {
+        showMessage([error.message], "error");
+      } finally {
+        button.disabled = false;
+      }
+    });
+    buttons.append(button);
+  };
+  const path = `accounts/${encodeURIComponent(account.name)}`;
+  add(account.invited ? t("Nouveau lien d'invitation") : t("Lien pour changer de mot de passe"), async () => {
+    showInvite(await api(`${path}/invitation`, { method: "POST" }));
+    await loadAccounts();
+  });
+  if (account.role === "guest") {
+    add(t("Prolonger d'une semaine"), () => {
+      const from = Math.max(Date.now(), new Date(account.expires_at).getTime());
+      return updateAccount(account, { expires: new Date(from + 7 * DAY).toISOString() });
+    });
+  }
+  add(account.totp_required ? t("Ne plus exiger la double authentification") : t("Exiger la double authentification"), () => updateAccount(account, { totp_required: !account.totp_required }));
+  if (account.totp) {
+    add(t("Retirer la double authentification"), async () => {
+      if (!window.confirm(t("Retirer la double authentification de {0} ? À faire seulement si son téléphone et ses codes de secours sont perdus.", account.name))) return;
+      await api(`${path}/totp`, { method: "DELETE" });
+      await loadAccounts();
+    });
+  }
+  if (account.name !== currentAccount.name) {
+    add(t("Supprimer"), async () => {
+      if (!window.confirm(t("Supprimer le compte {0} ? La personne ne pourra plus se connecter.", account.name))) return;
+      await api(path, { method: "DELETE" });
+      await loadAccounts();
+    });
+  }
+  card.append(buttons);
+  return card;
+}
+
+async function loadAccounts() {
+  const { accounts } = await api("accounts");
+  accountsList.replaceChildren(...accounts.map(accountCard));
+}
+
+accountForm.elements.role.addEventListener("change", () => {
+  const guest = accountForm.elements.role.value === "guest";
+  expiresField.hidden = !guest;
+  accountForm.elements.expires.required = guest;
+});
+
+accountForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = new FormData(accountForm);
+  const body = { name: data.get("name"), email: data.get("email"), role: data.get("role"), totp_required: data.get("totp_required") === "on" };
+  if (body.role === "guest") {
+    // Dernier jour d'accès compris : fin au début du jour suivant, à l'heure de ce navigateur.
+    const [year, month, day] = String(data.get("expires")).split("-").map(Number);
+    body.expires = new Date(year, month - 1, day + 1).toISOString();
+  }
+  const button = accountForm.querySelector("button");
+  button.disabled = true;
+  try {
+    const reply = await api("accounts", jsonBody("POST", body));
+    accountForm.reset();
+    expiresField.hidden = true;
+    accountForm.elements.expires.required = false;
+    await loadAccounts();
+    showInvite(reply);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
 // Écrans de compte : création du compte administrateur au premier démarrage,
 // réinitialisation après dépôt du fichier reset, ou connexion (spécification 5.1, 8.5).
 const AUTH_MODES = {
@@ -1376,6 +1648,14 @@ const AUTH_MODES = {
     fields: ["name"],
     path: "login",
   },
+  // Lien d'invitation (#invite=…) : le titre et l'aide sont complétés par startInvitation.
+  invite: {
+    title: "",
+    help: "",
+    button: t("Choisir mon mot de passe"),
+    fields: ["confirm"],
+    path: "invitation",
+  },
 };
 
 let authMode = "login";
@@ -1386,7 +1666,7 @@ function showAuth(mode) {
   authTitle.textContent = config.title;
   authHelp.textContent = config.help;
   authButton.textContent = config.button;
-  for (const field of ["name", "email", "confirm"]) {
+  for (const field of ["name", "email", "confirm", "code"]) {
     const shown = config.fields.includes(field);
     document.getElementById(`${field}Field`).hidden = !shown;
     authForm.elements[field].required = shown;
@@ -1405,6 +1685,10 @@ function showAuth(mode) {
   networkSection.hidden = true;
   duckDNSSection.hidden = true;
   piSection.hidden = true;
+  accountSection.hidden = true;
+  accountsSection.hidden = true;
+  inviteBox.hidden = true;
+  recoveryBox.hidden = true;
   wizardSection.hidden = true;
   wizardStep = null;
   clearInterval(networkTimer);
@@ -1430,17 +1714,35 @@ authForm.addEventListener("submit", async (event) => {
   if (config.fields.includes("email")) {
     body.email = data.get("email");
   }
+  if (authMode === "login" && !codeField.hidden) {
+    body.code = data.get("code");
+  }
+  if (authMode === "invite") {
+    body.token = inviteToken;
+  }
   authButton.disabled = true;
   try {
-    const account = await api(config.path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const account = await api(config.path, jsonBody("POST", body));
     message.hidden = true;
+    if (authMode === "invite") {
+      inviteToken = null;
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      if (account.totp) {
+        // Compte déjà protégé : connexion normale, avec le code.
+        showAuth("login");
+        showMessage([t("Mot de passe enregistré : connectez-vous.")], "success");
+        return;
+      }
+    }
     const session = await api("session");
-    await showConsole(account, session.wizard);
+    await showConsole(session.account || account, session.wizard);
   } catch (error) {
+    if (authMode === "login" && error.body && error.body.code_needed) {
+      codeField.hidden = false;
+      authForm.elements.code.required = true;
+      authForm.elements.code.value = "";
+      authForm.elements.code.focus();
+    }
     showMessage([error.message], "error");
   } finally {
     authButton.disabled = false;
@@ -1464,6 +1766,17 @@ async function showConsole(account, wizard) {
   duckDNSTimer = null;
   emailReminder.hidden = account.email_verified;
   emailReminder.textContent = t("Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.", account.email);
+  showAccount(account);
+  accountsSection.hidden = true;
+  if (needsTOTP(account)) {
+    // Double authentification exigée : rien d'autre tant qu'elle n'est pas activée.
+    servicesSection.hidden = true;
+    catalogSection.hidden = true;
+    return;
+  }
+  if (returnTo && (await goBackToService())) {
+    return;
+  }
   if (account.role === "admin" && wizard) {
     await startWizard();
     return;
@@ -1475,6 +1788,8 @@ async function showConsole(account, wizard) {
     await loadNetwork();
     await loadResources();
     startDashboard();
+    accountsSection.hidden = false;
+    await loadAccounts();
   }
   await loadCatalog();
   await loadServices();
@@ -1485,6 +1800,10 @@ api("health")
     status.textContent = t("Appliance en service.");
     statusDot.className = "dot ok";
     footer.textContent = `pi-appliance ${health.version}`;
+    const invite = window.location.hash.match(/^#invite=([A-Za-z0-9_-]+)$/);
+    if (invite && (await startInvitation(invite[1]))) {
+      return;
+    }
     const session = await api("session");
     if (session.reset) {
       showAuth("reset");

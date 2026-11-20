@@ -718,3 +718,28 @@ footer .language select {
 .chart svg {
   direction: ltr;
 }
+
+/* Double authentification et invitations (spécification 8.1). */
+.qr {
+  display: block;
+  width: 200px;
+  height: 200px;
+  margin: 0.5rem 0;
+  padding: 8px;
+  background: #fff;
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+
+.codes {
+  columns: 2;
+  padding: 0;
+  list-style: none;
+  font-family: ui-monospace, monospace;
+  font-size: 1.1rem;
+}
+
+#inviteLink {
+  width: 100%;
+  box-sizing: border-box;
+}

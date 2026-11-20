@@ -112,13 +112,13 @@ func TestCreateAdminInvalid(t *testing.T) {
 
 func TestLoginAndSession(t *testing.T) {
 	store, c := withAdmin(t)
-	if _, _, err := store.Login("marie", "mauvais mot de passe", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
+	if _, _, err := store.Login("marie", "mauvais mot de passe", "", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
 		t.Fatalf("mauvais mot de passe : %v", err)
 	}
-	if _, _, err := store.Login("inconnu", password, "10.0.0.2"); !errors.Is(err, ErrCredentials) {
+	if _, _, err := store.Login("inconnu", password, "", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
 		t.Fatalf("compte inconnu : %v", err)
 	}
-	token, account, err := store.Login("Marie", password, "10.0.0.2")
+	token, account, err := store.Login("Marie", password, "", "10.0.0.2")
 	if err != nil || account.Name != "marie" {
 		t.Fatalf("connexion : %v %+v", err, account)
 	}
@@ -150,30 +150,30 @@ func TestLoginAndSession(t *testing.T) {
 func TestLoginLimit(t *testing.T) {
 	store, c := withAdmin(t)
 	for i := 0; i < freeAttempts; i++ {
-		if _, _, err := store.Login("marie", "faux", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
+		if _, _, err := store.Login("marie", "faux", "", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
 			t.Fatalf("essai %d : %v", i, err)
 		}
 	}
-	_, _, err := store.Login("marie", password, "10.0.0.2")
+	_, _, err := store.Login("marie", password, "", "10.0.0.2")
 	var tooMany TooManyError
 	if !errors.As(err, &tooMany) || tooMany.Wait != time.Minute {
 		t.Fatalf("après 5 échecs : %v", err)
 	}
-	if _, _, err := store.Login("marie", password, "10.0.0.3"); !errors.Is(err, ErrTooMany) {
+	if _, _, err := store.Login("marie", password, "", "10.0.0.3"); !errors.Is(err, ErrTooMany) {
 		t.Fatalf("compte bloqué depuis un autre client : %v", err)
 	}
 	c.now = c.now.Add(time.Minute)
-	if _, _, err := store.Login("marie", "faux", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
+	if _, _, err := store.Login("marie", "faux", "", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
 		t.Fatalf("après l'attente : %v", err)
 	}
-	if _, _, err := store.Login("marie", password, "10.0.0.2"); !errors.As(err, &tooMany) || tooMany.Wait != 2*time.Minute {
+	if _, _, err := store.Login("marie", password, "", "10.0.0.2"); !errors.As(err, &tooMany) || tooMany.Wait != 2*time.Minute {
 		t.Fatalf("attente doublée attendue : %v", err)
 	}
 	c.now = c.now.Add(2 * time.Minute)
-	if _, _, err := store.Login("marie", password, "10.0.0.2"); err != nil {
+	if _, _, err := store.Login("marie", password, "", "10.0.0.2"); err != nil {
 		t.Fatalf("bon mot de passe après l'attente : %v", err)
 	}
-	if _, _, err := store.Login("marie", "faux", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
+	if _, _, err := store.Login("marie", "faux", "", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
 		t.Fatalf("compteur non remis à zéro : %v", err)
 	}
 }
@@ -223,10 +223,10 @@ func TestResetFile(t *testing.T) {
 	if _, ok := store.Session(token); ok {
 		t.Fatal("ancienne session encore valide")
 	}
-	if _, _, err := store.Login("marie", password, "10.0.0.2"); !errors.Is(err, ErrCredentials) {
+	if _, _, err := store.Login("marie", password, "", "10.0.0.2"); !errors.Is(err, ErrCredentials) {
 		t.Fatalf("ancien mot de passe accepté : %v", err)
 	}
-	if _, _, err := store.Login("marie", "nouvelle phrase de passe", "10.0.0.2"); err != nil {
+	if _, _, err := store.Login("marie", "nouvelle phrase de passe", "", "10.0.0.2"); err != nil {
 		t.Fatalf("nouveau mot de passe : %v", err)
 	}
 }

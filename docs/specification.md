@@ -293,6 +293,14 @@ Offre :
 - **Nombre de comptes** : pas de limite fixée ; seul le matériel limite.
 - Rôles : **administrateur** (gère l'appliance), **utilisateur** (accède aux services autorisés), **invité** (comme un utilisateur, avec une date d'expiration).
 
+**Réalisé** (première étape du fournisseur d'identité, paquet `internal/auth`, écrans « Comptes » et « Mon compte » de la console ; à faire relire, section 11) :
+
+- **Comptes** : l'administrateur crée un compte (identifiant, adresse e-mail, rôle administrateur, utilisateur ou invité ; dernier jour d'accès pour un invité), peut exiger la double authentification, prolonger un invité d'une semaine, supprimer un compte (sauf le sien) et fermer ainsi ses sessions. Le dernier administrateur ayant un mot de passe ne peut être ni supprimé ni rétrogradé. Un invité dont la date est passée ne peut plus se connecter, ni à la console ni aux services ; le compte reste, l'administrateur peut le prolonger. API : `GET`/`POST api/accounts`, `PUT`/`DELETE api/accounts/{nom}` (administrateur).
+- **Invitations** : le compte est créé sans mot de passe avec un lien d'invitation, valable 7 jours et à usage unique (`https://<adresse>/pi-appliance/#invite=<jeton>` : le jeton, après `#`, ne part ni dans les journaux ni dans l'en-tête `Referer` ; seul son SHA-256 est enregistré). La personne choisit son mot de passe (8 caractères, 12 pour un administrateur) et se retrouve connectée. Tant que l'appliance ne sait pas envoyer d'e-mail (TODO-3.6), la console montre le lien à l'administrateur, qui le transmet lui-même ; l'interface `auth.Mailer` (champ `Mailer` de la configuration de la console) l'enverra. Un nouveau lien (`POST api/accounts/{nom}/invitation`) sert aussi de « mot de passe oublié » géré par l'administrateur : l'ancien mot de passe reste valable jusqu'au choix du nouveau, puis les sessions du compte sont fermées.
+- **Double authentification** (TOTP, RFC 6238, codes à 6 chiffres toutes les 30 secondes, bibliothèque `github.com/pquerna/otp`) : facultative, activée dans « Mon compte » en photographiant un QR code (ou en recopiant la clé) puis en saisissant un premier code ; 10 **codes de secours** à usage unique sont alors affichés une seule fois (seuls leurs SHA-256 sont gardés). À la connexion, après un mot de passe juste, la console demande le code ou un code de secours. Le pas précédent et le suivant sont acceptés (horloge du téléphone décalée), un code déjà utilisé est refusé. Les mauvais codes comptent dans la limitation des tentatives (section 8.4). Désactivation par la personne avec son mot de passe, sauf si l'administrateur l'exige ; l'administrateur peut la retirer d'un compte dont le téléphone et les codes sont perdus. Quand elle est exigée et pas encore activée, le compte ne voit que « Mon compte » et n'ouvre aucun service.
+- **Authentification déléguée** (*forward auth*) : middleware Traefik `pi-appliance-auth@file` (`system/etc/pi-appliance/traefik/dynamic/console.yml`), qui interroge `GET /pi-appliance/api/auth/forward` (accepté seulement depuis Traefik : bouclage ou réseau Docker). Avec une session déléguée valide : 200 et les en-têtes `Remote-User`, `Remote-Email`, `Remote-Groups` (rôle), transmis au service. Sinon, pour une page (`GET`, `HEAD`) : redirection vers la console à l'adresse parente (`cloud.maison.example.org` → `https://maison.example.org/pi-appliance/?return=<adresse du service>`) ; autrement 401. Une fois connectée, la console pose le cookie délégué `pi_forward` (`POST api/auth/return`) sur son adresse et ses sous-domaines (`Domain`, `SameSite=Lax`, `HttpOnly`, `Secure` en HTTPS) et renvoie vers le service, seulement si c'est l'adresse de la console ou un de ses sous-domaines. Ce cookie est vu par les services : il porte un jeton distinct de celui de la console et n'ouvre pas la console ; la déconnexion ferme les deux.
+- Pas encore : **OpenID Connect** (la console fournisseur pour les services qui le connaissent, étape suivante de TODO-4.1) ; branchement du middleware sur les services « utilisateurs connectés » (TODO-3.10) ; liste des services autorisés par compte (aujourd'hui, toute session valide ouvre tous les services protégés) ; envoi des invitations par e-mail (TODO-3.6) ; double authentification obligatoire pour la console sur internet (TODO-3.12) ; messages d'erreur du serveur encore en français seulement. Un service compromis voit le cookie délégué et pourrait s'en servir pour ouvrir les autres services protégés au nom de la personne (pas la console) : OpenID Connect, qui ne partage pas de cookie, supprimera ce risque pour les services qui le connaissent.
+
 ### 8.2 Qui accède à un service
 
 À l'installation, pour chaque service : **public sur internet**, **utilisateurs connectés** ou **maison seulement**. La valeur par défaut vient du manifeste (site web : public ; Nextcloud, DokuWiki, Etherpad : utilisateurs connectés). Modifiable ensuite dans la console.
@@ -320,7 +328,7 @@ Offre :
 - Connexion (`POST api/login`), déconnexion (`POST api/logout`), état (`GET api/session` : création à faire, réinitialisation en cours, compte connecté). Session dans un cookie `HttpOnly`, `SameSite=Strict`, `Secure` derrière Traefik en HTTPS ; valable 7 jours, prolongée à chaque usage, gardée en mémoire : un redémarrage de la console déconnecte tout le monde.
 - Limitation des tentatives par client et par compte : après 5 échecs, attente d'une minute, doublée à chaque nouvel échec, 15 minutes au plus. Derrière Traefik (bouclage ou réseau Docker), le client est la dernière adresse de `X-Forwarded-For`.
 - Fichier `reset` (section 8.5) : lu au démarrage (option `-reset-file`, `/boot/firmware/reset` par défaut), supprimé aussitôt ; la console propose alors un nouveau mot de passe pour le premier administrateur (`POST api/reset`), sans toucher aux services, et ferme toutes les sessions.
-- Pas encore : autres comptes et invitations, rôles utilisateur et invité dans l'interface, double authentification, OpenID Connect, vérification de l'e-mail, récupération par e-mail.
+- Autres comptes, invitations, double authentification et authentification déléguée : section 8.1. Pas encore : OpenID Connect, vérification de l'e-mail, récupération par e-mail.
 
 ### 8.5 Récupération de l'accès
 
@@ -410,7 +418,7 @@ flowchart LR
 | Configuration de Traefik | Labels Docker posés sur les conteneurs des services |
 | Manifestes de la marketplace | YAML au format Docker Compose, avec des métadonnées en plus |
 | Fabrication de l'image | Shell et `pi-gen` |
-| Fournisseur d'identité | Intégré à la console Go (OpenID Connect, *forward auth* Traefik, TOTP) |
+| Fournisseur d'identité | Intégré à la console Go (OpenID Connect, *forward auth* Traefik, TOTP avec `github.com/pquerna/otp`) |
 | DNS dynamique | DuckDNS |
 | Traefik | Conteneur Docker en réseau hôte (ports 80 et 443 du Pi) ; configuration par fichiers (console, portail captif, certificat local) et par labels Docker (services) |
 | Réseau du Pi | NetworkManager (point d'accès, Wi-Fi de la maison, câble), avahi (`pi-appliance.local`) |
@@ -459,7 +467,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
-| `internal/auth/` | Comptes de la console : compte administrateur, connexion, sessions, fichier `reset` (8.1, 8.5) |
+| `internal/auth/` | Fournisseur d'identité : comptes et invités, invitations, connexion, double authentification, sessions de la console et déléguées, fichier `reset` (8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `internal/ddns/` | Mise à jour du nom DuckDNS avec l'adresse publique de la box (7.1) |
 | `internal/network/` | Réseau du Pi pour la console, par `network.sh` : état, Wi-Fi, connexion, câble, pays du Wi-Fi (4) |
