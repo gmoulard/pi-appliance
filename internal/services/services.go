@@ -48,6 +48,8 @@ const (
 	overrideName = "pi-appliance.override.json"
 	envName      = ".env"
 	stateName    = "instance.json"
+	// siteDir : fichiers du site, déposés par ZIP, Nextcloud ou FTP.
+	siteDir = "www"
 )
 
 var (
@@ -77,6 +79,10 @@ type Instance struct {
 	// NoWebPage : service sans page web (VPN…), joint par ses HostPorts.
 	NoWebPage bool                   `json:"no_web_page,omitempty"`
 	HostPorts []marketplace.HostPort `json:"host_ports,omitempty"`
+	// SiteFiles : fichiers du site déposés par ZIP ou Nextcloud (manifeste, champ files).
+	SiteFiles bool `json:"site_files,omitempty"`
+	// Build : dernière construction d'un générateur de site statique.
+	Build *Build `json:"build,omitempty"`
 }
 
 type Result struct {
@@ -312,14 +318,22 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 		"labels":   labels,
 		"networks": []string{"default", Network},
 	}
-	if app.ID == "site-web" {
-		service["volumes"] = []string{filepath.Join(m.Dir, "services", name, "www") + ":/var/www/html"}
-	}
 	if app.ID == "nextcloud" {
 		service["volumes"] = []string{filepath.Join(m.Dir, "services") + ":/srv/pi-appliance/services"}
 	}
+	services := map[string]any{app.Service: service}
+	// Dossier des fichiers du site (ZIP, Nextcloud, FTP), dans chaque service qui le lit.
+	for _, mount := range app.Files {
+		target, ok := services[mount.Service].(map[string]any)
+		if !ok {
+			target = map[string]any{}
+			services[mount.Service] = target
+		}
+		volumes, _ := target["volumes"].([]string)
+		target["volumes"] = append(volumes, filepath.Join(m.serviceDir(name), siteDir)+":"+mount.Path)
+	}
 	return map[string]any{
-		"services": map[string]any{app.Service: service},
+		"services": services,
 		"networks": map[string]any{Network: map[string]any{"external": true}},
 	}
 }
@@ -352,6 +366,9 @@ func (m *Manager) List() ([]Instance, error) {
 		if err := json.Unmarshal(data, &instance); err != nil {
 			return nil, fmt.Errorf("%s : %w", path, err)
 		}
+		if instance.SiteFiles = m.siteFiles(instance.Name, instance.App); instance.SiteFiles {
+			instance.Build = readBuild(filepath.Join(m.serviceDir(instance.Name), siteDir))
+		}
 		instances = append(instances, instance)
 	}
 	sort.Slice(instances, func(i, j int) bool { return instances[i].Name < instances[j].Name })
@@ -372,8 +389,8 @@ func (m *Manager) DeployZIP(ctx context.Context, name string, r io.Reader) error
 		return fmt.Errorf("%w : %s", ErrNotFound, name)
 	}
 	var instance Instance
-	if err := json.Unmarshal(data, &instance); err != nil || instance.App != "site-web" {
-		return fmt.Errorf("%w : %s", ErrInvalid, name)
+	if err := json.Unmarshal(data, &instance); err != nil || !m.siteFiles(name, instance.App) {
+		return fmt.Errorf("%w : %s ne reçoit pas de fichiers de site", ErrInvalid, name)
 	}
 
 	temp, err := os.CreateTemp(m.Dir, "site-*.zip")
@@ -402,7 +419,7 @@ func (m *Manager) DeployZIP(ctx context.Context, name string, r io.Reader) error
 		return fmt.Errorf("%w : fichier ZIP illisible", ErrInvalid)
 	}
 
-	root := filepath.Join(dir, "www")
+	root := filepath.Join(dir, siteDir)
 	staging, err := os.MkdirTemp(m.Dir, "site-deploy-*")
 	if err != nil {
 		return err
@@ -450,10 +467,35 @@ func (m *Manager) DeployZIP(ctx context.Context, name string, r io.Reader) error
 			return fmt.Errorf("archive illisible : %v", firstError(copyErr, closeErr, srcCloseErr))
 		}
 	}
-	if err := os.RemoveAll(root); err != nil {
+	return replaceContent(root, staging)
+}
+
+// replaceContent remplace le contenu de root par celui de staging en gardant
+// le dossier root lui-même : les conteneurs démarrés le montent (bind mount)
+// et ne verraient pas un nouveau dossier mis à sa place.
+func replaceContent(root, staging string) error {
+	if err := os.MkdirAll(root, 0o700); err != nil {
 		return err
 	}
-	return os.Rename(staging, root)
+	old, err := os.ReadDir(root)
+	if err != nil {
+		return err
+	}
+	for _, entry := range old {
+		if err := os.RemoveAll(filepath.Join(root, entry.Name())); err != nil {
+			return err
+		}
+	}
+	added, err := os.ReadDir(staging)
+	if err != nil {
+		return err
+	}
+	for _, entry := range added {
+		if err := os.Rename(filepath.Join(staging, entry.Name()), filepath.Join(root, entry.Name())); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (m *Manager) Remove(ctx context.Context, name string, keepData bool) error {

@@ -323,11 +323,17 @@ func TestCatalog(t *testing.T) {
 	body := decode[struct {
 		Apps []map[string]any `json:"apps"`
 	}](t, f.do(http.MethodGet, "/pi-appliance/api/catalog", "", "", f.admin(t)))
-	if len(body.Apps) == 0 || body.Apps[0]["id"] != "dokuwiki" {
-		t.Fatalf("catalogue %v", body.Apps)
+	ids := map[string]bool{}
+	for _, app := range body.Apps {
+		ids[app["id"].(string)] = true
+		for _, field := range []string{"Compose", "compose", "files", "Files"} {
+			if _, leaked := app[field]; leaked {
+				t.Fatalf("%s exposé dans le catalogue (%s)", field, app["id"])
+			}
+		}
 	}
-	if _, leaked := body.Apps[0]["Compose"]; leaked {
-		t.Fatal("fichier Compose exposé dans le catalogue")
+	if !ids["dokuwiki"] || !ids["hugo"] {
+		t.Fatalf("catalogue %v", body.Apps)
 	}
 }
 

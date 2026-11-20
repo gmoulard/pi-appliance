@@ -154,6 +154,9 @@ func TestParseRejects(t *testing.T) {
 		"yaml":                {"services:", "services: [", "manifeste wiki"},
 		"icône absente":       {"  icon: M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5\n", "", "icon invalide"},
 		"icône piégée":        {"icon: M4 5", "icon: M4 5\"/><script>", "icon invalide"},
+		"fichiers service":    {"port: 8080", "port: 8080\n  files:\n    - service: db\n      path: /src", "files : service"},
+		"fichiers relatif":    {"port: 8080", "port: 8080\n  files:\n    - service: web\n      path: src", "files : chemin"},
+		"fichiers racine":     {"port: 8080", "port: 8080\n  files:\n    - service: web\n      path: /", "files : chemin"},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -202,5 +205,30 @@ func TestValidLabel(t *testing.T) {
 		if ValidLabel(label) != want {
 			t.Errorf("ValidLabel(%q) != %v", label, want)
 		}
+	}
+}
+
+// Les générateurs de sites statiques (TODO-2.46) reçoivent leurs fichiers
+// source dans le constructeur, et le site web dans Apache et FTP.
+func TestBuiltinSiteFiles(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"hugo", "mkdocs", "jekyll", "astro", "nextjs"} {
+		app, ok := catalog.Get(id)
+		if !ok {
+			t.Fatalf("%s absent du catalogue", id)
+		}
+		if !app.SiteFiles || len(app.Files) != 1 || app.Files[0] != (FileMount{Service: "builder", Path: "/src"}) || app.Service != "web" || app.Port != 80 {
+			t.Errorf("%s : %+v", id, app)
+		}
+	}
+	site, _ := catalog.Get("site-web")
+	if len(site.Files) != 2 || site.Files[1] != (FileMount{Service: "ftp", Path: "/var/www/html"}) {
+		t.Errorf("site-web : %+v", site.Files)
+	}
+	if wiki, _ := catalog.Get("dokuwiki"); wiki.SiteFiles {
+		t.Error("dokuwiki ne reçoit pas de fichiers de site")
 	}
 }

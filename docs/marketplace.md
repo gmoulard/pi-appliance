@@ -26,13 +26,11 @@ La console gère plusieurs instances, leur démarrage et leur arrêt, les mises 
 
 Ces pistes ne sont pas encore installables depuis la marketplace :
 
-- **WireGuard** : accès au réseau de la maison depuis l'extérieur, avec configuration par QR code.
-- **Générateurs de sites** : MkDocs, Astro, Hugo, Jekyll et Next.js.
 - **Bases de données** : PostgreSQL est disponible, avec l'interface web Adminer. MongoDB (Pi 5 seulement), Redis, MSSQL (pas d'image pour le Pi) et SQLite (un simple fichier) ne sont pas proposés seuls : voir la [spécification](specification.html), section 6.3.
 - **Samba** : partage de fichiers sur le réseau local.
 - **Caméra et timelapse** : applications autour de Motion et de la capture d'images.
 
-Le dépôt des fichiers du site par Nextcloud ou ZIP, les liens publics de partage Etherpad et les réglages avancés sont aussi des améliorations prévues. Consultez la [feuille de route](TODO.html) pour connaître leur avancement.
+Les liens publics de partage Etherpad et les réglages avancés sont aussi des améliorations prévues. Consultez la [feuille de route](TODO.html) pour connaître leur avancement.
 
 ## Ajouter une application : tout le monde peut contribuer
 

@@ -36,7 +36,7 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 | Chemin | Contenu |
 |--------|---------|
 | `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services, réseau du Pi, tableau de bord, mise à jour DuckDNS, sauvegardes chiffrées sur disque USB, statistiques anonymes ; `cmd/pi-appliance-stats` : service du projet qui les reçoit |
-| `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud, site web, DokuWiki, Etherpad, PostgreSQL, VPN WireGuard) |
+| `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud, site web, DokuWiki, Etherpad, PostgreSQL, VPN WireGuard, sites statiques Hugo, MkDocs, Jekyll, Astro et Next.js) |
 | `image/` | Construction de l'image système avec pi-gen (`image/build.sh`) |
 | `system/` | Couche système installée sur le Pi : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage (`system/install.sh`) |
 | [`docs/`](docs/) | [Guide utilisateur](docs/guide-utilisateur.md), [installation du plan de contrôle](docs/installation.md), [essais avec plusieurs Pi](docs/essais-plusieurs-pi.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [environnement (DNS Route 53, GitHub Pages, AWS CLI)](docs/environnement.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |

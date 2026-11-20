@@ -50,6 +50,13 @@ type HostPort struct {
 	Protocol string `yaml:"protocol" json:"protocol"`
 }
 
+// FileMount : le dossier des fichiers du site (dépôt par ZIP, Nextcloud ou
+// FTP) monté dans un service, à un chemin absolu.
+type FileMount struct {
+	Service string `yaml:"service" json:"-"`
+	Path    string `yaml:"path" json:"-"`
+}
+
 type Parameter struct {
 	Name     string `yaml:"name" json:"name"`
 	Label    string `yaml:"label" json:"label"`
@@ -73,6 +80,9 @@ type App struct {
 	Access      string      `yaml:"access" json:"access"`
 	Parameters  []Parameter `yaml:"parameters" json:"parameters"`
 	HostPorts   []HostPort  `yaml:"host_ports" json:"host_ports,omitempty"`
+	Files       []FileMount `yaml:"files" json:"-"`
+	// SiteFiles : le service reçoit des fichiers déposés (champ files).
+	SiteFiles bool `yaml:"-" json:"site_files"`
 	// Web est faux pour un service sans page web (port absent) : rien n'est
 	// publié par Traefik.
 	Web     bool   `yaml:"-" json:"web"`
@@ -132,6 +142,7 @@ func Parse(id string, data []byte) (App, error) {
 	app := *file.Meta
 	app.ID = id
 	app.Web = app.Port != 0
+	app.SiteFiles = len(app.Files) > 0
 	app.Compose = data
 	if problems := check(app, file); len(problems) > 0 {
 		return App{}, fmt.Errorf("manifeste %s : %s", id, strings.Join(problems, " ; "))
@@ -188,6 +199,14 @@ func check(app App, file composeFile) []string {
 			fail("host_ports : port %d/%s en double", port.Port, port.Protocol)
 		}
 		opened[port] = true
+	}
+	for _, mount := range app.Files {
+		if _, ok := file.Services[mount.Service]; !ok {
+			fail("files : service %q absent de services", mount.Service)
+		}
+		if !path.IsAbs(mount.Path) || path.Clean(mount.Path) != mount.Path || mount.Path == "/" {
+			fail("files : chemin %q invalide (chemin absolu, autre que /)", mount.Path)
+		}
 	}
 	if app.MemoryMB <= 0 || app.DiskMB <= 0 {
 		fail("memory_mb et disk_mb doivent être positifs")

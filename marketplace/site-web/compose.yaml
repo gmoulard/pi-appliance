@@ -11,6 +11,12 @@ x-pi-appliance:
   disk_mb: 1024
   login: application
   access: public
+  # Dossier du site (ZIP, Nextcloud, FTP), le même pour Apache et pour FTP.
+  files:
+    - service: web
+      path: /var/www/html
+    - service: ftp
+      path: /var/www/html
   parameters:
     - name: FTP_PASSWORD
       label: Mot de passe FTP

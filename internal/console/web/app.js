@@ -129,7 +129,7 @@ async function loadServices() {
         devices = devicesButton(service);
         buttons.append(devices.button);
       }
-      if (service.app === "site-web") {
+      if (service.site_files) {
         const upload = element("button", t("Déposer un ZIP"), "secondary");
         upload.addEventListener("click", () => chooseSiteArchive(service, upload));
         buttons.append(upload);
@@ -160,9 +160,13 @@ async function loadServices() {
     if (service.update_available) {
       detail.append(element("p", t("Nouvelle version disponible."), "meta"));
     }
-    if (service.app === "site-web") {
+    if (service.site_files) {
       detail.append(element("p", t("Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www", service.name), "meta"));
+    }
+    if (service.app === "site-web") {
       detail.append(element("p", t("FTP : compte pi sur le port 2121, sauf port personnalisé."), "meta"));
+    } else if (service.site_files) {
+      detail.append(element("p", buildText(service.build), "meta"));
     }
     card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
     return card;
@@ -876,6 +880,15 @@ function customComposeCard() {
 async function refreshResources() {
   await loadResources();
   await loadCatalog();
+}
+
+// Dernière construction d'un générateur de site statique (Hugo, MkDocs…).
+function buildText(build) {
+  if (!build) return t("Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.");
+  const when = new Date(build.at).toLocaleString(LOCALE);
+  if (build.state === "building") return t("Construction du site en cours…");
+  if (build.state === "ok") return t("Site construit le {0}.", when);
+  return t("La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.", when);
 }
 
 function chooseSiteArchive(service, button) {
