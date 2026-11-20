@@ -426,5 +426,12 @@ piTranslations("ja", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "このアドレスが開かない場合（一部の Android スマートフォンや Windows パソコンは .local アドレスを見つけられません）、ルーターの機器一覧で「pi-appliance」を探し、https://<そのアドレス>/pi-appliance を開いてください。ブラウザーに証明書の警告が表示されますが、続行できます。",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "{0} を開くこともできます。ブラウザーに証明書の警告が表示されますが、続行できます。",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "ネットワーク上の別の機器がすでに「{0}」という名前です。Pi は「{1}」という名前になりました。",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "このアドレスは、自宅の iPhone、Mac、Linux パソコンから開けます。Windows パソコンと一部の Android スマートフォンはまだ見つけられません。それまでは別の機器を使ってください。"
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "このアドレスは、自宅の iPhone、Mac、Linux パソコンから開けます。Windows パソコンと一部の Android スマートフォンはまだ見つけられません。それまでは別の機器を使ってください。",
+  "Alimentation": "電源",
+  "Trop faible": "不足",
+  "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "電源が不足しています。Pi の公式電源を使ってください。Pi の動作が遅くなり、SD カードが壊れるおそれがあります。",
+  "Trop faible par moments": "ときどき不足",
+  "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "Pi の起動後に電源が不足したことがあります。Pi の公式電源を使い、長いケーブルや細いケーブルは避けてください。",
+  "Correcte": "正常",
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Pi の起動後、電圧の低下はありません。"
 });

@@ -426,5 +426,12 @@ piTranslations("nl", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "Opent dit adres niet (sommige Android-telefoons en Windows-computers vinden geen .local-adressen), zoek dan het apparaat „pi-appliance” in de apparatenlijst van uw router en open https://<zijn adres>/pi-appliance. De browser toont een certificaatwaarschuwing: u kunt doorgaan.",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "U kunt ook {0} openen: de browser toont een certificaatwaarschuwing, u kunt doorgaan.",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "Een ander apparaat in uw netwerk heet al „{0}”: de Pi heeft de naam „{1}” gekregen.",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Dit adres opent vanaf een iPhone, een Mac of een Linux-computer thuis. Windows-computers en sommige Android-telefoons vinden het nog niet: gebruik intussen een ander apparaat."
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Dit adres opent vanaf een iPhone, een Mac of een Linux-computer thuis. Windows-computers en sommige Android-telefoons vinden het nog niet: gebruik intussen een ander apparaat.",
+  "Alimentation": "Voeding",
+  "Trop faible": "Te zwak",
+  "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "Voeding te zwak: gebruik de officiële voeding van de Pi. De Pi vertraagt en de SD-kaart kan beschadigd raken.",
+  "Trop faible par moments": "Soms te zwak",
+  "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "De voeding is sinds het opstarten van de Pi te zwak geweest: gebruik de officiële voeding van de Pi en vermijd lange of dunne kabels.",
+  "Correcte": "In orde",
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Geen spanningsdaling sinds het opstarten van de Pi."
 });

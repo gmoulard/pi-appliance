@@ -426,5 +426,12 @@ piTranslations("ar", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "إذا لم يُفتح هذا العنوان (بعض هواتف Android وحواسيب Windows لا تجد عناوين ‎.local)، ابحث عن الجهاز «pi-appliance» في قائمة الأجهزة في الراوتر وافتح https://<عنوانه>/pi-appliance. سيعرض المتصفح تحذيرًا بشأن الشهادة: يمكنك المتابعة.",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "يمكنك أيضًا فتح {0}: سيعرض المتصفح تحذيرًا بشأن الشهادة، ويمكنك المتابعة.",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "يوجد جهاز آخر في شبكتك باسم «{0}»: أخذ الـPi الاسم «{1}».",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "يُفتح هذا العنوان من iPhone أو Mac أو حاسوب Linux في المنزل. لا تجده حواسيب Windows وبعض هواتف Android بعد: استخدم جهازًا آخر في الأثناء."
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "يُفتح هذا العنوان من iPhone أو Mac أو حاسوب Linux في المنزل. لا تجده حواسيب Windows وبعض هواتف Android بعد: استخدم جهازًا آخر في الأثناء.",
+  "Alimentation": "مصدر الطاقة",
+  "Trop faible": "ضعيف جدًا",
+  "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "مصدر الطاقة ضعيف جدًا: استخدم مصدر الطاقة الرسمي لـ Pi. يتباطأ Pi وقد تتلف بطاقة SD.",
+  "Trop faible par moments": "ضعيف جدًا أحيانًا",
+  "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "كان مصدر الطاقة ضعيفًا جدًا منذ تشغيل Pi: استخدم مصدر الطاقة الرسمي لـ Pi، وتجنّب الكابلات الطويلة أو الرفيعة.",
+  "Correcte": "سليم",
+  "Aucune baisse de tension depuis le démarrage du Pi.": "لا يوجد انخفاض في الجهد منذ تشغيل Pi."
 });

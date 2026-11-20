@@ -315,6 +315,18 @@ function nowTiles() {
     }[color];
     tiles.push(nowTile(t("Température"), `${number(temperature)} °C`, advice, color));
   }
+  const power = resources.power;
+  if (known(power)) {
+    if (power.undervoltage_now) {
+      tiles.push(nowTile(t("Alimentation"), t("Trop faible"),
+        t("Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer."), "red"));
+    } else if (power.undervoltage_since_boot) {
+      tiles.push(nowTile(t("Alimentation"), t("Trop faible par moments"),
+        t("L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins."), "orange"));
+    } else {
+      tiles.push(nowTile(t("Alimentation"), t("Correcte"), t("Aucune baisse de tension depuis le démarrage du Pi."), "green"));
+    }
+  }
   return tiles;
 }
 

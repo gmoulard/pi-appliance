@@ -426,5 +426,12 @@ piTranslations("es", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "Si esta dirección no se abre (algunos teléfonos Android y ordenadores Windows no encuentran las direcciones .local), busque el aparato «pi-appliance» en la lista de dispositivos de su router y abra https://<su dirección>/pi-appliance. El navegador mostrará una alerta sobre el certificado: puede continuar.",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "También puede abrir {0}: el navegador mostrará una alerta sobre el certificado, puede continuar.",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "Otro aparato de su red ya se llama «{0}»: el Pi ha tomado el nombre «{1}».",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Esta dirección se abre desde un iPhone, un Mac o un ordenador Linux de casa. Los ordenadores Windows y algunos teléfonos Android aún no la encuentran: mientras tanto, use otro aparato."
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Esta dirección se abre desde un iPhone, un Mac o un ordenador Linux de casa. Los ordenadores Windows y algunos teléfonos Android aún no la encuentran: mientras tanto, use otro aparato.",
+  "Alimentation": "Alimentación",
+  "Trop faible": "Demasiado débil",
+  "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "Alimentación demasiado débil: use la fuente de alimentación oficial del Pi. El Pi se ralentiza y la tarjeta SD puede dañarse.",
+  "Trop faible par moments": "A veces demasiado débil",
+  "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "La alimentación ha sido demasiado débil desde que se encendió el Pi: use la fuente de alimentación oficial del Pi y evite los cables largos o finos.",
+  "Correcte": "Correcta",
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Ninguna caída de tensión desde que se encendió el Pi."
 });

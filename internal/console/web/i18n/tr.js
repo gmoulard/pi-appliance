@@ -426,5 +426,12 @@ piTranslations("tr", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "Bu adres açılmazsa (bazı Android telefonlar ve Windows bilgisayarlar .local adreslerini bulamaz), modeminizin cihaz listesinde “pi-appliance” cihazını arayın ve https://<cihazın adresi>/pi-appliance adresini açın. Tarayıcı bir sertifika uyarısı gösterecek: devam edebilirsiniz.",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "{0} adresini de açabilirsiniz: tarayıcı bir sertifika uyarısı gösterecek, devam edebilirsiniz.",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "Ağınızdaki başka bir cihazın adı zaten “{0}”: Pi “{1}” adını aldı.",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Bu adres evdeki bir iPhone, Mac veya Linux bilgisayardan açılır. Windows bilgisayarlar ve bazı Android telefonlar onu henüz bulamıyor: bu arada başka bir cihaz kullanın."
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Bu adres evdeki bir iPhone, Mac veya Linux bilgisayardan açılır. Windows bilgisayarlar ve bazı Android telefonlar onu henüz bulamıyor: bu arada başka bir cihaz kullanın.",
+  "Alimentation": "Güç kaynağı",
+  "Trop faible": "Çok zayıf",
+  "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "Güç kaynağı çok zayıf: Pi'nin resmî güç adaptörünü kullanın. Pi yavaşlar ve SD kart zarar görebilir.",
+  "Trop faible par moments": "Zaman zaman çok zayıf",
+  "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "Pi başladığından beri güç kaynağı çok zayıf kaldı: Pi'nin resmî güç adaptörünü kullanın, uzun veya ince kablolardan kaçının.",
+  "Correcte": "Normal",
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Pi başladığından beri voltaj düşüşü yok."
 });

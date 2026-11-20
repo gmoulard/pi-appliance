@@ -49,6 +49,8 @@ type Resources struct {
 	CPUPercent *float64 `json:"cpu_percent"`
 	// TemperatureC : température de la puce, en degrés Celsius.
 	TemperatureC *float64 `json:"temperature_c"`
+	// Power : alimentation du Pi (sous-tension), vue par la puce.
+	Power *Power `json:"power"`
 }
 
 // Fichiers du noyau lus par le paquet ; des variables pour les tests.
@@ -57,6 +59,7 @@ var (
 	mountsPath      = "/proc/self/mounts"
 	statPath        = "/proc/stat"
 	thermalPath     = "/sys/class/thermal/thermal_zone0/temp"
+	throttledGlob   = "/sys/devices/platform/soc*/*firmware/get_throttled"
 	netDevPath      = "/proc/net/dev"
 	firstCPUWait    = 250 * time.Millisecond
 	cpuRefreshDelay = time.Second
@@ -75,6 +78,7 @@ func Read(dir string) Resources {
 		resources.TemperatureC = parseTemperature(file)
 		file.Close()
 	}
+	resources.Power = readPower()
 	return resources
 }
 

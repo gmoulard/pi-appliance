@@ -426,5 +426,12 @@ piTranslations("de", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "Wenn sich diese Adresse nicht öffnet (manche Android-Telefone und Windows-Computer finden keine .local-Adressen), suchen Sie das Gerät „pi-appliance“ in der Geräteliste Ihres Routers und öffnen Sie https://<seine Adresse>/pi-appliance. Der Browser zeigt eine Zertifikatswarnung an: Sie können fortfahren.",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "Sie können auch {0} öffnen: Der Browser zeigt eine Zertifikatswarnung an, Sie können fortfahren.",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "Ein anderes Gerät in Ihrem Netzwerk heißt bereits „{0}“: Der Pi hat den Namen „{1}“ angenommen.",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Diese Adresse öffnet sich von einem iPhone, einem Mac oder einem Linux-Computer zu Hause. Windows-Computer und manche Android-Telefone finden sie noch nicht: Nutzen Sie bis dahin ein anderes Gerät."
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "Diese Adresse öffnet sich von einem iPhone, einem Mac oder einem Linux-Computer zu Hause. Windows-Computer und manche Android-Telefone finden sie noch nicht: Nutzen Sie bis dahin ein anderes Gerät.",
+  "Alimentation": "Stromversorgung",
+  "Trop faible": "Zu schwach",
+  "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "Stromversorgung zu schwach: Verwenden Sie das offizielle Netzteil des Pi. Der Pi wird langsamer und die SD-Karte kann beschädigt werden.",
+  "Trop faible par moments": "Zeitweise zu schwach",
+  "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "Die Stromversorgung war seit dem Start des Pi zu schwach: Verwenden Sie das offizielle Netzteil des Pi und vermeiden Sie lange oder dünne Kabel.",
+  "Correcte": "In Ordnung",
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Kein Spannungsabfall seit dem Start des Pi."
 });

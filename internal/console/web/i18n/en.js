@@ -426,5 +426,12 @@ piTranslations("en", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "If this address does not open (some Android phones and Windows computers cannot find .local addresses), look for the “pi-appliance” device in your router's list of devices and open https://<its address>/pi-appliance. The browser will show a certificate warning: you can continue.",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "You can also open {0}: the browser will show a certificate warning, you can continue.",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "Another device on your network is already called “{0}”: the Pi has taken the name “{1}”.",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "This address opens from an iPhone, a Mac or a Linux computer at home. Windows computers and some Android phones cannot find it yet: use another device in the meantime."
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "This address opens from an iPhone, a Mac or a Linux computer at home. Windows computers and some Android phones cannot find it yet: use another device in the meantime.",
+  "Alimentation": "Power supply",
+  "Trop faible": "Too weak",
+  "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "Power supply too weak: use the official Pi power supply. The Pi slows down and the SD card can be damaged.",
+  "Trop faible par moments": "Too weak at times",
+  "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "The power supply has been too weak since the Pi started: use the official Pi power supply, and avoid long or thin cables.",
+  "Correcte": "Fine",
+  "Aucune baisse de tension depuis le démarrage du Pi.": "No voltage drop since the Pi started."
 });
