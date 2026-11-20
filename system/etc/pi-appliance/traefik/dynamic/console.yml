@@ -63,6 +63,16 @@ http:
       redirectRegex:
         regex: ".*"
         replacement: "https://10.42.0.1/pi-appliance/"
+    # Authentification déléguée à la console (spécification 8.1) : un service
+    # « utilisateurs connectés » ajoute à son routeur le label
+    # traefik.http.routers.<routeur>.middlewares=pi-appliance-auth@file.
+    # Sans session, la console renvoie vers sa page de connexion. Les en-têtes
+    # Remote-* sont toujours remplacés par ceux de la console : un visiteur ne
+    # peut pas les forger.
+    pi-appliance-auth:
+      forwardAuth:
+        address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward"
+        authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups]
 
   services:
     pi-appliance-console:

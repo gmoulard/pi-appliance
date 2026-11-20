@@ -158,7 +158,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 
 ## 4. Étape 3 — Le reste
 
-- [ ] **TODO-4.1**: Fournisseur d'identité intégré à la console : OpenID Connect, *forward auth* Traefik, double authentification, invitations par e-mail ; rôles et invités (8.1, 8.3).
+- [ ] **TODO-4.1**: Fournisseur d'identité intégré à la console : OpenID Connect, *forward auth* Traefik, double authentification, invitations par e-mail ; rôles et invités (8.1, 8.3). Première étape faite (8.1, `internal/auth`) : comptes utilisateur et invité (date de fin), invitations par lien à transmettre soi-même (interface `auth.Mailer` prête), double authentification TOTP facultative ou exigée par l'administrateur, codes de secours, *forward auth* (`/pi-appliance/api/auth/forward`, middleware Traefik `pi-appliance-auth@file`). Reste : OpenID Connect (fournisseur pour les services, avec une bibliothèque éprouvée), services autorisés par compte, envoi des invitations par e-mail (attend TODO-3.6), relecture de sécurité (11). Le branchement du middleware sur les services « connectés » est TODO-3.10.
 - [ ] **TODO-4.2**: Alertes par e-mail, désactivables par type (8.6).
 - [ ] **TODO-4.3**: Sauvegardes : chaque nuit, rotation 7/4/6, disque USB, cloud, autre pi-appliance (jumelage par code), chiffrement, restauration de l'appliance, d'un service ou d'un fichier (9.1).
 - [ ] **TODO-4.4**: Services du projet : relais SMTP OVH (SPF, DKIM, DMARC), sauvegarde hors de la maison, Pi de secours (10.2).

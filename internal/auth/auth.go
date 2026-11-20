@@ -13,9 +13,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Package auth gère les comptes de la console : création du compte
-// administrateur au premier démarrage, connexion, sessions, limitation des
-// tentatives et réinitialisation par le fichier reset (spécification 8.1, 8.4, 8.5).
+// Package auth est le fournisseur d'identité intégré à la console : création du
+// compte administrateur au premier démarrage, comptes utilisateur et invité,
+// invitations, connexion, double authentification (TOTP, codes de secours),
+// sessions de la console et sessions déléguées (*forward auth* de Traefik),
+// limitation des tentatives et réinitialisation par le fichier reset
+// (spécification 8.1, 8.3, 8.4, 8.5).
 package auth
 
 import (
@@ -66,34 +69,85 @@ var (
 	ErrCredentials = errors.New("identifiant ou mot de passe incorrect")
 	ErrTooMany     = errors.New("trop de tentatives")
 	ErrNoReset     = errors.New("aucune réinitialisation en cours")
+	// ErrCodeNeeded : mot de passe juste, il faut encore le code de vérification.
+	ErrCodeNeeded   = errors.New("code de vérification demandé")
+	ErrCode         = errors.New("code de vérification incorrect")
+	ErrExpired      = errors.New("compte invité expiré")
+	ErrNotFound     = errors.New("compte inconnu")
+	ErrExists       = errors.New("ce compte existe déjà")
+	ErrLastAdmin    = errors.New("dernier administrateur")
+	ErrNoInvitation = errors.New("invitation inconnue ou expirée")
+	ErrTOTPRequired = errors.New("double authentification exigée")
 )
 
 var namePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]{0,31}$`)
 
 type Account struct {
-	Name          string    `json:"name"`
-	Email         string    `json:"email"`
-	EmailVerified bool      `json:"email_verified"`
-	Role          Role      `json:"role"`
-	Hash          string    `json:"hash"`
-	CreatedAt     time.Time `json:"created_at"`
-}
-
-// Public est la vue d'un compte renvoyée à l'interface, sans le hachage.
-type Public struct {
 	Name          string `json:"name"`
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	Role          Role   `json:"role"`
+	// Hash est vide tant que la personne invitée n'a pas choisi son mot de passe.
+	Hash      string    `json:"hash"`
+	CreatedAt time.Time `json:"created_at"`
+	// ExpiresAt : fin d'un compte invité ; nil pour les autres rôles.
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
+	// Invitation : SHA-256 du lien envoyé (jamais le lien lui-même) et sa fin.
+	InviteHash    string    `json:"invite_hash,omitempty"`
+	InviteExpires time.Time `json:"invite_expires,omitzero"`
+	// Double authentification : secret TOTP actif, secret en cours d'activation,
+	// dernier pas de 30 secondes accepté (un code ne sert qu'une fois),
+	// SHA-256 des codes de secours restants.
+	TOTPSecret     string   `json:"totp_secret,omitempty"`
+	TOTPPending    string   `json:"totp_pending,omitempty"`
+	TOTPLastStep   int64    `json:"totp_last_step,omitempty"`
+	RecoveryHashes []string `json:"recovery_hashes,omitempty"`
+	// TOTPRequired : l'administrateur exige la double authentification pour ce compte.
+	TOTPRequired bool `json:"totp_required,omitempty"`
+}
+
+// Public est la vue d'un compte renvoyée à l'interface, sans hachage ni secret.
+type Public struct {
+	Name          string     `json:"name"`
+	Email         string     `json:"email"`
+	EmailVerified bool       `json:"email_verified"`
+	Role          Role       `json:"role"`
+	ExpiresAt     *time.Time `json:"expires_at,omitempty"`
+	Invited       bool       `json:"invited"`
+	TOTP          bool       `json:"totp"`
+	TOTPRequired  bool       `json:"totp_required"`
+	RecoveryCodes int        `json:"recovery_codes"`
 }
 
 func (a Account) Public() Public {
-	return Public{Name: a.Name, Email: a.Email, EmailVerified: a.EmailVerified, Role: a.Role}
+	return Public{
+		Name: a.Name, Email: a.Email, EmailVerified: a.EmailVerified, Role: a.Role,
+		ExpiresAt: a.ExpiresAt, Invited: a.Hash == "", TOTP: a.TOTPSecret != "",
+		TOTPRequired: a.TOTPRequired, RecoveryCodes: len(a.RecoveryHashes),
+	}
 }
 
+// Expired : compte invité dont la date de fin est passée.
+func (a Account) Expired(now time.Time) bool {
+	return a.ExpiresAt != nil && !now.Before(*a.ExpiresAt)
+}
+
+// NeedsTOTPSetup : l'administrateur exige la double authentification et elle
+// n'est pas encore activée ; le compte ne peut alors que l'activer.
+func (a Account) NeedsTOTPSetup() bool {
+	return a.TOTPRequired && a.TOTPSecret == ""
+}
+
+func (a Account) active(now time.Time) bool {
+	return a.Hash != "" && !a.Expired(now)
+}
+
+// session : session de la console (cookie du chemin /pi-appliance) ou session
+// déléguée (forward), qui n'ouvre que les services protégés par Traefik.
 type session struct {
 	name    string
 	expires time.Time
+	forward bool
 }
 
 type failure struct {
@@ -259,9 +313,12 @@ func (s *Store) firstAdmin() (Account, bool) {
 	return admins[0], true
 }
 
-// Login vérifie l'identifiant et le mot de passe et ouvre une session. Après 5 échecs pour
-// un même client ou un même compte, chaque nouvel essai attend de plus en plus longtemps (15 minutes au plus).
-func (s *Store) Login(name, password, client string) (string, Account, error) {
+// Login vérifie l'identifiant, le mot de passe et, si la double authentification
+// est activée, le code de vérification ou un code de secours, puis ouvre une
+// session. Sans code, ErrCodeNeeded dit que le mot de passe est juste et qu'il
+// faut le code. Après 5 échecs pour un même client ou un même compte, chaque
+// nouvel essai attend de plus en plus longtemps (15 minutes au plus).
+func (s *Store) Login(name, password, code, client string) (string, Account, error) {
 	name = strings.ToLower(strings.TrimSpace(name))
 	keys := []string{"client:" + client, "account:" + name}
 	s.mu.Lock()
@@ -275,18 +332,36 @@ func (s *Store) Login(name, password, client string) (string, Account, error) {
 	account, ok := s.accounts[name]
 	s.mu.Unlock()
 	hash := account.Hash
-	if !ok {
+	if !ok || hash == "" {
 		hash = dummyHash()
 	}
-	valid := checkHash(hash, password) && ok
+	valid := checkHash(hash, password) && ok && account.Hash != ""
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if current, still := s.accounts[name]; !still || current.Hash != account.Hash {
+		valid = false
+	}
 	if !valid {
-		for _, key := range keys {
-			f := s.failures[key]
-			s.failures[key] = failure{count: f.count + 1, last: now}
-		}
+		s.fail(keys, now)
 		return "", Account{}, ErrCredentials
+	}
+	account = s.accounts[name]
+	if account.Expired(now) {
+		return "", Account{}, ErrExpired
+	}
+	if account.TOTPSecret != "" {
+		if strings.TrimSpace(code) == "" {
+			return "", Account{}, ErrCodeNeeded
+		}
+		ok, err := s.checkSecondFactor(name, code, now)
+		if err != nil {
+			return "", Account{}, err
+		}
+		if !ok {
+			s.fail(keys, now)
+			return "", Account{}, ErrCode
+		}
+		account = s.accounts[name]
 	}
 	for _, key := range keys {
 		delete(s.failures, key)
@@ -295,6 +370,13 @@ func (s *Store) Login(name, password, client string) (string, Account, error) {
 	s.sessions[token] = session{name: name, expires: now.Add(SessionLifetime)}
 	s.cleanup(now)
 	return token, account, nil
+}
+
+func (s *Store) fail(keys []string, now time.Time) {
+	for _, key := range keys {
+		f := s.failures[key]
+		s.failures[key] = failure{count: f.count + 1, last: now}
+	}
 }
 
 func (s *Store) blocked(key string, now time.Time) time.Duration {
@@ -318,8 +400,34 @@ func (s *Store) StartSession(name string) string {
 	return token
 }
 
-// Session renvoie le compte d'une session encore valide et prolonge celle-ci.
+// Session renvoie le compte d'une session de la console encore valide et prolonge celle-ci.
+// Une session déléguée n'ouvre pas la console.
 func (s *Store) Session(token string) (Account, bool) {
+	return s.lookup(token, false)
+}
+
+// StartForwardSession ouvre une session déléguée pour un compte déjà connecté à
+// la console. Son cookie, posé sur l'adresse de l'appliance et ses sous-domaines,
+// est vu par les services : il n'ouvre donc pas la console.
+func (s *Store) StartForwardSession(name string) string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	token := randomToken()
+	s.sessions[token] = session{name: name, expires: s.Now().Add(SessionLifetime), forward: true}
+	return token
+}
+
+// ForwardSession renvoie le compte d'une session déléguée valide (forward auth
+// de Traefik), refusée tant que la double authentification exigée n'est pas activée.
+func (s *Store) ForwardSession(token string) (Account, bool) {
+	account, ok := s.lookup(token, true)
+	if !ok || account.NeedsTOTPSetup() {
+		return Account{}, false
+	}
+	return account, true
+}
+
+func (s *Store) lookup(token string, forward bool) (Account, bool) {
 	if token == "" {
 		return Account{}, false
 	}
@@ -327,18 +435,30 @@ func (s *Store) Session(token string) (Account, bool) {
 	defer s.mu.Unlock()
 	now := s.Now()
 	current, ok := s.sessions[token]
-	if !ok || now.After(current.expires) {
+	if !ok || current.forward != forward {
+		return Account{}, false
+	}
+	if now.After(current.expires) {
 		delete(s.sessions, token)
 		return Account{}, false
 	}
 	account, ok := s.accounts[current.name]
-	if !ok {
+	if !ok || !account.active(now) {
 		delete(s.sessions, token)
 		return Account{}, false
 	}
 	current.expires = now.Add(SessionLifetime)
 	s.sessions[token] = current
 	return account, true
+}
+
+// closeSessions ferme toutes les sessions d'un compte (mot de passe changé, compte supprimé).
+func (s *Store) closeSessions(name string) {
+	for token, current := range s.sessions {
+		if current.name == name {
+			delete(s.sessions, token)
+		}
+	}
 }
 
 func (s *Store) Logout(token string) {

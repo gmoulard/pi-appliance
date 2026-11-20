@@ -41,6 +41,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <label id="emailField">Adresse e-mail<input name="email" type="email" autocomplete="email"></label>
 <label>Mot de passe<input name="password" type="password" maxlength="256" required></label>
 <label id="confirmField">Mot de passe, encore une fois<input name="confirm" type="password" autocomplete="new-password" maxlength="256"></label>
+<label id="codeField" hidden>Code de vérification<input name="code" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" maxlength="16"></label>
 <button id="authButton"></button>
 </form>
 </section>
@@ -136,6 +137,56 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <section id="catalogSection" hidden>
 <h2>Marketplace</h2>
 <ul id="catalog" class="cards"></ul>
+</section>
+<section id="accountsSection" hidden>
+<h2>Comptes</h2>
+<ul id="accountsList" class="cards"></ul>
+<div class="card">
+<h3>Nouveau compte</h3>
+<p>La personne reçoit un lien d'invitation et choisit elle-même son mot de passe.</p>
+<form id="accountForm">
+<label>Identifiant<input name="name" required autocapitalize="none" autocomplete="off" pattern="[a-z0-9][a-z0-9._\-]{0,31}" maxlength="32"></label>
+<label>Adresse e-mail<input name="email" type="email" required autocomplete="off"></label>
+<label>Rôle<select name="role">
+<option value="user">Utilisateur</option>
+<option value="guest">Invité</option>
+<option value="admin">Administrateur</option>
+</select></label>
+<label id="expiresField" hidden>Dernier jour d'accès<input name="expires" type="date"></label>
+<label class="check"><input name="totp_required" type="checkbox">Exiger la double authentification</label>
+<button>Créer le compte et l'invitation</button>
+</form>
+<div id="inviteBox" class="note" hidden>
+<p id="inviteHelp"></p>
+<input id="inviteLink" readonly aria-label="Lien d'invitation">
+<div class="controls"><button id="inviteCopy" type="button" class="secondary">Copier le lien</button></div>
+</div>
+</div>
+</section>
+<section id="accountSection" hidden>
+<h2>Mon compte</h2>
+<div class="card">
+<p id="totpState" class="state"></p>
+<div id="totpSetup" hidden>
+<p>Ouvrez votre application d'authentification (par exemple Aegis, Google Authenticator ou Microsoft Authenticator) et photographiez ce QR code.</p>
+<img id="totpQR" class="qr" alt="QR code à photographier" width="200" height="200">
+<p id="totpSecret" class="meta"></p>
+<form id="totpConfirm">
+<label>Code affiché par l'application<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" required></label>
+<button>Activer</button>
+</form>
+</div>
+<div id="recoveryBox" class="note" hidden>
+<h3>Vos codes de secours</h3>
+<p>Notez-les ou imprimez-les et gardez-les en lieu sûr : sans votre téléphone, chacun permet une seule connexion. Ils ne seront plus affichés.</p>
+<ul id="recoveryCodes" class="codes"></ul>
+</div>
+<div class="controls"><button id="totpStart" type="button">Activer la double authentification</button></div>
+<form id="totpDisable" hidden>
+<label>Mot de passe<input name="password" type="password" autocomplete="current-password" maxlength="256" required></label>
+<button class="secondary">Désactiver la double authentification</button>
+</form>
+</div>
 </section>
 </main>
 <footer>

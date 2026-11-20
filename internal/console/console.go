@@ -67,9 +67,12 @@ type SetupRequest struct {
 	Password string `json:"password"`
 }
 
+// LoginRequest : Code, code de vérification ou code de secours quand la double
+// authentification est activée.
 type LoginRequest struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
+	Code     string `json:"code"`
 }
 
 type ResetRequest struct {
@@ -142,6 +145,8 @@ type Config struct {
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
 	WizardFile    string
 	ACMEEmailFile string
+	// Mailer envoie les invitations ; nil : le lien est montré à l'administrateur.
+	Mailer auth.Mailer
 }
 
 type console struct {
@@ -186,6 +191,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
+	c.accountRoutes(mux)
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
@@ -199,10 +205,17 @@ func (c *console) account(r *http.Request) (auth.Account, bool) {
 	return c.Accounts.Session(cookie.Value)
 }
 
+// NE PAS relâcher : tant que la double authentification exigée par l'administrateur
+// n'est pas activée, le compte ne peut que l'activer (ownAccount).
 func (c *console) signedIn(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := c.account(r); !ok {
+		account, ok := c.account(r)
+		if !ok {
 			writeError(w, http.StatusUnauthorized, "Connectez-vous pour continuer.")
+			return
+		}
+		if account.NeedsTOTPSetup() {
+			writeError(w, http.StatusForbidden, "Activez d'abord la double authentification, exigée pour ce compte.")
 			return
 		}
 		next(w, r)
@@ -219,6 +232,10 @@ func (c *console) adminOnly(next http.HandlerFunc) http.HandlerFunc {
 		}
 		if account.Role != auth.RoleAdmin {
 			writeError(w, http.StatusForbidden, "Seul un administrateur peut faire cela.")
+			return
+		}
+		if account.NeedsTOTPSetup() {
+			writeError(w, http.StatusForbidden, "Activez d'abord la double authentification, exigée pour ce compte.")
 			return
 		}
 		next(w, r)
@@ -273,7 +290,7 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	token, account, err := c.Accounts.Login(request.Name, request.Password, clientIP(r))
+	token, account, err := c.Accounts.Login(request.Name, request.Password, request.Code, clientIP(r))
 	if err != nil {
 		writeAuthError(w, err)
 		return
@@ -309,6 +326,7 @@ func (c *console) logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(cookieName); err == nil {
 		c.Accounts.Logout(cookie.Value)
 	}
+	c.clearForwardCookie(w, r)
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: BasePath, MaxAge: -1, HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteStrictMode})
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -382,6 +400,9 @@ func decodeJSON(w http.ResponseWriter, r *http.Request, value any) bool {
 
 func writeAuthError(w http.ResponseWriter, err error) {
 	var tooMany auth.TooManyError
+	if accountError(w, err) {
+		return
+	}
 	switch {
 	case errors.As(err, &tooMany):
 		w.Header().Set("Retry-After", fmt.Sprint(int((tooMany.Wait+time.Second-1)/time.Second)))
