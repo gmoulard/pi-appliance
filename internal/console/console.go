@@ -28,6 +28,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -181,6 +182,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.advancedSettings))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
 	mux.HandleFunc("POST "+BasePath+"/api/compose", c.adminOnly(c.installCompose))
+	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/wireguard", c.adminOnly(c.wireGuard))
+	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/wireguard/devices", c.adminOnly(c.addDevice))
+	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}/wireguard/devices/{id}", c.adminOnly(c.removeDevice))
 	mux.HandleFunc("GET "+BasePath+"/api/network", c.adminOnly(c.networkStatus))
 	mux.HandleFunc("GET "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiList))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi/scan", c.adminOnly(c.wifiScan))
@@ -665,6 +669,47 @@ func (c *console) setAdvanced(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{"risks": nonNil(risks)})
+}
+
+// VPN WireGuard (spécification 6.3), réservé à l'administrateur : la
+// configuration d'un appareil (clé privée comprise) n'est rendue qu'une fois.
+
+func (c *console) wireGuard(w http.ResponseWriter, r *http.Request) {
+	status, err := c.Services.WireGuard(r.PathValue("name"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, status)
+}
+
+func (c *console) addDevice(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		Name string `json:"name"`
+	}
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	device, err := c.Services.AddDevice(r.Context(), r.PathValue("name"), request.Name)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusCreated, device)
+}
+
+func (c *console) removeDevice(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		writeError(w, http.StatusNotFound, "Appareil inconnu.")
+		return
+	}
+	if err := c.Services.RemoveDevice(r.Context(), r.PathValue("name"), id); err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (c *console) installCompose(w http.ResponseWriter, r *http.Request) {

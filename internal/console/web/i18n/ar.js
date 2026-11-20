@@ -329,5 +329,19 @@ piTranslations("ar", {
   "Dernière recherche : {0}.": "آخر بحث: {0}.",
   "Les mises à jour du système sont installées.": "تم تثبيت تحديثات النظام.",
   "Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation.": "تثبيت تحديثات النظام الآن؟\n\nقد يستغرق ذلك عدة دقائق. قد تتوقف خدماتك لبضع لحظات أثناء التثبيت.",
-  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "جارٍ تثبيت تحديثات النظام… ستتحدّث هذه الصفحة تلقائيًا."
+  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "جارٍ تثبيت تحديثات النظام… ستتحدّث هذه الصفحة تلقائيًا.",
+  "Port {0} {1} du Pi": "المنفذ {0} {1} على الـPi",
+  "{0} est prêt.": "{0} جاهز.",
+  "Appareils": "الأجهزة",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "سيتمكن الهاتف من الوصول إلى شبكة المنزل ({0})؛ ولن يمر تصفحه للإنترنت عبر المنزل.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "في جهاز التوجيه (الراوتر) الخاص بك، أعد توجيه منفذ UDP رقم {0} إلى جهاز Raspberry Pi هذا للاتصال من الخارج.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "ليس للـPi عنوان على الإنترنت بعد: اضبطه في «عنوان الإنترنت» للاتصال من الخارج.",
+  "QR code de configuration WireGuard": "رمز QR لإعداد WireGuard",
+  "Configuration en texte": "الإعداد كنص",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "امسح هذا الرمز بتطبيق WireGuard على الهاتف (زر +، ثم «المسح من رمز QR»). لن يظهر إلا مرة واحدة.",
+  "Retirer": "إزالة",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "إزالة الجهاز «{0}»؟ لن يتمكن من الاتصال بعد ذلك.",
+  "Aucun appareil pour l'instant.": "لا يوجد أي جهاز حتى الآن.",
+  "Nom de l'appareil": "اسم الجهاز",
+  "Ajouter un appareil": "إضافة جهاز"
 });

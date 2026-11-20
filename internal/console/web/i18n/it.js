@@ -329,5 +329,19 @@ piTranslations("it", {
   "Dernière recherche : {0}.": "Ultima ricerca: {0}.",
   "Les mises à jour du système sont installées.": "Gli aggiornamenti del sistema sono installati.",
   "Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation.": "Installare ora gli aggiornamenti del sistema?\n\nPuò richiedere diversi minuti. I tuoi servizi possono fermarsi per qualche istante durante l'installazione.",
-  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Installazione degli aggiornamenti del sistema… Questa pagina si aggiornerà da sola."
+  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Installazione degli aggiornamenti del sistema… Questa pagina si aggiornerà da sola.",
+  "Port {0} {1} du Pi": "Porta {0} {1} del Pi",
+  "{0} est prêt.": "{0} è pronto.",
+  "Appareils": "Dispositivi",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "Il telefono potrà raggiungere la rete di casa ({0}); la sua navigazione su Internet non passerà da casa.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "Sul router di casa, inoltra la porta UDP {0} a questo Raspberry Pi per collegarti dall'esterno.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "Il Pi non ha ancora un indirizzo su Internet: impostalo in «Indirizzo su Internet» per collegarti dall'esterno.",
+  "QR code de configuration WireGuard": "Codice QR della configurazione WireGuard",
+  "Configuration en texte": "Configurazione in testo",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "Scansiona questo codice con l'app WireGuard del telefono (pulsante +, poi «Scansiona codice QR»). Verrà mostrato una sola volta.",
+  "Retirer": "Rimuovi",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "Rimuovere il dispositivo «{0}»? Non potrà più collegarsi.",
+  "Aucun appareil pour l'instant.": "Nessun dispositivo per ora.",
+  "Nom de l'appareil": "Nome del dispositivo",
+  "Ajouter un appareil": "Aggiungi un dispositivo"
 });

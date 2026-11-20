@@ -329,5 +329,19 @@ piTranslations("de", {
   "Dernière recherche : {0}.": "Letzte Suche: {0}.",
   "Les mises à jour du système sont installées.": "Die Systemaktualisierungen sind installiert.",
   "Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation.": "Systemaktualisierungen jetzt installieren?\n\nDas kann mehrere Minuten dauern. Ihre Dienste können während der Installation kurz anhalten.",
-  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Systemaktualisierungen werden installiert… Diese Seite aktualisiert sich von selbst."
+  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Systemaktualisierungen werden installiert… Diese Seite aktualisiert sich von selbst.",
+  "Port {0} {1} du Pi": "Port {0} {1} des Pi",
+  "{0} est prêt.": "{0} ist bereit.",
+  "Appareils": "Geräte",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "Das Telefon kann Ihr Heimnetz ({0}) erreichen; sein Surfen im Internet läuft nicht über Ihr Zuhause.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "Leiten Sie an Ihrem Internet-Router den UDP-Port {0} an diesen Raspberry Pi weiter, um sich von außen zu verbinden.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "Der Pi hat noch keine Internetadresse: Legen Sie sie unter „Internetadresse“ fest, um sich von außen zu verbinden.",
+  "QR code de configuration WireGuard": "QR-Code der WireGuard-Konfiguration",
+  "Configuration en texte": "Konfiguration als Text",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "Scannen Sie diesen Code mit der WireGuard-App des Telefons (Taste +, dann „QR-Code scannen“). Er wird nur ein einziges Mal angezeigt.",
+  "Retirer": "Entfernen",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "Das Gerät „{0}“ entfernen? Es kann sich dann nicht mehr verbinden.",
+  "Aucun appareil pour l'instant.": "Noch kein Gerät.",
+  "Nom de l'appareil": "Name des Geräts",
+  "Ajouter un appareil": "Gerät hinzufügen"
 });

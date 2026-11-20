@@ -37,7 +37,18 @@ var (
 	iconPattern     = regexp.MustCompile(`^[MmLlHhVvCcSsQqTtAaZz][MmLlHhVvCcSsQqTtAaZz0-9 ,.-]*$`)
 	logins          = map[string]bool{"console": true, "application": true}
 	accesses        = map[string]bool{"public": true, "users": true, "home": true}
+	protocols       = map[string]bool{"tcp": true, "udp": true}
+	// Ports de Traefik et de la console, jamais ouverts par un manifeste.
+	reservedPorts = map[int]bool{80: true, 443: true, 8080: true}
 )
+
+// HostPort est un port ouvert directement sur le Pi, sans Traefik, pour un
+// service qui n'est pas un site web (VPN, partage de fichiers…). Le même
+// numéro est utilisé sur le Pi et dans le conteneur publié (service).
+type HostPort struct {
+	Port     int    `yaml:"port" json:"port"`
+	Protocol string `yaml:"protocol" json:"protocol"`
+}
 
 type Parameter struct {
 	Name     string `yaml:"name" json:"name"`
@@ -61,7 +72,11 @@ type App struct {
 	Login       string      `yaml:"login" json:"login"`
 	Access      string      `yaml:"access" json:"access"`
 	Parameters  []Parameter `yaml:"parameters" json:"parameters"`
-	Compose     []byte      `yaml:"-" json:"-"`
+	HostPorts   []HostPort  `yaml:"host_ports" json:"host_ports,omitempty"`
+	// Web est faux pour un service sans page web (port absent) : rien n'est
+	// publié par Traefik.
+	Web     bool   `yaml:"-" json:"web"`
+	Compose []byte `yaml:"-" json:"-"`
 }
 
 type composeFile struct {
@@ -116,6 +131,7 @@ func Parse(id string, data []byte) (App, error) {
 	}
 	app := *file.Meta
 	app.ID = id
+	app.Web = app.Port != 0
 	app.Compose = data
 	if problems := check(app, file); len(problems) > 0 {
 		return App{}, fmt.Errorf("manifeste %s : %s", id, strings.Join(problems, " ; "))
@@ -153,8 +169,25 @@ func check(app App, file composeFile) []string {
 	if _, ok := file.Services[app.Service]; !ok {
 		fail("service exposé %q absent de services", app.Service)
 	}
-	if app.Port < 1 || app.Port > 65535 {
+	switch {
+	case app.Port == 0 && len(app.HostPorts) == 0:
+		fail("port absent : un service sans page web déclare ses host_ports")
+	case app.Port < 0 || app.Port > 65535:
 		fail("port %d invalide", app.Port)
+	}
+	opened := map[HostPort]bool{}
+	for _, port := range app.HostPorts {
+		switch {
+		case port.Port < 1 || port.Port > 65535:
+			fail("host_ports : port %d invalide", port.Port)
+		case reservedPorts[port.Port]:
+			fail("host_ports : port %d réservé à Traefik et à la console", port.Port)
+		case !protocols[port.Protocol]:
+			fail("host_ports : protocole %q invalide (tcp ou udp)", port.Protocol)
+		case opened[port]:
+			fail("host_ports : port %d/%s en double", port.Port, port.Protocol)
+		}
+		opened[port] = true
 	}
 	if app.MemoryMB <= 0 || app.DiskMB <= 0 {
 		fail("memory_mb et disk_mb doivent être positifs")

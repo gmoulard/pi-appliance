@@ -1,0 +1,39 @@
+x-pi-appliance:
+  name: VPN WireGuard
+  description: Retrouvez depuis l'extérieur les appareils de la maison (imprimante, disque réseau, ce Pi) avec votre téléphone, configuré en scannant un QR code. Votre navigation sur internet ne passe pas par la maison.
+  icon: M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4
+  category: Réseau
+  license: GPL-3.0
+  subdomain: vpn
+  # Pas de page web : rien n'est publié par Traefik. La console ouvre le port
+  # UDP 51820 du Pi, à rediriger aussi sur la box (accès direct, section 7.2).
+  service: wireguard
+  host_ports:
+    - port: 51820
+      protocol: udp
+  memory_mb: 64
+  disk_mb: 256
+  # Pas de comptes : chaque appareil a sa clé, créée dans la console.
+  login: application
+  access: public
+
+services:
+  # Image linuxserver.io en « mode client » (PEERS absent) : elle démarre les
+  # fichiers de /config/wg_confs. La console écrit wg0.conf (clés tirées sur le
+  # Pi, un [Peer] par appareil) dans <données>/services/<nom>/wireguard, monté
+  # là par pi-appliance.override.json, puis redémarre le service.
+  wireguard:
+    image: linuxserver/wireguard:1.0.20260223
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    environment:
+      TZ: Etc/UTC
+    volumes:
+      - config:/config
+
+volumes:
+  config:

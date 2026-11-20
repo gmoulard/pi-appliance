@@ -329,5 +329,19 @@ piTranslations("en", {
   "Dernière recherche : {0}.": "Last check: {0}.",
   "Les mises à jour du système sont installées.": "System updates are installed.",
   "Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation.": "Install system updates now?\n\nThis can take several minutes. Your services may stop for a few moments during the installation.",
-  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Installing system updates… This page will refresh by itself."
+  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Installing system updates… This page will refresh by itself.",
+  "Port {0} {1} du Pi": "Pi port {0} {1}",
+  "{0} est prêt.": "{0} is ready.",
+  "Appareils": "Devices",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "The phone will be able to reach your home network ({0}); its internet browsing will not go through your home.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "On your internet box, forward UDP port {0} to this Raspberry Pi to connect from outside.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "The Pi does not have an internet address yet: set it in “Internet address” to connect from outside.",
+  "QR code de configuration WireGuard": "WireGuard configuration QR code",
+  "Configuration en texte": "Configuration as text",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "Scan this code with the WireGuard app on the phone (+ button, then “Scan from QR code”). It will be shown only once.",
+  "Retirer": "Remove",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "Remove the device “{0}”? It will no longer be able to connect.",
+  "Aucun appareil pour l'instant.": "No device yet.",
+  "Nom de l'appareil": "Device name",
+  "Ajouter un appareil": "Add a device"
 });

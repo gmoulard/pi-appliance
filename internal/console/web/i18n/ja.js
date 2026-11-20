@@ -329,5 +329,19 @@ piTranslations("ja", {
   "Dernière recherche : {0}.": "最後の確認：{0}。",
   "Les mises à jour du système sont installées.": "システムのアップデートをインストールしました。",
   "Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation.": "今すぐシステムのアップデートをインストールしますか？\n\n数分かかることがあります。インストール中、サービスが少しの間止まることがあります。",
-  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "システムのアップデートをインストール中… このページは自動で更新されます。"
+  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "システムのアップデートをインストール中… このページは自動で更新されます。",
+  "Port {0} {1} du Pi": "Pi の {0} {1} 番ポート",
+  "{0} est prêt.": "{0} の準備ができました。",
+  "Appareils": "デバイス",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "スマートフォンから自宅のネットワーク（{0}）にアクセスできます。インターネットの閲覧は自宅を経由しません。",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "外出先から接続するには、インターネットルーターで UDP {0} 番ポートをこの Raspberry Pi に転送してください。",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "Pi にはまだインターネットアドレスがありません。外出先から接続するには「インターネットアドレス」で設定してください。",
+  "QR code de configuration WireGuard": "WireGuard 設定の QR コード",
+  "Configuration en texte": "テキスト形式の設定",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "スマートフォンの WireGuard アプリでこのコードを読み取ってください（+ ボタン、次に「QR コードをスキャン」）。表示されるのは一度だけです。",
+  "Retirer": "削除",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "デバイス「{0}」を削除しますか？ 今後は接続できなくなります。",
+  "Aucun appareil pour l'instant.": "まだデバイスはありません。",
+  "Nom de l'appareil": "デバイス名",
+  "Ajouter un appareil": "デバイスを追加"
 });

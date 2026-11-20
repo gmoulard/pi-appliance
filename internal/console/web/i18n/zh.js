@@ -329,5 +329,19 @@ piTranslations("zh", {
   "Dernière recherche : {0}.": "上次检查：{0}。",
   "Les mises à jour du système sont installées.": "系统更新已安装。",
   "Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation.": "现在安装系统更新吗？\n\n这可能需要几分钟。安装期间您的服务可能会短暂停止。",
-  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "正在安装系统更新… 此页面会自动刷新。"
+  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "正在安装系统更新… 此页面会自动刷新。",
+  "Port {0} {1} du Pi": "Pi 的 {0} {1} 端口",
+  "{0} est prêt.": "{0} 已就绪。",
+  "Appareils": "设备",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "手机将可以访问家中的网络（{0}）；它的上网流量不会经过家里。",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "要从外面连接，请在您的路由器上把 UDP {0} 端口转发到这台树莓派。",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "Pi 还没有互联网地址：请在“互联网地址”中设置，才能从外面连接。",
+  "QR code de configuration WireGuard": "WireGuard 配置二维码",
+  "Configuration en texte": "文本形式的配置",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "请用手机上的 WireGuard 应用扫描此二维码（点 + 按钮，再选“扫描二维码”）。它只会显示一次。",
+  "Retirer": "移除",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "移除设备“{0}”？它将无法再连接。",
+  "Aucun appareil pour l'instant.": "还没有设备。",
+  "Nom de l'appareil": "设备名称",
+  "Ajouter un appareil": "添加设备"
 });

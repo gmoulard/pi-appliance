@@ -105,7 +105,7 @@ func TestBuiltinManifests(t *testing.T) {
 			}
 		})
 	}
-	for _, id := range []string{"nextcloud", "site-web", "dokuwiki", "etherpad", "postgresql"} {
+	for _, id := range []string{"nextcloud", "site-web", "dokuwiki", "etherpad", "postgresql", "wireguard"} {
 		if !ids[id] {
 			t.Errorf("manifeste %s absent", id)
 		}
@@ -138,7 +138,12 @@ func TestParseRejects(t *testing.T) {
 		"sans métadonnées":    {"x-pi-appliance:", "x-other:", "x-pi-appliance absente"},
 		"service inconnu":     {"service: web", "service: db", "service exposé"},
 		"sous-domaine":        {"subdomain: wiki", "subdomain: Wiki_1", "sous-domaine"},
-		"port":                {"port: 8080", "port: 0", "port 0"},
+		"port":                {"port: 8080", "port: 0", "port absent"},
+		"port négatif":        {"port: 8080", "port: -1", "port -1"},
+		"port du Pi":          {"port: 8080", "port: 0\n  host_ports:\n    - port: 70000\n      protocol: udp", "port 70000"},
+		"port réservé":        {"port: 8080", "port: 0\n  host_ports:\n    - port: 443\n      protocol: tcp", "réservé"},
+		"protocole":           {"port: 8080", "port: 0\n  host_ports:\n    - port: 51820\n      protocol: sctp", "protocole"},
+		"port en double":      {"port: 8080", "port: 0\n  host_ports:\n    - port: 51820\n      protocol: udp\n    - port: 51820\n      protocol: udp", "en double"},
 		"image":               {"image: example/wiki:1", "image: ''", "sans image"},
 		"paramètre minuscule": {"name: TITLE", "name: title", "paramètre \"title\""},
 		"préfixe réservé":     {"name: TITLE", "name: PI_HOST", "préfixe PI_"},
@@ -157,6 +162,32 @@ func TestParseRejects(t *testing.T) {
 				t.Fatalf("erreur %v, attendu %q", err, c.want)
 			}
 		})
+	}
+}
+
+// Un service sans page web (VPN) ouvre ses ports directement sur le Pi.
+func TestParseWithoutWebPage(t *testing.T) {
+	app, err := Parse("wiki", []byte(strings.Replace(valid, "port: 8080", "port: 0\n  host_ports:\n    - port: 51820\n      protocol: udp", 1)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if app.Web || len(app.HostPorts) != 1 || app.HostPorts[0] != (HostPort{Port: 51820, Protocol: "udp"}) {
+		t.Fatalf("app %+v", app)
+	}
+	web, err := Parse("wiki", []byte(valid))
+	if err != nil || !web.Web {
+		t.Fatalf("site web %+v, %v", web, err)
+	}
+}
+
+func TestBuiltinWireGuard(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, ok := catalog.Get("wireguard")
+	if !ok || app.Web || len(app.HostPorts) != 1 || app.HostPorts[0] != (HostPort{Port: 51820, Protocol: "udp"}) {
+		t.Fatalf("wireguard %+v", app)
 	}
 }
 

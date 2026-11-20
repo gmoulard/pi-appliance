@@ -47,6 +47,7 @@ type fixture struct {
 	handler       http.Handler
 	accounts      *auth.Store
 	acmeEmailFile string
+	manager       *services.Manager
 }
 
 func newFixture(t *testing.T) fixture {
@@ -72,6 +73,7 @@ func newFixture(t *testing.T) fixture {
 		}),
 		accounts:      accounts,
 		acmeEmailFile: acmeEmailFile,
+		manager:       manager,
 	}
 }
 

@@ -329,5 +329,19 @@ piTranslations("nl", {
   "Dernière recherche : {0}.": "Laatste zoekactie: {0}.",
   "Les mises à jour du système sont installées.": "De systeemupdates zijn geïnstalleerd.",
   "Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation.": "Systeemupdates nu installeren?\n\nDit kan enkele minuten duren. Uw diensten kunnen tijdens de installatie even stoppen.",
-  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Systeemupdates worden geïnstalleerd… Deze pagina werkt zichzelf bij."
+  "Installation des mises à jour du système… Cette page se mettra à jour toute seule.": "Systeemupdates worden geïnstalleerd… Deze pagina werkt zichzelf bij.",
+  "Port {0} {1} du Pi": "Poort {0} {1} van de Pi",
+  "{0} est prêt.": "{0} is klaar.",
+  "Appareils": "Apparaten",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "De telefoon kan uw thuisnetwerk ({0}) bereiken; zijn internetverkeer gaat niet via uw huis.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "Stuur op uw internetmodem UDP-poort {0} door naar deze Raspberry Pi om van buitenaf verbinding te maken.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "De Pi heeft nog geen internetadres: stel het in bij „Internetadres” om van buitenaf verbinding te maken.",
+  "QR code de configuration WireGuard": "QR-code van de WireGuard-configuratie",
+  "Configuration en texte": "Configuratie als tekst",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "Scan deze code met de WireGuard-app op de telefoon (knop +, dan „Scan QR-code”). Hij wordt maar één keer getoond.",
+  "Retirer": "Verwijderen",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "Het apparaat „{0}” verwijderen? Het kan dan geen verbinding meer maken.",
+  "Aucun appareil pour l'instant.": "Nog geen apparaat.",
+  "Nom de l'appareil": "Naam van het apparaat",
+  "Ajouter un appareil": "Apparaat toevoegen"
 });
