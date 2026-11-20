@@ -36,6 +36,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/marketplace"
@@ -134,6 +135,8 @@ type Config struct {
 	History *metrics.History
 	// DuckDNS tient à jour l'adresse sur internet (spécification 7.1) ; nil : non réglable ici.
 	DuckDNS *ddns.Updater
+	// Stats : statistiques anonymes (spécification 8.4) ; nil : non réglables ici.
+	Stats *stats.Reporter
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
 	WizardFile    string
 	ACMEEmailFile string
@@ -176,6 +179,8 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsSave))
 	mux.HandleFunc("DELETE "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsForget))
+	mux.HandleFunc("GET "+BasePath+"/api/stats", c.adminOnly(c.statsStatus))
+	mux.HandleFunc("PUT "+BasePath+"/api/stats", c.adminOnly(c.statsSave))
 	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
 	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))

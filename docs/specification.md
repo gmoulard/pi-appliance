@@ -112,7 +112,7 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 7. Statistiques anonymes : proposées, désactivées par défaut (section 8.4).
 8. Choix des premiers services dans la marketplace.
 
-**Réalisé** (première version) : après la création du compte, la console ouvre l'assistant « Mise en route » pour l'administrateur. Il montre les étapes et la place de chacune : compte administrateur, réseau de la maison (pays du Wi-Fi, puis Wi-Fi ou câble, section 4), premiers services (marketplace avec ses jauges, section 6.2). L'étape du réseau avance d'elle-même dès que le réseau est choisi, même si la page a perdu la connexion entre-temps ; elle peut être passée, le point d'accès restant alors ouvert. « Terminer la mise en route » l'enregistre (`/var/lib/pi-appliance/wizard-done`) ; d'ici là, l'assistant reprend à la connexion suivante. Les étapes langue, adresse, test d'accès, utilisateurs et statistiques viendront avec leurs fonctions.
+**Réalisé** (première version) : après la création du compte, la console ouvre l'assistant « Mise en route » pour l'administrateur. Il montre les étapes et la place de chacune : compte administrateur, réseau de la maison (pays du Wi-Fi, puis Wi-Fi ou câble, section 4), premiers services (marketplace avec ses jauges, section 6.2). L'étape du réseau avance d'elle-même dès que le réseau est choisi, même si la page a perdu la connexion entre-temps ; elle peut être passée, le point d'accès restant alors ouvert. « Terminer la mise en route » l'enregistre (`/var/lib/pi-appliance/wizard-done`) ; d'ici là, l'assistant reprend à la connexion suivante. Les étapes langue, adresse, test d'accès, utilisateurs et statistiques viendront avec leurs fonctions ; le réglage des statistiques existe déjà dans la console (section 8.4).
 
 ### 5.2 Fonctions courantes
 
@@ -311,6 +311,13 @@ Offre :
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
 - **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
 
+**Réalisé** (statistiques anonymes, paquet `internal/stats`) :
+
+- Désactivées par défaut. L'administrateur les accepte ou les refuse dans la console, section « Statistiques anonymes » (`GET` et `PUT api/stats`, `{"enabled": true|false}`), qui montre en langage courant **et tel quel** le message exact qui partirait. Le choix est gardé dans `<données>/stats.json` (droits 600), avec la date du dernier envoi et les plantages pas encore envoyés. L'étape de l'assistant viendra avec lui (section 5.1).
+- Contenu de l'envoi (format 1, JSON) : version de la console, modèle du Pi (`/proc/device-tree/model`, jamais le numéro de série), identifiants des applications de la marketplace installées (`nextcloud`, sans le nom donné au service), **nombre** de services hors marketplace (rien de leur fichier Compose), plantages de la console depuis le dernier envoi : la fonction de pi-appliance où une requête a planté, ou « arrêt brutal » (console arrêtée sans passer par sa fin normale, repérée par le fichier `<données>/running`), avec leur nombre, jamais le message d'erreur. Les plantages d'avant l'accord ne partent pas.
+- Rien qui relie les envois entre eux, à la clé du Pi ou à l'adresse e-mail (section 10.2) : pas d'identifiant, pas de signature, pas de cookie, un `User-Agent` identique pour toutes les appliances (`pi-appliance`), aucun autre en-tête.
+- Un envoi réussi au plus par 24 heures, vers `https://stats.pi-appliance.com/api/report` (option `-stats-url`) ; vérification toutes les heures, la première après un délai tiré au hasard (5 à 65 minutes) pour ne pas suivre le démarrage ni les autres échanges avec le projet ; un échec est retenté l'heure suivante et affiché dans la console.
+
 **Réalisé** (couche système, à vérifier sur un vrai Pi) : Traefik redirige tout HTTP vers HTTPS et présente le certificat local auto-signé propre au Pi (section 4) ; la console n'écoute que sur `127.0.0.1:8080`, joignable seulement par Traefik. Let's Encrypt est prêt à activer dans `system/etc/pi-appliance/traefik/traefik.yml` (étape Internet). L'explication de l'alerte du navigateur est dans le portail ; elle reste à écrire dans le guide.
 
 **Réalisé** (première version, paquet `internal/auth`) :
@@ -432,7 +439,9 @@ Quatre services centraux, hébergés par le projet **sur un Raspberry Pi du prop
 | Envoi d'e-mails | Codes de vérification, récupération, alertes (sections 8.5, 8.6) | Ni récupération par e-mail ni alertes ; le fichier `reset` reste possible |
 | Statistiques | Réception des statistiques anonymes acceptées | Rien de visible pour l'utilisateur |
 
-Une appliance continue de fonctionner, à la maison comme en accès direct, quand ces services sont arrêtés. Ces services sont eux aussi sous AGPL-3.0, publiés dans ce dépôt.
+Une appliance continue de fonctionner, à la maison comme en accès direct, quand ces services sont arrêtés.
+
+**Réalisé** (service des statistiques, `cmd/pi-appliance-stats`, paquet `internal/stats/reception`, pas encore installé sur le Pi du projet) : `POST /api/report` accepte un envoi de l'appliance (16 Kio au plus, champs vérifiés un à un, tout champ inconnu refusé) et l'ajoute, avec son seul jour de réception (UTC), au fichier du jour `AAAA-MM-JJ.jsonl` (droits 600, 64 Mio par jour au plus). Il ne lit ni n'enregistre l'adresse IP (ni `X-Forwarded-For`), l'heure exacte ou les en-têtes, et le serveur HTTP ne journalise pas ses erreurs, qui contiennent l'adresse du client. Le résumé d'un jour (nombre d'envois, versions, modèles, applications, plantages) est servi à part, `GET /api/summary?day=AAAA-MM-JJ` sur `127.0.0.1:8091`, à ne pas exposer. Écoute sur `127.0.0.1:8090` (option `-addr`), données dans `/var/lib/pi-appliance-stats` (option `-data`). Reste à l'installer sur le Pi du projet derrière son reverse proxy, journal des accès coupé, sous le nom `stats.pi-appliance.com` (TODO-4.4). Ces services sont eux aussi sous AGPL-3.0, publiés dans ce dépôt.
 
 - **Envoi d'e-mails** : par le relais SMTP de l'offre e-mail d'OVH liée au domaine `pi-appliance.com` (SPF, DKIM et DMARC configurés), jamais directement depuis le Pi, dont l'adresse résidentielle serait bloquée.
 - **Panne** : sauvegarde quotidienne du Pi du projet hors de la maison, et un **Pi de secours** prêt à prendre le relais, mis en service à la main.
@@ -462,6 +471,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `internal/auth/` | Comptes de la console : compte administrateur, connexion, sessions, fichier `reset` (8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `internal/ddns/` | Mise à jour du nom DuckDNS avec l'adresse publique de la box (7.1) |
+| `internal/stats/` | Statistiques anonymes : construction de l'envoi, envoi quotidien, plantages (8.4) ; `reception/` : service du projet qui les reçoit (10.2) |
+| `cmd/pi-appliance-stats/` | Programme du service des statistiques, sur le Pi du projet (10.2) |
 | `internal/network/` | Réseau du Pi pour la console, par `network.sh` : état, Wi-Fi, connexion, câble, pays du Wi-Fi (4) |
 | `internal/system/` | État du Pi : mémoire, disque, charge du processeur, température, trafic réseau (5.2, 6.2) |
 | `internal/storage/` | Disque USB des données des services, par `storage.sh` : disques branchés, déplacement des données, formatage (4) |

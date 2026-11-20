@@ -99,6 +99,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 </div>
 </section>
+<section id="statsSection" hidden>
+<h2>Statistiques anonymes</h2>
+<div class="card">
+<p>Vous pouvez aider le projet pi-appliance à s'améliorer : une fois par jour, l'appliance envoie la version de la console, le modèle du Pi, les applications installées et le nombre de plantages. Jamais votre adresse, vos noms ni le contenu de vos services, et rien qui relie ces envois à votre appliance ou à votre adresse e-mail. Elles ne partent que si vous les acceptez.</p>
+<p id="statsState" class="state" aria-live="polite"></p>
+<details>
+<summary>Voir exactement ce qui est envoyé</summary>
+<ul id="statsList"></ul>
+<p class="meta">Le message envoyé, tel quel :</p>
+<pre id="statsPreview" class="stats-preview"></pre>
+</details>
+<div class="controls">
+<button id="statsToggle" type="button">Envoyer les statistiques</button>
+</div>
+</div>
+</section>
 <section id="piSection" hidden>
 <h2>Mon Pi</h2>
 <div class="card">

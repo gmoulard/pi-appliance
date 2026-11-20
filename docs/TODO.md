@@ -159,10 +159,10 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-4.1**: Fournisseur d'identité intégré à la console : OpenID Connect, *forward auth* Traefik, double authentification, invitations par e-mail ; rôles et invités (8.1, 8.3).
 - [ ] **TODO-4.2**: Alertes par e-mail, désactivables par type (8.6).
 - [ ] **TODO-4.3**: Sauvegardes : chaque nuit, rotation 7/4/6, disque USB, cloud, autre pi-appliance (jumelage par code), chiffrement, restauration de l'appliance, d'un service ou d'un fichier (9.1).
-- [ ] **TODO-4.4**: Services du projet : relais SMTP OVH (SPF, DKIM, DMARC), sauvegarde hors de la maison, Pi de secours (10.2).
+- [ ] **TODO-4.4**: Services du projet : relais SMTP OVH (SPF, DKIM, DMARC), sauvegarde hors de la maison, Pi de secours ; installer le service des statistiques (`cmd/pi-appliance-stats`) sous `stats.pi-appliance.com`, journal des accès du reverse proxy coupé (10.2).
 - [ ] **TODO-4.5**: Mises à jour proposées dans la console (9.2).
 - [ ] **TODO-4.6**: VPN WireGuard avec QR code (6.3).
-- [ ] **TODO-4.7**: Statistiques anonymes et leur service de réception (8.4, 10.2).
+- [x] **TODO-4.7**: Statistiques anonymes et leur service de réception (8.4, 10.2) : réglage dans la console avec l'envoi exact sous les yeux, envoi au plus quotidien (`internal/stats`), service de réception sans adresse IP (`cmd/pi-appliance-stats`). Restent l'étape de l'assistant (TODO-2.22) et la mise en ligne du service sur le Pi du projet (TODO-4.4).
 - [ ] **TODO-4.8**: Puis : Samba, lecteur réseau à la maison (dossiers commun et personnels), avec un format de manifeste pour un service qui n'est pas un site web, l'annuaire LDAP de la console et le stockage externe de Nextcloud (6.3).
 - [ ] **TODO-4.9**: Puis : applications caméra (Motion, timelapse).
 
