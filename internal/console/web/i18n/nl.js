@@ -435,5 +435,6 @@ piTranslations("nl", {
   "Correcte": "In orde",
   "Aucune baisse de tension depuis le démarrage du Pi.": "Geen spanningsdaling sinds het opstarten van de Pi.",
   "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "De Pi staat ingesteld op het land “{0}”, maar uw browser geeft “{1}” aan. Kies het land waar de Pi staat.",
-  "Choisir « {0} »": "“{0}” kiezen"
+  "Choisir « {0} »": "“{0}” kiezen",
+  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "De laatste keer dat de Pi met uw netwerk verbonden was, heette hij “{0}” en had hij het adres {1}: open vanuit uw netwerk https://{0}.local/pi-appliance of https://{1}/pi-appliance"
 });

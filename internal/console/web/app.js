@@ -1778,6 +1778,18 @@ function named(text) {
     .replace(/(^|[^\/\w-])pi-appliance(?![\w./-])/g, (match, before) => `${before}${piName}`);
 }
 
+// Dernière adresse du Pi sur le réseau de la maison (network.sh, TODO-2.58) :
+// inconnue avant la bascule, elle est redonnée si le Wi-Fi de configuration se rouvre.
+const networkLastHome = document.getElementById("networkLastHome");
+
+function showLastHome(state) {
+  const home = state.lastHome;
+  networkLastHome.hidden = !state.accessPoint.open || !home || !home.addresses || home.addresses.length === 0;
+  if (!networkLastHome.hidden) {
+    networkLastHome.textContent = t("La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance", home.name, home.addresses[0]);
+  }
+}
+
 function showNetworkState(state) {
   piName = state.name || (state.accessPoint && state.accessPoint.ssid) || piName;
   nameForm.elements.name.value = piName;
@@ -1801,6 +1813,7 @@ function showNetworkState(state) {
   }
   networkCert.hidden = !state.accessPoint.open;
   networkAp.hidden = !state.accessPoint.open;
+  showLastHome(state);
   apClosesAt = state.accessPoint.open ? Date.now() + state.accessPoint.closesInSeconds * 1000 : 0;
   showApCountdown();
   wiredButton.hidden = !state.wired.connected || state.configured === "wired";

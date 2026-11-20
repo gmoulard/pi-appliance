@@ -31,6 +31,7 @@ RETRY=${AP_RETRY:-600}       # Wi-Fi de la maison retenté toutes les 10 minutes
 STATE_FILE=$PI_RUN/ap-state  # état des règles, perdu au redémarrage : la fenêtre de 24 heures repart
 last_retry=0
 name_checked=0
+last_home=-60
 
 save_state() {
 	cat >"$STATE_FILE.tmp" <<-STATE
@@ -80,6 +81,10 @@ step() {
 			ap_close
 		fi
 		save_state closed
+		if [ "$uplink" = 1 ] && [ $((now - last_home)) -ge 60 ]; then
+			last_home=$now
+			remember_home || echo "adresse du Pi : enregistrement en échec" >&2
+		fi
 		# Une fois par démarrage, dès que le Pi est sur le réseau de la maison :
 		# nom <nom>.local déjà pris par un autre appareil ? (name.sh check)
 		if [ "$name_checked" = 0 ] && [ "$uplink" = 1 ]; then

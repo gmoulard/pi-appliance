@@ -435,5 +435,6 @@ piTranslations("ja", {
   "Correcte": "正常",
   "Aucune baisse de tension depuis le démarrage du Pi.": "Pi の起動後、電圧の低下はありません。",
   "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "Pi の国は「{0}」に設定されていますが、ブラウザーは「{1}」を示しています。Pi が置かれている国を選んでください。",
-  "Choisir « {0} »": "「{0}」を選ぶ"
+  "Choisir « {0} »": "「{0}」を選ぶ",
+  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "前回ネットワークにつながっていたとき、Pi の名前は「{0}」、アドレスは {1} でした。ご自宅のネットワークから https://{0}.local/pi-appliance または https://{1}/pi-appliance を開いてください"
 });

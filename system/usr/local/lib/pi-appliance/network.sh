@@ -50,15 +50,6 @@ wifi_list() {
 	fi
 }
 
-# Adresses IPv4 du Pi sur le réseau de la maison (hors point d'accès et Docker).
-addresses() {
-	nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status 2>/dev/null |
-		awk -F: -v ap="$AP_CONNECTION" '($2 == "ethernet" || $2 == "wifi") && $3 == "connected" && $4 != ap { print $1 }' |
-		while read -r device; do
-			nmcli -g IP4.ADDRESS device show "$device" 2>/dev/null | tr '|' '\n' | sed 's/ //g; s:/.*::'
-		done | sed '/^$/d'
-}
-
 status() {
 	state=closed
 	reason=''
@@ -76,11 +67,13 @@ status() {
 	choice=$(cat "$NETWORK_CHOICE" 2>/dev/null || true)
 	country=$(wifi_country)
 	error=$(cat "$ERROR_FILE" 2>/dev/null || true)
+	last_home=$(jq -c 'select(type == "object")' "$HOME_FILE" 2>/dev/null || true)
+	[ -n "$last_home" ] || last_home=null
 	name=$("$PI_LIB/name.sh" get 2>/dev/null || hostname)
 	addresses | jq -R -s \
 		--argjson open "$([ "$state" = open ] && echo true || echo false)" \
 		--arg reason "$reason" --argjson closesIn "${closes_in:-0}" \
-		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" --arg country "$country" --argjson countryChosen "$([ -s "$COUNTRY_FILE" ] && echo true || echo false)" --arg name "$name" '
+		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" --arg country "$country" --argjson countryChosen "$([ -s "$COUNTRY_FILE" ] && echo true || echo false)" --arg name "$name" --argjson lastHome "$last_home" '
 		{
 			ok: true,
 			name: $name,
@@ -92,6 +85,7 @@ status() {
 			addresses: (split("\n") | map(select(length > 0))),
 			country: $country,
 			countryChosen: $countryChosen,
+			lastHome: $lastHome,
 			lastError: $error
 		}'
 }

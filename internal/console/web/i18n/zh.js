@@ -435,5 +435,6 @@ piTranslations("zh", {
   "Correcte": "正常",
   "Aucune baisse de tension depuis le démarrage du Pi.": "自树莓派启动以来没有电压下降。",
   "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "树莓派设置的国家是“{0}”，但您的浏览器显示的是“{1}”。请选择树莓派所在的国家。",
-  "Choisir « {0} »": "选择“{0}”"
+  "Choisir « {0} »": "选择“{0}”",
+  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "上次连接到您的网络时，树莓派的名称是“{0}”，地址是 {1}：请在您的网络中打开 https://{0}.local/pi-appliance 或 https://{1}/pi-appliance"
 });

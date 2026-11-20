@@ -30,6 +30,7 @@ SCAN_FILE=$PI_RUN/wifi-scan.json
 STATUS_FILE=$PI_RUN/ap-status
 ERROR_FILE=$PI_RUN/network-error
 COUNTRY_FILE=$PI_STATE/wifi-country  # pays du Wi-Fi choisi dans le portail
+HOME_FILE=$PI_STATE/home-address     # dernière adresse du Pi sur le réseau de la maison (TODO-2.58)
 
 # Une seule commande à la fois sur la puce Wi-Fi (point d'accès, recherche, connexion).
 # with_wifi_lock <commande…>
@@ -106,4 +107,29 @@ wifi_scan_json() {
 		| group_by(.ssid) | map(max_by(.signal))
 		| sort_by(-.signal)
 		| {scannedAt: $at, networks: .}'
+}
+
+# Adresses IPv4 du Pi sur le réseau de la maison (hors point d'accès et Docker).
+addresses() {
+	nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status 2>/dev/null |
+		awk -F: -v ap="$AP_CONNECTION" '($2 == "ethernet" || $2 == "wifi") && $3 == "connected" && $4 != ap { print $1 }' |
+		while read -r device; do
+			nmcli -g IP4.ADDRESS device show "$device" 2>/dev/null | tr '|' '\n' | sed 's/ //g; s:/.*::'
+		done | sed '/^$/d'
+}
+
+# remember_home : garde le nom et les adresses du Pi sur le réseau de la maison,
+# pour les redonner si le Wi-Fi de configuration se rouvre (adresse inconnue
+# avant la bascule, spécification 4).
+remember_home() {
+	list=$(addresses)
+	[ -n "$list" ] || return 0
+	name=$("$PI_LIB/name.sh" get 2>/dev/null || hostname)
+	home=$(printf '%s\n' "$list" | jq -R -s -c --arg name "$name" '{name: $name, addresses: (split("\n") | map(select(length > 0)))}')
+	if [ "$home" = "$(cat "$HOME_FILE" 2>/dev/null || true)" ]; then
+		return 0
+	fi
+	mkdir -p "$PI_STATE"
+	printf '%s\n' "$home" >"$HOME_FILE.tmp"
+	mv "$HOME_FILE.tmp" "$HOME_FILE"
 }
