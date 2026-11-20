@@ -34,6 +34,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/catalog"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/console"
+	"github.com/gmoulard/pi-appliance/internal/addresses"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
@@ -68,6 +69,7 @@ func main() {
 	cockpitScript := flag.String("cockpit-script", cockpit.DefaultScript, "script de l'administration du système par Cockpit (vide : non installable depuis la console)")
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
+	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
 	flag.Parse()
 	if *showVersion {
@@ -118,6 +120,21 @@ func main() {
 		log.Fatal(err)
 	}
 	duckdns.Logf = log.Printf
+	// Adresse <nom>.pi-appliance.com : clé propre au Pi, tirée au premier démarrage (spécification 7.1).
+	var address *addresses.Client
+	if *addressesURL != "" {
+		key, err := addresses.LoadOrCreateKey(filepath.Join(*data, "address-key"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		address, err = addresses.OpenClient(filepath.Join(*data, "address.json"), key)
+		if err != nil {
+			log.Fatal(err)
+		}
+		address.URL = *addressesURL
+		address.Logf = log.Printf
+		address.Target = func() string { return duckdns.Status().Hostname }
+	}
 	// Sauvegardes chaque nuit sur le disque USB de sauvegarde (spécification 9.1).
 	host := backup.Hostname()
 	backups := &backup.Manager{Dir: *data, Services: manager, Target: backup.DiskTarget(backup.DiskMount, host), Host: host, Logf: log.Printf}
@@ -167,6 +184,9 @@ func main() {
 		close(measured)
 	}()
 	go duckdns.Run(ctx)
+	if address != nil {
+		go address.Run(ctx, 5*time.Minute)
+	}
 	go backups.Run(ctx)
 	go checker.Run(ctx, 5*time.Minute)
 	go reporter.Run(ctx)
@@ -182,6 +202,7 @@ func main() {
 			Resources:     resources,
 			History:       history,
 			DuckDNS:       duckdns,
+			Address:       address,
 			Backups:       backups,
 			Updates:       checker,
 			Cockpit:       admin,

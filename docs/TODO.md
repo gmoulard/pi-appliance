@@ -162,7 +162,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] **TODO-3.13**: Écran de la console pour DuckDNS : saisie de l'identifiant et du jeton, état de la dernière mise à jour (l'API `api/duckdns` existe).
 - [x] **TODO-3.3**: ~~FTP.~~ Abandonné le 2026-11-20 (FTP retiré).
 - [ ] **TODO-3.4**: Shell Linux.
-- [ ] **TODO-3.5**: Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2). Découpé avec l'inscription, sous TODO-5.10.
+- [ ] **TODO-3.5**: Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2). Code écrit avec l'inscription, sous TODO-5.10 ; reste à l'installer sur le Pi du projet.
 - [ ] **TODO-3.6**: Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] **TODO-3.7**: Domaine personnel : guide OVH, avec étapes DNS chez OVH séparées des réglages dans la console ([guide utilisateur](guide-utilisateur.md#domaine-personnel-chez-ovh)). Tâche ouverte : le guide signale l'indisponibilité du parcours ; avant de le rendre opérationnel, il faut TODO-3.2 et TODO-3.5 pour fournir l'adresse cible, puis la prise en charge du domaine et de ses certificats dans la console.
 - [ ] **TODO-3.8**: Accès direct : UPnP, guide de la box, test depuis internet ; y compris le port UDP 51820 du VPN WireGuard quand il est installé (TODO-4.6).
@@ -205,16 +205,18 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] **TODO-5.7**: Page marketplace avec les applications présentes, les pistes à venir et les instructions de contribution.
 - [x] **TODO-5.8**: Guide de téléchargement et de flashage de l'image expérimentale publiée comme artefact GitHub temporaire (expire le 2026-12-03).
 - [ ] **TODO-5.9**: Publication d'une version stable de l'image après les essais sur un vrai Pi ; captures d'écran et FAQ.
-- [ ] **TODO-5.10**: Inscription d'une adresse `<nom>.pi-appliance.com`, avec le service d'adresses de TODO-3.5 (spécification 7.1, 10.2). Les choix encore ouverts sont dans la section 15 de la spécification.
-  - [x] Règles des noms, communes à la console et au service (`internal/addresses`) : 3 à 30 caractères, lettres minuscules sans accent, chiffres et tirets, ni tiret au début ou à la fin, ni deux tirets de suite (`xn--`) ; noms interdits : noms réservés au projet, sous-domaines déjà présents dans la zone, marques, termes injurieux. API `GET /pi-appliance/api/address/check?name=…` qui applique ces règles sur le Pi, sans encore dire si le nom est pris.
-  - [ ] Clé de l'appliance, créée au premier démarrage et gardée sur le Pi : elle prouve au service que la demande vient de cette appliance (forme de la clé : question ouverte).
-  - [ ] Service d'adresses du projet (`cmd/pi-appliance-addresses`), sur le Pi du projet : « ce nom est-il libre ? », réservation liée à la clé de l'appliance, une adresse par appliance, registre dans un fichier du Pi du projet (nom, clé publique, cible, dernier signe de vie, plus tard l'e-mail vérifié de l'administrateur).
-  - [ ] Écriture dans Route 53 par le service : alias `CNAME` `<nom>.pi-appliance.com` et `*.<nom>.pi-appliance.com` vers le nom DuckDNS de l'appliance, zone `Z01037363SBTB2LIT0ZB4` ; droits AWS limités à ces alias, gardés sur le Pi du projet, jamais dans le dépôt (manière d'appeler Route 53 : question ouverte).
-  - [ ] Écran « Adresse sur internet » de la console : choisir le nom, voir tout de suite s'il est libre, le réserver, voir l'adresse obtenue ; textes dans les 12 langues. La vérification des règles est faite ; il manque le service pour la suite.
-  - [ ] Mise à jour de l'adresse : la console envoie au service le nom DuckDNS actuel (plus tard celui du relais, TODO-3.9) quand il change, et un signe de vie chaque jour.
-  - [ ] Désinscription depuis la console : alias retirés de Route 53, nom rendu libre ; libération automatique après 90 jours sans signe de vie.
-  - [ ] Limites contre les abus : demandes par adresse IP comptées en mémoire seulement (rien d'écrit, 10.2), nouvelles réservations par jour, changements de cible limités, délai avant qu'un nom libéré soit repris (valeurs : question ouverte).
-  - [ ] Réservation depuis le site www.pi-appliance.com (13) : la clé reste sur le Pi, donc le site dit seulement si un nom est libre et renvoie vers la console (question ouverte).
-  - [ ] Installer le service sur le Pi du projet derrière son reverse proxy, journal des accès coupé (avec TODO-4.4).
+- [ ] **TODO-5.10**: Inscription d'une adresse `<nom>.pi-appliance.com`, avec le service d'adresses de TODO-3.5 (spécification 7.1, 10.2). Code écrit et essayé avec un faux Route 53 ; à essayer avec la vraie zone et sur un vrai Pi une fois le service installé.
+  - [x] Règles des noms, communes à la console et au service (`internal/addresses`) : 3 à 30 caractères, lettres minuscules sans accent, chiffres et tirets, ni tiret au début ou à la fin, ni deux tirets de suite (`xn--`) ; noms interdits : noms réservés au projet, sous-domaines déjà présents dans la zone, marques, termes injurieux.
+  - [x] Clé de l'appliance : Ed25519, tirée au premier démarrage de la console (`<données>/address-key`, droits 600) ; demandes signées (méthode, chemin, date, corps), refusées à plus de 5 minutes d'écart.
+  - [x] Service d'adresses du projet (`cmd/pi-appliance-addresses`, `internal/addresses/service`) : « ce nom est-il libre ? », réservation liée à la clé de l'appliance, une adresse par appliance, registre `registry.json` sur le Pi du projet (nom, clé publique, cible, dates ; ni adresse IP ni e-mail).
+  - [x] Écriture dans Route 53 par le service : `CNAME` `<nom>.pi-appliance.com` et `*.<nom>.pi-appliance.com` vers le nom DuckDNS, API `ChangeResourceRecordSets` signée en SigV4 (bibliothèque standard), clés AWS sur le Pi du projet, politique IAM limitée dans [environnement](environnement.md#service-dadresses).
+  - [x] Carte « Votre adresse pi-appliance.com » de l'écran « Adresse sur internet » : nom vérifié pendant la saisie, réservation, adresse et cible affichées ; textes dans les 12 langues (traductions à faire relire).
+  - [x] Mise à jour de l'adresse : nouvelle cible envoyée quand le nom DuckDNS change, signe de vie chaque jour ; adresse reprise du service si le Pi a perdu son état.
+  - [x] Désinscription depuis la console (alias retirés, nom rendu libre) ; libération automatique après 90 jours sans signe de vie, signalée dans la console.
+  - [x] Limites contre les abus, compteurs en mémoire seulement : 3 réservations par adresse IP et par jour, 200 par jour en tout, 10 changements de cible par jour et par adresse, 30 questions par minute et par adresse IP, 30 jours avant qu'un nom libéré soit repris.
+  - [ ] Faire de l'adresse réservée le domaine des services et de Traefik (aujourd'hui l'option `-domain` de la console), pour que `https://<service>.<nom>.pi-appliance.com` marche avec un certificat Let's Encrypt.
+  - [ ] Page du site www.pi-appliance.com (13) qui dit si un nom est libre (`GET /api/names/{nom}`, ouvert par CORS) et renvoie vers la console pour la réservation.
+  - [ ] Étape « Adresse » de l'assistant de premier démarrage (TODO-2.22).
+  - [ ] Installer le service sur le Pi du projet derrière son reverse proxy (`X-Real-IP` posé, journal des accès coupé), créer l'utilisateur IAM et ses clés, `adresses.pi-appliance.com` dans la zone (avec TODO-4.4).
 - [ ] **TODO-5.11**: Traduction dans les 12 langues.
 - [x] **TODO-5.12**: Ajouter à la TODO une option pour masquer et réafficher les actions réalisées.

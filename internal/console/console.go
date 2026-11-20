@@ -158,6 +158,9 @@ type Config struct {
 	History *metrics.History
 	// DuckDNS tient à jour l'adresse sur internet (spécification 7.1) ; nil : non réglable ici.
 	DuckDNS *ddns.Updater
+	// Address : adresse <nom>.pi-appliance.com auprès du service d'adresses (spécification 7.1) ;
+	// nil : seules les règles des noms sont vérifiées.
+	Address *addresses.Client
 	// Backups : sauvegardes (spécification 9.1) ; nil : pas de sauvegardes ici.
 	Backups *backup.Manager
 	// Updates propose les mises à jour (spécification 9.2) ; nil : pas d'écran des mises à jour.
@@ -214,6 +217,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsSave))
 	mux.HandleFunc("DELETE "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsForget))
+	mux.HandleFunc("GET "+BasePath+"/api/address", c.adminOnly(c.addressStatus))
+	mux.HandleFunc("POST "+BasePath+"/api/address", c.adminOnly(c.addressReserve))
+	mux.HandleFunc("DELETE "+BasePath+"/api/address", c.adminOnly(c.addressRelease))
 	mux.HandleFunc("GET "+BasePath+"/api/address/check", c.adminOnly(c.addressCheck))
 	mux.HandleFunc("GET "+BasePath+"/api/stats", c.adminOnly(c.statsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/stats", c.adminOnly(c.statsSave))
@@ -774,14 +780,36 @@ func writeServiceError(w http.ResponseWriter, err error) {
 	}
 }
 
-// AddressCheck : réponse de GET api/address/check, règles des noms <nom>.pi-appliance.com
-// appliquées sur le Pi (spécification 7.1). Elle ne dit pas encore si le nom est pris :
-// c'est le service d'adresses du projet qui le saura (TODO-5.10).
+// Adresse <nom>.pi-appliance.com (spécification 7.1), réservée à l'administrateur.
+
+// AddressCheck : réponse de GET api/address/check. Valid : le nom suit les
+// règles (vérifiées sur le Pi) ; Available : le service d'adresses le dit libre.
 type AddressCheck struct {
-	Name     string `json:"name"`
-	Hostname string `json:"hostname,omitempty"`
-	Valid    bool   `json:"valid"`
-	Reason   string `json:"reason,omitempty"`
+	Name      string `json:"name"`
+	Hostname  string `json:"hostname,omitempty"`
+	Valid     bool   `json:"valid"`
+	Available bool   `json:"available"`
+	Reason    string `json:"reason,omitempty"`
+}
+
+// AddressStatus : réponse de GET api/address.
+type AddressStatus struct {
+	addresses.State
+	// Service : false si la console ne parle pas au service d'adresses.
+	Service bool `json:"service"`
+	// DuckDNS : nom DuckDNS vers lequel pointera l'adresse ("" : DuckDNS pas réglé).
+	DuckDNS string `json:"duckdns,omitempty"`
+}
+
+func (c *console) addressStatus(w http.ResponseWriter, _ *http.Request) {
+	status := AddressStatus{Service: c.Address != nil}
+	if c.Address != nil {
+		status.State = c.Address.Status()
+	}
+	if c.DuckDNS != nil {
+		status.DuckDNS = c.DuckDNS.Status().Hostname
+	}
+	writeJSON(w, http.StatusOK, status)
 }
 
 func (c *console) addressCheck(w http.ResponseWriter, r *http.Request) {
@@ -789,11 +817,90 @@ func (c *console) addressCheck(w http.ResponseWriter, r *http.Request) {
 	result := AddressCheck{Name: name}
 	if err := addresses.Check(name); err != nil {
 		result.Reason = strings.TrimPrefix(err.Error(), addresses.ErrInvalid.Error()+" : ")
-	} else {
-		result.Valid = true
-		result.Hostname = addresses.Hostname(name)
+		writeJSON(w, http.StatusOK, result)
+		return
 	}
+	result.Valid = true
+	result.Hostname = addresses.Hostname(name)
+	if c.Address == nil {
+		writeJSON(w, http.StatusOK, result)
+		return
+	}
+	availability, err := c.Address.Check(r.Context(), name)
+	if err != nil {
+		addressError(w, err)
+		return
+	}
+	result.Available = availability.Available
+	result.Reason = availability.Reason
 	writeJSON(w, http.StatusOK, result)
+}
+
+func (c *console) addressReady(w http.ResponseWriter) bool {
+	if c.Address == nil {
+		writeError(w, http.StatusServiceUnavailable, "Cette console ne peut pas réserver d'adresse pi-appliance.com.")
+		return false
+	}
+	return true
+}
+
+func (c *console) addressReserve(w http.ResponseWriter, r *http.Request) {
+	if !c.addressReady(w) {
+		return
+	}
+	var request struct {
+		Name string `json:"name"`
+	}
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	state, err := c.Address.Reserve(r.Context(), request.Name)
+	if err != nil {
+		addressError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, AddressStatus{State: state, Service: true, DuckDNS: state.Target})
+}
+
+func (c *console) addressRelease(w http.ResponseWriter, r *http.Request) {
+	if !c.addressReady(w) {
+		return
+	}
+	if err := c.Address.Release(r.Context()); err != nil {
+		addressError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// addressError traduit une erreur du service d'adresses en réponse, phrase en langage courant.
+func addressError(w http.ResponseWriter, err error) {
+	var refused *addresses.ServiceError
+	sentence := func(text string) string {
+		text = strings.TrimPrefix(text, addresses.ErrInvalid.Error()+" : ")
+		if text == "" {
+			return text
+		}
+		return strings.ToUpper(text[:1]) + text[1:] + "."
+	}
+	switch {
+	case errors.As(err, &refused):
+		status := refused.Status
+		if status == http.StatusUnauthorized {
+			// Seule cause attendue : l'horloge du Pi n'est pas à l'heure.
+			status = http.StatusBadGateway
+		}
+		writeError(w, status, sentence(refused.Message))
+	case errors.Is(err, addresses.ErrInvalid):
+		writeError(w, http.StatusBadRequest, sentence(err.Error()))
+	case errors.Is(err, addresses.ErrNoTarget), errors.Is(err, addresses.ErrNotReserved):
+		writeError(w, http.StatusConflict, sentence(err.Error()))
+	case errors.Is(err, addresses.ErrUnreachable):
+		writeError(w, http.StatusServiceUnavailable, sentence(err.Error()))
+	default:
+		log.Printf("adresse : %v", err)
+		writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer l'adresse sur le Pi.")
+	}
 }
 
 // Adresse sur internet par DuckDNS (spécification 7.1), réservée à l'administrateur.
@@ -829,6 +936,10 @@ func (c *console) duckdnsSave(w http.ResponseWriter, r *http.Request) {
 		log.Printf("DuckDNS : %v", err)
 		writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer les réglages DuckDNS.")
 		return
+	}
+	if c.Address != nil {
+		// Nouveau nom DuckDNS : l'alias pi-appliance.com le suit tout de suite.
+		c.Address.WakeUp()
 	}
 	writeJSON(w, http.StatusOK, c.DuckDNS.Status())
 }
