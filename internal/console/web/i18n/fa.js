@@ -485,5 +485,14 @@ piTranslations("fa", {
   "Votre mot de passe": "گذرواژه شما",
   "Code de vérification, si la double authentification est activée": "کد تأیید، اگر احراز هویت دومرحله‌ای فعال است",
   "J'ai compris ce qui sera effacé": "فهمیدم چه چیزهایی پاک می‌شود",
-  "Ne rien effacer et revenir à la console": "هیچ چیز پاک نشود و به کنسول برگرد"
+  "Ne rien effacer et revenir à la console": "هیچ چیز پاک نشود و به کنسول برگرد",
+  "Préparation": "آماده‌سازی",
+  "Téléchargement": "دانلود",
+  "Création du service": "ساخت سرویس",
+  "Démarrage": "راه‌اندازی",
+  "Vérification que le service répond": "بررسی پاسخ‌گویی سرویس",
+  "L'installation s'est arrêtée à cette étape.": "نصب در این مرحله متوقف شد.",
+  "{0} reçus sur {1}": "{0} از {1} دریافت شد",
+  "Image {0} sur {1}": "ایمیج {0} از {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "برخی سرویس‌ها بار اول چند دقیقه طول می‌کشد تا پاسخ دهند."
 });

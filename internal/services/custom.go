@@ -219,6 +219,7 @@ type CustomRequest struct {
 // InstallCustom installe un fichier Docker Compose hors marketplace, avec les
 // mêmes labels Traefik, le même réseau et la même désinstallation que les autres.
 func (m *Manager) InstallCustom(ctx context.Context, request CustomRequest) (Result, error) {
+	m.forgetProgress(request.Name)
 	names, risks, err := AnalyzeCompose(request.Compose)
 	if err != nil {
 		return Result{}, err

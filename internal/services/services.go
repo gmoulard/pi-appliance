@@ -112,11 +112,16 @@ type Manager struct {
 	// HomeNetworks donne les réseaux de la maison pour le VPN ; nil : lus
 	// sur les interfaces du Pi.
 	HomeNetworks func() []netip.Prefix
-	mu           sync.Mutex
-	renamed      atomic.Pointer[string]
-	linkMu       sync.Mutex
-	wakeOnce     sync.Once
-	wake         chan struct{}
+	// Images télécharge les images avec l'avancement (Progress) ; nil :
+	// Compose les télécharge à la création, sans chiffres.
+	Images     ImagePuller
+	mu         sync.Mutex
+	progressMu sync.Mutex
+	progress   map[string]*Progress
+	renamed    atomic.Pointer[string]
+	linkMu     sync.Mutex
+	wakeOnce   sync.Once
+	wake       chan struct{}
 }
 
 // CurrentDomain : adresse de l'appliance, suffixe de l'adresse de chaque service.
@@ -162,6 +167,7 @@ func (m *Manager) compose(ctx context.Context, name string, args ...string) ([]b
 }
 
 func (m *Manager) Install(ctx context.Context, app marketplace.App, name string, values map[string]string) (Result, error) {
+	m.forgetProgress(name)
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if !marketplace.ValidLabel(name) {
@@ -171,6 +177,14 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	if _, err := os.Stat(filepath.Join(dir, stateName)); err == nil {
 		return Result{}, fmt.Errorf("%w : un service s'appelle déjà « %s », choisissez un autre nom", ErrExists, name)
 	}
+	m.track(name, app.Name)
+	result, err := m.install(ctx, app, name, values)
+	m.finish(name, err)
+	return result, err
+}
+
+func (m *Manager) install(ctx context.Context, app marketplace.App, name string, values map[string]string) (Result, error) {
+	dir := m.serviceDir(name)
 	address := name + "." + m.CurrentDomain()
 	env, secrets, err := m.environment(app, dir, name, address, values)
 	if err != nil {
@@ -203,9 +217,26 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 			return Result{}, fmt.Errorf("préparation du réseau impossible : %s", trimOutput(output, err))
 		}
 	}
-	if output, err := m.compose(ctx, name, "up", "--detach", "--wait"); err != nil {
+	m.setStep(name, StepDownload)
+	pullErr := m.pullImages(ctx, name)
+	for _, step := range []struct {
+		name string
+		args []string
+	}{
+		{StepCreate, []string{"create"}},
+		{StepStart, []string{"start"}},
+		{StepCheck, []string{"up", "--detach", "--wait"}},
+	} {
+		m.setStep(name, step.name)
+		output, err := m.compose(ctx, name, step.args...)
+		if err == nil {
+			continue
+		}
 		if _, downErr := m.compose(context.WithoutCancel(ctx), name, "down"); downErr != nil {
 			warnings = append(warnings, "Le service n'a pas pu être arrêté proprement.")
+		}
+		if step.name == StepCreate && pullErr != nil {
+			return Result{Warnings: warnings}, fmt.Errorf("%s n'a pas pu être téléchargé : vérifiez que le Pi est bien relié à internet, puis réessayez (%v)", app.Name, pullErr)
 		}
 		return Result{Warnings: warnings}, fmt.Errorf("%s n'a pas pu démarrer : %s", app.Name, trimOutput(output, err))
 	}

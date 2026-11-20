@@ -485,5 +485,14 @@ piTranslations("tr", {
   "Votre mot de passe": "Parolanız",
   "Code de vérification, si la double authentification est activée": "İki adımlı doğrulama açıksa doğrulama kodu",
   "J'ai compris ce qui sera effacé": "Neyin silineceğini anladım",
-  "Ne rien effacer et revenir à la console": "Hiçbir şeyi silme ve konsola dön"
+  "Ne rien effacer et revenir à la console": "Hiçbir şeyi silme ve konsola dön",
+  "Préparation": "Hazırlık",
+  "Téléchargement": "İndirme",
+  "Création du service": "Hizmetin oluşturulması",
+  "Démarrage": "Başlatma",
+  "Vérification que le service répond": "Hizmetin yanıt verdiğinin denetlenmesi",
+  "L'installation s'est arrêtée à cette étape.": "Kurulum bu adımda durdu.",
+  "{0} reçus sur {1}": "{1} içinden {0} alındı",
+  "Image {0} sur {1}": "Görüntü {0} / {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "Bazı hizmetlerin ilk seferde yanıt vermesi birkaç dakika sürer."
 });

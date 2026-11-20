@@ -485,5 +485,14 @@ piTranslations("it", {
   "Votre mot de passe": "La vostra password",
   "Code de vérification, si la double authentification est activée": "Codice di verifica, se l'autenticazione a due fattori è attiva",
   "J'ai compris ce qui sera effacé": "Ho capito che cosa sarà cancellato",
-  "Ne rien effacer et revenir à la console": "Non cancellare nulla e tornare alla console"
+  "Ne rien effacer et revenir à la console": "Non cancellare nulla e tornare alla console",
+  "Préparation": "Preparazione",
+  "Téléchargement": "Download",
+  "Création du service": "Creazione del servizio",
+  "Démarrage": "Avvio",
+  "Vérification que le service répond": "Verifica che il servizio risponda",
+  "L'installation s'est arrêtée à cette étape.": "L'installazione si è fermata a questo passaggio.",
+  "{0} reçus sur {1}": "{0} ricevuti su {1}",
+  "Image {0} sur {1}": "Immagine {0} di {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "Alcuni servizi impiegano diversi minuti a rispondere la prima volta."
 });

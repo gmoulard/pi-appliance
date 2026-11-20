@@ -512,6 +512,23 @@ select {
   color: var(--brand-dark);
 }
 
+.steps li.failed {
+  font-weight: 800;
+  color: #d62839;
+}
+
+.install-progress progress {
+  display: block;
+  width: 100%;
+  accent-color: var(--brand);
+}
+
+.install-progress .meta {
+  margin: 0.125rem 0 0;
+  font-weight: 400;
+  text-decoration: none;
+}
+
 .gauge {
   display: flex;
   flex-direction: column;

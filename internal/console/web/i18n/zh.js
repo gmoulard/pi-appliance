@@ -485,5 +485,14 @@ piTranslations("zh", {
   "Votre mot de passe": "您的密码",
   "Code de vérification, si la double authentification est activée": "验证码（如果已开启双重验证）",
   "J'ai compris ce qui sera effacé": "我已了解将被删除的内容",
-  "Ne rien effacer et revenir à la console": "不删除任何内容，返回控制台"
+  "Ne rien effacer et revenir à la console": "不删除任何内容，返回控制台",
+  "Préparation": "准备",
+  "Téléchargement": "下载",
+  "Création du service": "创建服务",
+  "Démarrage": "启动",
+  "Vérification que le service répond": "检查服务是否响应",
+  "L'installation s'est arrêtée à cette étape.": "安装在这一步停止了。",
+  "{0} reçus sur {1}": "已接收 {0}，共 {1}",
+  "Image {0} sur {1}": "第 {0} 个镜像，共 {1} 个",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "有些服务第一次需要几分钟才能响应。"
 });
