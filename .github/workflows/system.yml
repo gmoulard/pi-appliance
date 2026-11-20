@@ -73,6 +73,8 @@ jobs:
         run: sh system/tests/name-test.sh
       - name: Annonce mDNS des services
         run: sh system/tests/mdns-test.sh
+      - name: Traefik redémarré en boucle
+        run: sh system/tests/traefik-repair-test.sh
       - name: Choix du disque de sauvegarde
         run: sh system/tests/backup-disk-test.sh
       - name: Correctifs du système

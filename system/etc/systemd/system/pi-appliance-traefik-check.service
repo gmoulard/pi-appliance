@@ -1,0 +1,28 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Recharge l'image de Traefik depuis l'archive quand il redémarre en boucle
+# (traefik.sh check), lancé par pi-appliance-traefik-check.timer.
+
+[Unit]
+Description=Vérification de Traefik (redémarrage en boucle)
+Documentation=https://github.com/gmoulard/pi-appliance
+Requires=docker.service
+After=docker.service pi-appliance-traefik.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/pi-appliance/traefik.sh check
+TimeoutStartSec=5min

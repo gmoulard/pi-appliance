@@ -116,7 +116,7 @@ fi
 systemctl enable docker.service NetworkManager.service avahi-daemon.service \
 	pi-appliance-secrets.service pi-appliance-traefik.service \
 	pi-appliance-firewall.service pi-appliance-ap.service pi-appliance.service \
-	pi-appliance-mdns.service
+	pi-appliance-mdns.service pi-appliance-traefik-check.timer
 # Rien n'est mis à jour sans l'accord de l'administrateur (spécification 9.2) :
 # pas d'installation automatique par apt, les correctifs passent par la console
 # (updates.sh).

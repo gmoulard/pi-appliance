@@ -52,4 +52,7 @@ for unit in docker pi-appliance-secrets pi-appliance-traefik pi-appliance-firewa
 		fail "${unit}.service n'est pas activé au démarrage"
 	fi
 done
+if [ ! -L "${ROOTFS_DIR}/etc/systemd/system/timers.target.wants/pi-appliance-traefik-check.timer" ]; then
+	fail "pi-appliance-traefik-check.timer n'est pas activé au démarrage"
+fi
 echo "image vérifiée : aucun secret, console arm64, services activés"
