@@ -23,6 +23,31 @@ Les services hors du dépôt dont dépend pi-appliance, et comment y accéder. C
 - Sous-domaines de machines : `mac`, `ia4ccm`, `mbpdevrenaudin.home`.
 - Probablement à supprimer : `todrop`, `ip-10-0-0-85.eu-west-3.compute.internal`.
 
+### Service d'adresses
+
+Le service d'adresses (`cmd/pi-appliance-addresses`, [spécification 7.1](specification.md)) écrit dans cette zone les alias `<nom>.pi-appliance.com` et `*.<nom>.pi-appliance.com` des appliances. Il n'est pas encore installé. Il lui faut :
+
+- un **utilisateur IAM réservé**, sans accès à la console AWS, avec seulement cette politique (aucun autre droit, pas de droit sur `www`, `@` ni les enregistrements e-mail) :
+
+  ```json
+  {
+    "Version": "2012-10-17",
+    "Statement": [{
+      "Effect": "Allow",
+      "Action": "route53:ChangeResourceRecordSets",
+      "Resource": "arn:aws:route53:::hostedzone/Z01037363SBTB2LIT0ZB4",
+      "Condition": {
+        "ForAllValues:StringEquals": { "route53:ChangeResourceRecordSetsRecordTypes": ["CNAME"] },
+        "ForAllValues:StringLike": { "route53:ChangeResourceRecordSetsNormalizedRecordNames": ["*.pi-appliance.com"] }
+      }
+    }]
+  }
+  ```
+
+  Les noms du projet (`www`, `mail`…) sont aussi refusés par le service lui-même (`internal/addresses/names.go`) ;
+- ses clés d'accès dans `/etc/pi-appliance-addresses/aws-credentials` **sur le Pi du projet seulement** (droits 600, format de la CLI AWS, profil `default` ou `-aws-profile`), jamais dans le dépôt ;
+- le nom `adresses.pi-appliance.com` vers le Pi du projet, derrière son reverse proxy qui pose `X-Real-IP` et dont le journal des accès est coupé (TODO-4.4).
+
 ## Site web
 
 - **GitHub Pages** du dépôt `gmoulard/pi-appliance` : branche `master`, dossier `/docs`, domaine `www.pi-appliance.com` (fichier `docs/CNAME`), HTTPS actif.

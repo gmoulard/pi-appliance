@@ -2028,6 +2028,7 @@ duckDNSForm.addEventListener("submit", async (event) => {
     duckDNSForm.elements.token.value = "";
     duckDNSLoaded = true;
     showDuckDNS(result);
+    loadAddress();
     showMessage([t("Les réglages DuckDNS sont enregistrés. La mise à jour démarre.")], "success");
   } catch (error) {
     showMessage([error.message], "error");
@@ -2049,6 +2050,119 @@ duckDNSForget.addEventListener("click", async () => {
     showMessage([error.message], "error");
   } finally {
     duckDNSForget.disabled = false;
+  }
+});
+
+// Adresse <nom>.pi-appliance.com (spécification 7.1) : le Pi vérifie les règles
+// du nom, le service d'adresses du projet dit s'il est libre et le réserve.
+const addressState = document.getElementById("addressState");
+const addressDetails = document.getElementById("addressDetails");
+const addressForm = document.getElementById("addressForm");
+const addressCheck = document.getElementById("addressCheck");
+const addressReserve = document.getElementById("addressReserve");
+const addressRelease = document.getElementById("addressRelease");
+let addressCheckTimer = null;
+let addressCheckCount = 0;
+let addressHostname = "";
+
+function showAddress(status) {
+  addressDetails.replaceChildren();
+  const reserved = Boolean(status.name);
+  addressHostname = status.hostname || "";
+  addressForm.hidden = reserved || !status.service;
+  addressRelease.hidden = !reserved;
+  if (!status.service) {
+    addressState.replaceChildren(element("span", undefined, "dot orange"), element("span", t("La réservation d'une adresse pi-appliance.com n'est pas possible depuis cette console.")));
+    return;
+  }
+  if (!reserved) {
+    addressState.replaceChildren(element("span", undefined, "dot orange"), element("span", status.error || t("Pas encore d'adresse pi-appliance.com.")));
+    if (!status.duckdns) {
+      addressDetails.append(element("p", t("Réglez d'abord DuckDNS plus bas : votre adresse pointera vers votre nom DuckDNS."), "meta"));
+    }
+    return;
+  }
+  const state = status.error
+    ? t("Votre adresse est {0}, mais le dernier contact avec le service d'adresses a échoué : {1}", status.hostname, status.error)
+    : t("Votre adresse : {0}.", status.hostname);
+  addressState.replaceChildren(element("span", undefined, `dot ${status.error ? "red" : "green"}`), element("span", state));
+  const link = element("a", `https://${status.hostname}`);
+  link.href = `https://${status.hostname}`;
+  link.rel = "noopener";
+  const linkLine = element("p", undefined, "meta");
+  linkLine.append(link);
+  addressDetails.append(linkLine);
+  if (status.target) addressDetails.append(element("p", t("Elle pointe vers votre nom DuckDNS {0}.", status.target), "meta"));
+  const lastSync = duckDNSDate(status.last_sync);
+  if (lastSync) addressDetails.append(element("p", t("Dernier contact avec le service d'adresses le {0}.", lastSync), "meta"));
+}
+
+async function loadAddress() {
+  try {
+    showAddress(await api("address"));
+  } catch (error) {
+    addressState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
+  }
+}
+
+async function checkAddressName() {
+  const name = addressForm.elements.name.value.trim();
+  const count = ++addressCheckCount;
+  if (!name) {
+    addressCheck.textContent = "";
+    return;
+  }
+  try {
+    const result = await api(`address/check?name=${encodeURIComponent(name)}`);
+    if (count !== addressCheckCount) return;
+    if (!result.valid) {
+      addressCheck.textContent = result.reason;
+    } else if (result.available) {
+      addressCheck.textContent = t("{0} est libre.", result.hostname);
+    } else {
+      addressCheck.textContent = t("{0} n'est pas libre : {1}.", result.hostname, result.reason);
+    }
+  } catch (error) {
+    if (count === addressCheckCount) addressCheck.textContent = error.message;
+  }
+}
+
+addressForm.elements.name.addEventListener("input", () => {
+  clearTimeout(addressCheckTimer);
+  addressCheckTimer = setTimeout(checkAddressName, 400);
+});
+
+addressForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  addressReserve.disabled = true;
+  try {
+    const result = await api("address", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: addressForm.elements.name.value }),
+    });
+    addressForm.reset();
+    addressCheck.textContent = "";
+    showAddress(result);
+    showMessage([t("L'adresse {0} est réservée. Elle marchera depuis internet d'ici quelques minutes.", result.hostname)], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    addressReserve.disabled = false;
+  }
+});
+
+addressRelease.addEventListener("click", async () => {
+  if (!window.confirm(t("Libérer l'adresse {0} ? Vos services n'y seront plus joignables, et une autre appliance pourra la prendre dans 30 jours.", addressHostname))) return;
+  addressRelease.disabled = true;
+  try {
+    await api("address", { method: "DELETE" });
+    await loadAddress();
+    showMessage([t("L'adresse est libérée.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    addressRelease.disabled = false;
   }
 });
 
@@ -2641,6 +2755,7 @@ async function showConsole(account, wizard) {
   if (account.role === "admin") {
     duckDNSSection.hidden = false;
     await loadDuckDNS();
+    await loadAddress();
     duckDNSTimer = setInterval(loadDuckDNS, 15000);
     statsSection.hidden = false;
     await loadStats();
