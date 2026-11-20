@@ -223,3 +223,17 @@ Il est possible de retirer un fichier qui avait été ajouté pour être « comm
 ```shell
 git reset HEAD -- nom_du_fichier_a_supprimer
 ```
+
+## Publier une version de pi-appliance
+
+Une version se publie en poussant une étiquette `v…` : le workflow « Image » construit alors l'image et l'archive de mise à jour, puis crée lui-même la version GitHub avec ces fichiers et leurs sommes de contrôle (spécification, section 9.2). Ne pas créer la version depuis l'interface de GitHub : le workflow échouerait au moment de publier. Les sessions Claude Code dans le cloud ne peuvent pas pousser d'étiquette : le faire depuis son poste.
+
+Première version, `v0.1.0`, sur le commit `ce785b2` de `master` :
+
+```shell
+git fetch origin
+git tag -a v0.1.0 -m "pi-appliance v0.1.0" ce785b2df668676976f05d81f1774df954f58405
+git push origin v0.1.0
+```
+
+Pour les suivantes, changer le numéro et prendre le dernier commit de `master` (`origin/master` à la place de l'empreinte). Les Pi installés avec une image `v0.1.0` ou plus récente proposent ensuite la nouvelle version dans « Mon Pi ».
