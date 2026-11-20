@@ -231,6 +231,46 @@ func TestResetFile(t *testing.T) {
 	}
 }
 
+func TestResetSurvivesRestart(t *testing.T) {
+	store, _ := withAdmin(t)
+	reset := filepath.Join(t.TempDir(), "reset")
+	if err := os.WriteFile(reset, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if found, err := store.ConsumeResetFile(reset); !found || err != nil {
+		t.Fatalf("avec fichier : %v %v", found, err)
+	}
+	restarted, err := Open(store.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !restarted.ResetPending() {
+		t.Fatal("réinitialisation perdue au redémarrage")
+	}
+	if found, err := restarted.ConsumeResetFile(reset); found || err != nil {
+		t.Fatalf("fichier déjà supprimé : %v %v", found, err)
+	}
+	if !restarted.ResetPending() {
+		t.Fatal("réinitialisation fermée sans fichier reset")
+	}
+	if _, err := restarted.ResetAdmin("nouvelle phrase de passe"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(restarted.pendingPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("reset-pending non effacé")
+	}
+	again, err := Open(store.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if again.ResetPending() {
+		t.Fatal("réinitialisation rouverte après le nouveau mot de passe")
+	}
+	if _, _, err := again.Login("marie", "nouvelle phrase de passe", "", "10.0.0.2"); err != nil {
+		t.Fatalf("nouveau mot de passe : %v", err)
+	}
+}
+
 func TestResetFileWithoutAccount(t *testing.T) {
 	store, _ := open(t)
 	reset := filepath.Join(t.TempDir(), "reset")
@@ -242,6 +282,12 @@ func TestResetFileWithoutAccount(t *testing.T) {
 	}
 	if store.ResetPending() {
 		t.Fatal("réinitialisation ouverte sans compte")
+	}
+	if _, err := os.Stat(reset); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("fichier reset non supprimé")
+	}
+	if _, err := os.Stat(store.pendingPath()); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("reset-pending écrit sans compte")
 	}
 }
 

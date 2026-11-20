@@ -169,7 +169,9 @@ func (e TooManyError) Unwrap() error {
 }
 
 // Store garde les comptes dans un fichier JSON (droits 600) et les sessions en mémoire :
-// un redémarrage de la console déconnecte tout le monde.
+// un redémarrage de la console déconnecte tout le monde. Une réinitialisation par le
+// fichier reset est gardée dans reset-pending, à côté des comptes, jusqu'au nouveau
+// mot de passe : elle survit à un redémarrage.
 type Store struct {
 	path     string
 	Now      func() time.Time
@@ -196,7 +198,16 @@ func Open(path string) (*Store, error) {
 	for _, account := range accounts {
 		s.accounts[account.Name] = account
 	}
+	if _, err := os.Stat(s.pendingPath()); err == nil {
+		s.reset = len(s.accounts) > 0
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
 	return s, nil
+}
+
+func (s *Store) pendingPath() string {
+	return filepath.Join(filepath.Dir(s.path), "reset-pending")
 }
 
 // SetupNeeded est vrai tant qu'aucun compte n'existe : le portail propose alors de créer le compte administrateur.
@@ -206,8 +217,9 @@ func (s *Store) SetupNeeded() bool {
 	return len(s.accounts) == 0
 }
 
-// ConsumeResetFile lit le fichier reset déposé sur la carte SD : s'il existe, il est supprimé
-// aussitôt et la réinitialisation du mot de passe administrateur est ouverte (spécification 8.5).
+// ConsumeResetFile lit le fichier reset déposé sur la carte SD : s'il existe, la
+// réinitialisation du mot de passe administrateur est enregistrée dans reset-pending,
+// puis le fichier reset est supprimé (spécification 8.5).
 func (s *Store) ConsumeResetFile(path string) (bool, error) {
 	if path == "" {
 		return false, nil
@@ -217,16 +229,33 @@ func (s *Store) ConsumeResetFile(path string) (bool, error) {
 	} else if err != nil {
 		return false, err
 	}
-	if err := os.Remove(path); err != nil {
-		return false, err
-	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if len(s.accounts) == 0 {
-		return false, nil
+		return false, os.Remove(path)
+	}
+	if err := s.writePending(); err != nil {
+		return false, err
 	}
 	s.reset = true
-	return true, nil
+	return true, os.Remove(path)
+}
+
+// NE PAS supprimer le fichier reset avant d'avoir écrit reset-pending : une coupure
+// entre les deux perdrait la réinitialisation.
+func (s *Store) writePending() error {
+	if err := os.MkdirAll(filepath.Dir(s.path), 0o700); err != nil {
+		return err
+	}
+	file, err := os.OpenFile(s.pendingPath(), os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
+	if err != nil {
+		return err
+	}
+	if err := file.Sync(); err != nil {
+		file.Close()
+		return err
+	}
+	return file.Close()
 }
 
 func (s *Store) ResetPending() bool {
@@ -291,6 +320,9 @@ func (s *Store) ResetAdmin(password string) (Account, error) {
 	if err := s.save(); err != nil {
 		admin.Hash = previous
 		s.accounts[admin.Name] = admin
+		return Account{}, err
+	}
+	if err := os.Remove(s.pendingPath()); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return Account{}, err
 	}
 	s.reset = false
