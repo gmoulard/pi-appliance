@@ -71,6 +71,8 @@ jobs:
         run: sh system/tests/storage-test.sh
       - name: Nom du Pi
         run: sh system/tests/name-test.sh
+      - name: Test du réseau et redémarrage
+        run: sh system/tests/network-test.sh
       - name: Annonce mDNS des services
         run: sh system/tests/mdns-test.sh
       - name: Traefik redémarré en boucle

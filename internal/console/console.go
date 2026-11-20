@@ -213,6 +213,8 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/network/wired", c.adminOnly(c.wired))
 	mux.HandleFunc("POST "+BasePath+"/api/network/country", c.adminOnly(c.country))
 	mux.HandleFunc("POST "+BasePath+"/api/network/name", c.adminOnly(c.setName))
+	mux.HandleFunc("POST "+BasePath+"/api/network/test", c.adminOnly(c.networkTest))
+	mux.HandleFunc("POST "+BasePath+"/api/system/reboot", c.adminOnly(c.reboot))
 	mux.HandleFunc("GET "+BasePath+"/api/system", c.adminOnly(c.resources))
 	mux.HandleFunc("GET "+BasePath+"/api/system/history", c.adminOnly(c.history))
 	mux.HandleFunc("GET "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsStatus))
@@ -993,6 +995,22 @@ func (c *console) wifiScan(w http.ResponseWriter, r *http.Request) {
 
 func (c *console) wired(w http.ResponseWriter, r *http.Request) {
 	c.networkCall(w, r, (*network.Client).Wired)
+}
+
+func (c *console) networkTest(w http.ResponseWriter, r *http.Request) {
+	c.networkCall(w, r, (*network.Client).Test)
+}
+
+// reboot redémarre le Pi à la fin de la mise en route (spécification 5.1),
+// pour vérifier qu'il retrouve seul le réseau de la maison.
+func (c *console) reboot(w http.ResponseWriter, r *http.Request) {
+	c.networkCall(w, r, func(n *network.Client, ctx context.Context) (json.RawMessage, error) {
+		out, err := n.Reboot(ctx)
+		if err == nil {
+			log.Printf("redémarrage du Pi demandé par l'administrateur")
+		}
+		return out, err
+	})
 }
 
 func (c *console) country(w http.ResponseWriter, r *http.Request) {

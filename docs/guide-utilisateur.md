@@ -4,7 +4,7 @@
 
 ## Ce que contient le prototype
 
-- Une console en français avec création du compte administrateur, connexion et assistant de première mise en route.
+- Une console en français avec création du compte administrateur, connexion et assistant de première mise en route (réseau, test du Wi-Fi, redémarrage).
 - La configuration du réseau filaire ou du Wi-Fi depuis la console, ainsi qu'un point d'accès Wi-Fi de configuration au premier démarrage de l'image.
 - Un tableau de bord avec l'état du Pi, des graphiques et des alertes de mémoire et de stockage.
 - Une marketplace avec les applications installables du catalogue.
@@ -69,7 +69,9 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 5. Insérez la carte dans le Raspberry Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement. Avec les images construites à partir du 20 novembre 2026, ce Wi-Fi porte le nom propre du Pi, `pi-appliance-XXXX` (quatre caractères qui changent d'un Pi à l'autre), et ne donne plus accès à internet ni à votre réseau : seulement au portail.
 6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, le Wi-Fi de configuration se ferme : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison, puis ouvrez `https://pi-appliance-XXXX.local/pi-appliance/` (`https://pi-appliance.local/pi-appliance/` avec l'image du 19 novembre 2026). Voir [Retrouver la console](#retrouver-la-console) si cette adresse ne s'ouvre pas.
 
-7. Dans la console, faites défiler la page sous **Mes services** jusqu'à la rubrique **Marketplace**. Si vous êtes encore dans l'assistant de première mise en route, choisissez **Vos premiers services** : il affiche cette même rubrique. Sélectionnez une application, choisissez son nom puis cliquez sur **Installer**. Une adresse locale comme `www.pi-appliance.local` apparaît dans **Mes services** quand l'installation réussit. Pour un site web, les fichiers se déposent par **Nextcloud** : installez aussi Nextcloud depuis la marketplace ; quelques minutes après, un dossier **Site <nom-du-site>** apparaît dans Nextcloud pour son compte administrateur. Les fichiers placés dans ce dossier sont servis directement par le site.
+7. De retour dans l'assistant, sur le réseau de la maison, cliquez sur **Tester le Wi-Fi** (ou **Tester le câble réseau**) : la console vérifie que le Pi est bien relié, que la box répond et qu'il se reconnectera tout seul. Si tout est en ordre, cliquez sur **Redémarrer le Pi** : la console affiche l'adresse où le retrouver et redémarre le Pi au bout de 10 secondes (bouton **Ne pas redémarrer** pour annuler). Une à deux minutes plus tard, la page revient d'elle-même sur l'écran de connexion.
+
+8. L'assistant n'installe pas de service. Une fois connecté, faites défiler la page sous **Mes services** jusqu'à la rubrique **Marketplace**. Sélectionnez une application, choisissez son nom puis cliquez sur **Installer**. Une adresse locale comme `www.pi-appliance.local` apparaît dans **Mes services** quand l'installation réussit. Pour un site web, les fichiers se déposent par **Nextcloud** : installez aussi Nextcloud depuis la marketplace ; quelques minutes après, un dossier **Site <nom-du-site>** apparaît dans Nextcloud pour son compte administrateur. Les fichiers placés dans ce dossier sont servis directement par le site.
 
 ### Ce qui se passe au premier démarrage {#premier-demarrage}
 
@@ -80,8 +82,9 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 3. **Wi-Fi de configuration** : le Pi ouvre le Wi-Fi `pi-appliance-XXXX`, sans mot de passe, pendant 24 heures au plus. Il ne sert qu'à configurer le Pi : il ne donne accès ni à internet ni à votre réseau.
 4. **Portail** : une fois connecté à ce Wi-Fi, le téléphone ouvre souvent le portail tout seul ; sinon, ouvrez `https://10.42.0.1/pi-appliance/`. Le navigateur affiche une alerte sur le certificat : vous pouvez continuer.
 5. **Compte** : choisissez un identifiant (un nom court, par exemple `marie` : ce n'est pas l'adresse e-mail), votre adresse e-mail et un mot de passe d'au moins 12 caractères. L'assistant « Mise en route » s'ouvre ensuite ; il revient à chaque connexion tant qu'il n'est pas terminé.
-6. **Wi-Fi de la maison** : choisissez le pays, puis votre Wi-Fi et son mot de passe, ou le câble réseau s'il est branché sur la box. Avant de couper le Wi-Fi de configuration, la console affiche l'adresse où la retrouver ; avec le câble, elle donne aussi l'adresse IP du Pi.
-7. **Retrouver la console** : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison et ouvrez l'adresse indiquée (ci-dessous).
+6. **Wi-Fi de la maison** : choisissez le pays, puis votre Wi-Fi et son mot de passe (le bouton **Afficher** montre ce que vous tapez), ou le câble réseau s'il est branché sur la box. Avant de couper le Wi-Fi de configuration, la console affiche l'adresse où la retrouver ; avec le câble, elle donne aussi l'adresse IP du Pi.
+7. **Retrouver la console** : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison et ouvrez l'adresse indiquée (ci-dessous), puis reconnectez-vous : l'assistant reprend.
+8. **Vérification et redémarrage** : **Tester le Wi-Fi** vérifie la connexion sans rien couper ; si tout est en ordre, **Redémarrer le Pi** rappelle l'adresse du Pi, compte 10 secondes et redémarre le Pi, qui doit retrouver votre réseau tout seul. La mise en route est alors terminée ; vos services se choisissent ensuite dans la marketplace.
 
 ### Retrouver la console sur le réseau de la maison {#retrouver-la-console}
 

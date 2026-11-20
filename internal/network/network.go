@@ -14,7 +14,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 // Package network pilote le réseau du Pi par le script network.sh de l'image
-// (spécification, section 4) : état, Wi-Fi visibles, connexion, choix du câble.
+// (spécification, section 4) : état, Wi-Fi visibles, connexion, choix du câble,
+// test du réseau choisi et redémarrage à la fin de la mise en route.
 package network
 
 import (
@@ -168,6 +169,18 @@ func (c *Client) SetName(ctx context.Context, name string) (json.RawMessage, err
 		return nil, fmt.Errorf("%w : le nom du Pi s'écrit en lettres minuscules, chiffres et tirets, 32 caractères au plus, sans tiret au début ni à la fin", ErrInvalid)
 	}
 	return c.run(ctx, scanTimeout, nil, "name", name)
+}
+
+// Test vérifie le réseau choisi (relié, adresse, box, internet, retrouvé après
+// un redémarrage) sans toucher au point d'accès, qui partage la puce Wi-Fi.
+func (c *Client) Test(ctx context.Context) (json.RawMessage, error) {
+	return c.run(ctx, shortTimeout, nil, "test")
+}
+
+// Reboot programme le redémarrage du Pi dans quelques secondes : la réponse
+// arrive au navigateur avant que la console s'arrête.
+func (c *Client) Reboot(ctx context.Context) (json.RawMessage, error) {
+	return c.run(ctx, shortTimeout, nil, "reboot")
 }
 
 // Join lance la connexion en arrière-plan, après JoinDelay, et rend la main
