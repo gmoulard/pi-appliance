@@ -15,8 +15,8 @@
 
 // Package updates propose les mises à jour dans la console (spécification
 // 9.2) sans jamais les installer d'office : correctifs de Raspberry Pi OS par
-// le script updates.sh de l'image, installés à la demande de l'administrateur,
-// et nouvelle version de pi-appliance publiée sur GitHub, seulement signalée.
+// le script updates.sh de l'image, et nouvelle version de pi-appliance
+// publiée sur GitHub (appliance.go), installés à la demande de l'administrateur.
 package updates
 
 import (
@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -65,13 +66,31 @@ type Apply struct {
 	At      string `json:"at"`
 }
 
+// Upgrade : dernière installation d'une version de pi-appliance par
+// updates.sh ; State vaut starting, running, done ou failed. RolledBack :
+// l'ancienne version a été remise après un échec.
+type Upgrade struct {
+	State      string `json:"state"`
+	Version    string `json:"version"`
+	Error      string `json:"error"`
+	Message    string `json:"message"`
+	RolledBack bool   `json:"rolled_back"`
+	At         string `json:"at"`
+}
+
 // System : réponse de « updates.sh status ».
 type System struct {
 	Packages       []Package `json:"packages"`
 	Security       int       `json:"security"`
 	CheckedAt      *string   `json:"checked_at"`
 	Apply          *Apply    `json:"apply"`
+	Upgrade        *Upgrade  `json:"upgrade"`
 	RebootRequired bool      `json:"reboot_required"`
+}
+
+// Upgrading dit si une version de pi-appliance est en cours d'installation.
+func (s System) Upgrading() bool {
+	return s.Upgrade != nil && (s.Upgrade.State == "starting" || s.Upgrade.State == "running")
 }
 
 // Busy dit si une installation est en cours.
@@ -87,6 +106,11 @@ type Appliance struct {
 	URL       string     `json:"url,omitempty"`
 	CheckedAt *time.Time `json:"checked_at"`
 	Error     string     `json:"error,omitempty"`
+	// Installable : l'archive de mise à jour est publiée et la console sait
+	// l'installer ici (updates.sh).
+	Installable bool `json:"installable"`
+	// Download : téléchargement de la nouvelle version, avant updates.sh.
+	Download *Download `json:"download,omitempty"`
 }
 
 // Status : tout ce que la console affiche des mises à jour.
@@ -106,11 +130,18 @@ type Checker struct {
 	Releases Releases
 	// Version : version de pi-appliance en service.
 	Version string
-	Logf    func(format string, args ...any)
-	Now     func() time.Time
+	// DownloadDir : dossier où la nouvelle version est téléchargée, lu par
+	// updates.sh ($PI_STATE/upgrade) ; vide : pas d'installation d'ici.
+	DownloadDir string
+	// Client télécharge les archives ; nil : délai de 10 minutes.
+	Client *http.Client
+	Logf   func(format string, args ...any)
+	Now    func() time.Time
 
 	mu        sync.Mutex
 	appliance Appliance
+	release   *Release
+	download  *Download
 	checking  bool
 }
 
@@ -188,6 +219,11 @@ func (c *Checker) ApplySystem(ctx context.Context) error {
 func (c *Checker) Status(ctx context.Context) Status {
 	c.mu.Lock()
 	status := Status{Appliance: c.appliance, Checking: c.checking}
+	release := c.release
+	if c.download != nil {
+		download := *c.download
+		status.Appliance.Download = &download
+	}
 	c.mu.Unlock()
 	status.Appliance.Current = c.Version
 	status.Appliance.Available = Newer(c.Version, status.Appliance.Latest)
@@ -200,6 +236,9 @@ func (c *Checker) Status(ctx context.Context) Status {
 			status.System = &system
 		}
 	}
+	status.Appliance.Installable = status.Appliance.Available && c.installable(release) &&
+		status.System != nil && !status.System.Upgrading() &&
+		(status.Appliance.Download == nil || status.Appliance.Download.State != "downloading")
 	return status
 }
 
@@ -234,6 +273,7 @@ func (c *Checker) Check(ctx context.Context) bool {
 		} else {
 			c.appliance.Error = ""
 			c.appliance.Latest, c.appliance.URL = "", ""
+			c.release = release
 			if release != nil {
 				c.appliance.Latest, c.appliance.URL = release.Tag, release.URL
 			}

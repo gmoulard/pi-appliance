@@ -21,11 +21,24 @@
 #
 #   sudo sh system/install.sh <binaire pi-appliance arm64> [archive de l'image Traefik]
 #
+# Mise à jour de pi-appliance sur un Pi installé (updates.sh appliance) :
+#
+#   sh system/install.sh --update <binaire pi-appliance arm64>
+#
+# remplace la console et les fichiers de system/ sans réinstaller ni
+# redémarrer Docker (les services continuent de tourner) ; seuls Traefik,
+# avahi et la console redémarrent.
+#
 # Sans archive, Traefik est téléchargé au premier démarrage (internet nécessaire).
 # N'écrit aucun secret : ils sont créés sur le Pi au démarrage (secrets.sh).
 
 set -eu
 
+update=0
+if [ "${1:-}" = --update ]; then
+	update=1
+	shift
+fi
 if [ "$(id -u)" -ne 0 ]; then
 	echo "à lancer en root (sudo)" >&2
 	exit 1
@@ -42,28 +55,30 @@ here=$(cd "$(dirname "$0")" && pwd)
 DOCKER_KEY_FINGERPRINT=9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y --no-install-recommends \
-	ca-certificates curl gnupg jq openssl iw \
-	network-manager dnsmasq-base avahi-daemon \
-	fdisk e2fsprogs nftables
+if [ "$update" = 0 ]; then
+	apt-get update
+	apt-get install -y --no-install-recommends \
+		ca-certificates curl gnupg jq openssl iw \
+		network-manager dnsmasq-base avahi-daemon \
+		fdisk e2fsprogs nftables
 
-install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc.tmp
-fingerprints=$(gpg --show-keys --with-colons /etc/apt/keyrings/docker.asc.tmp | awk -F: '$1 == "fpr" { print $10 }')
-if ! printf '%s\n' "$fingerprints" | grep -qx "$DOCKER_KEY_FINGERPRINT"; then
-	echo "clé du dépôt Docker inattendue : $fingerprints" >&2
-	rm -f /etc/apt/keyrings/docker.asc.tmp
-	exit 1
+	install -m 0755 -d /etc/apt/keyrings
+	curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc.tmp
+	fingerprints=$(gpg --show-keys --with-colons /etc/apt/keyrings/docker.asc.tmp | awk -F: '$1 == "fpr" { print $10 }')
+	if ! printf '%s\n' "$fingerprints" | grep -qx "$DOCKER_KEY_FINGERPRINT"; then
+		echo "clé du dépôt Docker inattendue : $fingerprints" >&2
+		rm -f /etc/apt/keyrings/docker.asc.tmp
+		exit 1
+	fi
+	mv /etc/apt/keyrings/docker.asc.tmp /etc/apt/keyrings/docker.asc
+	chmod 0644 /etc/apt/keyrings/docker.asc
+	# shellcheck source=/dev/null
+	codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
+	echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $codename stable" \
+		>/etc/apt/sources.list.d/docker.list
+	apt-get update
+	apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 fi
-mv /etc/apt/keyrings/docker.asc.tmp /etc/apt/keyrings/docker.asc
-chmod 0644 /etc/apt/keyrings/docker.asc
-# shellcheck source=/dev/null
-codename=$(. /etc/os-release && echo "$VERSION_CODENAME")
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $codename stable" \
-	>/etc/apt/sources.list.d/docker.list
-apt-get update
-apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 # Données des services sur un disque USB (storage.sh) : le réglage de Docker
 # survit à une réinstallation, sinon Docker repartirait à vide sur la carte SD.
@@ -105,6 +120,14 @@ systemctl enable docker.service NetworkManager.service avahi-daemon.service \
 # pas d'installation automatique par apt, les correctifs passent par la console
 # (updates.sh).
 systemctl mask apt-daily-upgrade.timer apt-daily-upgrade.service
+
+if [ "$update" = 1 ]; then
+	systemctl daemon-reload
+	systemctl restart avahi-daemon.service || true
+	systemctl restart pi-appliance-traefik.service pi-appliance.service
+	echo "pi-appliance mis à jour"
+	exit 0
+fi
 
 # Sur un Pi en marche (pas dans le chroot de pi-gen) : démarrer tout de suite.
 if [ -d /run/systemd/system ] && ! systemd-detect-virt --chroot >/dev/null 2>&1; then

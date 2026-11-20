@@ -28,8 +28,26 @@ import (
 
 // Release : une version publiée de pi-appliance.
 type Release struct {
-	Tag string `json:"tag_name"`
-	URL string `json:"html_url"`
+	Tag    string  `json:"tag_name"`
+	URL    string  `json:"html_url"`
+	Assets []Asset `json:"assets"`
+}
+
+// Asset : un fichier joint à une version publiée (image, archive de mise à jour…).
+type Asset struct {
+	Name string `json:"name"`
+	URL  string `json:"browser_download_url"`
+	Size int64  `json:"size"`
+}
+
+// Asset rend le fichier joint de ce nom.
+func (r Release) Asset(name string) (Asset, bool) {
+	for _, asset := range r.Assets {
+		if asset.Name == name {
+			return asset, true
+		}
+	}
+	return Asset{}, false
 }
 
 // Releases donne la dernière version publiée ; nil sans erreur quand aucune

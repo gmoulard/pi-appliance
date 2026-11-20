@@ -28,10 +28,26 @@ import (
 //	GET  prefix          état des mises à jour (Status)
 //	POST prefix/check    nouvelle recherche, sans l'attendre
 //	POST prefix/system   installation des correctifs du système
+//	POST prefix/appliance installation de la dernière version de pi-appliance
 func (c *Checker) Routes(mux *http.ServeMux, prefix string, wrap func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET "+prefix, wrap(c.serveStatus))
 	mux.HandleFunc("POST "+prefix+"/check", wrap(c.serveCheck))
 	mux.HandleFunc("POST "+prefix+"/system", wrap(c.serveApply))
+	mux.HandleFunc("POST "+prefix+"/appliance", wrap(c.serveInstall))
+}
+
+func (c *Checker) serveInstall(w http.ResponseWriter, r *http.Request) {
+	version, err := c.InstallAppliance(r.Context())
+	var failure Failure
+	switch {
+	case err == nil:
+		writeJSON(w, http.StatusAccepted, map[string]string{"version": version})
+	case errors.As(err, &failure):
+		writeJSON(w, http.StatusConflict, map[string]string{"error": failure.Message, "code": failure.Code})
+	default:
+		c.logf("nouvelle version de pi-appliance : %v", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "L'installation de la nouvelle version n'a pas pu démarrer."})
+	}
 }
 
 func (c *Checker) serveStatus(w http.ResponseWriter, r *http.Request) {

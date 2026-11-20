@@ -39,11 +39,16 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+      # Sur une étiquette, la console porte exactement son numéro (v1.2.3) :
+      # elle le compare à la dernière version publiée et l'annonce après une
+      # mise à jour (updates.sh appliance).
       - name: Console arm64
         run: |
           set -eu
           go test ./...
-          GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=${GITHUB_REF_NAME}-${GITHUB_SHA::7}" -o pi-appliance-arm64 ./cmd/pi-appliance
+          if [ "${GITHUB_REF_TYPE}" = tag ]; then version=${GITHUB_REF_NAME}; else version=$(date +%Y-%m-%d)-${GITHUB_SHA::7}; fi
+          echo "VERSION=$version" >>"$GITHUB_ENV"
+          GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=$version" -o pi-appliance-arm64 ./cmd/pi-appliance
       - name: Place sur le disque
         run: |
           set -eu
@@ -52,8 +57,9 @@ jobs:
       - name: Image (pi-gen)
         run: |
           set -eu
-          if [ "${GITHUB_REF_TYPE}" = tag ]; then version=${GITHUB_REF_NAME}; else version=$(date +%Y-%m-%d)-${GITHUB_SHA::7}; fi
-          IMG_VERSION=$version image/build.sh pi-appliance-arm64 deploy
+          IMG_VERSION=$VERSION image/build.sh pi-appliance-arm64 deploy
+      - name: Archive de mise à jour
+        run: sh image/update-archive.sh pi-appliance-arm64 "$VERSION" deploy
       - uses: actions/upload-artifact@v4
         with:
           name: pi-appliance-image
@@ -67,6 +73,8 @@ jobs:
         run: |
           set -eu
           gh release create "${GITHUB_REF_NAME}" deploy/*.img.xz deploy/*.img.xz.sha256 \
+            deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
             --title "pi-appliance ${GITHUB_REF_NAME}" \
             --notes "Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).
-          Vérifier le fichier avec sa somme de contrôle : sha256sum -c *.sha256"
+          Vérifier le fichier avec sa somme de contrôle : sha256sum -c *.sha256
+          Les Pi déjà installés proposent cette version dans la console (Mon Pi, Mises à jour) : archive pi-appliance-${GITHUB_REF_NAME}-arm64.tar.gz."

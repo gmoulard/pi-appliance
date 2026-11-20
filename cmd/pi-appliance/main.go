@@ -19,6 +19,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -65,7 +66,12 @@ func main() {
 	updatesScript := flag.String("updates-script", updates.DefaultScript, "script des correctifs du système (vide : système non mis à jour depuis la console)")
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
+	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
 	flag.Parse()
+	if *showVersion {
+		fmt.Println(version)
+		return
+	}
 	builtin, err := marketplace.Builtin()
 	if err != nil {
 		log.Fatal(err)
@@ -117,7 +123,7 @@ func main() {
 		backups.Disks = &backup.Disks{Runner: network.Script(*backupScript)}
 	}
 	// Mises à jour proposées, jamais installées d'office (spécification 9.2).
-	checker := &updates.Checker{Version: version, Logf: log.Printf}
+	checker := &updates.Checker{Version: version, DownloadDir: filepath.Join(*data, "system", "upgrade"), Logf: log.Printf}
 	if *updatesScript != "" {
 		checker.Runner = network.Script(*updatesScript)
 	}

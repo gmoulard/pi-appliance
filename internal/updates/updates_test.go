@@ -248,8 +248,11 @@ func TestRoutes(t *testing.T) {
 	if response := serve("POST", "/api/updates/check"); response.Code != http.StatusAccepted {
 		t.Fatalf("POST check : %d %s", response.Code, response.Body)
 	}
-	if guarded != 3 {
-		t.Fatalf("routes protégées : %d sur 3", guarded)
+	if response := serve("POST", "/api/updates/appliance"); response.Code != http.StatusConflict {
+		t.Fatalf("POST appliance sans nouvelle version : %d %s", response.Code, response.Body)
+	}
+	if guarded != 4 {
+		t.Fatalf("routes protégées : %d sur 4", guarded)
 	}
 }
 

@@ -1262,18 +1262,28 @@ async function loadBackups() {
 
 // Mises à jour (spécification 9.2) : la console les signale, l'administrateur
 // décide. Les correctifs de sécurité du système passent en premier, en rouge ;
-// une nouvelle version de pi-appliance est seulement signalée.
+// une nouvelle version de pi-appliance s'installe à la demande, avec retour
+// automatique à l'ancienne si elle ne démarre pas.
 const updatesBox = document.getElementById("updatesBox");
 const updatesState = document.getElementById("updatesState");
 const updatesDetails = document.getElementById("updatesDetails");
 const updatesApply = document.getElementById("updatesApply");
 const updatesCheck = document.getElementById("updatesCheck");
+const updatesAppliance = document.getElementById("updatesAppliance");
+let applianceTimer = null;
 let updatesStatus = null;
 let updatesTimer = null;
 let serviceUpdates = 0;
 
 function applyBusy(system) {
   return Boolean(system && system.apply && ["starting", "running"].includes(system.apply.state));
+}
+
+// upgradeBusy : une version de pi-appliance se télécharge ou s'installe.
+function upgradeBusy(status) {
+  const download = status && status.appliance.download;
+  const upgrade = status && status.system && status.system.upgrade;
+  return Boolean((download && download.state === "downloading") || (upgrade && ["starting", "running"].includes(upgrade.state)));
 }
 
 function showUpdates() {
@@ -1283,12 +1293,20 @@ function showUpdates() {
   }
   const system = status.system;
   const busy = applyBusy(system);
+  const download = status.appliance.download;
+  const upgrade = system && system.upgrade;
+  const upgrading = upgradeBusy(status);
   const security = system ? system.security : 0;
   const others = system ? system.packages.length - security : 0;
   const lines = [];
   let color = "green";
   let state;
-  if (busy) {
+  if (upgrading) {
+    state = download && download.state === "downloading"
+      ? t("Téléchargement de pi-appliance {0}…", download.version)
+      : t("Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.", upgrade.version);
+    color = "orange";
+  } else if (busy) {
     state = system.apply.state === "running"
       ? t("Installation des mises à jour du système : {0} %. Vos services peuvent s'arrêter quelques instants.", system.apply.percent)
       : t("Préparation de l'installation des mises à jour du système…");
@@ -1307,7 +1325,7 @@ function showUpdates() {
   } else if (!busy && others > 0) {
     lines.push(element("p", t("Système : {0}.", plural(others, t("mise à jour"), t("mises à jour")))));
   }
-  if (status.appliance.available) {
+  if (status.appliance.available && !upgrading) {
     const line = element("p", t("Une nouvelle version de pi-appliance est sortie : {0}. Elle ne s'installe pas toute seule.", status.appliance.latest));
     if (status.appliance.url) {
       const link = element("a", t("Voir les nouveautés"));
@@ -1317,6 +1335,17 @@ function showUpdates() {
       line.append(" ", link);
     }
     lines.push(line);
+  }
+  if (!upgrading && download && download.state === "failed") {
+    lines.push(element("p", download.message, "warning"));
+  }
+  if (!upgrading && upgrade && upgrade.state === "failed" && upgrade.version !== status.appliance.current) {
+    lines.push(element("p", upgrade.rolled_back
+      ? t("L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.", upgrade.version)
+      : t("L'installation de pi-appliance {0} a échoué. Rien n'a été changé ; réessayez plus tard.", upgrade.version), "warning"));
+  }
+  if (upgrade && upgrade.state === "done" && upgrade.version === status.appliance.current && Date.now() - Date.parse(upgrade.at) < 86400000) {
+    lines.push(element("p", t("pi-appliance {0} est installé.", upgrade.version)));
   }
   if (serviceUpdates > 0) {
     lines.push(element("p", t("{0} : utilisez « Mettre à jour » sur le service, plus bas.",
@@ -1342,9 +1371,12 @@ function showUpdates() {
   updatesState.replaceChildren(element("span", undefined, `dot ${color}`), element("span", state));
   updatesDetails.replaceChildren(...lines);
   updatesBox.classList.toggle("alert", security > 0 && !busy);
-  updatesApply.hidden = !system || busy || system.packages.length === 0;
+  updatesApply.hidden = !system || busy || upgrading || system.packages.length === 0;
   updatesApply.disabled = false;
-  updatesCheck.disabled = busy || status.checking;
+  updatesAppliance.hidden = !status.appliance.installable || busy;
+  updatesAppliance.textContent = t("Installer pi-appliance {0}", status.appliance.latest || "");
+  updatesAppliance.disabled = false;
+  updatesCheck.disabled = busy || upgrading || status.checking;
 }
 
 // loadUpdates rend vrai quand plus rien n'est en cours (installation, recherche).
@@ -1361,8 +1393,68 @@ async function loadUpdates() {
   if (busy) {
     watchUpdates();
   }
+  if (upgradeBusy(updatesStatus)) {
+    watchAppliance(updatesStatus.appliance.download ? updatesStatus.appliance.download.version : updatesStatus.system.upgrade.version);
+  }
   return !busy;
 }
+
+// watchAppliance suit l'installation d'une version de pi-appliance : la
+// console redémarre (les appels échouent un moment), puis répond avec la
+// nouvelle version et la page se recharge ; si l'installation échoue,
+// l'écran le dit (ancienne version remise).
+function watchAppliance(version) {
+  if (applianceTimer) {
+    return;
+  }
+  const started = Date.now();
+  applianceTimer = setInterval(async () => {
+    const health = await api("health").catch(() => null);
+    if (health && health.version === version) {
+      clearInterval(applianceTimer);
+      applianceTimer = null;
+      showMessage([t("pi-appliance {0} est installé. La page se recharge…", version)], "success");
+      setTimeout(() => window.location.reload(), 2000);
+      return;
+    }
+    if (!health) {
+      showMessage([t("La console redémarre avec la nouvelle version… Cette page se rechargera toute seule.")], "info");
+      return;
+    }
+    const status = await api("updates").catch(() => null);
+    if (status) {
+      updatesStatus = status;
+      showUpdates();
+    }
+    if ((status && !upgradeBusy(status)) || Date.now() - started > 15 * 60000) {
+      clearInterval(applianceTimer);
+      applianceTimer = null;
+      if (status && status.system && status.system.upgrade && status.system.upgrade.state === "failed") {
+        showMessage([status.system.upgrade.rolled_back
+          ? t("L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.", version)
+          : t("L'installation de pi-appliance {0} a échoué. Rien n'a été changé ; réessayez plus tard.", version)], "error");
+      } else if (status && status.appliance.download && status.appliance.download.state === "failed") {
+        showMessage([status.appliance.download.message], "error");
+      }
+    }
+  }, 5000);
+}
+
+updatesAppliance.addEventListener("click", async () => {
+  const version = updatesStatus && updatesStatus.appliance.latest;
+  if (!version || !window.confirm(t("Installer pi-appliance {0} maintenant ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.", version))) {
+    return;
+  }
+  updatesAppliance.disabled = true;
+  try {
+    await api("updates/appliance", { method: "POST" });
+    showMessage([t("Téléchargement de pi-appliance {0}…", version)], "info");
+    watchAppliance(version);
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+  await loadUpdates();
+});
 
 function watchUpdates() {
   if (updatesTimer) {
