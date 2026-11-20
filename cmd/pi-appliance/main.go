@@ -29,12 +29,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gmoulard/pi-appliance/internal/addresses"
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/console"
-	"github.com/gmoulard/pi-appliance/internal/addresses"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
