@@ -5,3 +5,6 @@
 # Construction de l'image (image/build.sh)
 image/work/
 image/deploy/
+
+# Dossiers de travail des agents (git worktree)
+.claude/worktrees/
