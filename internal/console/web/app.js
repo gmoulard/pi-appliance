@@ -240,6 +240,7 @@ async function loadResources() {
   piSection.hidden = list.length + tiles.length === 0 || wizardStep !== null;
   if (!piSection.hidden) {
     await loadStorage();
+    await loadBackups();
     await loadHistory();
   }
 }
@@ -949,6 +950,176 @@ async function loadStorage() {
     return item;
   }));
   return false;
+}
+
+// Sauvegardes (spécification 9.1) : chaque nuit sur un disque USB autre que
+// celui des données ; restauration d'un service à une date choisie.
+const backupBox = document.getElementById("backupBox");
+const backupState = document.getElementById("backupState");
+const backupLast = document.getElementById("backupLast");
+const backupDisks = document.getElementById("backupDisks");
+const backupActions = document.getElementById("backupActions");
+const backupNow = document.getElementById("backupNow");
+const backupHour = document.getElementById("backupHour");
+const backupList = document.getElementById("backupList");
+let backupTimer = null;
+let backupSettings = null;
+
+backupHour.replaceChildren(...Array.from({ length: 24 }, (_, hour) => {
+  const option = element("option", t("{0} h", hour));
+  option.value = String(hour);
+  return option;
+}));
+
+function watchBackups() {
+  if (backupTimer) return;
+  backupTimer = setInterval(async () => {
+    const running = await loadBackups().catch(() => false);
+    if (!running) {
+      clearInterval(backupTimer);
+      backupTimer = null;
+    }
+  }, 5000);
+}
+
+async function backupRequest(path, body) {
+  return api(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body || {}),
+  });
+}
+
+async function useBackupDisk(disk) {
+  try {
+    if (disk.fstype === "ext4" && disk.partition) {
+      if (!window.confirm(t("Utiliser {0} pour les sauvegardes ? Il devra rester branché.", diskName(disk)))) return;
+      await backupRequest("backups/disk/use", { partition: disk.partition });
+    } else {
+      if (!window.confirm(t("Tout le contenu de {0} va être effacé, pour le préparer à recevoir les sauvegardes. Continuer ?", diskName(disk)))) return;
+      if (!window.confirm(t("Dernière vérification : les fichiers qui sont sur {0} seront perdus définitivement. Effacer le disque ?", diskName(disk)))) return;
+      showMessage([t("Préparation du disque USB…")], "info");
+      await backupRequest("backups/disk/format", { disk: disk.device, erase: true });
+    }
+    showMessage([t("Le disque de sauvegarde est prêt.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+  await loadBackups().catch(() => null);
+}
+
+async function restoreService(snapshot, service) {
+  const when = new Date(snapshot.created).toLocaleString(LOCALE);
+  if (!window.confirm(t("Remettre {0} tel qu'il était le {1} ?\n\nSes données actuelles seront remplacées. Une copie en est faite avant, pour pouvoir revenir en arrière.", service.name, when))) {
+    return;
+  }
+  let body = { service: service.name };
+  for (;;) {
+    try {
+      await backupRequest(`backups/${encodeURIComponent(snapshot.id)}/restore`, body);
+      showMessage([t("Restauration de {0}… Le service est arrêté le temps de la copie.", service.name)], "info");
+      break;
+    } catch (error) {
+      if (error.status !== 403 || error.body.code !== "password") {
+        showMessage([error.message], "error");
+        break;
+      }
+      const password = window.prompt(t("Cette sauvegarde a été faite sur une autre carte SD. Saisissez le mot de passe administrateur en vigueur à sa date :"));
+      if (!password) break;
+      body = { service: service.name, password };
+    }
+  }
+  await loadBackups().catch(() => null);
+}
+
+backupNow.addEventListener("click", async () => {
+  try {
+    await backupRequest("backups");
+    showMessage([t("Sauvegarde en cours… Chaque service est arrêté le temps de copier ses données.")], "info");
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+  await loadBackups().catch(() => null);
+});
+
+backupHour.addEventListener("change", async () => {
+  try {
+    backupSettings = await api("backups/settings", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...backupSettings, hour: Number(backupHour.value) }),
+    });
+    showMessage([t("Heure de la sauvegarde enregistrée.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+});
+
+const BACKUP_KINDS = { nightly: t("de la nuit"), manual: t("à la demande"), "before-restore": t("avant restauration") };
+
+// loadBackups rend vrai tant qu'une opération est en cours.
+async function loadBackups() {
+  let status;
+  try {
+    status = await api("backups");
+  } catch {
+    backupBox.hidden = true;
+    return false;
+  }
+  backupBox.hidden = false;
+  backupSettings = status.settings;
+  backupHour.value = String(status.settings.hour);
+  backupDisks.replaceChildren();
+  backupLast.hidden = !status.last;
+  if (status.last) {
+    const when = new Date(status.last.at).toLocaleString(LOCALE);
+    backupLast.textContent = t("Dernière opération, le {0} : {1}", when, status.last.message);
+  }
+  const running = status.running !== "";
+  backupNow.disabled = running || !status.destination || !status.ready;
+  if (running) {
+    backupState.textContent = status.running === "restore" ? t("Restauration en cours…") : t("Sauvegarde en cours…");
+    watchBackups();
+  } else if (!status.ready) {
+    backupState.textContent = t("Les sauvegardes attendent votre mot de passe : déconnectez-vous puis reconnectez-vous.");
+  } else if (!status.destination) {
+    const disks = status.disk ? status.disk.disks : [];
+    backupState.textContent = disks.length
+      ? t("Choisissez le disque USB qui recevra les sauvegardes (pas celui des données) :")
+      : t("Branchez un disque USB pour sauvegarder vos services et vos réglages chaque nuit. Ce doit être un autre disque que celui des données.");
+    backupDisks.replaceChildren(...disks.map((disk) => {
+      const item = element("li");
+      const button = element("button");
+      button.type = "button";
+      const ready = disk.fstype === "ext4" && disk.partition;
+      const detail = ready ? t("prêt") : disk.fstype ? t("à effacer avant usage") : t("vide, à préparer");
+      button.append(element("span", diskName(disk)), element("span", detail, "meta"));
+      button.addEventListener("click", () => useBackupDisk(disk));
+      item.append(button);
+      return item;
+    }));
+  } else {
+    const s = status.settings;
+    backupState.textContent = s.enabled
+      ? t("Une sauvegarde chaque nuit, chiffrée. On garde les {0} dernières quotidiennes, {1} hebdomadaires et {2} mensuelles.", s.daily, s.weekly, s.monthly)
+      : t("La sauvegarde de la nuit est désactivée.");
+  }
+  backupActions.hidden = !status.destination;
+  backupList.replaceChildren(...status.snapshots.map((snapshot) => {
+    const item = element("li");
+    const when = new Date(snapshot.created).toLocaleString(LOCALE);
+    item.append(element("span", `${when} (${BACKUP_KINDS[snapshot.kind] || snapshot.kind}, ${sizeText(snapshot.size_mb)})`));
+    for (const service of snapshot.services) {
+      if (service.error) continue;
+      const button = element("button", t("Restaurer {0}", service.name), "secondary");
+      button.type = "button";
+      button.disabled = running;
+      button.addEventListener("click", () => restoreService(snapshot, service));
+      item.append(button);
+    }
+    return item;
+  }));
+  return running;
 }
 
 // Réseau de la maison (spécification, section 4) : choix du Wi-Fi ou du câble,
@@ -1736,6 +1907,8 @@ function showAuth(mode) {
   clearInterval(wizardTimer);
   clearInterval(dashboardTimer);
   clearInterval(storageTimer);
+  clearInterval(backupTimer);
+  backupTimer = null;
 }
 
 authForm.addEventListener("submit", async (event) => {

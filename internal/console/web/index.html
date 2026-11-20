@@ -117,6 +117,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p id="storageState"></p>
 <ul id="storageDisks" class="wifi-list"></ul>
 </div>
+<div id="backupBox" class="card" hidden>
+<h3>Sauvegardes</h3>
+<p id="backupState"></p>
+<p id="backupLast" class="state" hidden></p>
+<ul id="backupDisks" class="wifi-list"></ul>
+<div id="backupActions" class="backup-actions" hidden>
+<button type="button" id="backupNow">Sauvegarder maintenant</button>
+<label>Heure de la sauvegarde de la nuit <select id="backupHour"></select></label>
+</div>
+<ul id="backupList" class="backup-list"></ul>
+</div>
 <div id="piHistory" class="card" hidden>
 <div class="history-head">
 <h3>Les derniers jours</h3>

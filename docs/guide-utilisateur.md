@@ -10,6 +10,7 @@
 - Une marketplace avec les applications installables du catalogue.
 - L'installation de plusieurs instances, les commandes de démarrage et d'arrêt, la mise à jour des applications avec retour arrière, et le choix de conserver ou supprimer leurs données à la désinstallation.
 - La gestion d'un disque USB pour les données des services.
+- Les sauvegardes chiffrées sur un second disque USB, chaque nuit et à la demande, et la restauration d'un service à une date choisie (écran « Sauvegardes » dans « Mon Pi »), pas encore essayées sur un vrai Pi.
 
 Ces fonctions sont présentes dans le code, mais restent à valider sur du matériel réel. La liste des essais restants est dans la page [Avancement](TODO.html).
 
@@ -17,7 +18,7 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 
 - Une version stable de l'image, testée sur un vrai Raspberry Pi.
 - L'accès aux services depuis internet et la réservation d'une adresse `*.pi-appliance.com`.
-- Les sauvegardes, le VPN et les mises à jour de l'appliance depuis la console.
+- Les sauvegardes en ligne ou sur un autre pi-appliance, la restauration de l'appliance entière ou d'un seul fichier, le VPN et les mises à jour de l'appliance depuis la console.
 
 ## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
 

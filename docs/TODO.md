@@ -160,13 +160,18 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 
 - [ ] **TODO-4.1**: Fournisseur d'identité intégré à la console : OpenID Connect, *forward auth* Traefik, double authentification, invitations par e-mail ; rôles et invités (8.1, 8.3). Première étape faite (8.1, `internal/auth`) : comptes utilisateur et invité (date de fin), invitations par lien à transmettre soi-même (interface `auth.Mailer` prête), double authentification TOTP facultative ou exigée par l'administrateur, codes de secours, *forward auth* (`/pi-appliance/api/auth/forward`, middleware Traefik `pi-appliance-auth@file`). Reste : OpenID Connect (fournisseur pour les services, avec une bibliothèque éprouvée), services autorisés par compte, envoi des invitations par e-mail (attend TODO-3.6), relecture de sécurité (11). Le branchement du middleware sur les services « connectés » est TODO-3.10.
 - [ ] **TODO-4.2**: Alertes par e-mail, désactivables par type (8.6).
-- [ ] **TODO-4.3**: Sauvegardes : chaque nuit, rotation 7/4/6, disque USB, cloud, autre pi-appliance (jumelage par code), chiffrement, restauration de l'appliance, d'un service ou d'un fichier (9.1).
+- [x] **TODO-4.3**: Sauvegardes, première étape (9.1, `internal/backup`, `backup-disk.sh`) : configuration et volumes des services (service arrêté le temps de la copie), chaque nuit et à la demande, rotation 7/4/6, disque USB autre que celui des données (formatage ext4 avec accord), chiffrement AES-256-GCM avec une clé protégée par le mot de passe administrateur, restauration d'un service à une date choisie (copie de l'état actuel avant), API et écran « Sauvegardes » ; à vérifier sur un vrai Pi. La suite : TODO-4.10 à 4.14.
 - [ ] **TODO-4.4**: Services du projet : relais SMTP OVH (SPF, DKIM, DMARC), sauvegarde hors de la maison, Pi de secours (10.2).
 - [ ] **TODO-4.5**: Mises à jour proposées dans la console (9.2).
 - [ ] **TODO-4.6**: VPN WireGuard avec QR code (6.3).
 - [ ] **TODO-4.7**: Statistiques anonymes et leur service de réception (8.4, 10.2).
 - [ ] **TODO-4.8**: Puis : Samba, lecteur réseau à la maison (dossiers commun et personnels), avec un format de manifeste pour un service qui n'est pas un site web, l'annuaire LDAP de la console et le stockage externe de Nextcloud (6.3).
 - [ ] **TODO-4.9**: Puis : applications caméra (Motion, timelapse).
+- [ ] **TODO-4.10**: Sauvegardes vers un stockage en ligne S3 ou OVH Swift (9.1) : mêmes archives chiffrées (`internal/backup`), une destination de plus à côté du disque USB ; chiffrer aussi `manifest.json` (noms des services) avant qu'il quitte la maison, en gardant l'enveloppe de la clé lisible.
+- [ ] **TODO-4.11**: Sauvegarde croisée avec un autre pi-appliance (9.1) : jumelage par code, espace réservé fixé par chaque administrateur, archives déjà chiffrées.
+- [ ] **TODO-4.12**: Restauration de l'appliance entière sur une nouvelle carte SD depuis l'assistant de premier démarrage (9.1) : choisir le disque, saisir le mot de passe en vigueur à la date de la sauvegarde, remettre `config.enc` puis chaque service.
+- [ ] **TODO-4.13**: Restauration d'un fichier en parcourant une sauvegarde (9.1) ; les archives se lisent déjà entrée par entrée (`readArchive`).
+- [ ] **TODO-4.14**: Écran des sauvegardes complet : nombres de sauvegardes gardées et arrêt de la sauvegarde de la nuit (déjà dans l'API `PUT /api/backups/settings`), changement du mot de passe administrateur dans la console avec rappel que les sauvegardes déjà faites gardent l'ancien (9.1, à faire avec TODO-4.1) ; un changement de mot de passe doit appeler `backup.Manager.Protect`.
 
 ## 5. Site www.pi-appliance.com (13)
 

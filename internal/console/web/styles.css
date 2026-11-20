@@ -433,6 +433,41 @@ a {
   flex: none;
 }
 
+/* Sauvegardes : bouton et heure de la nuit, puis une ligne par sauvegarde. */
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.backup-actions label {
+  flex: 1 1 12rem;
+}
+
+.backup-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.backup-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.5rem;
+  font-size: 0.9375rem;
+}
+
+.backup-list li > span {
+  flex: 1 1 100%;
+}
+
 select {
   box-sizing: border-box;
   width: 100%;

@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
@@ -142,6 +143,8 @@ type Config struct {
 	History *metrics.History
 	// DuckDNS tient à jour l'adresse sur internet (spécification 7.1) ; nil : non réglable ici.
 	DuckDNS *ddns.Updater
+	// Backups : sauvegardes (spécification 9.1) ; nil : pas de sauvegardes ici.
+	Backups *backup.Manager
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
 	WizardFile    string
 	ACMEEmailFile string
@@ -192,6 +195,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
 	c.accountRoutes(mux)
+	if c.Backups != nil {
+		c.Backups.Routes(mux, BasePath, c.adminOnly)
+	}
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
@@ -267,6 +273,7 @@ func (c *console) setup(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "Le compte est créé, mais l'adresse de contact ACME n'a pas pu être enregistrée. Corrigez le problème puis reconnectez-vous.")
 		return
 	}
+	c.protectBackups(request.Password, false)
 	openSession(w, r, c.Accounts.StartSession(account.Name))
 	writeJSON(w, http.StatusCreated, account.Public())
 }
@@ -281,6 +288,7 @@ func (c *console) reset(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	c.protectBackups(request.Password, false)
 	openSession(w, r, c.Accounts.StartSession(account.Name))
 	writeJSON(w, http.StatusOK, account.Public())
 }
@@ -301,9 +309,26 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusInternalServerError, "L'adresse de contact ACME n'a pas pu être enregistrée.")
 			return
 		}
+		c.protectBackups(request.Password, true)
 	}
 	openSession(w, r, token)
 	writeJSON(w, http.StatusOK, account.Public())
+}
+
+// protectBackups (re)chiffre la clé des sauvegardes par le mot de passe
+// administrateur (spécification 9.1) : à la création du compte et à la
+// réinitialisation ; à la connexion, seulement si ce n'est pas encore fait.
+func (c *console) protectBackups(password string, ifMissing bool) {
+	if c.Backups == nil {
+		return
+	}
+	protect := c.Backups.Protect
+	if ifMissing {
+		protect = c.Backups.ProtectIfMissing
+	}
+	if err := protect(password); err != nil {
+		log.Printf("clé des sauvegardes : %v", err)
+	}
 }
 
 func (c *console) saveACMEEmail(email string) error {

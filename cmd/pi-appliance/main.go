@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/console"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
@@ -56,6 +57,7 @@ func main() {
 	resetFile := flag.String("reset-file", "/boot/firmware/reset", "fichier déposé sur la carte SD pour réinitialiser le mot de passe administrateur (vide : désactivé)")
 	networkScript := flag.String("network-script", network.DefaultScript, "script du réseau du Pi (vide : réseau non réglable depuis la console)")
 	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")
+	backupScript := flag.String("backup-script", backup.DefaultScript, "script du disque USB des sauvegardes (vide : disque non réglable depuis la console)")
 	flag.Parse()
 	catalog, err := marketplace.Builtin()
 	if err != nil {
@@ -94,6 +96,12 @@ func main() {
 		log.Fatal(err)
 	}
 	duckdns.Logf = log.Printf
+	// Sauvegardes chaque nuit sur le disque USB de sauvegarde (spécification 9.1).
+	host := backup.Hostname()
+	backups := &backup.Manager{Dir: *data, Services: manager, Target: backup.DiskTarget(backup.DiskMount, host), Host: host, Logf: log.Printf}
+	if *backupScript != "" {
+		backups.Disks = &backup.Disks{Runner: network.Script(*backupScript)}
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	measured := make(chan struct{})
@@ -102,6 +110,7 @@ func main() {
 		close(measured)
 	}()
 	go duckdns.Run(ctx)
+	go backups.Run(ctx)
 	server := &http.Server{
 		Addr: *addr,
 		Handler: console.Handler(console.Config{
@@ -114,6 +123,7 @@ func main() {
 			Resources:     resources,
 			History:       history,
 			DuckDNS:       duckdns,
+			Backups:       backups,
 			WizardFile:    filepath.Join(*data, "wizard-done"),
 			ACMEEmailFile: filepath.Join(*data, "system", "traefik", "acme-email"),
 		}),
