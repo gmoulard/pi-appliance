@@ -97,6 +97,22 @@ func TestSetCountry(t *testing.T) {
 	}
 }
 
+func TestSetName(t *testing.T) {
+	fake := &Fake{Out: map[string]string{"name": `{"ok": true, "name": "controltower"}`}}
+	client := &Client{Runner: fake}
+	if _, err := client.SetName(context.Background(), "controltower"); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"", "Salon", "-a", "a-", "le salon", "a.b", "x;reboot", strings.Repeat("a", 33)} {
+		if _, err := client.SetName(context.Background(), name); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%q accepté", name)
+		}
+	}
+	if got := strings.Join(fake.Calls, ","); got != "name controltower" {
+		t.Fatalf("commandes %s", got)
+	}
+}
+
 func TestValidate(t *testing.T) {
 	for _, request := range []JoinRequest{
 		{},

@@ -40,12 +40,14 @@ if [ ! -s "$PI_STATE/device.key" ]; then
 	echo "clé du Pi créée : $PI_STATE/device.key"
 fi
 
+host=$(hostname 2>/dev/null || echo pi-appliance)
+# Certificat gardé tant qu'il n'expire pas et qu'il porte le nom du Pi (name.sh).
 if [ -s "$TLS/local.crt" ] && [ -s "$TLS/local.key" ] &&
-	openssl x509 -checkend "$RENEW" -noout -in "$TLS/local.crt" >/dev/null 2>&1; then
+	openssl x509 -checkend "$RENEW" -noout -in "$TLS/local.crt" >/dev/null 2>&1 &&
+	openssl x509 -noout -ext subjectAltName -in "$TLS/local.crt" 2>/dev/null | grep -q "DNS:$host\.local"; then
 	exit 0
 fi
 
-host=$(hostname 2>/dev/null || echo pi-appliance)
 names="DNS:pi-appliance.local,DNS:*.pi-appliance.local,DNS:pi-appliance,DNS:localhost"
 if [ "$host" != pi-appliance ]; then
 	names="$names,DNS:$host.local,DNS:*.$host.local,DNS:$host"

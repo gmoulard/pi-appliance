@@ -221,5 +221,10 @@ piTranslations("tr", {
   "Les réglages DuckDNS sont effacés.": "DuckDNS ayarları silindi.",
   "Marketplace": "Marketplace",
   "Langue": "Dil",
-  "Période des graphiques": "Grafiklerin dönemi"
+  "Période des graphiques": "Grafiklerin dönemi",
+  "Nom du Pi sur le réseau": "Pi'nin ağdaki adı",
+  "Changer le nom": "Adı değiştir",
+  "Il donne l'adresse de la console (nom.local) et le nom du Wi-Fi de configuration : lettres minuscules, chiffres et tirets.": "Konsolun adresini (ad.local) ve kurulum Wi-Fi'sinin adını belirler: küçük harfler, rakamlar ve kısa çizgiler.",
+  "Renommer le Pi en « {0} » ? La console s'ouvrira ensuite à l'adresse https://{0}.local/pi-appliance ; cette page sera coupée quelques secondes.": "Pi'nin adı “{0}” olarak değiştirilsin mi? Konsol daha sonra https://{0}.local/pi-appliance adresinde açılacak; bu sayfa birkaç saniye kesilecek.",
+  "Le Pi s'appelle maintenant « {0} ». Dans quelques secondes, ouvrez https://{0}.local/pi-appliance": "Pi'nin adı artık “{0}”. Birkaç saniye sonra https://{0}.local/pi-appliance adresini açın"
 });

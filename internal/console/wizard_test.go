@@ -85,6 +85,24 @@ func TestResources(t *testing.T) {
 	}
 }
 
+func TestSetName(t *testing.T) {
+	f, fake := newNetworkFixture(t)
+	cookie := f.admin(t)
+	if response := f.do(http.MethodPost, "/pi-appliance/api/network/name", "application/json", `{"name": "Salon"}`, cookie); response.Code != http.StatusBadRequest {
+		t.Fatalf("majuscules : code %d", response.Code)
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/network/name", "application/json", `{"name": "controltower"}`, nil); response.Code != http.StatusUnauthorized {
+		t.Fatalf("sans session : code %d", response.Code)
+	}
+	response := f.do(http.MethodPost, "/pi-appliance/api/network/name", "application/json", `{"name": "controltower"}`, cookie)
+	if response.Code != http.StatusOK {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+	if got := strings.Join(fake.calls, ","); got != "name" {
+		t.Fatalf("commandes %s", got)
+	}
+}
+
 func TestCountry(t *testing.T) {
 	f, fake := newNetworkFixture(t)
 	cookie := f.admin(t)

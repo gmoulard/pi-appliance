@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -155,6 +156,18 @@ func (c *Client) SetCountry(ctx context.Context, code string) (json.RawMessage, 
 		return nil, fmt.Errorf("%w : code de pays invalide", ErrInvalid)
 	}
 	return c.run(ctx, shortTimeout, nil, "country", code)
+}
+
+// namePattern : nom du Pi, nom d'hôte et nom du Wi-Fi de configuration (name.sh).
+var namePattern = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$`)
+
+// SetName change le nom du Pi : <nom>.local, nom du Wi-Fi de configuration et
+// certificat local ; Traefik redémarre quelques secondes après la réponse.
+func (c *Client) SetName(ctx context.Context, name string) (json.RawMessage, error) {
+	if !namePattern.MatchString(name) {
+		return nil, fmt.Errorf("%w : le nom du Pi s'écrit en lettres minuscules, chiffres et tirets, 32 caractères au plus, sans tiret au début ni à la fin", ErrInvalid)
+	}
+	return c.run(ctx, scanTimeout, nil, "name", name)
 }
 
 // Join lance la connexion en arrière-plan, après JoinDelay, et rend la main

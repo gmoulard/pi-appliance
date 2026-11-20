@@ -1004,11 +1004,24 @@ function minutesText(seconds) {
 function showApCountdown() {
   const seconds = Math.round((apClosesAt - Date.now()) / 1000);
   if (seconds > 0) {
-    networkAp.textContent = t("Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.", minutesText(seconds));
+    networkAp.textContent = named(t("Le Wi-Fi de configuration « pi-appliance » se fermera dans {0}. Après, redémarrez le Pi pour le rouvrir.", minutesText(seconds)));
   }
 }
 
+// Nom du Pi (name.sh) : il remplace « pi-appliance » dans les phrases qui
+// nomment le Wi-Fi de configuration ou l'adresse pi-appliance.local, quelle
+// que soit la langue ; le chemin /pi-appliance de la console ne change pas.
+let piName = "pi-appliance";
+
+function named(text) {
+  return text
+    .replace(/pi-appliance\.local/g, `${piName}.local`)
+    .replace(/(^|[^\/\w-])pi-appliance(?![\w./-])/g, (match, before) => `${before}${piName}`);
+}
+
 function showNetworkState(state) {
+  piName = state.name || (state.accessPoint && state.accessPoint.ssid) || piName;
+  nameForm.elements.name.value = piName;
   let line;
   if (state.accessPoint.open) {
     line = t("Le Pi n'est pas encore relié à votre réseau : choisissez le Wi-Fi de la maison, ou branchez un câble.");
@@ -1040,6 +1053,32 @@ function showNetworkState(state) {
   wifiCountry.value = state.country || "FR";
   wifiCountry.dataset.current = wifiCountry.value;
 }
+
+const nameForm = document.getElementById("nameForm");
+
+nameForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = nameForm.elements.name.value.trim();
+  if (name === piName || !window.confirm(t("Renommer le Pi en « {0} » ? La console s'ouvrira ensuite à l'adresse https://{0}.local/pi-appliance ; cette page sera coupée quelques secondes.", name))) {
+    return;
+  }
+  const button = nameForm.querySelector("button");
+  button.disabled = true;
+  try {
+    const result = await api("network/name", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    piName = result.name;
+    showMessage([t("Le Pi s'appelle maintenant « {0} ». Dans quelques secondes, ouvrez https://{0}.local/pi-appliance", result.name)], "success");
+  } catch (error) {
+    nameForm.elements.name.value = piName;
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
 
 wifiCountry.addEventListener("change", async () => {
   wifiCountry.disabled = true;
@@ -1109,7 +1148,7 @@ async function loadNetwork() {
 }
 
 wifiScanButton.addEventListener("click", async () => {
-  if (apClosesAt && !window.confirm(t("Pour chercher les Wi-Fi, le Wi-Fi « pi-appliance » se coupe quelques secondes. Votre téléphone s'y reconnectera tout seul. Continuer ?"))) {
+  if (apClosesAt && !window.confirm(named(t("Pour chercher les Wi-Fi, le Wi-Fi « pi-appliance » se coupe quelques secondes. Votre téléphone s'y reconnectera tout seul. Continuer ?")))) {
     return;
   }
   wifiScanButton.disabled = true;
@@ -1118,7 +1157,7 @@ wifiScanButton.addEventListener("click", async () => {
     showWifiList(await api("network/wifi/scan", { method: "POST" }));
     message.hidden = true;
   } catch (error) {
-    showMessage([error.message, t("Si la page ne répond plus, reconnectez-vous au Wi-Fi « pi-appliance ».")], "error");
+    showMessage([error.message, named(t("Si la page ne répond plus, reconnectez-vous au Wi-Fi « pi-appliance »."))], "error");
   } finally {
     wifiScanButton.disabled = false;
   }
@@ -1141,10 +1180,10 @@ wifiForm.addEventListener("submit", async (event) => {
     wifiForm.reset();
     wifiForm.hidden = true;
     showMessage(apClosesAt ? [
-      t("Le Pi se connecte au Wi-Fi « {0} ». Le Wi-Fi « pi-appliance » va se fermer.", ssid),
-      t("Reconnectez votre téléphone ou votre ordinateur au Wi-Fi « {0} », puis ouvrez https://pi-appliance.local/pi-appliance", ssid),
-      t("Si le Wi-Fi « pi-appliance » réapparaît dans une minute, la connexion a échoué : reconnectez-vous-y pour réessayer."),
-    ] : [t("Le Pi se connecte au Wi-Fi « {0} ». Si cette page ne répond plus, ouvrez https://pi-appliance.local/pi-appliance", ssid)], "info");
+      named(t("Le Pi se connecte au Wi-Fi « {0} ». Le Wi-Fi « pi-appliance » va se fermer.", ssid)),
+      named(t("Reconnectez votre téléphone ou votre ordinateur au Wi-Fi « {0} », puis ouvrez https://pi-appliance.local/pi-appliance", ssid)),
+      named(t("Si le Wi-Fi « pi-appliance » réapparaît dans une minute, la connexion a échoué : reconnectez-vous-y pour réessayer.")),
+    ] : [named(t("Le Pi se connecte au Wi-Fi « {0} ». Si cette page ne répond plus, ouvrez https://pi-appliance.local/pi-appliance", ssid))], "info");
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -1156,7 +1195,7 @@ wiredButton.addEventListener("click", async () => {
   wiredButton.disabled = true;
   try {
     await api("network/wired", { method: "POST" });
-    showMessage([t("C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau.")], "success");
+    showMessage([named(t("C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau."))], "success");
     const state = await loadNetwork();
     if (wizardStep === "network" && state && state.configured) {
       await wizardServices();
@@ -1331,7 +1370,7 @@ async function wizardServices() {
 }
 
 wizardSkip.addEventListener("click", async () => {
-  if (!window.confirm(t("Passer le choix du réseau ? Le Wi-Fi « pi-appliance » restera ouvert, au plus 24 heures, pour le faire plus tard."))) {
+  if (!window.confirm(named(t("Passer le choix du réseau ? Le Wi-Fi « pi-appliance » restera ouvert, au plus 24 heures, pour le faire plus tard.")))) {
     return;
   }
   await wizardServices();

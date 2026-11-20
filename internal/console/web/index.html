@@ -64,6 +64,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p id="networkState" class="state"></p>
 <p id="networkAp" class="meta" hidden></p>
 <label>Pays où se trouve le Pi<select id="wifiCountry"></select></label>
+<form id="nameForm" class="inline-form">
+<label>Nom du Pi sur le réseau<input name="name" maxlength="32" pattern="[a-z0-9]([a-z0-9\-]{0,30}[a-z0-9])?" required autocapitalize="none" autocomplete="off" spellcheck="false"></label>
+<p class="meta">Il donne l'adresse de la console (nom.local) et le nom du Wi-Fi de configuration : lettres minuscules, chiffres et tirets.</p>
+<button class="secondary">Changer le nom</button>
+</form>
 <div id="networkCert" class="note" hidden>
 <p><strong>Pourquoi le navigateur affiche une alerte ?</strong> Votre appliance protège la connexion avec son propre certificat, créé pour elle seule. Le navigateur ne le connaît pas encore, d'où l'alerte : vous pouvez continuer (« Paramètres avancés », puis « Continuer »). L'alerte disparaîtra quand l'appliance sera accessible sur internet avec un certificat reconnu.</p>
 </div>

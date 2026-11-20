@@ -221,5 +221,10 @@ piTranslations("ja", {
   "Les réglages DuckDNS sont effacés.": "DuckDNS の設定を消去しました。",
   "Marketplace": "Marketplace",
   "Langue": "言語",
-  "Période des graphiques": "グラフの期間"
+  "Période des graphiques": "グラフの期間",
+  "Nom du Pi sur le réseau": "ネットワーク上の Pi の名前",
+  "Changer le nom": "名前を変更",
+  "Il donne l'adresse de la console (nom.local) et le nom du Wi-Fi de configuration : lettres minuscules, chiffres et tirets.": "コンソールのアドレス（名前.local）と設定用 Wi-Fi の名前になります：小文字、数字、ハイフンが使えます。",
+  "Renommer le Pi en « {0} » ? La console s'ouvrira ensuite à l'adresse https://{0}.local/pi-appliance ; cette page sera coupée quelques secondes.": "Pi の名前を「{0}」に変更しますか？以後、コンソールは https://{0}.local/pi-appliance で開きます。このページは数秒間切断されます。",
+  "Le Pi s'appelle maintenant « {0} ». Dans quelques secondes, ouvrez https://{0}.local/pi-appliance": "Pi の名前は「{0}」になりました。数秒後に https://{0}.local/pi-appliance を開いてください"
 });

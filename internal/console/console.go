@@ -80,6 +80,11 @@ type CountryRequest struct {
 	Country string `json:"country"`
 }
 
+// NameRequest : nouveau nom du Pi sur le réseau (<nom>.local, Wi-Fi de configuration).
+type NameRequest struct {
+	Name string `json:"name"`
+}
+
 // AdvancedRequest : nouveaux réglages avancés d'un service (spécification 6.4) ;
 // ConfirmRisks confirme les options dangereuses signalées.
 type AdvancedRequest struct {
@@ -171,6 +176,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiJoin))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wired", c.adminOnly(c.wired))
 	mux.HandleFunc("POST "+BasePath+"/api/network/country", c.adminOnly(c.country))
+	mux.HandleFunc("POST "+BasePath+"/api/network/name", c.adminOnly(c.setName))
 	mux.HandleFunc("GET "+BasePath+"/api/system", c.adminOnly(c.resources))
 	mux.HandleFunc("GET "+BasePath+"/api/system/history", c.adminOnly(c.history))
 	mux.HandleFunc("GET "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsStatus))
@@ -747,6 +753,18 @@ func (c *console) country(w http.ResponseWriter, r *http.Request) {
 	}
 	c.networkCall(w, r, func(n *network.Client, ctx context.Context) (json.RawMessage, error) {
 		return n.SetCountry(ctx, request.Country)
+	})
+}
+
+// setName change le nom du Pi (spécification 4) : la console devient
+// https://<nom>.local/pi-appliance, et Traefik redémarre après la réponse.
+func (c *console) setName(w http.ResponseWriter, r *http.Request) {
+	var request NameRequest
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	c.networkCall(w, r, func(n *network.Client, ctx context.Context) (json.RawMessage, error) {
+		return n.SetName(ctx, request.Name)
 	})
 }
 

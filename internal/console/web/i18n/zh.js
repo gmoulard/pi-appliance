@@ -221,5 +221,10 @@ piTranslations("zh", {
   "Les réglages DuckDNS sont effacés.": "DuckDNS 设置已清除。",
   "Marketplace": "Marketplace",
   "Langue": "语言",
-  "Période des graphiques": "图表时间范围"
+  "Période des graphiques": "图表时间范围",
+  "Nom du Pi sur le réseau": "树莓派在网络上的名称",
+  "Changer le nom": "更改名称",
+  "Il donne l'adresse de la console (nom.local) et le nom du Wi-Fi de configuration : lettres minuscules, chiffres et tirets.": "它决定控制台的地址（名称.local）和配置 Wi-Fi 的名称：小写字母、数字和连字符。",
+  "Renommer le Pi en « {0} » ? La console s'ouvrira ensuite à l'adresse https://{0}.local/pi-appliance ; cette page sera coupée quelques secondes.": "将树莓派重命名为“{0}”？之后控制台将在 https://{0}.local/pi-appliance 打开；此页面会中断几秒钟。",
+  "Le Pi s'appelle maintenant « {0} ». Dans quelques secondes, ouvrez https://{0}.local/pi-appliance": "树莓派现在名为“{0}”。几秒钟后，请打开 https://{0}.local/pi-appliance"
 });

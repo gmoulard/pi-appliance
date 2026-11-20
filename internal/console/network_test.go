@@ -51,6 +51,8 @@ func (f *fakeNetwork) Run(_ context.Context, stdin []byte, args ...string) ([]by
 		return []byte(`{"ok": false, "error": "no-cable", "message": "Aucun câble réseau branché, ou la box ne répond pas."}`), errors.New("exit status 1")
 	case "country":
 		return []byte(`{"ok": true, "country": "` + args[1] + `"}`), nil
+	case "name":
+		return []byte(`{"ok": true, "name": "` + args[1] + `"}`), nil
 	case "wifi-join":
 		f.stdin = string(stdin)
 		close(f.joined)

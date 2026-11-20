@@ -24,6 +24,7 @@
 #   network.sh wifi-join    connexion ; entrée standard : {"ssid": "…", "password": "…", "hidden": false}
 #   network.sh wired        garder le câble comme réseau du Pi
 #   network.sh country FR   pays du Wi-Fi (code ISO 3166 à deux lettres)
+#   network.sh name salon   nom du Pi : <nom>.local et nom du Wi-Fi de configuration (name.sh)
 #
 # Le mot de passe du Wi-Fi n'apparaît jamais dans la ligne de commande d'un
 # programme (visible de tous dans /proc) : il passe par l'entrée standard.
@@ -75,13 +76,15 @@ status() {
 	choice=$(cat "$NETWORK_CHOICE" 2>/dev/null || true)
 	country=$(wifi_country)
 	error=$(cat "$ERROR_FILE" 2>/dev/null || true)
+	name=$("$PI_LIB/name.sh" get 2>/dev/null || hostname)
 	addresses | jq -R -s \
 		--argjson open "$([ "$state" = open ] && echo true || echo false)" \
 		--arg reason "$reason" --argjson closesIn "${closes_in:-0}" \
-		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" --arg country "$country" '
+		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" --arg country "$country" --arg name "$name" '
 		{
 			ok: true,
-			accessPoint: {open: $open, ssid: "pi-appliance", reason: $reason,
+			name: $name,
+			accessPoint: {open: $open, ssid: $name, reason: $reason,
 				closesInSeconds: (if $open then $closesIn else 0 end)},
 			configured: $choice,
 			wired: {connected: $wired},
@@ -209,6 +212,20 @@ set_country() {
 	jq -n --arg country "$code" '{ok: true, country: $country}'
 }
 
+# Nom du Pi (name.sh) : <nom>.local, nom du Wi-Fi de configuration, certificat local.
+set_name() {
+	if new=$("$PI_LIB/name.sh" set "${1:-}" 2>/dev/null); then
+		jq -n --arg name "$new" '{ok: true, name: $name}'
+		return 0
+	else
+		code=$?
+	fi
+	if [ "$code" = 2 ]; then
+		fail invalid-name "Ce nom ne convient pas : lettres minuscules, chiffres et tirets, 32 caractères au plus, sans tiret au début ni à la fin."
+	fi
+	fail failed "Le nom du Pi n'a pas pu être changé."
+}
+
 umask 077
 case "${1:-}" in
 status) status ;;
@@ -217,5 +234,6 @@ wifi-scan) with_wifi_lock wifi_rescan; wifi_list ;;
 wifi-join) with_wifi_lock wifi_join ;;
 wired) wired ;;
 country) set_country "${2:-}" ;;
-*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wired | country <code>" ;;
+name) set_name "${2:-}" ;;
+*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wired | country <code> | name <nom>" ;;
 esac

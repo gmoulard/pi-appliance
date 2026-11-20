@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -40,10 +41,18 @@ import (
 
 var version = "dev"
 
+// defaultDomain : <nom du Pi>.local (name.sh donne à chaque Pi son nom).
+func defaultDomain() string {
+	if host, err := os.Hostname(); err == nil && host != "" && host != "localhost" {
+		return strings.ToLower(host) + ".local"
+	}
+	return "pi-appliance.local"
+}
+
 func main() {
 	addr := flag.String("addr", ":8080", "adresse d'écoute de la console")
 	data := flag.String("data", "/var/lib/pi-appliance", "dossier des services installés")
-	domain := flag.String("domain", "pi-appliance.local", "adresse de l'appliance, suffixe de l'adresse de chaque service")
+	domain := flag.String("domain", defaultDomain(), "adresse de l'appliance, suffixe de l'adresse de chaque service")
 	resetFile := flag.String("reset-file", "/boot/firmware/reset", "fichier déposé sur la carte SD pour réinitialiser le mot de passe administrateur (vide : désactivé)")
 	networkScript := flag.String("network-script", network.DefaultScript, "script du réseau du Pi (vide : réseau non réglable depuis la console)")
 	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")

@@ -67,6 +67,8 @@ jobs:
         run: sudo sh system/tests/ap-firewall-test.sh
       - name: Disques USB
         run: sh system/tests/storage-test.sh
+      - name: Nom du Pi
+        run: sh system/tests/name-test.sh
       - name: pi-gen (préparation, sans construction)
         run: |
           set -eu
