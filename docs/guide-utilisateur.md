@@ -97,6 +97,7 @@ Pour construire l'image système, utiliser le workflow [Image](https://github.co
 ## Pour aller plus loin
 
 - [Installation du plan de contrôle](installation.html) : Docker, Traefik, console et services systemd sur un Raspberry Pi OS existant.
+- [Essais avec plusieurs Pi](essais-plusieurs-pi.html) : procédure technique pour essayer controlTower et d'autres Pi dans une maison, et des Pi dans d'autres maisons joints depuis internet.
 - [Marketplace](marketplace.html) : catalogue actuel, applications envisagées et guide de contribution.
 - [Spécification](specification.html) : fonctionnement visé par le projet.
 - [Avancement](TODO.html) : fonctions réalisées et essais restants.

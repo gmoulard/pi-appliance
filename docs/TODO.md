@@ -87,6 +87,9 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-2.48**: Valider la cohabitation de plusieurs Raspberry Pi pi-appliance et du service de contrôle controlTower dans la même maison : noms réseau uniques, accès à chaque console et service, absence de conflits réseau et procédure de configuration.
   - [x] Noms réseau uniques : `pi-appliance-XXXX` au premier démarrage (adresse matérielle), nom d'hôte, `<nom>.local` et Wi-Fi de configuration ; nom modifiable dans la console (`controltower` pour le Pi du concepteur) ; certificat refait (`name.sh`, `network.sh name`, `POST api/network/name`, `system/tests/name-test.sh`). À vérifier sur un vrai Pi, avec deux Pi allumés.
   - [x] Wi-Fi de configuration sans accès à internet ni à la maison (pare-feu `ap-firewall.nft`, `system/tests/ap-firewall-test.sh`) : cause probable de l'incident du 2026-11-19.
+  - [x] Procédure d'essai sur du vrai matériel, dans une maison (controlTower et autres Pi) et dans plusieurs (DuckDNS, accès direct, VPN) : [Essais avec plusieurs Pi](essais-plusieurs-pi.md). Essais à faire avec une image construite après `bed9884`.
+  - [ ] Les adresses des services (`<service>.<nom>.local`) ne sont pas annoncées par avahi : depuis un autre appareil de la maison, elles ne se trouvent pas sans ligne dans le fichier `hosts`.
+  - [ ] Après un changement de nom, la console n'est pas relancée : les nouveaux services gardent l'ancien `<nom>.local` jusqu'au redémarrage de la console (`-domain` lu au démarrage). À confirmer sur un vrai Pi.
   - [X] **TODO-2.8**: test PI4B OK
     - [ ] **TODO-2.9**: ajouté un bouton pour pouvoir voir le password du wiki
     - [ ] **TODO-2.10**: ne pas proposer l'intallation directe des service.
