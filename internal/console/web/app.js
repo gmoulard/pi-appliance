@@ -1811,6 +1811,7 @@ function showNetworkState(state) {
   }
   wifiCountry.value = state.country || "FR";
   wifiCountry.dataset.current = wifiCountry.value;
+  showCountrySuggestion(state);
 }
 
 const nameForm = document.getElementById("nameForm");
@@ -1839,15 +1840,47 @@ nameForm.addEventListener("submit", async (event) => {
   }
 });
 
-wifiCountry.addEventListener("change", async () => {
+// Pays déduit de la langue du navigateur : la région de la langue (« de-AT »),
+// sinon le pays principal de la langue ; proposé, jamais appliqué sans accord.
+const LANGUAGE_COUNTRIES = { fr: "FR", en: "GB", es: "ES", pt: "PT", it: "IT", de: "DE", nl: "NL", tr: "TR", zh: "CN", ja: "JP", ar: "SA", fa: "IR" };
+
+function browserCountry() {
+  for (const tag of navigator.languages || [navigator.language || ""]) {
+    const [language, ...rest] = tag.split("-");
+    const region = rest.find((part) => /^[A-Za-z]{2}$/.test(part));
+    const code = region ? region.toUpperCase() : LANGUAGE_COUNTRIES[language.toLowerCase()];
+    if (code && COUNTRIES[code]) {
+      return code;
+    }
+  }
+  return "";
+}
+
+const countrySuggestion = document.getElementById("countrySuggestion");
+
+function showCountrySuggestion(state) {
+  const code = browserCountry();
+  countrySuggestion.hidden = state.countryChosen !== false || !code || code === state.country;
+  if (countrySuggestion.hidden) {
+    return;
+  }
+  countrySuggestion.querySelector("span").textContent = t("Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.", COUNTRIES[state.country] || state.country, COUNTRIES[code]);
+  const button = countrySuggestion.querySelector("button");
+  button.textContent = t("Choisir « {0} »", COUNTRIES[code]);
+  button.onclick = () => chooseCountry(code);
+}
+
+async function chooseCountry(code) {
   wifiCountry.disabled = true;
   try {
     const result = await api("network/country", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ country: wifiCountry.value }),
+      body: JSON.stringify({ country: code }),
     });
+    wifiCountry.value = result.country;
     wifiCountry.dataset.current = result.country;
+    countrySuggestion.hidden = true;
     showMessage([t("Pays du Wi-Fi : {0}. Cherchez à nouveau les Wi-Fi si le vôtre n'apparaît pas.", COUNTRIES[result.country] || result.country)], "success");
   } catch (error) {
     wifiCountry.value = wifiCountry.dataset.current;
@@ -1855,7 +1888,9 @@ wifiCountry.addEventListener("change", async () => {
   } finally {
     wifiCountry.disabled = false;
   }
-});
+}
+
+wifiCountry.addEventListener("change", () => chooseCountry(wifiCountry.value));
 
 function chooseWifi(network, button) {
   for (const other of wifiList.querySelectorAll("button")) {

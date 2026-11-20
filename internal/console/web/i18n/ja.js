@@ -433,5 +433,7 @@ piTranslations("ja", {
   "Trop faible par moments": "ときどき不足",
   "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "Pi の起動後に電源が不足したことがあります。Pi の公式電源を使い、長いケーブルや細いケーブルは避けてください。",
   "Correcte": "正常",
-  "Aucune baisse de tension depuis le démarrage du Pi.": "Pi の起動後、電圧の低下はありません。"
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Pi の起動後、電圧の低下はありません。",
+  "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "Pi の国は「{0}」に設定されていますが、ブラウザーは「{1}」を示しています。Pi が置かれている国を選んでください。",
+  "Choisir « {0} »": "「{0}」を選ぶ"
 });

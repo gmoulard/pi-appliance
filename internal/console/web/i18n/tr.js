@@ -433,5 +433,7 @@ piTranslations("tr", {
   "Trop faible par moments": "Zaman zaman çok zayıf",
   "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "Pi başladığından beri güç kaynağı çok zayıf kaldı: Pi'nin resmî güç adaptörünü kullanın, uzun veya ince kablolardan kaçının.",
   "Correcte": "Normal",
-  "Aucune baisse de tension depuis le démarrage du Pi.": "Pi başladığından beri voltaj düşüşü yok."
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Pi başladığından beri voltaj düşüşü yok.",
+  "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "Pi “{0}” ülkesine ayarlı, ancak tarayıcınız “{1}” gösteriyor. Pi'nin bulunduğu ülkeyi seçin.",
+  "Choisir « {0} »": "“{0}” seç"
 });

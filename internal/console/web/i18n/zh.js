@@ -433,5 +433,7 @@ piTranslations("zh", {
   "Trop faible par moments": "有时太弱",
   "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "自树莓派启动以来，电源曾经太弱：请使用树莓派官方电源，并避免使用过长或过细的线缆。",
   "Correcte": "正常",
-  "Aucune baisse de tension depuis le démarrage du Pi.": "自树莓派启动以来没有电压下降。"
+  "Aucune baisse de tension depuis le démarrage du Pi.": "自树莓派启动以来没有电压下降。",
+  "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "树莓派设置的国家是“{0}”，但您的浏览器显示的是“{1}”。请选择树莓派所在的国家。",
+  "Choisir « {0} »": "选择“{0}”"
 });

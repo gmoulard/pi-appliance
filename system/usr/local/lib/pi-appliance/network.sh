@@ -80,7 +80,7 @@ status() {
 	addresses | jq -R -s \
 		--argjson open "$([ "$state" = open ] && echo true || echo false)" \
 		--arg reason "$reason" --argjson closesIn "${closes_in:-0}" \
-		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" --arg country "$country" --arg name "$name" '
+		--arg choice "$choice" --argjson wired "$wired" --arg ssid "$ssid" --arg error "$error" --arg country "$country" --argjson countryChosen "$([ -s "$COUNTRY_FILE" ] && echo true || echo false)" --arg name "$name" '
 		{
 			ok: true,
 			name: $name,
@@ -91,6 +91,7 @@ status() {
 			wifi: {connected: ($ssid != ""), ssid: $ssid},
 			addresses: (split("\n") | map(select(length > 0))),
 			country: $country,
+			countryChosen: $countryChosen,
 			lastError: $error
 		}'
 }

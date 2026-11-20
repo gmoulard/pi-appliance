@@ -433,5 +433,7 @@ piTranslations("es", {
   "Trop faible par moments": "A veces demasiado débil",
   "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "La alimentación ha sido demasiado débil desde que se encendió el Pi: use la fuente de alimentación oficial del Pi y evite los cables largos o finos.",
   "Correcte": "Correcta",
-  "Aucune baisse de tension depuis le démarrage du Pi.": "Ninguna caída de tensión desde que se encendió el Pi."
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Ninguna caída de tensión desde que se encendió el Pi.",
+  "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "El Pi está configurado para el país «{0}», pero su navegador indica «{1}». Elija el país donde se encuentra el Pi.",
+  "Choisir « {0} »": "Elegir «{0}»"
 });

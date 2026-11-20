@@ -433,5 +433,7 @@ piTranslations("nl", {
   "Trop faible par moments": "Soms te zwak",
   "L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.": "De voeding is sinds het opstarten van de Pi te zwak geweest: gebruik de officiële voeding van de Pi en vermijd lange of dunne kabels.",
   "Correcte": "In orde",
-  "Aucune baisse de tension depuis le démarrage du Pi.": "Geen spanningsdaling sinds het opstarten van de Pi."
+  "Aucune baisse de tension depuis le démarrage du Pi.": "Geen spanningsdaling sinds het opstarten van de Pi.",
+  "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "De Pi staat ingesteld op het land “{0}”, maar uw browser geeft “{1}” aan. Kies het land waar de Pi staat.",
+  "Choisir « {0} »": "“{0}” kiezen"
 });
