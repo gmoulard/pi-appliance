@@ -32,10 +32,11 @@ import (
 
 // fakeNetwork remplace network.sh.
 type fakeNetwork struct {
-	mu     sync.Mutex
-	calls  []string
-	stdin  string
-	joined chan struct{}
+	mu          sync.Mutex
+	calls       []string
+	stdin       string
+	joined      chan struct{}
+	rebootFails bool
 }
 
 func (f *fakeNetwork) Run(_ context.Context, stdin []byte, args ...string) ([]byte, error) {
@@ -53,6 +54,13 @@ func (f *fakeNetwork) Run(_ context.Context, stdin []byte, args ...string) ([]by
 		return []byte(`{"ok": true, "country": "` + args[1] + `"}`), nil
 	case "name":
 		return []byte(`{"ok": true, "name": "` + args[1] + `"}`), nil
+	case "test":
+		return []byte(`{"ok": true, "network": "wifi", "ssid": "maison", "name": "pi-appliance-1a2b", "addresses": ["192.168.1.20"], "checks": {"connected": true, "address": true, "box": true, "internet": false, "saved": true, "localName": true}, "passed": true}`), nil
+	case "reboot":
+		if f.rebootFails {
+			return []byte(`{"ok": false, "error": "failed", "message": "Le Pi n'a pas pu redémarrer. Débranchez-le puis rebranchez-le."}`), errors.New("exit status 1")
+		}
+		return []byte(`{"ok": true, "inSeconds": 5}`), nil
 	case "wifi-join":
 		f.stdin = string(stdin)
 		close(f.joined)
@@ -154,5 +162,42 @@ func TestNetworkUnavailable(t *testing.T) {
 	response := f.do(http.MethodGet, "/pi-appliance/api/network", "", "", f.admin(t))
 	if response.Code != http.StatusServiceUnavailable {
 		t.Fatalf("code %d", response.Code)
+	}
+}
+
+func TestNetworkTest(t *testing.T) {
+	f, fake := newNetworkFixture(t)
+	if response := f.do(http.MethodPost, "/pi-appliance/api/network/test", "", "", nil); response.Code != http.StatusUnauthorized {
+		t.Fatalf("sans session : code %d", response.Code)
+	}
+	response := f.do(http.MethodPost, "/pi-appliance/api/network/test", "", "", f.admin(t))
+	if body := response.Body.String(); response.Code != http.StatusOK || !strings.Contains(body, `"passed": true`) || !strings.Contains(body, `"192.168.1.20"`) {
+		t.Fatalf("code %d : %s", response.Code, body)
+	}
+	if got := strings.Join(fake.calls, ","); got != "test" {
+		t.Fatalf("commandes %s", got)
+	}
+}
+
+func TestReboot(t *testing.T) {
+	f, fake := newNetworkFixture(t)
+	if response := f.do(http.MethodPost, "/pi-appliance/api/system/reboot", "", "", nil); response.Code != http.StatusUnauthorized {
+		t.Fatalf("sans session : code %d", response.Code)
+	}
+	if len(fake.calls) != 0 {
+		t.Fatalf("redémarrage sans session : %v", fake.calls)
+	}
+	cookie := f.admin(t)
+	response := f.do(http.MethodPost, "/pi-appliance/api/system/reboot", "", "", cookie)
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"inSeconds": 5`) {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+	if got := strings.Join(fake.calls, ","); got != "reboot" {
+		t.Fatalf("commandes %s", got)
+	}
+	fake.rebootFails = true
+	response = f.do(http.MethodPost, "/pi-appliance/api/system/reboot", "", "", cookie)
+	if response.Code != http.StatusConflict || !strings.Contains(response.Body.String(), "rebranchez") {
+		t.Fatalf("échec : code %d : %s", response.Code, response.Body.String())
 	}
 }

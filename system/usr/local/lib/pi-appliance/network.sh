@@ -25,6 +25,8 @@
 #   network.sh wired        garder le câble comme réseau du Pi
 #   network.sh country FR   pays du Wi-Fi (code ISO 3166 à deux lettres)
 #   network.sh name salon   nom du Pi : <nom>.local et nom du Wi-Fi de configuration (name.sh)
+#   network.sh test         vérification du réseau choisi, sans couper le point d'accès
+#   network.sh reboot       redémarrage du Pi dans quelques secondes
 #
 # Le mot de passe du Wi-Fi n'apparaît jamais dans la ligne de commande d'un
 # programme (visible de tous dans /proc) : il passe par l'entrée standard.
@@ -33,6 +35,7 @@
 set -eu
 
 PI_LIB=${PI_LIB:-/usr/local/lib/pi-appliance}
+REBOOT_DELAY=${REBOOT_DELAY:-5}
 # shellcheck source=common.sh
 . "$PI_LIB/common.sh"
 
@@ -222,6 +225,72 @@ set_name() {
 	fail failed "Le nom du Pi n'a pas pu être changé."
 }
 
+# Vérification du réseau choisi dans le portail (TODO-2.11). Elle ne touche
+# jamais à la puce Wi-Fi : elle regarde la connexion déjà établie.
+# NE PAS fermer le point d'accès ni relancer de recherche ici : la page qui
+# demande le test peut passer par ce point d'accès (même puce Wi-Fi).
+network_test() {
+	choice=$(cat "$NETWORK_CHOICE" 2>/dev/null || true)
+	case "$choice" in
+	wifi) type=wifi ;;
+	wired) type=ethernet ;;
+	*) fail not-configured "Le Pi n'est pas encore relié à votre réseau : choisissez d'abord le Wi-Fi ou le câble." ;;
+	esac
+	device=$(nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status 2>/dev/null |
+		awk -F: -v type="$type" -v ap="$AP_CONNECTION" '$2 == type && $3 == "connected" && $4 != ap { print $1; exit }')
+	ssid=''
+	if [ "$choice" = wifi ] && ! ap_is_open; then
+		ssid=$(nmcli -t -f ACTIVE,SSID device wifi list ifname "$WIFI_DEVICE" --rescan no 2>/dev/null |
+			sed -n 's/^yes://p' | head -n 1 | sed 's/\\\(.\)/\1/g')
+	fi
+	address=''
+	gateway=''
+	if [ -n "$device" ]; then
+		address=$(nmcli -g IP4.ADDRESS device show "$device" 2>/dev/null | tr '|' '\n' | sed 's/ //g; s:/.*::' | sed '/^$/d' | head -n 1)
+		gateway=$(nmcli -g IP4.GATEWAY device show "$device" 2>/dev/null | sed 's/ //g; /^--$/d' | head -n 1)
+	fi
+	box=false
+	if [ -n "$gateway" ] && ping -c 2 -W 2 -I "$device" "$gateway" >/dev/null 2>&1; then box=true; fi
+	internet=false
+	if [ -n "$address" ] && getent ahostsv4 www.pi-appliance.com >/dev/null 2>&1; then internet=true; fi
+	saved=true
+	if [ "$choice" = wifi ]; then
+		[ "$(nmcli -g connection.autoconnect connection show "$WIFI_CONNECTION" 2>/dev/null)" = yes ] || saved=false
+	fi
+	name=$("$PI_LIB/name.sh" get 2>/dev/null || hostname)
+	local_name=false
+	if [ -n "$address" ] &&
+		[ "$(avahi-resolve-host-name -4 "$name.local" 2>/dev/null | awk '{ print $2; exit }')" = "$address" ]; then
+		local_name=true
+	fi
+	if [ -n "$address" ]; then remember_home || true; fi
+	jq -n --arg network "$choice" --arg ssid "$ssid" --arg name "$name" --arg address "$address" \
+		--argjson connected "$([ -n "$device" ] && echo true || echo false)" \
+		--argjson box "$box" --argjson internet "$internet" --argjson saved "$saved" --argjson localName "$local_name" '
+		{
+			ok: true,
+			network: $network,
+			ssid: $ssid,
+			name: $name,
+			addresses: (if $address == "" then [] else [$address] end),
+			checks: {connected: $connected, address: ($address != ""), box: $box,
+				internet: $internet, saved: $saved, localName: $localName},
+			passed: ($connected and $address != "" and $box and $saved)
+		}'
+}
+
+# Redémarrage demandé par la console à la fin de la mise en route (TODO-2.12) :
+# dans quelques secondes, pour que la réponse arrive d'abord au navigateur.
+reboot_pi() {
+	if ! systemctl is-active --quiet pi-appliance-reboot.timer 2>/dev/null; then
+		remember_home || true
+		sync
+		systemd-run --quiet --unit=pi-appliance-reboot --on-active="$REBOOT_DELAY" systemctl reboot >/dev/null 2>&1 ||
+			fail failed "Le Pi n'a pas pu redémarrer. Débranchez-le puis rebranchez-le."
+	fi
+	jq -n --argjson seconds "$REBOOT_DELAY" '{ok: true, inSeconds: $seconds}'
+}
+
 umask 077
 case "${1:-}" in
 status) status ;;
@@ -231,5 +300,7 @@ wifi-join) with_wifi_lock wifi_join ;;
 wired) wired ;;
 country) set_country "${2:-}" ;;
 name) set_name "${2:-}" ;;
-*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wired | country <code> | name <nom>" ;;
+test) network_test ;;
+reboot) reboot_pi ;;
+*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wired | country <code> | name <nom> | test | reboot" ;;
 esac

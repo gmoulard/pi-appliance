@@ -63,14 +63,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p id="emailReminder" class="empty" hidden></p>
 <section id="wizard" class="card" hidden>
 <h2>Mise en route</h2>
-<p>Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.</p>
+<p>Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.</p>
 <ol class="steps">
 <li id="stepAccount" class="done">Votre compte administrateur</li>
 <li id="stepNetwork">Le réseau de la maison</li>
-<li id="stepServices">Vos premiers services</li>
+<li id="stepCheck">Vérification et redémarrage</li>
 </ol>
 <p id="wizardHelp"></p>
+<ul id="wizardChecks" class="checks" hidden></ul>
+<div id="wizardReboot" class="note" aria-live="polite" hidden></div>
 <div class="controls">
+<button id="wizardTest" type="button" hidden></button>
+<button id="wizardRebootButton" type="button" hidden>Redémarrer le Pi</button>
+<button id="wizardRebootCancel" class="secondary" type="button" hidden>Ne pas redémarrer</button>
 <button id="wizardNext" type="button" hidden></button>
 <button id="wizardSkip" class="secondary" type="button" hidden>Passer cette étape</button>
 </div>

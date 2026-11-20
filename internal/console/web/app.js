@@ -99,6 +99,34 @@ function cardHead(appId, title, detail) {
   return head;
 }
 
+// Bouton « Afficher » à côté de chaque mot de passe (TODO-2.9) : sur un
+// téléphone surtout, on vérifie ce qu'on tape (mot de passe du Wi-Fi, du compte).
+function addRevealButton(input) {
+  const button = element("button", t("Afficher"), "secondary");
+  button.type = "button";
+  const show = (visible) => {
+    input.type = visible ? "text" : "password";
+    button.textContent = visible ? t("Masquer") : t("Afficher");
+    button.setAttribute("aria-pressed", String(visible));
+  };
+  button.setAttribute("aria-pressed", "false");
+  button.addEventListener("click", () => {
+    show(input.type === "password");
+    input.focus();
+  });
+  if (input.form) {
+    input.form.addEventListener("reset", () => show(false));
+    input.form.addEventListener("submit", () => show(false));
+  }
+  const wrapper = element("span", undefined, "password");
+  input.replaceWith(wrapper);
+  wrapper.append(input, button);
+}
+
+for (const input of document.querySelectorAll('input[type="password"]')) {
+  addRevealButton(input);
+}
+
 function showMessage(lines, kind) {
   message.replaceChildren(...lines.map((line) => element("p", line)));
   message.className = kind;
@@ -2231,7 +2259,7 @@ wiredButton.addEventListener("click", async () => {
     }
     showMessage(lines, "success");
     if (wizardStep === "network" && state && state.configured) {
-      await wizardServices();
+      await wizardCheck(state);
     }
   } catch (error) {
     showMessage([error.message], "error");
@@ -2524,23 +2552,39 @@ statsToggle.addEventListener("click", async () => {
 });
 
 // Assistant de premier démarrage (spécification 5.1) : compte administrateur,
-// réseau de la maison, premiers services. Les autres étapes de la
+// réseau de la maison, puis test du réseau et redémarrage. Les services
+// s'installent ensuite depuis la marketplace. Les autres étapes de la
 // spécification (langue, adresse sur internet, utilisateurs, statistiques)
 // viendront avec leurs fonctions.
 const wizardSection = document.getElementById("wizard");
 const wizardHelp = document.getElementById("wizardHelp");
 const wizardNext = document.getElementById("wizardNext");
 const wizardSkip = document.getElementById("wizardSkip");
+const wizardTestButton = document.getElementById("wizardTest");
+const wizardChecks = document.getElementById("wizardChecks");
+const wizardReboot = document.getElementById("wizardReboot");
+const wizardRebootButton = document.getElementById("wizardRebootButton");
+const wizardRebootCancel = document.getElementById("wizardRebootCancel");
 const stepNetwork = document.getElementById("stepNetwork");
-const stepServices = document.getElementById("stepServices");
+const stepCheck = document.getElementById("stepCheck");
+const REBOOT_COUNTDOWN = 10;
 let wizardStep = null;
 let wizardTimer = null;
+let wizardNetwork = "";
+let wizardAddress = "";
+let rebootTimer = null;
 
 function setStep(step) {
   wizardStep = step;
   stepNetwork.className = step === "network" ? "current" : "done";
-  stepServices.className = step === "services" ? "current" : "";
+  stepCheck.className = step === "check" ? "current" : "";
   clearInterval(wizardTimer);
+  clearInterval(rebootTimer);
+  wizardChecks.hidden = true;
+  wizardReboot.hidden = true;
+  wizardTestButton.hidden = true;
+  wizardRebootButton.hidden = true;
+  wizardRebootCancel.hidden = true;
 }
 
 async function startWizard() {
@@ -2552,7 +2596,7 @@ async function startWizard() {
   setStep("network");
   const state = await loadNetwork();
   if (!state || state.configured) {
-    await wizardServices();
+    await wizardCheck(state);
     return;
   }
   wizardHelp.textContent = t("Reliez le Pi à votre réseau : choisissez le Wi-Fi de la maison ci-dessous, ou le câble s'il est branché sur votre box.");
@@ -2563,31 +2607,195 @@ async function startWizard() {
   wizardTimer = setInterval(async () => {
     const current = await api("network").catch(() => null);
     if (current && current.configured && wizardStep === "network") {
-      await loadNetwork();
-      await wizardServices();
+      await wizardCheck(await loadNetwork());
     }
   }, 5000);
 }
 
-async function wizardServices() {
-  setStep("services");
+// Dernière étape : le test regarde la connexion déjà établie, sans couper le
+// Wi-Fi de configuration (même puce Wi-Fi, spécification 4).
+async function wizardCheck(state) {
+  setStep("check");
   networkSection.hidden = true;
-  wizardHelp.textContent = t("Choisissez vos premiers services dans la marketplace ci-dessous. Vous pourrez en ajouter d'autres plus tard.");
   wizardSkip.hidden = true;
-  wizardNext.textContent = t("Terminer la mise en route");
+  wizardNext.textContent = t("Terminer sans redémarrer");
+  wizardNext.className = "secondary";
   wizardNext.hidden = false;
-  servicesSection.hidden = false;
-  catalogSection.hidden = false;
-  await loadResources();
-  await loadCatalog();
-  await loadServices();
+  wizardNetwork = (state && state.configured) || "";
+  wizardAddress = state && !state.accessPoint.open && state.addresses.length > 0 ? state.addresses[0] : "";
+  if (!wizardNetwork) {
+    wizardHelp.textContent = t("Le Pi n'est pas encore relié à votre réseau. Vous pourrez le faire plus tard dans « Réseau de la maison ». Terminez la mise en route pour continuer.");
+    wizardNext.textContent = t("Terminer la mise en route");
+    wizardNext.className = "";
+    return;
+  }
+  wizardHelp.textContent = wizardNetwork === "wifi"
+    ? t("Le Pi est relié au Wi-Fi de la maison. Vérifiez maintenant que tout fonctionne : le test ne coupe rien.")
+    : t("Le Pi est relié à votre box par le câble réseau. Vérifiez maintenant que tout fonctionne : le test ne coupe rien.");
+  wizardTestButton.textContent = wizardNetwork === "wifi" ? t("Tester le Wi-Fi") : t("Tester le câble réseau");
+  wizardTestButton.className = "";
+  wizardTestButton.hidden = false;
+}
+
+function checkLine(color, text) {
+  const item = element("li");
+  item.append(element("span", undefined, `dot ${color}`), element("span", text));
+  return item;
+}
+
+function showTestResult(result) {
+  const { checks } = result;
+  const wifi = result.network === "wifi";
+  const lines = [];
+  if (checks.connected) {
+    lines.push(checkLine("green", wifi ? t("Le Pi est relié au Wi-Fi « {0} ».", result.ssid) : t("Le Pi est relié à votre box par le câble réseau.")));
+  } else {
+    lines.push(checkLine("red", wifi ? named(t("Le Pi n'est pas relié au Wi-Fi de la maison. Si le Wi-Fi « pi-appliance » est réapparu, la connexion a échoué : choisissez à nouveau votre Wi-Fi.")) : t("Le câble réseau ne répond pas : vérifiez qu'il est bien branché au Pi et à la box.")));
+  }
+  if (checks.connected) {
+    lines.push(checks.address
+      ? checkLine("green", t("Votre box lui a donné l'adresse {0}.", result.addresses[0]))
+      : checkLine("red", t("Votre box ne lui a pas encore donné d'adresse. Attendez une minute, puis testez à nouveau.")));
+    lines.push(checks.box
+      ? checkLine("green", t("La box répond."))
+      : checkLine("red", t("La box ne répond pas. Vérifiez qu'elle est allumée, puis testez à nouveau.")));
+    lines.push(checks.internet
+      ? checkLine("green", t("Internet est joignable."))
+      : checkLine("orange", t("Internet n'est pas joignable. Le Pi fonctionne quand même à la maison, mais ne pourra pas se mettre à jour.")));
+    lines.push(checks.localName
+      ? checkLine("green", t("Le Pi répond au nom {0}.local.", result.name))
+      : checkLine("orange", t("Le nom {0}.local ne répond pas encore : si l'adresse en .local ne s'ouvre pas, utilisez l'adresse du Pi donnée par votre box.", result.name)));
+  }
+  lines.push(checks.saved
+    ? checkLine("green", t("Le Pi se reconnectera tout seul après un redémarrage."))
+    : checkLine("red", t("Le réglage du Wi-Fi n'est pas enregistré : choisissez à nouveau votre Wi-Fi.")));
+  wizardChecks.replaceChildren(...lines);
+  wizardChecks.hidden = false;
+}
+
+wizardTestButton.addEventListener("click", async () => {
+  wizardTestButton.disabled = true;
+  wizardHelp.textContent = t("Test en cours…");
+  try {
+    const result = await api("network/test", { method: "POST" });
+    if (result.name) piName = result.name;
+    wizardAddress = result.addresses[0] || wizardAddress;
+    showTestResult(result);
+    wizardTestButton.textContent = t("Tester à nouveau");
+    wizardTestButton.className = result.passed ? "secondary" : "";
+    if (result.passed) {
+      wizardHelp.textContent = t("Tout est en ordre. Redémarrez maintenant le Pi : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.");
+      wizardRebootButton.hidden = false;
+      networkSection.hidden = true;
+    } else {
+      wizardHelp.textContent = t("Le test a trouvé un problème, expliqué ci-dessous. Corrigez-le, puis testez à nouveau.");
+      wizardRebootButton.hidden = true;
+      await loadNetwork();
+    }
+  } catch (error) {
+    wizardHelp.textContent = error.message;
+  } finally {
+    wizardTestButton.disabled = false;
+  }
+});
+
+// Avant le redémarrage : où retrouver le Pi, la suite, et 10 secondes pour changer d'avis.
+function rebootLines() {
+  const lines = [
+    t("Le Pi va redémarrer. Cela prend une ou deux minutes, pendant lesquelles cette page ne répondra plus."),
+    t("Ensuite, depuis un téléphone ou un ordinateur relié à votre réseau, ouvrez https://{0}.local/pi-appliance", piName),
+  ];
+  if (wizardAddress) {
+    lines.push(t("Si cette adresse ne s'ouvre pas, ouvrez https://{0}/pi-appliance", wizardAddress));
+  } else {
+    lines.push(t("Si cette adresse ne s'ouvre pas, cherchez l'appareil « {0} » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance", piName));
+  }
+  lines.push(t("Connectez-vous avec votre identifiant et votre mot de passe, puis choisissez vos services dans la marketplace."));
+  return lines;
+}
+
+function showReboot(lines, seconds = 0) {
+  wizardReboot.replaceChildren(...lines.map((line) => element("p", line)));
+  if (seconds > 0) {
+    wizardReboot.append(element("p", t("Redémarrage dans {0} secondes.", seconds), "countdown"));
+  }
+  wizardReboot.hidden = false;
+}
+
+wizardRebootButton.addEventListener("click", () => {
+  let seconds = REBOOT_COUNTDOWN;
+  showReboot(rebootLines(), seconds);
+  wizardRebootButton.hidden = true;
+  wizardTestButton.hidden = true;
+  wizardNext.hidden = true;
+  wizardRebootCancel.hidden = false;
+  clearInterval(rebootTimer);
+  rebootTimer = setInterval(() => {
+    seconds -= 1;
+    if (seconds > 0) {
+      showReboot(rebootLines(), seconds);
+      return;
+    }
+    clearInterval(rebootTimer);
+    rebootPi();
+  }, 1000);
+});
+
+wizardRebootCancel.addEventListener("click", () => {
+  clearInterval(rebootTimer);
+  wizardReboot.hidden = true;
+  wizardRebootCancel.hidden = true;
+  wizardRebootButton.hidden = false;
+  wizardTestButton.hidden = false;
+  wizardNext.hidden = false;
+});
+
+async function rebootPi() {
+  wizardRebootCancel.hidden = true;
+  try {
+    await api("system/reboot", { method: "POST" });
+    // Le redémarrage attend quelques secondes : la fin de la mise en route est
+    // notée avant ; sinon, l'assistant reviendra simplement à la connexion suivante.
+    await api("wizard", { method: "POST" }).catch(() => null);
+  } catch (error) {
+    wizardReboot.hidden = true;
+    wizardRebootButton.hidden = false;
+    wizardNext.hidden = false;
+    showMessage([error.message], "error");
+    return;
+  }
+  wizardStep = null;
+  stepCheck.className = "done";
+  wizardHelp.textContent = t("Le Pi redémarre…");
+  showReboot(rebootLines());
+  watchReboot();
+}
+
+// La page revient d'elle-même quand le Pi répond à nouveau, à la même adresse.
+function watchReboot() {
+  const started = Date.now();
+  let down = false;
+  const timer = setInterval(async () => {
+    const up = await api("health").then(() => true, () => false);
+    if (!up) {
+      down = true;
+      return;
+    }
+    if (down) {
+      clearInterval(timer);
+      window.location.reload();
+    } else if (Date.now() - started > 3 * 60 * 1000) {
+      clearInterval(timer);
+      showMessage([t("Le Pi n'a pas redémarré. Débranchez-le, attendez dix secondes, puis rebranchez-le.")], "error");
+    }
+  }, 5000);
 }
 
 wizardSkip.addEventListener("click", async () => {
   if (!window.confirm(named(t("Passer le choix du réseau ? Le Wi-Fi « pi-appliance » restera ouvert, au plus 24 heures, pour le faire plus tard.")))) {
     return;
   }
-  await wizardServices();
+  await wizardCheck(null);
 });
 
 wizardNext.addEventListener("click", async () => {
@@ -2595,8 +2803,9 @@ wizardNext.addEventListener("click", async () => {
   try {
     await api("wizard", { method: "POST" });
     wizardStep = null;
+    clearInterval(rebootTimer);
     wizardSection.hidden = true;
-    showMessage([t("Votre appliance est prête. Vous retrouverez tout ici : vos services, la marketplace et le réseau.")], "success");
+    showMessage([t("Votre appliance est prête. Choisissez maintenant vos services dans la marketplace, ci-dessous. Vous retrouverez aussi ici le réseau et l'état du Pi.")], "success");
     await showConsole(currentAccount, false);
   } catch (error) {
     showMessage([error.message], "error");
@@ -2975,6 +3184,7 @@ function showAuth(mode) {
   clearInterval(duckDNSTimer);
   duckDNSTimer = null;
   clearInterval(wizardTimer);
+  clearInterval(rebootTimer);
   clearInterval(dashboardTimer);
   clearInterval(storageTimer);
   clearInterval(backupTimer);
