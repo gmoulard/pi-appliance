@@ -378,5 +378,12 @@ piTranslations("ja", {
   "Statistiques acceptées. Dernier envoi le {0}.": "統計に同意済みです。前回の送信：{0}。",
   "Statistiques acceptées. Le premier envoi part dans l'heure.": "統計に同意済みです。最初の送信は 1 時間以内に行われます。",
   "Merci : les statistiques anonymes seront envoyées une fois par jour.": "ありがとうございます。匿名の統計は 1 日に 1 回送信されます。",
-  "Les statistiques ne seront plus envoyées.": "統計は今後送信されません。"
+  "Les statistiques ne seront plus envoyées.": "統計は今後送信されません。",
+  "Tout le monde, sur internet": "誰でも（インターネット上）",
+  "Les personnes qui ont un compte sur ce Pi": "このPiにアカウントがある人",
+  "La maison seulement (et le VPN)": "自宅のみ（VPN経由も可）",
+  "Qui peut l'ouvrir": "開ける人",
+  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "外出先から使うには、まず自宅でここにログインしてください。コンソールのログインページはまだインターネットからは開けません。",
+  "Changement de l'accès à {0}… Le service redémarre.": "{0} のアクセスを変更しています… サービスを再起動します。",
+  "{0} : accès changé.": "{0}：アクセスを変更しました。"
 });

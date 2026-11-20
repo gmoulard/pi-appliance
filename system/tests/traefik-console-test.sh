@@ -74,6 +74,13 @@ http:
       rule: "Host(\`service.test\`)"
       service: test-service
       tls: {}
+    # Service « maison seulement » (spécification 8.2).
+    test-home:
+      entryPoints: [websecure]
+      rule: "Host(\`home.test\`)"
+      middlewares: [pi-appliance-home@file]
+      service: test-service
+      tls: {}
   services:
     test-service:
       loadBalancer:
@@ -141,4 +148,8 @@ done
 request "$NET_PUBLIC" console.test 404 >/dev/null
 request "$NET10" service.test 200 "service backend" >/dev/null
 request "$NET_PUBLIC" service.test 200 "service backend" >/dev/null
+for network in "$NET10" "$NET172" "$NET192"; do
+	request "$network" home.test 200 "service backend" >/dev/null
+done
+request "$NET_PUBLIC" home.test 403 >/dev/null
 echo "ok"

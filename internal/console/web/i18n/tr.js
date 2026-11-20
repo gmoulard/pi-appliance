@@ -378,5 +378,12 @@ piTranslations("tr", {
   "Statistiques acceptées. Dernier envoi le {0}.": "İstatistikler kabul edildi. Son gönderim: {0}.",
   "Statistiques acceptées. Le premier envoi part dans l'heure.": "İstatistikler kabul edildi. İlk gönderim bir saat içinde yapılacak.",
   "Merci : les statistiques anonymes seront envoyées une fois par jour.": "Teşekkürler: anonim istatistikler günde bir kez gönderilecek.",
-  "Les statistiques ne seront plus envoyées.": "İstatistikler artık gönderilmeyecek."
+  "Les statistiques ne seront plus envoyées.": "İstatistikler artık gönderilmeyecek.",
+  "Tout le monde, sur internet": "Herkes, internette",
+  "Les personnes qui ont un compte sur ce Pi": "Bu Pi'de hesabı olan kişiler",
+  "La maison seulement (et le VPN)": "Yalnızca evde (ve VPN üzerinden)",
+  "Qui peut l'ouvrir": "Kim açabilir",
+  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Ev dışındayken önce burada, evde oturum açın: konsolun oturum açma sayfası henüz internetten açılmıyor.",
+  "Changement de l'accès à {0}… Le service redémarre.": "{0} erişimi değiştiriliyor… Hizmet yeniden başlıyor.",
+  "{0} : accès changé.": "{0}: erişim değiştirildi."
 });

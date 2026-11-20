@@ -378,5 +378,12 @@ piTranslations("pt", {
   "Statistiques acceptées. Dernier envoi le {0}.": "Estatísticas aceites. Último envio em {0}.",
   "Statistiques acceptées. Le premier envoi part dans l'heure.": "Estatísticas aceites. O primeiro envio sai dentro de uma hora.",
   "Merci : les statistiques anonymes seront envoyées une fois par jour.": "Obrigado: as estatísticas anónimas serão enviadas uma vez por dia.",
-  "Les statistiques ne seront plus envoyées.": "As estatísticas deixarão de ser enviadas."
+  "Les statistiques ne seront plus envoyées.": "As estatísticas deixarão de ser enviadas.",
+  "Tout le monde, sur internet": "Toda a gente, na internet",
+  "Les personnes qui ont un compte sur ce Pi": "As pessoas com uma conta neste Pi",
+  "La maison seulement (et le VPN)": "Só em casa (e pela VPN)",
+  "Qui peut l'ouvrir": "Quem pode abri-lo",
+  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Fora de casa, inicie sessão primeiro aqui, em casa: a página de início de sessão da consola ainda não abre a partir da internet.",
+  "Changement de l'accès à {0}… Le service redémarre.": "A alterar o acesso a {0}… O serviço vai reiniciar.",
+  "{0} : accès changé.": "{0}: acesso alterado."
 });

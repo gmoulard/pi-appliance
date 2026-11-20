@@ -64,6 +64,8 @@ type InstallRequest struct {
 	App        string            `json:"app"`
 	Name       string            `json:"name"`
 	Parameters map[string]string `json:"parameters"`
+	// Access : qui ouvre le service (public, users, home) ; vide : valeur du manifeste.
+	Access string `json:"access,omitempty"`
 }
 
 type SetupRequest struct {
@@ -192,6 +194,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/files", c.adminOnly(c.deployFiles))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.advancedSettings))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
+	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/access", c.adminOnly(c.setAccess))
 	mux.HandleFunc("POST "+BasePath+"/api/compose", c.adminOnly(c.installCompose))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/wireguard", c.adminOnly(c.wireGuard))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/wireguard/devices", c.adminOnly(c.addDevice))
@@ -607,6 +610,13 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 	}
 	if request.Name == "" {
 		request.Name = app.Subdomain
+	}
+	if request.Access != "" {
+		if !services.ValidAccess(request.Access) {
+			writeError(w, http.StatusBadRequest, "Choisissez qui ouvre le service : tout le monde, les personnes connectées ou la maison seulement.")
+			return
+		}
+		app.Access = request.Access
 	}
 	result, err := c.Services.Install(r.Context(), app, request.Name, request.Parameters)
 	if err != nil {

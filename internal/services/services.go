@@ -79,6 +79,8 @@ type Instance struct {
 	// NoWebPage : service sans page web (VPN…), joint par ses HostPorts.
 	NoWebPage bool                   `json:"no_web_page,omitempty"`
 	HostPorts []marketplace.HostPort `json:"host_ports,omitempty"`
+	// Access : qui ouvre la page du service (public, users, home ; access.go).
+	Access string `json:"access,omitempty"`
 	// SiteFiles : fichiers du site déposés par ZIP ou Nextcloud (manifeste, champ files).
 	SiteFiles bool `json:"site_files,omitempty"`
 	// Build : dernière construction d'un générateur de site statique.
@@ -198,7 +200,7 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 		}
 		return Result{Warnings: warnings}, fmt.Errorf("%s n'a pas pu démarrer : %s", app.Name, trimOutput(output, err))
 	}
-	instance := Instance{Name: name, App: app.ID, AppName: app.Name, Address: address, InstalledAt: time.Now().UTC(), NoWebPage: app.Port == 0, HostPorts: app.HostPorts}
+	instance := Instance{Name: name, App: app.ID, AppName: app.Name, Address: address, InstalledAt: time.Now().UTC(), NoWebPage: app.Port == 0, HostPorts: app.HostPorts, Access: webAccess(app)}
 	if err := writeJSON(filepath.Join(dir, stateName), instance, 0o600); err != nil {
 		return Result{}, err
 	}
@@ -314,6 +316,9 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 	if m.usesLetsEncrypt() {
 		labels[router+".tls.certresolver"] = "letsencrypt"
 	}
+	if middleware := accessMiddleware(app.Access); middleware != "" {
+		labels[router+".middlewares"] = middleware
+	}
 	service := map[string]any{
 		"labels":   labels,
 		"networks": []string{"default", Network},
@@ -365,6 +370,9 @@ func (m *Manager) List() ([]Instance, error) {
 		}
 		if err := json.Unmarshal(data, &instance); err != nil {
 			return nil, fmt.Errorf("%s : %w", path, err)
+		}
+		if !instance.NoWebPage && instance.Access == "" {
+			instance.Access = AccessPublic
 		}
 		if instance.SiteFiles = m.siteFiles(instance.Name, instance.App); instance.SiteFiles {
 			instance.Build = readBuild(filepath.Join(m.serviceDir(instance.Name), siteDir))

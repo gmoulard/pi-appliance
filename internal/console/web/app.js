@@ -158,6 +158,9 @@ async function loadServices() {
       ? (service.host_ports || []).map((port) => t("Port {0} {1} du Pi", port.protocol.toUpperCase(), port.port)).join(", ")
       : service.address;
     detail.append(element("p", where, "address"), state);
+    if (!service.no_web_page) {
+      detail.append(accessChooser(service));
+    }
     if (service.update_available) {
       detail.append(element("p", t("Nouvelle version disponible."), "meta"));
     }
@@ -518,6 +521,9 @@ async function loadCatalog() {
       label.append(input);
       form.append(label);
     }
+    if (app.web) {
+      form.append(accessField(app.access));
+    }
     const button = element("button", t("Installer"));
     const fit = gauges(app.memory_mb, app.disk_mb);
     if (fit.length > 0) {
@@ -551,7 +557,7 @@ async function install(app, form, button, details) {
     const result = await api("services", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ app: app.id, name: data.get("name"), parameters }),
+      body: JSON.stringify({ app: app.id, name: data.get("name"), parameters, access: data.get("access") || undefined }),
     });
     const lines = [app.web ? t("{0} est prêt : https://{1}", app.name, result.instance.address) : t("{0} est prêt.", app.name)];
     for (const [label, value] of Object.entries(result.secrets || {})) {
@@ -567,6 +573,69 @@ async function install(app, form, button, details) {
   } finally {
     button.disabled = false;
   }
+}
+
+// Qui ouvre un service (spécification 8.2) : tout le monde, les personnes
+// connectées à la console ou la maison seulement. Valeur par défaut : le manifeste.
+const ACCESS_LABELS = {
+  public: t("Tout le monde, sur internet"),
+  users: t("Les personnes qui ont un compte sur ce Pi"),
+  home: t("La maison seulement (et le VPN)"),
+};
+
+function accessSelect(value) {
+  const select = element("select");
+  select.name = "access";
+  for (const [access, label] of Object.entries(ACCESS_LABELS)) {
+    const option = element("option", label);
+    option.value = access;
+    select.append(option);
+  }
+  select.value = value || "public";
+  return select;
+}
+
+function accessField(value) {
+  const label = element("label", t("Qui peut l'ouvrir"));
+  label.append(accessSelect(value));
+  return label;
+}
+
+// accessChooser : niveau d'accès d'un service installé ; l'administrateur le
+// change, le service redémarre.
+function accessChooser(service) {
+  const box = element("div", undefined, "access");
+  const hint = element("p", t("Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet."), "meta");
+  hint.hidden = service.access !== "users";
+  if (!currentAccount || currentAccount.role !== "admin") {
+    box.append(element("p", `${t("Qui peut l'ouvrir")} : ${ACCESS_LABELS[service.access] || ACCESS_LABELS.public}`, "meta"), hint);
+    return box;
+  }
+  const label = element("label", t("Qui peut l'ouvrir"));
+  const select = accessSelect(service.access);
+  label.append(select);
+  select.addEventListener("change", async () => {
+    const previous = service.access;
+    select.disabled = true;
+    showMessage([t("Changement de l'accès à {0}… Le service redémarre.", service.name)], "info");
+    try {
+      const instance = await api(`services/${encodeURIComponent(service.name)}/access`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ access: select.value }),
+      });
+      service.access = instance.access;
+      hint.hidden = service.access !== "users";
+      showMessage([t("{0} : accès changé.", service.name)], "success");
+    } catch (error) {
+      select.value = previous || "public";
+      showMessage([error.message], "error");
+    } finally {
+      select.disabled = false;
+    }
+  });
+  box.append(label, hint);
+  return box;
 }
 
 // Réglages avancés et Docker Compose libre (spécification 6.4) : écrans

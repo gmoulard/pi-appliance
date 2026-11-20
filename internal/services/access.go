@@ -1,0 +1,158 @@
+// This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+// Copyright (c) 2026 Guillaume Moulard.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+package services
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/gmoulard/pi-appliance/marketplace"
+)
+
+// Qui ouvre la page d'un service (spécification 8.2).
+const (
+	// AccessPublic : tout le monde, depuis internet.
+	AccessPublic = "public"
+	// AccessUsers : les personnes connectées à la console (forward auth).
+	AccessUsers = "users"
+	// AccessHome : les appareils de la maison (et du VPN) seulement.
+	AccessHome = "home"
+)
+
+// Middlewares Traefik définis dans system/etc/pi-appliance/traefik/dynamic/console.yml.
+const (
+	authMiddleware = "pi-appliance-auth@file"
+	homeMiddleware = "pi-appliance-home@file"
+)
+
+// ValidAccess dit si un niveau d'accès est connu.
+func ValidAccess(access string) bool {
+	return access == AccessPublic || access == AccessUsers || access == AccessHome
+}
+
+// accessMiddleware : middleware Traefik du niveau d'accès ; vide : public.
+func accessMiddleware(access string) string {
+	switch access {
+	case AccessUsers:
+		return authMiddleware
+	case AccessHome:
+		return homeMiddleware
+	}
+	return ""
+}
+
+// webAccess : niveau d'accès gardé à l'installation ; vide pour un service
+// sans page web, public quand rien n'est choisi (Docker Compose libre).
+func webAccess(app marketplace.App) string {
+	if app.Port == 0 {
+		return ""
+	}
+	if app.Access == "" {
+		return AccessPublic
+	}
+	return app.Access
+}
+
+// SetAccess change qui ouvre la page d'un service : les labels Traefik sont
+// réécrits et le service redémarré ; s'il ne redémarre pas, l'ancien niveau
+// est remis.
+func (m *Manager) SetAccess(ctx context.Context, name, access string) (Instance, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if !ValidAccess(access) {
+		return Instance{}, fmt.Errorf("%w : niveau d'accès « %s » inconnu (public, users ou home)", ErrInvalid, access)
+	}
+	if err := m.installed(name); err != nil {
+		return Instance{}, err
+	}
+	dir := m.serviceDir(name)
+	statePath := filepath.Join(dir, stateName)
+	data, err := os.ReadFile(statePath)
+	if err != nil {
+		return Instance{}, err
+	}
+	var instance Instance
+	if err := json.Unmarshal(data, &instance); err != nil {
+		return Instance{}, fmt.Errorf("%s : %w", statePath, err)
+	}
+	if instance.NoWebPage {
+		return Instance{}, fmt.Errorf("%w : %s n'a pas de page web, son accès ne se règle pas ici", ErrInvalid, name)
+	}
+	overridePath := filepath.Join(dir, overrideName)
+	previous, err := os.ReadFile(overridePath)
+	if err != nil {
+		return Instance{}, err
+	}
+	updated, err := withAccess(previous, name, access)
+	if err != nil {
+		return Instance{}, err
+	}
+	if err := os.WriteFile(overridePath, updated, 0o600); err != nil {
+		return Instance{}, err
+	}
+	// Les labels ne changent qu'en recréant le conteneur.
+	if output, err := m.compose(ctx, name, "up", "--detach", "--wait"); err != nil {
+		failure := trimOutput(output, err)
+		if writeErr := os.WriteFile(overridePath, previous, 0o600); writeErr != nil {
+			return Instance{}, fmt.Errorf("%s n'a pas redémarré (%s) et l'ancien réglage n'a pas pu être remis : %v", name, failure, writeErr)
+		}
+		if output, err := m.compose(context.WithoutCancel(ctx), name, "up", "--detach", "--wait"); err != nil {
+			return Instance{}, fmt.Errorf("%s n'a pas redémarré (%s), ni avec l'ancien réglage : %s", name, failure, trimOutput(output, err))
+		}
+		return Instance{}, fmt.Errorf("%s n'a pas redémarré, l'ancien réglage est remis : %s", name, failure)
+	}
+	instance.Access = access
+	if err := writeJSON(statePath, instance, 0o600); err != nil {
+		return Instance{}, err
+	}
+	return instance, nil
+}
+
+// withAccess pose (ou retire, pour public) le middleware d'accès sur le
+// routeur Traefik du service dans le fichier pi-appliance.override.json.
+func withAccess(override []byte, name, access string) ([]byte, error) {
+	var file map[string]any
+	if err := json.Unmarshal(override, &file); err != nil {
+		return nil, fmt.Errorf("réglages de %s illisibles : %w", name, err)
+	}
+	router := "traefik.http.routers.pi-" + name
+	services, _ := file["services"].(map[string]any)
+	found := false
+	for _, value := range services {
+		service, _ := value.(map[string]any)
+		labels, _ := service["labels"].(map[string]any)
+		if _, ok := labels[router+".rule"]; !ok {
+			continue
+		}
+		found = true
+		if middleware := accessMiddleware(access); middleware != "" {
+			labels[router+".middlewares"] = middleware
+		} else {
+			delete(labels, router+".middlewares")
+		}
+	}
+	if !found {
+		return nil, fmt.Errorf("%w : la page web de %s est introuvable dans ses réglages", ErrInvalid, name)
+	}
+	data, err := json.MarshalIndent(file, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(data, '\n'), nil
+}

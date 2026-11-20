@@ -378,5 +378,12 @@ piTranslations("nl", {
   "Statistiques acceptées. Dernier envoi le {0}.": "Statistieken aanvaard. Laatste verzending op {0}.",
   "Statistiques acceptées. Le premier envoi part dans l'heure.": "Statistieken aanvaard. De eerste verzending vertrekt binnen het uur.",
   "Merci : les statistiques anonymes seront envoyées une fois par jour.": "Bedankt: de anonieme statistieken worden eenmaal per dag verstuurd.",
-  "Les statistiques ne seront plus envoyées.": "Er worden geen statistieken meer verstuurd."
+  "Les statistiques ne seront plus envoyées.": "Er worden geen statistieken meer verstuurd.",
+  "Tout le monde, sur internet": "Iedereen, op internet",
+  "Les personnes qui ont un compte sur ce Pi": "Mensen met een account op deze Pi",
+  "La maison seulement (et le VPN)": "Alleen thuis (en via de VPN)",
+  "Qui peut l'ouvrir": "Wie mag het openen",
+  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Buitenshuis: meld u eerst hier thuis aan, de aanmeldpagina van de console opent nog niet vanaf internet.",
+  "Changement de l'accès à {0}… Le service redémarre.": "Toegang tot {0} wordt gewijzigd… De dienst start opnieuw.",
+  "{0} : accès changé.": "{0}: toegang gewijzigd."
 });

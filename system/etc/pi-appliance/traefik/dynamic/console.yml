@@ -73,6 +73,19 @@ http:
       forwardAuth:
         address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward"
         authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups]
+    # Service « maison seulement » (spécification 8.2) : mêmes plages que la
+    # console ci-dessus, adresse TCP vue par Traefik (pas d'en-tête). Ailleurs :
+    # 403. Label traefik.http.routers.<routeur>.middlewares=pi-appliance-home@file.
+    pi-appliance-home:
+      ipAllowList:
+        sourceRange:
+          - 10.0.0.0/8
+          - 172.16.0.0/12
+          - 192.168.0.0/16
+          - 127.0.0.0/8
+          - ::1/128
+          - fc00::/7
+          - fe80::/10
 
   services:
     pi-appliance-console:

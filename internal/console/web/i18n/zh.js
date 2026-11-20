@@ -378,5 +378,12 @@ piTranslations("zh", {
   "Statistiques acceptées. Dernier envoi le {0}.": "已同意统计。上次发送时间：{0}。",
   "Statistiques acceptées. Le premier envoi part dans l'heure.": "已同意统计。首次发送将在一小时内进行。",
   "Merci : les statistiques anonymes seront envoyées une fois par jour.": "谢谢：匿名统计将每天发送一次。",
-  "Les statistiques ne seront plus envoyées.": "将不再发送统计。"
+  "Les statistiques ne seront plus envoyées.": "将不再发送统计。",
+  "Tout le monde, sur internet": "所有人（互联网上）",
+  "Les personnes qui ont un compte sur ce Pi": "在这台 Pi 上有账户的人",
+  "La maison seulement (et le VPN)": "仅限家中（以及 VPN）",
+  "Qui peut l'ouvrir": "谁可以打开",
+  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "在外面使用前，请先在家里在这里登录：控制台的登录页面暂时还不能从互联网打开。",
+  "Changement de l'accès à {0}… Le service redémarre.": "正在更改 {0} 的访问权限… 服务正在重启。",
+  "{0} : accès changé.": "{0}：访问权限已更改。"
 });

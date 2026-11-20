@@ -378,5 +378,12 @@ piTranslations("fa", {
   "Statistiques acceptées. Dernier envoi le {0}.": "آمار پذیرفته شد. آخرین ارسال در {0}.",
   "Statistiques acceptées. Le premier envoi part dans l'heure.": "آمار پذیرفته شد. نخستین ارسال تا یک ساعت دیگر انجام می‌شود.",
   "Merci : les statistiques anonymes seront envoyées une fois par jour.": "سپاس: آمار ناشناس روزی یک بار فرستاده می‌شود.",
-  "Les statistiques ne seront plus envoyées.": "آمار دیگر فرستاده نمی‌شود."
+  "Les statistiques ne seront plus envoyées.": "آمار دیگر فرستاده نمی‌شود.",
+  "Tout le monde, sur internet": "همه، در اینترنت",
+  "Les personnes qui ont un compte sur ce Pi": "کسانی که روی این Pi حساب دارند",
+  "La maison seulement (et le VPN)": "فقط خانه (و VPN)",
+  "Qui peut l'ouvrir": "چه کسی می‌تواند آن را باز کند",
+  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "بیرون از خانه، ابتدا همین‌جا در خانه وارد شوید: صفحهٔ ورود کنسول هنوز از اینترنت باز نمی‌شود.",
+  "Changement de l'accès à {0}… Le service redémarre.": "در حال تغییر دسترسی به {0}… سرویس دوباره راه‌اندازی می‌شود.",
+  "{0} : accès changé.": "{0}: دسترسی تغییر کرد."
 });

@@ -121,6 +121,8 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 	if err != nil {
 		return Result{}, err
 	}
+	// Le niveau d'accès choisi dans la console reste, pas celui du manifeste.
+	app.Access = instance.Access
 	if err := m.writeFiles(dir, app, name, instance.Address, env); err != nil {
 		return Result{}, err
 	}
