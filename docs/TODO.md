@@ -162,7 +162,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-4.2**: Alertes par e-mail, désactivables par type (8.6).
 - [x] **TODO-4.3**: Sauvegardes, première étape (9.1, `internal/backup`, `backup-disk.sh`) : configuration et volumes des services (service arrêté le temps de la copie), chaque nuit et à la demande, rotation 7/4/6, disque USB autre que celui des données (formatage ext4 avec accord), chiffrement AES-256-GCM avec une clé protégée par le mot de passe administrateur, restauration d'un service à une date choisie (copie de l'état actuel avant), API et écran « Sauvegardes » ; à vérifier sur un vrai Pi. La suite : TODO-4.10 à 4.14.
 - [ ] **TODO-4.4**: Services du projet : relais SMTP OVH (SPF, DKIM, DMARC), sauvegarde hors de la maison, Pi de secours (10.2).
-- [ ] **TODO-4.5**: Mises à jour proposées dans la console (9.2).
+- [x] **TODO-4.5**: Mises à jour proposées dans la console (9.2) : correctifs du système listés (sécurité en évidence) et installés à la demande (`updates.sh`, `internal/updates`, API `api/updates`), nouvelle version de pi-appliance signalée sans être installée, résumé dans « Mon Pi » ; à vérifier sur un vrai Pi. Rappel par e-mail des correctifs de sécurité : attend le service d'e-mails (TODO-3.6, 8.6).
 - [ ] **TODO-4.6**: VPN WireGuard avec QR code (6.3).
 - [ ] **TODO-4.7**: Statistiques anonymes et leur service de réception (8.4, 10.2).
 - [ ] **TODO-4.8**: Puis : Samba, lecteur réseau à la maison (dossiers commun et personnels), avec un format de manifeste pour un service qui n'est pas un site web, l'annuaire LDAP de la console et le stockage externe de Nextcloud (6.3).

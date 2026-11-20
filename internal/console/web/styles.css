@@ -778,3 +778,17 @@ footer .language select {
   width: 100%;
   box-sizing: border-box;
 }
+
+/* Mises à jour (spécification 9.2) : les correctifs de sécurité en évidence. */
+#updatesBox.alert {
+  border: 2px solid #d62839;
+}
+
+#updatesBox .warning {
+  color: var(--brand-dark);
+  font-weight: 700;
+}
+
+#updatesBox .controls {
+  margin-top: 0.75rem;
+}

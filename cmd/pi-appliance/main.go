@@ -37,6 +37,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
+	"github.com/gmoulard/pi-appliance/internal/updates"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
@@ -58,6 +59,8 @@ func main() {
 	networkScript := flag.String("network-script", network.DefaultScript, "script du réseau du Pi (vide : réseau non réglable depuis la console)")
 	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")
 	backupScript := flag.String("backup-script", backup.DefaultScript, "script du disque USB des sauvegardes (vide : disque non réglable depuis la console)")
+	updatesScript := flag.String("updates-script", updates.DefaultScript, "script des correctifs du système (vide : système non mis à jour depuis la console)")
+	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	flag.Parse()
 	catalog, err := marketplace.Builtin()
 	if err != nil {
@@ -102,6 +105,14 @@ func main() {
 	if *backupScript != "" {
 		backups.Disks = &backup.Disks{Runner: network.Script(*backupScript)}
 	}
+	// Mises à jour proposées, jamais installées d'office (spécification 9.2).
+	checker := &updates.Checker{Version: version, Logf: log.Printf}
+	if *updatesScript != "" {
+		checker.Runner = network.Script(*updatesScript)
+	}
+	if *releaseRepo != "" {
+		checker.Releases = updates.GitHub{Repo: *releaseRepo}
+	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	measured := make(chan struct{})
@@ -111,6 +122,7 @@ func main() {
 	}()
 	go duckdns.Run(ctx)
 	go backups.Run(ctx)
+	go checker.Run(ctx, 5*time.Minute)
 	server := &http.Server{
 		Addr: *addr,
 		Handler: console.Handler(console.Config{
@@ -124,6 +136,7 @@ func main() {
 			History:       history,
 			DuckDNS:       duckdns,
 			Backups:       backups,
+			Updates:       checker,
 			WizardFile:    filepath.Join(*data, "wizard-done"),
 			ACMEEmailFile: filepath.Join(*data, "system", "traefik", "acme-email"),
 		}),

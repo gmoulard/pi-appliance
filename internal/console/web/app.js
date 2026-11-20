@@ -108,6 +108,8 @@ async function loadServices() {
   const { services } = await api("services");
   noServices.hidden = services.length > 0;
   showServicesSummary(services);
+  serviceUpdates = services.filter((service) => service.update_available).length;
+  showUpdates();
   servicesList.replaceChildren(...services.map((service) => {
     const card = element("li", undefined, "card");
     tint(card, service.app);
@@ -239,6 +241,7 @@ async function loadResources() {
   piNow.replaceChildren(...tiles);
   piSection.hidden = list.length + tiles.length === 0 || wizardStep !== null;
   if (!piSection.hidden) {
+    await loadUpdates();
     await loadStorage();
     await loadBackups();
     await loadHistory();
@@ -1122,6 +1125,156 @@ async function loadBackups() {
   return running;
 }
 
+// Mises à jour (spécification 9.2) : la console les signale, l'administrateur
+// décide. Les correctifs de sécurité du système passent en premier, en rouge ;
+// une nouvelle version de pi-appliance est seulement signalée.
+const updatesBox = document.getElementById("updatesBox");
+const updatesState = document.getElementById("updatesState");
+const updatesDetails = document.getElementById("updatesDetails");
+const updatesApply = document.getElementById("updatesApply");
+const updatesCheck = document.getElementById("updatesCheck");
+let updatesStatus = null;
+let updatesTimer = null;
+let serviceUpdates = 0;
+
+function applyBusy(system) {
+  return Boolean(system && system.apply && ["starting", "running"].includes(system.apply.state));
+}
+
+function showUpdates() {
+  const status = updatesStatus;
+  if (!status) {
+    return;
+  }
+  const system = status.system;
+  const busy = applyBusy(system);
+  const security = system ? system.security : 0;
+  const others = system ? system.packages.length - security : 0;
+  const lines = [];
+  let color = "green";
+  let state;
+  if (busy) {
+    state = system.apply.state === "running"
+      ? t("Installation des mises à jour du système : {0} %. Vos services peuvent s'arrêter quelques instants.", system.apply.percent)
+      : t("Préparation de l'installation des mises à jour du système…");
+    color = "orange";
+  } else if (security > 0) {
+    state = t("{0} pour le système : installez-les dès que possible.", plural(security, t("correctif de sécurité"), t("correctifs de sécurité")));
+    color = "red";
+  } else if (others > 0 || status.appliance.available || serviceUpdates > 0) {
+    state = t("Des mises à jour sont disponibles.");
+    color = "orange";
+  } else {
+    state = t("Tout est à jour.");
+  }
+  if (!busy && security > 0 && others > 0) {
+    lines.push(element("p", t("Et {0} du système.", plural(others, t("autre mise à jour"), t("autres mises à jour")))));
+  } else if (!busy && others > 0) {
+    lines.push(element("p", t("Système : {0}.", plural(others, t("mise à jour"), t("mises à jour")))));
+  }
+  if (status.appliance.available) {
+    const line = element("p", t("Une nouvelle version de pi-appliance est sortie : {0}. Elle ne s'installe pas toute seule.", status.appliance.latest));
+    if (status.appliance.url) {
+      const link = element("a", t("Voir les nouveautés"));
+      link.href = status.appliance.url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      line.append(" ", link);
+    }
+    lines.push(line);
+  }
+  if (serviceUpdates > 0) {
+    lines.push(element("p", t("{0} : utilisez « Mettre à jour » sur le service, plus bas.",
+      plural(serviceUpdates, t("service a une nouvelle version"), t("services ont une nouvelle version")))));
+  }
+  if (system && system.reboot_required && !busy) {
+    lines.push(element("p", t("Redémarrez le Pi pour terminer l'installation des mises à jour."), "warning"));
+  }
+  if (system && system.apply && system.apply.state === "failed" && system.packages.length > 0) {
+    lines.push(element("p", t("La dernière installation des mises à jour a échoué. Réessayez plus tard."), "warning"));
+  }
+  if (status.system_error) {
+    lines.push(element("p", t("La liste des mises à jour du système est illisible pour l'instant."), "meta"));
+  }
+  if (status.appliance.error) {
+    lines.push(element("p", t("Impossible de savoir si une nouvelle version de pi-appliance est sortie : le site de publication ne répond pas."), "meta"));
+  }
+  if (status.checking) {
+    lines.push(element("p", t("Recherche des mises à jour…"), "meta"));
+  } else if (system && system.checked_at) {
+    lines.push(element("p", t("Dernière recherche : {0}.", new Date(system.checked_at).toLocaleString(LOCALE)), "meta"));
+  }
+  updatesState.replaceChildren(element("span", undefined, `dot ${color}`), element("span", state));
+  updatesDetails.replaceChildren(...lines);
+  updatesBox.classList.toggle("alert", security > 0 && !busy);
+  updatesApply.hidden = !system || busy || system.packages.length === 0;
+  updatesApply.disabled = false;
+  updatesCheck.disabled = busy || status.checking;
+}
+
+// loadUpdates rend vrai quand plus rien n'est en cours (installation, recherche).
+async function loadUpdates() {
+  try {
+    updatesStatus = await api("updates");
+  } catch {
+    updatesBox.hidden = true;
+    return true;
+  }
+  updatesBox.hidden = false;
+  showUpdates();
+  const busy = applyBusy(updatesStatus.system) || updatesStatus.checking;
+  if (busy) {
+    watchUpdates();
+  }
+  return !busy;
+}
+
+function watchUpdates() {
+  if (updatesTimer) {
+    return;
+  }
+  updatesTimer = setInterval(async () => {
+    const wasApplying = applyBusy(updatesStatus && updatesStatus.system);
+    const done = await loadUpdates().catch(() => false);
+    if (done) {
+      clearInterval(updatesTimer);
+      updatesTimer = null;
+      const apply = updatesStatus && updatesStatus.system && updatesStatus.system.apply;
+      if (wasApplying && apply && apply.state === "done") {
+        showMessage([t("Les mises à jour du système sont installées.")], "success");
+      } else if (wasApplying && apply && apply.state === "failed") {
+        showMessage([t("La dernière installation des mises à jour a échoué. Réessayez plus tard.")], "error");
+      }
+    }
+  }, 5000);
+}
+
+updatesApply.addEventListener("click", async () => {
+  if (!window.confirm(t("Installer les mises à jour du système maintenant ?\n\nCela peut prendre plusieurs minutes. Vos services peuvent s'arrêter quelques instants pendant l'installation."))) {
+    return;
+  }
+  updatesApply.disabled = true;
+  try {
+    await api("updates/system", { method: "POST" });
+    showMessage([t("Installation des mises à jour du système… Cette page se mettra à jour toute seule.")], "info");
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+  await loadUpdates();
+  watchUpdates();
+});
+
+updatesCheck.addEventListener("click", async () => {
+  updatesCheck.disabled = true;
+  try {
+    await api("updates/check", { method: "POST" });
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+  await loadUpdates();
+  watchUpdates();
+});
+
 // Réseau de la maison (spécification, section 4) : choix du Wi-Fi ou du câble,
 // depuis le point d'accès « pi-appliance » du premier démarrage ou plus tard.
 const networkSection = document.getElementById("networkSection");
@@ -1909,6 +2062,9 @@ function showAuth(mode) {
   clearInterval(storageTimer);
   clearInterval(backupTimer);
   backupTimer = null;
+  clearInterval(updatesTimer);
+  updatesTimer = null;
+  updatesStatus = null;
 }
 
 authForm.addEventListener("submit", async (event) => {

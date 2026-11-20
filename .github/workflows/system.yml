@@ -73,6 +73,8 @@ jobs:
         run: sh system/tests/name-test.sh
       - name: Choix du disque de sauvegarde
         run: sh system/tests/backup-disk-test.sh
+      - name: Correctifs du système
+        run: sh system/tests/updates-test.sh
       - name: pi-gen (préparation, sans construction)
         run: |
           set -eu

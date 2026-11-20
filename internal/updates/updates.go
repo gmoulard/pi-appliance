@@ -1,0 +1,276 @@
+// This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+// Copyright (c) 2026 Guillaume Moulard.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+// Package updates propose les mises à jour dans la console (spécification
+// 9.2) sans jamais les installer d'office : correctifs de Raspberry Pi OS par
+// le script updates.sh de l'image, installés à la demande de l'administrateur,
+// et nouvelle version de pi-appliance publiée sur GitHub, seulement signalée.
+package updates
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"strings"
+	"sync"
+	"time"
+)
+
+// DefaultScript est le script installé par l'image.
+const DefaultScript = "/usr/local/lib/pi-appliance/updates.sh"
+
+// Runner lance updates.sh avec ses arguments (network.Script convient).
+type Runner interface {
+	Run(ctx context.Context, stdin []byte, args ...string) ([]byte, error)
+}
+
+// Failure est un refus de updates.sh : code pour la console, message en langage courant.
+type Failure struct {
+	Code    string `json:"error"`
+	Message string `json:"message"`
+}
+
+func (f Failure) Error() string {
+	return f.Message
+}
+
+// Package : un paquet du système à mettre à jour.
+type Package struct {
+	Name     string `json:"name"`
+	From     string `json:"from"`
+	To       string `json:"to"`
+	Security bool   `json:"security"`
+}
+
+// Apply : dernière installation des correctifs ; State vaut starting,
+// running, done ou failed.
+type Apply struct {
+	State   string `json:"state"`
+	Percent int    `json:"percent"`
+	Error   string `json:"error"`
+	Message string `json:"message"`
+	At      string `json:"at"`
+}
+
+// System : réponse de « updates.sh status ».
+type System struct {
+	Packages       []Package `json:"packages"`
+	Security       int       `json:"security"`
+	CheckedAt      *string   `json:"checked_at"`
+	Apply          *Apply    `json:"apply"`
+	RebootRequired bool      `json:"reboot_required"`
+}
+
+// Busy dit si une installation est en cours.
+func (s System) Busy() bool {
+	return s.Apply != nil && (s.Apply.State == "starting" || s.Apply.State == "running")
+}
+
+// Appliance : version de pi-appliance en service et dernière version publiée.
+type Appliance struct {
+	Current   string     `json:"current"`
+	Latest    string     `json:"latest,omitempty"`
+	Available bool       `json:"available"`
+	URL       string     `json:"url,omitempty"`
+	CheckedAt *time.Time `json:"checked_at"`
+	Error     string     `json:"error,omitempty"`
+}
+
+// Status : tout ce que la console affiche des mises à jour.
+type Status struct {
+	// System est nil quand le système ne se met pas à jour d'ici (poste de développement).
+	System      *System   `json:"system"`
+	SystemError string    `json:"system_error,omitempty"`
+	Appliance   Appliance `json:"appliance"`
+	Checking    bool      `json:"checking"`
+}
+
+// Checker cherche les mises à jour, chaque jour et à la demande.
+type Checker struct {
+	// Runner lance updates.sh ; nil : pas de correctifs du système.
+	Runner Runner
+	// Releases donne la dernière version publiée ; nil : pas de comparaison.
+	Releases Releases
+	// Version : version de pi-appliance en service.
+	Version string
+	Logf    func(format string, args ...any)
+	Now     func() time.Time
+
+	mu        sync.Mutex
+	appliance Appliance
+	checking  bool
+}
+
+const (
+	statusTimeout  = time.Minute
+	refreshTimeout = 10 * time.Minute
+	// Every : délai entre deux recherches automatiques.
+	Every = 24 * time.Hour
+)
+
+func (c *Checker) logf(format string, args ...any) {
+	if c.Logf != nil {
+		c.Logf(format, args...)
+	}
+}
+
+func (c *Checker) now() time.Time {
+	if c.Now != nil {
+		return c.Now()
+	}
+	return time.Now()
+}
+
+func (c *Checker) run(ctx context.Context, timeout time.Duration, args ...string) ([]byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	out, err := c.Runner.Run(ctx, nil, args...)
+	if err != nil {
+		var failure Failure
+		if json.Unmarshal(out, &failure) == nil && failure.Code != "" {
+			return nil, failure
+		}
+		return nil, fmt.Errorf("updates.sh %s : %w", strings.Join(args, " "), err)
+	}
+	return out, nil
+}
+
+// SystemStatus lit les paquets du système à mettre à jour, sans rien installer.
+func (c *Checker) SystemStatus(ctx context.Context) (System, error) {
+	if c.Runner == nil {
+		return System{}, errors.New("pas de script des mises à jour")
+	}
+	out, err := c.run(ctx, statusTimeout, "status")
+	if err != nil {
+		return System{}, err
+	}
+	var system System
+	if err := json.Unmarshal(out, &system); err != nil {
+		return System{}, fmt.Errorf("updates.sh status : réponse illisible : %w", err)
+	}
+	if system.Packages == nil {
+		system.Packages = []Package{}
+	}
+	system.Security = 0
+	for _, p := range system.Packages {
+		if p.Security {
+			system.Security++
+		}
+	}
+	return system, nil
+}
+
+// ApplySystem lance l'installation des correctifs du système ; elle se
+// poursuit après la réponse et se suit dans Status.
+func (c *Checker) ApplySystem(ctx context.Context) error {
+	if c.Runner == nil {
+		return errors.New("pas de script des mises à jour")
+	}
+	_, err := c.run(ctx, statusTimeout, "apply")
+	return err
+}
+
+// Status rend l'état des mises à jour : la liste des correctifs est relue,
+// la dernière version publiée est celle de la dernière recherche.
+func (c *Checker) Status(ctx context.Context) Status {
+	c.mu.Lock()
+	status := Status{Appliance: c.appliance, Checking: c.checking}
+	c.mu.Unlock()
+	status.Appliance.Current = c.Version
+	status.Appliance.Available = Newer(c.Version, status.Appliance.Latest)
+	if c.Runner != nil {
+		system, err := c.SystemStatus(ctx)
+		if err != nil {
+			c.logf("mises à jour du système : %v", err)
+			status.SystemError = "La liste des mises à jour du système est illisible pour l'instant."
+		} else {
+			status.System = &system
+		}
+	}
+	return status
+}
+
+// Check relit les listes de paquets des dépôts et la dernière version publiée
+// de pi-appliance. Rien n'est installé. Une seule recherche à la fois : rend
+// faux si une recherche est déjà en cours.
+func (c *Checker) Check(ctx context.Context) bool {
+	c.mu.Lock()
+	if c.checking {
+		c.mu.Unlock()
+		return false
+	}
+	c.checking = true
+	c.mu.Unlock()
+	defer func() {
+		c.mu.Lock()
+		c.checking = false
+		c.mu.Unlock()
+	}()
+	if c.Runner != nil {
+		if _, err := c.run(ctx, refreshTimeout, "refresh"); err != nil {
+			c.logf("mises à jour du système : %v", err)
+		}
+	}
+	if c.Releases != nil {
+		release, err := c.Releases.Latest(ctx)
+		now := c.now()
+		c.mu.Lock()
+		c.appliance.CheckedAt = &now
+		if err != nil {
+			c.appliance.Error = "Impossible de savoir si une nouvelle version de pi-appliance est sortie : le site de publication ne répond pas."
+		} else {
+			c.appliance.Error = ""
+			c.appliance.Latest, c.appliance.URL = "", ""
+			if release != nil {
+				c.appliance.Latest, c.appliance.URL = release.Tag, release.URL
+			}
+		}
+		c.mu.Unlock()
+		if err != nil {
+			c.logf("dernière version de pi-appliance : %v", err)
+		}
+	}
+	return true
+}
+
+// CheckNow lance une recherche sans l'attendre ; rend faux si une recherche
+// est déjà en cours.
+func (c *Checker) CheckNow() bool {
+	c.mu.Lock()
+	busy := c.checking
+	c.mu.Unlock()
+	if busy {
+		return false
+	}
+	go c.Check(context.Background())
+	return true
+}
+
+// Run cherche les mises à jour peu après le démarrage, puis chaque jour,
+// jusqu'à l'arrêt de ctx.
+func (c *Checker) Run(ctx context.Context, first time.Duration) {
+	timer := time.NewTimer(first)
+	defer timer.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-timer.C:
+		}
+		c.Check(ctx)
+		timer.Reset(Every)
+	}
+}

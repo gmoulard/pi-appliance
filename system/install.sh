@@ -101,6 +101,10 @@ fi
 systemctl enable docker.service NetworkManager.service avahi-daemon.service \
 	pi-appliance-secrets.service pi-appliance-traefik.service \
 	pi-appliance-firewall.service pi-appliance-ap.service pi-appliance.service
+# Rien n'est mis à jour sans l'accord de l'administrateur (spécification 9.2) :
+# pas d'installation automatique par apt, les correctifs passent par la console
+# (updates.sh).
+systemctl mask apt-daily-upgrade.timer apt-daily-upgrade.service
 
 # Sur un Pi en marche (pas dans le chroot de pi-gen) : démarrer tout de suite.
 if [ -d /run/systemd/system ] && ! systemd-detect-virt --chroot >/dev/null 2>&1; then
