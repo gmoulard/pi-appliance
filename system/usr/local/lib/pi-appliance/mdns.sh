@@ -94,6 +94,9 @@ sync_once() {
 if [ "${MDNS_LIB_ONLY:-}" = 1 ]; then return 0 2>/dev/null || exit 0; fi
 
 trap 'stop_all; exit 0' INT TERM
+if ! command -v "$PUBLISH_CMD" >/dev/null 2>&1; then
+	echo "annonce mDNS des services : $PUBLISH_CMD introuvable (paquet avahi-utils), aucune adresse annoncée" >&2
+fi
 while :; do
 	sync_once || echo "annonce mDNS des services : vérification en échec" >&2
 	sleep "$INTERVAL" &

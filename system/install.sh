@@ -54,13 +54,29 @@ here=$(cd "$(dirname "$0")" && pwd)
 # Clé du dépôt Docker (https://docs.docker.com/engine/install/debian/), vérifiée.
 DOCKER_KEY_FINGERPRINT=9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 
+PACKAGES="ca-certificates curl gnupg jq openssl iw network-manager dnsmasq-base avahi-daemon avahi-utils fdisk e2fsprogs nftables"
+
 export DEBIAN_FRONTEND=noninteractive
+# NE PAS sauter les paquets à la mise à jour : un paquet ajouté par une nouvelle
+# version (avahi-utils en 0.1.3) manquerait sur les Pi mis à jour depuis la console.
+if [ "$update" = 1 ]; then
+	missing=
+	for package in $PACKAGES; do
+		if ! dpkg-query -W -f '${Status}' "$package" 2>/dev/null | grep -q 'install ok installed'; then
+			missing="$missing $package"
+		fi
+	done
+	if [ -n "$missing" ]; then
+		# shellcheck disable=SC2086
+		if ! { apt-get update && apt-get install -y --no-install-recommends $missing; }; then
+			echo "paquets non installés :$missing" >&2
+		fi
+	fi
+fi
 if [ "$update" = 0 ]; then
 	apt-get update
-	apt-get install -y --no-install-recommends \
-		ca-certificates curl gnupg jq openssl iw \
-		network-manager dnsmasq-base avahi-daemon avahi-utils \
-		fdisk e2fsprogs nftables
+	# shellcheck disable=SC2086
+	apt-get install -y --no-install-recommends $PACKAGES
 
 	install -m 0755 -d /etc/apt/keyrings
 	curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc.tmp
