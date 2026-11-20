@@ -18,10 +18,13 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
 // middlewareLabel lit le middleware posé sur le routeur du service « cloud ».
@@ -151,5 +154,32 @@ func TestNoWebPageHasNoAccess(t *testing.T) {
 	app.Port, app.Access = 80, ""
 	if got := webAccess(app); got != AccessPublic {
 		t.Fatalf("accès par défaut %q", got)
+	}
+}
+
+// Seul Portainer, réservé aux administrateurs à la maison, a tous les droits
+// sur le Pi parmi les applications livrées.
+func TestMarketplaceRisks(t *testing.T) {
+	catalog, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, app := range catalog.Apps() {
+		risks, err := MarketplaceRisks(app)
+		if err != nil {
+			t.Fatalf("%s : %v", app.ID, err)
+		}
+		if (len(risks) > 0) != (app.ID == "portainer") {
+			t.Errorf("%s : options dangereuses %v", app.ID, risks)
+		}
+	}
+	portainer, _ := catalog.Get("portainer")
+	portainer.Access = AccessHome
+	if _, err := MarketplaceRisks(portainer); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("Portainer sans accès admins : %v", err)
+	}
+	m := &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: &fakeRunner{}}
+	if _, err := m.Install(context.Background(), portainer, "portainer", nil); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("installation de Portainer sans accès admins : %v", err)
 	}
 }

@@ -1,0 +1,42 @@
+x-pi-appliance:
+  name: Portainer
+  description: Voir et gérer les conteneurs Docker du Pi depuis le navigateur, pour les utilisateurs avertis. Portainer a la main sur tout le Pi, il n'est donc ouvert qu'aux administrateurs, à la maison. Ne modifiez pas dans Portainer les services installés par la console, sinon leurs mises à jour et leurs sauvegardes peuvent ne plus marcher.
+  icon: M4 10h16v10H4zM7 10V6h10v4M10 14h4
+  category: Administration
+  tags: [administration]
+  license: Zlib
+  subdomain: portainer
+  service: portainer
+  port: 9000
+  memory_mb: 128
+  disk_mb: 512
+  login: application
+  access: admins
+  parameters:
+    - name: PORTAINER_ADMIN_PASSWORD
+      label: Mot de passe de l'administrateur de Portainer (identifiant admin)
+      generate: true
+
+services:
+  # Portainer pilote Docker par son socket : il a la main sur tout le Pi.
+  # Le manifeste demande donc l'accès « administrateurs, à la maison »
+  # (access: admins), que la console garde et ne laisse pas changer.
+  portainer:
+    image: portainer/portainer-ce:2.45.4
+    restart: unless-stopped
+    # Compte admin créé au premier démarrage avec le mot de passe tiré au
+    # hasard : personne ne peut prendre la place de l'administrateur.
+    command: ["--admin-password-file", "/run/pi-appliance/admin-password"]
+    configs:
+      - source: admin-password
+        target: /run/pi-appliance/admin-password
+    volumes:
+      - data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+configs:
+  admin-password:
+    content: ${PORTAINER_ADMIN_PASSWORD}
+
+volumes:
+  data:

@@ -402,6 +402,8 @@ piTranslations("zh", {
   "Tout le monde, sur internet": "所有人（互联网上）",
   "Les personnes qui ont un compte sur ce Pi": "在这台 Pi 上有账户的人",
   "La maison seulement (et le VPN)": "仅限家中（以及 VPN）",
+  "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "此 Pi 的管理员，仅限在家（及通过 VPN）",
+  "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "注意：此应用可以完全控制整个 Pi。只有管理员可以在家中打开它。请不要在此应用中修改由控制台安装的服务，否则它们的更新和备份可能会失效。",
   "Qui peut l'ouvrir": "谁可以打开",
   "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "在外面使用前，请先在家里在这里登录：控制台的登录页面暂时还不能从互联网打开。",
   "Changement de l'accès à {0}… Le service redémarre.": "正在更改 {0} 的访问权限… 服务正在重启。",

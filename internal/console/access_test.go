@@ -17,6 +17,9 @@ package console
 
 import (
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/gmoulard/pi-appliance/internal/services"
@@ -78,5 +81,37 @@ func TestInstallUsesManifestAccess(t *testing.T) {
 	}
 	if got := listAccess(t, f, cookie); got != services.AccessUsers {
 		t.Fatalf("accès %q, attendu celui du manifeste", got)
+	}
+}
+
+// Portainer a la main sur tout le Pi (accès à Docker) : installation confirmée,
+// accès « administrateurs, à la maison » posé par le manifeste et gardé.
+func TestInstallPortainer(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	if response := f.install(`{"app": "portainer", "access": "public", "confirm_risks": true}`, cookie); response.Code != http.StatusBadRequest {
+		t.Fatalf("accès public : code %d", response.Code)
+	}
+	response := f.install(`{"app": "portainer"}`, cookie)
+	if response.Code != http.StatusConflict || !strings.Contains(response.Body.String(), `"code":"docker-socket"`) {
+		t.Fatalf("sans confirmation : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.install(`{"app": "portainer", "confirm_risks": true}`, cookie); response.Code != http.StatusCreated {
+		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
+	}
+	if got := listAccess(t, f, cookie); got != services.AccessAdmins {
+		t.Fatalf("accès %q", got)
+	}
+	override, err := os.ReadFile(filepath.Join(f.manager.Dir, "services", "portainer", "pi-appliance.override.json"))
+	if err != nil || !strings.Contains(string(override), `"pi-appliance-home@file,pi-appliance-admins@file"`) {
+		t.Fatalf("labels Traefik : %v\n%s", err, override)
+	}
+	for _, access := range []string{"public", "home", "admins"} {
+		if code := f.do(http.MethodPut, "/pi-appliance/api/services/portainer/access", "application/json", `{"access": "`+access+`"}`, cookie).Code; code != http.StatusBadRequest {
+			t.Fatalf("changement vers %s : code %d", access, code)
+		}
+	}
+	if response := f.install(`{"app": "dokuwiki", "name": "wiki", "access": "admins"}`, cookie); response.Code != http.StatusBadRequest {
+		t.Fatalf("accès admins choisi pour un autre service : code %d", response.Code)
 	}
 }

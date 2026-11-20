@@ -402,6 +402,8 @@ piTranslations("fa", {
   "Tout le monde, sur internet": "همه، در اینترنت",
   "Les personnes qui ont un compte sur ce Pi": "کسانی که روی این Pi حساب دارند",
   "La maison seulement (et le VPN)": "فقط خانه (و VPN)",
+  "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "مدیران این Pi، فقط در خانه (و از راه VPN)",
+  "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "هشدار: این برنامه کنترل کامل Pi را در دست دارد. فقط برای مدیران و فقط از خانه باز است. سرویس‌هایی را که کنسول نصب کرده است در این برنامه تغییر ندهید: ممکن است به‌روزرسانی‌ها و پشتیبان‌های آن‌ها دیگر کار نکنند.",
   "Qui peut l'ouvrir": "چه کسی می‌تواند آن را باز کند",
   "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "بیرون از خانه، ابتدا همین‌جا در خانه وارد شوید: صفحهٔ ورود کنسول هنوز از اینترنت باز نمی‌شود.",
   "Changement de l'accès à {0}… Le service redémarre.": "در حال تغییر دسترسی به {0}… سرویس دوباره راه‌اندازی می‌شود.",

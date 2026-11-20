@@ -99,6 +99,7 @@ func (c *console) accountRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST "+BasePath+"/api/auth/return", c.signedIn(c.forwardReturn))
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward", c.forward)
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-admin", c.forwardAdmin)
+	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-service-admin", c.forwardServiceAdmin)
 }
 
 // ownAccount : réglages de son propre compte, permis même quand la double
@@ -321,17 +322,24 @@ func (c *console) forwardReturn(w http.ResponseWriter, r *http.Request) {
 // session déléguée valide ; sinon redirection vers la connexion de la console
 // (navigation) ou 401. Seul Traefik (bouclage ou réseau Docker) peut l'appeler.
 func (c *console) forward(w http.ResponseWriter, r *http.Request) {
-	c.forwardFor(w, r, false)
+	c.forwardFor(w, r, false, false)
 }
 
 // forwardAdmin : comme forward, réservé aux administrateurs (middleware
-// pi-appliance-admin, administration du système par Cockpit) ; 403 pour une
-// autre personne connectée.
+// pi-appliance-admin, administration du système par Cockpit, servi sous
+// l'adresse de la console) ; 403 pour une autre personne connectée.
 func (c *console) forwardAdmin(w http.ResponseWriter, r *http.Request) {
-	c.forwardFor(w, r, true)
+	c.forwardFor(w, r, true, true)
 }
 
-func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly bool) {
+// forwardServiceAdmin : comme forwardAdmin, pour un service sur son
+// sous-domaine réservé aux administrateurs (middleware pi-appliance-admins,
+// accès « admins » d'un manifeste : Portainer).
+func (c *console) forwardServiceAdmin(w http.ResponseWriter, r *http.Request) {
+	c.forwardFor(w, r, true, false)
+}
+
+func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly, onConsoleHost bool) {
 	if !trustedProxy(r) {
 		writeError(w, http.StatusForbidden, "Réservé à Traefik.")
 		return
@@ -365,9 +373,9 @@ func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly b
 	}
 	original := scheme + "://" + host + uri
 	// Un service a son sous-domaine, la console est sur l'adresse parente ;
-	// Cockpit (adminOnly) est servi sous l'adresse même de la console.
+	// Cockpit (onConsoleHost) est servi sous l'adresse même de la console.
 	consoleHost := parentHost(host)
-	if adminOnly {
+	if onConsoleHost {
 		consoleHost = host
 	}
 	login := scheme + "://" + consoleHost + BasePath + "/?return=" + url.QueryEscape(original)

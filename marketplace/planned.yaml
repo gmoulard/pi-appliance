@@ -15,13 +15,6 @@
   category: Maison
   tags: [maison]
   todo: TODO-4.9
-- id: portainer
-  name: Portainer
-  description: Voir et gérer les conteneurs Docker du Pi depuis le navigateur, pour les utilisateurs avertis.
-  icon: M4 10h16v10H4zM7 10V6h10v4M10 14h4
-  category: Administration
-  tags: [administration]
-  todo: TODO-2.49
 - id: cockpit
   name: Cockpit
   description: Administrer le système du Pi depuis le navigateur (journaux, services, disques), pour les utilisateurs avertis.

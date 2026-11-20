@@ -76,7 +76,7 @@ type Instance struct {
 	// NoWebPage : service sans page web (VPN…), joint par ses HostPorts.
 	NoWebPage bool                   `json:"no_web_page,omitempty"`
 	HostPorts []marketplace.HostPort `json:"host_ports,omitempty"`
-	// Access : qui ouvre la page du service (public, users, home ; access.go).
+	// Access : qui ouvre la page du service (public, users, home, admins ; access.go).
 	Access string `json:"access,omitempty"`
 	// SiteFiles : fichiers du site déposés par Nextcloud (manifeste, champ files).
 	SiteFiles bool `json:"site_files,omitempty"`
@@ -170,6 +170,11 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	dir := m.serviceDir(name)
 	if _, err := os.Stat(filepath.Join(dir, stateName)); err == nil {
 		return Result{}, fmt.Errorf("%w : un service s'appelle déjà « %s », choisissez un autre nom", ErrExists, name)
+	}
+	if app.ID != CustomApp {
+		if _, err := MarketplaceRisks(app); err != nil {
+			return Result{}, err
+		}
 	}
 	address := name + "." + m.CurrentDomain()
 	env, secrets, err := m.environment(app, dir, name, address, values)

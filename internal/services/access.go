@@ -33,15 +33,21 @@ const (
 	AccessUsers = "users"
 	// AccessHome : les appareils de la maison (et du VPN) seulement.
 	AccessHome = "home"
+	// AccessAdmins : les administrateurs de la console, depuis la maison (et
+	// le VPN). Réservé aux applications qui ont la main sur tout le Pi
+	// (Portainer) : posé par leur manifeste, jamais choisi ni changé.
+	AccessAdmins = "admins"
 )
 
 // Middlewares Traefik définis dans system/etc/pi-appliance/traefik/dynamic/console.yml.
 const (
-	authMiddleware = "pi-appliance-auth@file"
-	homeMiddleware = "pi-appliance-home@file"
+	authMiddleware   = "pi-appliance-auth@file"
+	homeMiddleware   = "pi-appliance-home@file"
+	adminsMiddleware = homeMiddleware + ",pi-appliance-admins@file"
 )
 
-// ValidAccess dit si un niveau d'accès est connu.
+// ValidAccess dit si un niveau d'accès peut être choisi par l'administrateur
+// (AccessAdmins ne vient que du manifeste).
 func ValidAccess(access string) bool {
 	return access == AccessPublic || access == AccessUsers || access == AccessHome
 }
@@ -53,6 +59,8 @@ func accessMiddleware(access string) string {
 		return authMiddleware
 	case AccessHome:
 		return homeMiddleware
+	case AccessAdmins:
+		return adminsMiddleware
 	}
 	return ""
 }
@@ -71,7 +79,7 @@ func webAccess(app marketplace.App) string {
 
 // SetAccess change qui ouvre la page d'un service : les labels Traefik sont
 // réécrits et le service redémarré ; s'il ne redémarre pas, l'ancien niveau
-// est remis.
+// est remis. Un service réservé aux administrateurs (AccessAdmins) le reste.
 func (m *Manager) SetAccess(ctx context.Context, name, access string) (Instance, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -93,6 +101,9 @@ func (m *Manager) SetAccess(ctx context.Context, name, access string) (Instance,
 	}
 	if instance.NoWebPage {
 		return Instance{}, fmt.Errorf("%w : %s n'a pas de page web, son accès ne se règle pas ici", ErrInvalid, name)
+	}
+	if instance.Access == AccessAdmins {
+		return Instance{}, fmt.Errorf("%w : %s a la main sur tout le Pi, il reste réservé aux administrateurs, à la maison", ErrInvalid, name)
 	}
 	overridePath := filepath.Join(dir, overrideName)
 	previous, err := os.ReadFile(overridePath)
@@ -155,4 +166,30 @@ func withAccess(override []byte, name, access string) ([]byte, error) {
 		return nil, err
 	}
 	return append(data, '\n'), nil
+}
+
+// fullControl : options qui donnent tous les droits sur le Pi, comme le compte
+// root (custom.go). Les droits ajoutés limités du VPN (cap_add) n'en sont pas.
+var fullControl = map[string]bool{"docker-socket": true, "privileged": true}
+
+// MarketplaceRisks : options d'une application de la marketplace qui donnent
+// tous les droits sur le Pi (accès à Docker, conteneur privilégié), à faire
+// confirmer par l'administrateur avant de l'installer. Une application qui en
+// a doit être réservée aux administrateurs, à la maison (access: admins) :
+// sinon elle est refusée.
+func MarketplaceRisks(app marketplace.App) ([]Risk, error) {
+	_, risks, err := AnalyzeCompose(app.Compose)
+	if err != nil {
+		return nil, err
+	}
+	var full []Risk
+	for _, risk := range risks {
+		if fullControl[risk.Code] {
+			full = append(full, risk)
+		}
+	}
+	if len(full) > 0 && app.Access != AccessAdmins {
+		return nil, fmt.Errorf("%w : %s a la main sur tout le Pi, son manifeste doit le réserver aux administrateurs, à la maison (access: admins)", ErrInvalid, app.Name)
+	}
+	return full, nil
 }

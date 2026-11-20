@@ -37,8 +37,10 @@ var (
 	variablePattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]*$`)
 	iconPattern     = regexp.MustCompile(`^[MmLlHhVvCcSsQqTtAaZz][MmLlHhVvCcSsQqTtAaZz0-9 ,.-]*$`)
 	logins          = map[string]bool{"console": true, "application": true}
-	accesses        = map[string]bool{"public": true, "users": true, "home": true}
-	protocols       = map[string]bool{"tcp": true, "udp": true}
+	// admins : administrateurs, à la maison, pour une application qui a la
+	// main sur tout le Pi (accès à Docker) ; la console ne le laisse pas changer.
+	accesses  = map[string]bool{"public": true, "users": true, "home": true, "admins": true}
+	protocols = map[string]bool{"tcp": true, "udp": true}
 	// Ports de Traefik et de la console, jamais ouverts par un manifeste.
 	reservedPorts = map[int]bool{80: true, 443: true, 8080: true}
 )
@@ -234,7 +236,7 @@ func check(app App, file composeFile) []string {
 		fail("login %q invalide (console ou application)", app.Login)
 	}
 	if !accesses[app.Access] {
-		fail("access %q invalide (public, users ou home)", app.Access)
+		fail("access %q invalide (public, users, home ou admins)", app.Access)
 	}
 	seen := map[string]bool{}
 	for _, parameter := range app.Parameters {
