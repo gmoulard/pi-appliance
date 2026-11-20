@@ -165,7 +165,7 @@ async function loadServices() {
       detail.append(element("p", t("Nouvelle version disponible."), "meta"));
     }
     if (service.site_files) {
-      detail.append(element("p", t("Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www", service.name), "meta"));
+      detail.append(element("p", siteFilesText(service), "meta"));
     }
     if (service.site_files && service.app !== "site-web") {
       detail.append(element("p", buildText(service.build), "meta"));
@@ -173,6 +173,15 @@ async function loadServices() {
     card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
     return card;
   }));
+}
+
+// Dépôt des fichiers d'un site par Nextcloud (spécification 6.3) : la
+// console crée le dossier « Site <nom> » dans chaque Nextcloud installé.
+function siteFilesText(service) {
+  const folder = service.nextcloud_folder || `Site ${service.name}`;
+  if (service.nextcloud_folder) return t("Déposez les fichiers du site dans le dossier « {0} » de Nextcloud, avec un compte administrateur de Nextcloud.", folder);
+  if (service.nextcloud_pending) return t("Le dossier « {0} » va apparaître dans Nextcloud d'ici quelques minutes.", folder);
+  return t("Pour déposer les fichiers du site, installez Nextcloud depuis la marketplace : un dossier « {0} » y apparaîtra.", folder);
 }
 
 // Jauges de la mémoire et du disque (spécification 6.2) : ce que le Pi a, ce

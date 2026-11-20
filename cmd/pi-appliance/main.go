@@ -191,6 +191,7 @@ func main() {
 		go address.Run(ctx, 5*time.Minute)
 	}
 	go backups.Run(ctx)
+	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
 	go checker.Run(ctx, 5*time.Minute)
 	go reporter.Run(ctx)
 	server := &http.Server{

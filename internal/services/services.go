@@ -82,6 +82,10 @@ type Instance struct {
 	SiteFiles bool `json:"site_files,omitempty"`
 	// Build : dernière construction d'un générateur de site statique.
 	Build *Build `json:"build,omitempty"`
+	// NextcloudFolder : dossier du site dans Nextcloud, une fois relié ;
+	// NextcloudPending : Nextcloud installé, dossier pas encore créé.
+	NextcloudFolder  string `json:"nextcloud_folder,omitempty"`
+	NextcloudPending bool   `json:"nextcloud_pending,omitempty"`
 }
 
 type Result struct {
@@ -110,6 +114,9 @@ type Manager struct {
 	HomeNetworks func() []netip.Prefix
 	mu           sync.Mutex
 	renamed      atomic.Pointer[string]
+	linkMu       sync.Mutex
+	wakeOnce     sync.Once
+	wake         chan struct{}
 }
 
 // CurrentDomain : adresse de l'appliance, suffixe de l'adresse de chaque service.
@@ -181,6 +188,11 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	if err := m.writeFiles(dir, app, name, address, env); err != nil {
 		return Result{}, err
 	}
+	if app.SiteFiles {
+		if err := m.prepareSiteDir(name); err != nil {
+			return Result{}, err
+		}
+	}
 	if app.ID == WireGuardApp {
 		if err := m.prepareWireGuard(dir); err != nil {
 			return Result{}, err
@@ -200,6 +212,9 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	instance := Instance{Name: name, App: app.ID, AppName: app.Name, Address: address, InstalledAt: time.Now().UTC(), NoWebPage: app.Port == 0, HostPorts: app.HostPorts, Access: webAccess(app)}
 	if err := writeJSON(filepath.Join(dir, stateName), instance, 0o600); err != nil {
 		return Result{}, err
+	}
+	if app.SiteFiles || app.ID == NextcloudApp {
+		m.WakeNextcloud()
 	}
 	return Result{Instance: instance, Warnings: warnings, Secrets: secrets}, nil
 }
@@ -321,7 +336,7 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 		"networks": []string{"default", Network},
 	}
 	if app.ID == "nextcloud" {
-		service["volumes"] = []string{filepath.Join(m.Dir, "services") + ":/srv/pi-appliance/services"}
+		service["volumes"] = []string{filepath.Join(m.Dir, "services") + ":" + nextcloudSitesMount}
 	}
 	services := map[string]any{app.Service: service}
 	// Dossier des fichiers du site (Nextcloud), dans chaque service qui le lit.
@@ -376,6 +391,17 @@ func (m *Manager) List() ([]Instance, error) {
 		}
 		instances = append(instances, instance)
 	}
+	linked, cloud := m.linkedSites(instances)
+	for i := range instances {
+		if !instances[i].SiteFiles {
+			continue
+		}
+		if linked[instances[i].Name] {
+			instances[i].NextcloudFolder = NextcloudFolder(instances[i].Name)
+		} else {
+			instances[i].NextcloudPending = cloud
+		}
+	}
 	sort.Slice(instances, func(i, j int) bool { return instances[i].Name < instances[j].Name })
 	return instances, nil
 }
@@ -397,6 +423,7 @@ func (m *Manager) Remove(ctx context.Context, name string, keepData bool) error 
 	if output, err := m.compose(ctx, name, args...); err != nil {
 		return fmt.Errorf("le service %s n'a pas pu être arrêté : %s", name, trimOutput(output, err))
 	}
+	defer m.WakeNextcloud()
 	if keepData {
 		return os.Remove(filepath.Join(dir, stateName))
 	}

@@ -153,7 +153,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] **TODO-2.36**: Ouvrir l'installation au réseau une fois l'authentification faite : réservée aux administrateurs connectés.
 - [x] **TODO-2.37**: Application Nextcloud (manifeste `marketplace/nextcloud/`).
 - [x] **TODO-2.38**: Applications site web Apache/PHP, DokuWiki, Etherpad (manifestes `marketplace/site-web/`, `dokuwiki/`, `etherpad/`).
-- [ ] **TODO-2.39**: Site web : dépôt des fichiers par Nextcloud (le ZIP et le FTP ont été retirés le 2026-11-20).
+- [x] **TODO-2.39**: Site web : dépôt des fichiers par Nextcloud (le ZIP et le FTP ont été retirés le 2026-11-20). Réalisé (spécification 6.3, `internal/services/nextcloud.go`) : la console crée elle-même dans Nextcloud un dossier « Site <nom> » par site, réservé aux administrateurs de Nextcloud, et le retire à la désinstallation du site ; la fiche du site dit où déposer les fichiers. À vérifier sur un vrai Pi (TODO-2.43).
   - [x] **TODO-2.40**: ~~6.5.1 ZIP : endpoint administrateur, vérification du ZIP, extraction sûre, remplacement du contenu du site.~~ Retiré le 2026-11-20.
   - [x] **TODO-2.41**: 6.5.2 Nextcloud : dossier partagé monté dans Nextcloud et dans chaque instance du site web.
   - [x] **TODO-2.42**: ~~6.5.3 FTP : service FTP installé avec un compte `pi`, un port configurable et un mot de passe généré.~~ Retiré le 2026-11-20 : l'image FTP choisie n'existait pas pour le Pi.
