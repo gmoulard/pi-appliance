@@ -364,6 +364,12 @@ Chaque type d'alerte peut être désactivé dans la console.
 
 Les mises à jour de pi-appliance, des services et du système sont **proposées** : la console les signale, l'utilisateur clique pour les appliquer. Rien n'est mis à jour sans son accord, **y compris les correctifs de sécurité** de Raspberry Pi OS : ceux-ci sont signalés en évidence dans la console et rappelés par e-mail (section 8.6) tant qu'ils ne sont pas appliqués. Une mise à jour de service ratée revient automatiquement à la version précédente (section 6.2).
 
+**Réalisé** (paquet `internal/updates`, API `api/updates` réservée à l'administrateur) : la section « Mon Pi » commence par un résumé « Mises à jour ». Il compte les correctifs de sécurité du système, en premier et en rouge (cadre rouge, « installez-les dès que possible »), les autres mises à jour du système, une nouvelle version de pi-appliance et les services qui ont une nouvelle version (bouton « Mettre à jour » de chaque service, section 6.2) ; sinon il dit que tout est à jour. Il affiche aussi la date de la dernière recherche.
+
+- **Système** (`/usr/local/lib/pi-appliance/updates.sh`) : `status` liste les paquets à mettre à jour par une simulation d'`apt-get full-upgrade`, sans rien installer. Un paquet est marqué « sécurité » quand l'un de ses dépôts est un dépôt de sécurité (`Debian-Security`, `…-security`). `refresh` relit les listes des dépôts (`apt-get update`) peu après le démarrage de la console, puis chaque jour et à la demande (bouton « Chercher maintenant », `POST api/updates/check`). Le bouton « Installer les mises à jour du système » (`POST api/updates/system`, après confirmation) lance `apply`. Le script se relance alors hors du service de la console (`systemd-run`, unité `pi-appliance-updates`), car une mise à jour de Docker arrête les services quelques instants. Il répond tout de suite, et la page suit l'avancement en pourcentage (`APT::Status-Fd`, champ `apply` de `GET api/updates`). Les fichiers de configuration modifiés sont gardés (`--force-confold`). Une installation ratée ou interrompue est signalée. Un redémarrage nécessaire (`/run/reboot-required`) est rappelé, mais la console ne redémarre pas encore le Pi. `install.sh` masque `apt-daily-upgrade` : apt n'installe rien de lui-même.
+- **pi-appliance** : la version en service (`-ldflags "-X main.version=…"`) est comparée à la dernière version publiée sur GitHub (`releases/latest` du dépôt, ni brouillon ni préversion ; option `-release-repo`, vide : pas de comparaison). Les versions `1.2.3` se comparent, préversions `-beta.N` comprises. Une console construite d'un commit est signalée dès qu'une version est publiée, une console `dev` jamais. La nouvelle version est signalée, avec un lien vers ses nouveautés, mais **pas installée** : la mise à jour de pi-appliance elle-même viendra avec les canaux stable et bêta (TODO-2.24).
+- **Pas encore** : le rappel par e-mail des correctifs de sécurité non appliqués attend le service d'envoi d'e-mails (TODO-3.6, section 8.6). À vérifier sur un vrai Pi.
+
 ## 10. Architecture
 
 ```mermaid
@@ -465,10 +471,11 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `internal/network/` | Réseau du Pi pour la console, par `network.sh` : état, Wi-Fi, connexion, câble, pays du Wi-Fi (4) |
 | `internal/system/` | État du Pi : mémoire, disque, charge du processeur, température, trafic réseau (5.2, 6.2) |
 | `internal/storage/` | Disque USB des données des services, par `storage.sh` : disques branchés, déplacement des données, formatage (4) |
+| `internal/updates/` | Mises à jour proposées : correctifs du système par `updates.sh`, dernière version publiée de pi-appliance (9.2) |
 | `internal/metrics/` | Historique horaire de l'état du Pi sur 30 jours, pour les graphiques (5.2, 11) |
 | `marketplace/` | Catalogue : un manifeste `<application>/compose.yaml` par application (6.5) |
 | `image/` | Construction de l'image avec pi-gen : `build.sh`, `config` (réglages de pi-gen), `stage-pi-appliance/` (étape ajoutée à Raspberry Pi OS Lite) (4) |
-| `system/` | Couche système, aux mêmes chemins que sur le Pi (`etc/`, `usr/`) : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage, disque USB des données ; `install.sh` l'installe (image ou Pi déjà en place) ; `tests/` : tests sans Pi (4, 8.4, 10) |
+| `system/` | Couche système, aux mêmes chemins que sur le Pi (`etc/`, `usr/`) : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage, disque USB des données, correctifs du système ; `install.sh` l'installe (image ou Pi déjà en place) ; `tests/` : tests sans Pi (4, 8.4, 10) |
 | `.github/workflows/go.yml` | Tests et construction du binaire `arm64` |
 | `.github/workflows/system.yml` | Vérification de `image/` et `system/` : `shellcheck`, `yamllint`, tests, préparation de pi-gen |
 | `.github/workflows/image.yml` | Construction de l'image et publication avec sa somme de contrôle (étiquette `v…` ou à la demande) |

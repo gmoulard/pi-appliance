@@ -38,6 +38,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
+	"github.com/gmoulard/pi-appliance/internal/updates"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
@@ -134,6 +135,8 @@ type Config struct {
 	History *metrics.History
 	// DuckDNS tient à jour l'adresse sur internet (spécification 7.1) ; nil : non réglable ici.
 	DuckDNS *ddns.Updater
+	// Updates propose les mises à jour (spécification 9.2) ; nil : pas d'écran des mises à jour.
+	Updates *updates.Checker
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
 	WizardFile    string
 	ACMEEmailFile string
@@ -180,6 +183,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
+	if c.Updates != nil {
+		c.Updates.Routes(mux, BasePath+"/api/updates", c.adminOnly)
+	}
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux
