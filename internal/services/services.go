@@ -27,9 +27,11 @@ import (
 	"io"
 	"math/big"
 	"net"
+	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -71,6 +73,9 @@ type Instance struct {
 	AppName     string    `json:"app_name"`
 	Address     string    `json:"address"`
 	InstalledAt time.Time `json:"installed_at"`
+	// NoWebPage : service sans page web (VPN…), joint par ses HostPorts.
+	NoWebPage bool                   `json:"no_web_page,omitempty"`
+	HostPorts []marketplace.HostPort `json:"host_ports,omitempty"`
 }
 
 type Result struct {
@@ -91,7 +96,10 @@ type Manager struct {
 	// FreeMB donne la place libre du disque qui porte un dossier ; nil : lue
 	// par internal/system.
 	FreeMB func(dir string) (int64, bool)
-	mu     sync.Mutex
+	// HomeNetworks donne les réseaux de la maison pour le VPN ; nil : lus
+	// sur les interfaces du Pi.
+	HomeNetworks func() []netip.Prefix
+	mu           sync.Mutex
 }
 
 // Resources mesure la mémoire du Pi et la place libre du dossier de données.
@@ -133,7 +141,10 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	if err != nil {
 		return Result{}, err
 	}
-	var warnings []string
+	warnings, err := m.hostPortsFree(app, name)
+	if err != nil {
+		return Result{}, err
+	}
 	if m.Measure != nil || m.MemoryMB != nil {
 		if memory := m.Resources().MemoryTotalMB; memory > 0 && memory < app.MemoryMB {
 			warnings = append(warnings, fmt.Sprintf("Ce Raspberry Pi a %d Mo de mémoire et %s en demande %d : le service risque d'être lent.", memory, app.Name, app.MemoryMB))
@@ -141,6 +152,11 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	}
 	if err := m.writeFiles(dir, app, name, address, env); err != nil {
 		return Result{}, err
+	}
+	if app.ID == WireGuardApp {
+		if err := m.prepareWireGuard(dir); err != nil {
+			return Result{}, err
+		}
 	}
 	if _, err := m.Runner.Run(ctx, dir, "network", "inspect", Network); err != nil {
 		if output, err := m.Runner.Run(ctx, dir, "network", "create", Network); err != nil {
@@ -153,11 +169,33 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 		}
 		return Result{Warnings: warnings}, fmt.Errorf("%s n'a pas pu démarrer : %s", app.Name, trimOutput(output, err))
 	}
-	instance := Instance{Name: name, App: app.ID, AppName: app.Name, Address: address, InstalledAt: time.Now().UTC()}
+	instance := Instance{Name: name, App: app.ID, AppName: app.Name, Address: address, InstalledAt: time.Now().UTC(), NoWebPage: app.Port == 0, HostPorts: app.HostPorts}
 	if err := writeJSON(filepath.Join(dir, stateName), instance, 0o600); err != nil {
 		return Result{}, err
 	}
 	return Result{Instance: instance, Warnings: warnings, Secrets: secrets}, nil
+}
+
+// hostPortsFree refuse un port du Pi déjà ouvert par un autre service et
+// rappelle la redirection de port à faire sur la box (accès direct, 7.2).
+func (m *Manager) hostPortsFree(app marketplace.App, name string) ([]string, error) {
+	if len(app.HostPorts) == 0 {
+		return nil, nil
+	}
+	instances, err := m.List()
+	if err != nil {
+		return nil, err
+	}
+	var warnings []string
+	for _, port := range app.HostPorts {
+		for _, other := range instances {
+			if other.Name != name && slices.Contains(other.HostPorts, port) {
+				return nil, fmt.Errorf("%w : le port %s %d du Pi sert déjà au service « %s » ; une seule installation de %s est possible", ErrExists, strings.ToUpper(port.Protocol), port.Port, other.Name, app.Name)
+			}
+		}
+		warnings = append(warnings, fmt.Sprintf("Pour vous en servir hors de la maison, ouvrez sur votre box internet le port %s %d vers ce Raspberry Pi (redirection de port).", strings.ToUpper(port.Protocol), port.Port))
+	}
+	return warnings, nil
 }
 
 func (m *Manager) environment(app marketplace.App, dir, name, address string, values map[string]string) (map[string]string, map[string]string, error) {
@@ -223,6 +261,18 @@ func (m *Manager) writeFiles(dir string, app marketplace.App, name, address stri
 }
 
 func (m *Manager) override(app marketplace.App, name, address string) map[string]any {
+	if app.Port == 0 {
+		// Pas de page web : pas de Traefik, les ports s'ouvrent sur le Pi.
+		ports := make([]string, 0, len(app.HostPorts))
+		for _, port := range app.HostPorts {
+			ports = append(ports, fmt.Sprintf("%d:%d/%s", port.Port, port.Port, port.Protocol))
+		}
+		service := map[string]any{"ports": ports}
+		if app.ID == WireGuardApp {
+			service["volumes"] = []string{filepath.Join(m.serviceDir(name), wireGuardDir) + ":/config/wg_confs"}
+		}
+		return map[string]any{"services": map[string]any{app.Service: service}}
+	}
 	router := "traefik.http.routers.pi-" + name
 	labels := map[string]string{
 		"traefik.enable":         "true",

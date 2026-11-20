@@ -148,7 +148,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-3.5**: Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2).
 - [ ] **TODO-3.6**: Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] **TODO-3.7**: Domaine personnel : guide OVH, à partir de l'ancien `linux-tool/dynHost/` (historique git).
-- [ ] **TODO-3.8**: Accès direct : UPnP, guide de la box, test depuis internet.
+- [ ] **TODO-3.8**: Accès direct : UPnP, guide de la box, test depuis internet ; y compris le port UDP 51820 du VPN WireGuard quand il est installé (TODO-4.6).
 - [ ] **TODO-3.9**: Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente, offre payante.
 - [ ] **TODO-3.10**: Accès par service : public, connectés, maison (8.2).
 - [ ] **TODO-3.11**: Console fermée sur internet par défaut (8.3) : aujourd'hui Traefik sert `/pi-appliance` à toute adresse (`system/etc/pi-appliance/traefik/dynamic/console.yml`). Avant d'ouvrir les ports 80/443 ou le relais, limiter ce routeur au réseau de la maison et au VPN (`ClientIP`, en gardant une priorité plus basse que les routeurs des services), sans oublier que le trafic du relais arrivera par le tunnel.
@@ -161,9 +161,9 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-4.3**: Sauvegardes : chaque nuit, rotation 7/4/6, disque USB, cloud, autre pi-appliance (jumelage par code), chiffrement, restauration de l'appliance, d'un service ou d'un fichier (9.1).
 - [ ] **TODO-4.4**: Services du projet : relais SMTP OVH (SPF, DKIM, DMARC), sauvegarde hors de la maison, Pi de secours (10.2).
 - [ ] **TODO-4.5**: Mises à jour proposées dans la console (9.2).
-- [ ] **TODO-4.6**: VPN WireGuard avec QR code (6.3).
+- [x] **TODO-4.6**: VPN WireGuard avec QR code (6.3) : manifeste `marketplace/wireguard/` (`linuxserver/wireguard`, port UDP 51820 du Pi par la nouvelle clé `host_ports`, service sans page web), clés tirées sur le Pi, écran « Appareils » avec QR code montré une fois, `AllowedIPs` limités au réseau de la maison ; à vérifier sur un vrai Pi, avec un téléphone hors de la maison. La redirection du port UDP 51820 sur la box relève de TODO-3.8.
 - [ ] **TODO-4.7**: Statistiques anonymes et leur service de réception (8.4, 10.2).
-- [ ] **TODO-4.8**: Puis : Samba, lecteur réseau à la maison (dossiers commun et personnels), avec un format de manifeste pour un service qui n'est pas un site web, l'annuaire LDAP de la console et le stockage externe de Nextcloud (6.3).
+- [ ] **TODO-4.8**: Puis : Samba, lecteur réseau à la maison (dossiers commun et personnels), avec le format de manifeste pour un service qui n'est pas un site web (`host_ports`, venu avec TODO-4.6 ; reste l'accès « maison seulement » sans Traefik), l'annuaire LDAP de la console et le stockage externe de Nextcloud (6.3).
 - [ ] **TODO-4.9**: Puis : applications caméra (Motion, timelapse).
 
 ## 5. Site www.pi-appliance.com (13)

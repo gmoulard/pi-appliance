@@ -192,6 +192,7 @@ Règles propres à ces applications :
 | DokuWiki | `marketplace/dokuwiki/` | `dokuwiki/dokuwiki:2026-07-14c` (image officielle ; DokuWiki numérote ses versions par date) | utilisateurs connectés | 128 Mo, 1 024 Mo |
 | Etherpad | `marketplace/etherpad/` | `etherpad/etherpad:3` (image officielle) | utilisateurs connectés | 384 Mo, 1 024 Mo |
 | PostgreSQL | `marketplace/postgresql/` | `postgres:18-alpine` et `adminer:5` (images officielles) | maison seulement | 256 Mo, 1 024 Mo |
+| VPN WireGuard | `marketplace/wireguard/` | `linuxserver/wireguard:1.0.20260223` (linuxserver.io, GPL-3.0, `arm64`) | sans objet (pas de page web ; port UDP 51820 ouvert, protégé par les clés) | 64 Mo, 256 Mo |
 
 - **Site web** : les fichiers du site sont dans un volume propre à l'instance ; tant qu'il est vide, une page « Site en construction » s'affiche. Le dépôt des fichiers par Nextcloud ou ZIP reste à faire.
 - **DokuWiki** : au premier démarrage, le compte `admin` est créé avec un mot de passe tiré au hasard, affiché une seule fois ; l'assistant d'installation de DokuWiki est donc fermé (sinon le premier visiteur choisirait le compte administrateur). Tout le monde lit, les comptes du wiki écrivent ; pas d'inscription libre ; wiki en français.
@@ -203,6 +204,13 @@ Règles propres à ces applications :
   - **MongoDB**, écarté pour l'instant : l'image officielle `mongo` existe pour `arm64`, mais MongoDB 5 et suivants exigent un processeur ARMv8.2-A, c'est-à-dire un **Pi 5** ; sur un Pi 4, un Pi 3 B+ ou un Pi Zero 2 W (ARMv8.0) le serveur s'arrête au démarrage (« instruction illégale »). La dernière version qui y tourne, 4.4, n'est plus suivie depuis février 2024. Son interface web `mongo-express` n'a pas changé depuis mai 2024. Le manifeste ne sait pas encore dire « Pi 5 seulement » (section 15).
   - **Redis**, écarté comme application : image officielle `arm64` légère, mais pas d'interface web officielle légère (Redis Insight, l'interface de Redis, est une application Node.js bien plus lourde que la base elle-même) et, seul, Redis ne sert à rien à la maison : c'est un cache pour d'autres applications. Il sera ajouté comme service interne dans le manifeste d'une application qui en a besoin (par exemple Nextcloud, pour aller plus vite).
   - Une base ouverte directement sur le réseau de la maison, sans interface web (port 5432, 27017, 6379…), demande, comme Samba, un format de manifeste pour un service qui n'est pas un site web : il n'est pas contourné ici.
+- **VPN WireGuard** (TODO-4.6, à vérifier sur un vrai Pi) : premier service **sans page web** (clé `host_ports` des manifestes, section 6.5) ; rien n'est publié par Traefik, la console ouvre le port **UDP 51820** du Pi. Une seule installation par Pi (le port ne sert qu'une fois). L'image linuxserver.io tourne en « mode client » : elle démarre le fichier `wg0.conf` que la console écrit dans `<données>/services/<nom>/wireguard/` (monté sur `/config/wg_confs`), avec le droit `NET_ADMIN` et le routage IPv4 du conteneur. Le module WireGuard du noyau de Raspberry Pi OS est utilisé.
+  - **Clés tirées sur le Pi** par la console (Curve25519, `crypto/ecdh` de Go, comme `wg genkey` et `wg pubkey`) : celle du Pi à l'installation, gardée avec les données ; pour chaque appareil, une clé privée, une clé partagée (`PresharedKey`) et une adresse `10.13.13.x` du réseau du VPN (le Pi est `10.13.13.1`).
+  - **Écran « Appareils »** (administrateurs) sur la carte du service : liste des appareils, ajout par un nom (« Téléphone de Camille »), retrait. À l'ajout, la console montre la configuration de l'appareil **en QR code** (bibliothèque Go `github.com/skip2/go-qrcode`, MIT), à scanner dans l'application WireGuard du téléphone, et en texte ; elle ne s'affiche qu'**une seule fois** : la clé privée de l'appareil n'est pas gardée sur le Pi. Ajouter ou retirer un appareil réécrit `wg0.conf` et redémarre le VPN (quelques secondes de coupure) ; en cas d'échec, la liste d'avant est remise.
+  - **Le trafic internet du téléphone ne passe pas par la maison** : les `AllowedIPs` de l'appareil se limitent au réseau de la maison (réseaux IPv4 privés des interfaces du Pi, sans Docker ni le Wi-Fi de configuration `10.42.0.0/24`) et au Pi dans le VPN ; pas de `0.0.0.0/0`, pas de DNS imposé. Côté Pi, le pare-feu du conteneur ne laisse passer vers la maison que ces réseaux et refuse le reste. Un réseau de la maison qui contiendrait celui du VPN (un `10.0.0.0/8`) est ignoré : cas rare, à traiter s'il se présente.
+  - **Adresse** : l'appareil se connecte à l'adresse de l'appliance (section 7.1), port 51820. Tant qu'elle n'est pas une adresse internet (`pi-appliance.local`), l'écran le dit. **Redirection de port** : comme pour 80 et 443 (accès direct, section 7.2, TODO-3.8), il faut rediriger sur la box le port UDP 51820 vers le Pi ; la console le rappelle à l'installation et sur l'écran « Appareils ». Pas encore d'UPnP ni de test depuis internet ; le relais (section 7.3) ne transporte pas le VPN.
+  - API (administrateurs) : `GET api/services/<nom>/wireguard` (`endpoint`, `port`, `home_networks`, `endpoint_local`, `devices`), `POST api/services/<nom>/wireguard/devices` (`{"name"}`, réponse `device`, `config` et `qr_code`, image PNG en `data:`), `DELETE api/services/<nom>/wireguard/devices/<id>`.
+  - Essayé sous Docker (amd64, noyau WSL2) le 2026-11-20 : l'image démarre le `wg0.conf` écrit comme le fait la console (« Client mode selected », interface `wg0` sur le port 51820, règles du pare-feu posées). Reste à vérifier sur un vrai Pi, avec un téléphone hors de la maison.
 
 Plus tard :
 
@@ -235,12 +243,15 @@ Un manifeste est un fichier `marketplace/<identifiant>/compose.yaml` : un fichie
 | `login` | `application` (comptes propres au logiciel) ou `console` (connexion unique, section 8.1) |
 | `access` | Accès par défaut : `public`, `users` ou `home` (section 8.2) |
 | `parameters` | Variables demandées à l'installation : `name` (majuscules), `label`, `default`, ou `generate: true` pour un secret tiré au hasard |
+| `host_ports` | Ports ouverts directement sur le Pi, sans Traefik, pour un service qui n'est pas un site web : liste de `port` et `protocol` (`tcp` ou `udp`), même numéro sur le Pi et dans le conteneur `service`. Sans `port`, le service n'a pas de page web (VPN WireGuard) |
 
-Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du service) et `PI_HOST` (son adresse complète). Les volumes sont des volumes Docker nommés, propres à chaque instance. Le manifeste est refusé (identifiant, icône, sous-domaine, service publié absent, service sans image, port, valeurs inconnues, paramètre invalide ou en double, préfixe `PI_` réservé).
+Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du service) et `PI_HOST` (son adresse complète). Les volumes sont des volumes Docker nommés, propres à chaque instance. Le manifeste est refusé (identifiant, icône, sous-domaine, service publié absent, service sans image, port, valeurs inconnues, paramètre invalide ou en double, préfixe `PI_` réservé, port du Pi invalide, en double ou réservé : 80, 443 et 8080).
+
+**Réalisé** (`host_ports`, TODO-4.6) : pour un service sans page web, `pi-appliance.override.json` publie les `host_ports` (`51820:51820/udp`) au lieu des labels Traefik ; l'instance est marquée `no_web_page` dans `GET api/services` et la console affiche le port du Pi à la place du bouton « Ouvrir ». L'installation est refusée quand un autre service a déjà le même port ; elle rappelle la redirection du port à faire sur la box (section 7.2). L'accès « maison seulement » sans Traefik (Samba, TODO-4.8) reste à faire : un port de `host_ports` est ouvert à tous ceux qui joignent le Pi.
 
 **Réalisé** (première version, paquets `marketplace` et `internal/services`) :
 
-- Catalogue **intégré au binaire** pour l'instant, avec Nextcloud (et MariaDB), Site web, DokuWiki, Etherpad et PostgreSQL (et Adminer) (section 6.3) ; la lecture en ligne du dépôt (6.1) reste à faire. Un test vérifie que chaque manifeste livré se lit, fixe la version de ses images et n'utilise que des variables déclarées.
+- Catalogue **intégré au binaire** pour l'instant, avec Nextcloud (et MariaDB), Site web, DokuWiki, Etherpad, PostgreSQL (et Adminer) et le VPN WireGuard (section 6.3) ; la lecture en ligne du dépôt (6.1) reste à faire. Un test vérifie que chaque manifeste livré se lit, fixe la version de ses images et n'utilise que des variables déclarées.
 - Installation : pour chaque instance, un dossier `<données>/services/<nom>/` (option `-data`, `/var/lib/pi-appliance` par défaut) avec le manifeste, un fichier `.env` (droits 600) et `pi-appliance.override.json`, qui ajoute les labels Traefik (routeur `Host(<nom>.<adresse>)`, entrée `websecure`, TLS) et le réseau Docker commun `pi-appliance`, créé s'il manque ; puis `docker compose up --detach --wait`. En cas d'échec, le service est arrêté et l'erreur de Docker affichée. Les secrets générés qui ont un libellé (mot de passe administrateur de Nextcloud) sont affichés une seule fois.
 - Plusieurs instances d'une même application, sous des noms différents ; avertissement quand la mémoire du Pi est inférieure à `memory_mb`.
 - Désinstallation : la console demande s'il faut garder les données ; gardées, elles (volumes et secrets) sont réutilisées à la réinstallation sous le même nom ; supprimées, après une seconde confirmation.
@@ -266,7 +277,7 @@ Objectif : chaque service est joignable à `https://<service>.<adresse de l'appl
 
 ### 7.2 Accès direct
 
-Par défaut, la box redirige les ports 80 et 443 vers le Pi. L'appliance tente de l'obtenir par UPnP ; sinon, la console guide l'utilisateur pas à pas pour sa box, puis vérifie l'accès depuis internet.
+Par défaut, la box redirige les ports 80 et 443 vers le Pi, et le port UDP 51820 si le VPN WireGuard est installé (section 6.3). L'appliance tente de l'obtenir par UPnP ; sinon, la console guide l'utilisateur pas à pas pour sa box, puis vérifie l'accès depuis internet.
 
 ### 7.3 Relais
 
@@ -409,6 +420,7 @@ flowchart LR
 | Interface web | HTML, CSS et JavaScript sans framework, intégrés au binaire (`embed`) |
 | Configuration de Traefik | Labels Docker posés sur les conteneurs des services |
 | Manifestes de la marketplace | YAML au format Docker Compose, avec des métadonnées en plus |
+| VPN | WireGuard (image linuxserver.io) ; clés et configuration écrites par la console ; QR code par `github.com/skip2/go-qrcode` |
 | Fabrication de l'image | Shell et `pi-gen` |
 | Fournisseur d'identité | Intégré à la console Go (OpenID Connect, *forward auth* Traefik, TOTP) |
 | DNS dynamique | DuckDNS |
@@ -499,7 +511,7 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 
 - Relais : prix et moyen de paiement de l'offre payante.
 - Relais : nombre maximal d'appliances relayées (7.3).
-- Marketplace : un champ du manifeste pour les modèles de Pi pris en charge (MongoDB 5 et suivants ne tournent que sur un Pi 5), et un format pour un service qui n'est pas un site web (Samba, base ouverte sur le réseau de la maison) (6.3, 6.5).
+- Marketplace : un champ du manifeste pour les modèles de Pi pris en charge (MongoDB 5 et suivants ne tournent que sur un Pi 5), et l'accès « maison seulement » d'un service sans page web, dont les ports sont ouverts sans Traefik (`host_ports` : Samba, base ouverte sur le réseau de la maison) (6.3, 6.5).
 
 ## 16. Ordre de construction
 

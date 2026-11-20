@@ -221,5 +221,19 @@ piTranslations("tr", {
   "Les réglages DuckDNS sont effacés.": "DuckDNS ayarları silindi.",
   "Marketplace": "Marketplace",
   "Langue": "Dil",
-  "Période des graphiques": "Grafiklerin dönemi"
+  "Période des graphiques": "Grafiklerin dönemi",
+  "Port {0} {1} du Pi": "Pi'nin {0} {1} bağlantı noktası",
+  "{0} est prêt.": "{0} hazır.",
+  "Appareils": "Cihazlar",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "Telefon ev ağınıza ({0}) erişebilecek; internette gezinmesi evinizden geçmeyecek.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "Dışarıdan bağlanmak için internet modeminizde UDP {0} bağlantı noktasını bu Raspberry Pi'ye yönlendirin.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "Pi'nin henüz bir internet adresi yok: dışarıdan bağlanmak için bunu «İnternet adresi» bölümünde ayarlayın.",
+  "QR code de configuration WireGuard": "WireGuard yapılandırması QR kodu",
+  "Configuration en texte": "Metin olarak yapılandırma",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "Bu kodu telefondaki WireGuard uygulamasıyla tarayın (+ düğmesi, ardından «QR kodu tara»). Yalnızca bir kez gösterilecek.",
+  "Retirer": "Kaldır",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "«{0}» cihazı kaldırılsın mı? Artık bağlanamayacak.",
+  "Aucun appareil pour l'instant.": "Henüz cihaz yok.",
+  "Nom de l'appareil": "Cihaz adı",
+  "Ajouter un appareil": "Cihaz ekle"
 });

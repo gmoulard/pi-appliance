@@ -221,5 +221,19 @@ piTranslations("fa", {
   "Les réglages DuckDNS sont effacés.": "تنظیمات DuckDNS پاک شد.",
   "Marketplace": "Marketplace",
   "Langue": "زبان",
-  "Période des graphiques": "بازهٔ نمودارها"
+  "Période des graphiques": "بازهٔ نمودارها",
+  "Port {0} {1} du Pi": "درگاه {0} {1} پای",
+  "{0} est prêt.": "{0} آماده است.",
+  "Appareils": "دستگاه‌ها",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "تلفن می‌تواند به شبکهٔ خانه ({0}) دسترسی داشته باشد؛ وب‌گردی آن در اینترنت از خانه عبور نمی‌کند.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "برای اتصال از بیرون، در مودم اینترنت خود درگاه UDP {0} را به این Raspberry Pi هدایت کنید.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "پای هنوز نشانی اینترنتی ندارد: برای اتصال از بیرون، آن را در «نشانی اینترنتی» تنظیم کنید.",
+  "QR code de configuration WireGuard": "کد QR پیکربندی WireGuard",
+  "Configuration en texte": "پیکربندی به صورت متن",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "این کد را با برنامهٔ WireGuard تلفن اسکن کنید (دکمهٔ +، سپس «اسکن کد QR»). فقط یک بار نمایش داده می‌شود.",
+  "Retirer": "حذف",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "دستگاه «{0}» حذف شود؟ دیگر نمی‌تواند وصل شود.",
+  "Aucun appareil pour l'instant.": "هنوز هیچ دستگاهی نیست.",
+  "Nom de l'appareil": "نام دستگاه",
+  "Ajouter un appareil": "افزودن دستگاه"
 });

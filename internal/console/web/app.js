@@ -111,14 +111,22 @@ async function loadServices() {
   servicesList.replaceChildren(...services.map((service) => {
     const card = element("li", undefined, "card");
     tint(card, service.app);
-    const open = element("a", t("Ouvrir"), "button-outline");
-    open.href = `https://${service.address}`;
-    open.target = "_blank";
-    open.rel = "noopener";
     const actions = element("div", undefined, "actions");
-    actions.append(open);
+    // Un service sans page web (VPN) n'a pas d'adresse à ouvrir.
+    if (!service.no_web_page) {
+      const open = element("a", t("Ouvrir"), "button-outline");
+      open.href = `https://${service.address}`;
+      open.target = "_blank";
+      open.rel = "noopener";
+      actions.append(open);
+    }
+    let devices = null;
     if (currentAccount && currentAccount.role === "admin") {
       const buttons = element("div", undefined, "controls");
+      if (service.app === WIREGUARD_APP) {
+        devices = devicesButton(service);
+        buttons.append(devices.button);
+      }
       if (service.app === "site-web") {
         const upload = element("button", t("Déposer un ZIP"), "secondary");
         upload.addEventListener("click", () => chooseSiteArchive(service, upload));
@@ -136,11 +144,17 @@ async function loadServices() {
       remove.addEventListener("click", () => uninstall(service, remove));
       buttons.append(remove);
       actions.append(buttons, advanced.panel);
+      if (devices) {
+        actions.append(devices.panel);
+      }
     }
     const state = element("p", undefined, "state");
     state.append(element("span", undefined, `dot ${service.status.color}`), element("span", service.status.message));
     const detail = element("div");
-    detail.append(element("p", service.address, "address"), state);
+    const where = service.no_web_page
+      ? (service.host_ports || []).map((port) => t("Port {0} {1} du Pi", port.protocol.toUpperCase(), port.port)).join(", ")
+      : service.address;
+    detail.append(element("p", where, "address"), state);
     if (service.update_available) {
       detail.append(element("p", t("Nouvelle version disponible."), "meta"));
     }
@@ -529,7 +543,7 @@ async function install(app, form, button, details) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ app: app.id, name: data.get("name"), parameters }),
     });
-    const lines = [t("{0} est prêt : https://{1}", app.name, result.instance.address)];
+    const lines = [app.web ? t("{0} est prêt : https://{1}", app.name, result.instance.address) : t("{0} est prêt.", app.name)];
     for (const [label, value] of Object.entries(result.secrets || {})) {
       lines.push(t("{0} : {1} (notez-le, il ne sera plus affiché)", label, value));
     }
@@ -685,6 +699,99 @@ function advancedButton(service, card) {
     }
   });
   return { button, panel };
+}
+
+// VPN WireGuard (spécification 6.3) : les appareils autorisés et, pour un
+// nouvel appareil, sa configuration en QR code, montrée une seule fois.
+const WIREGUARD_APP = "wireguard";
+
+function devicesButton(service) {
+  const button = element("button", t("Appareils"), "secondary");
+  button.setAttribute("aria-expanded", "false");
+  const panel = element("div", undefined, "devices");
+  panel.hidden = true;
+  button.addEventListener("click", async () => {
+    const open = panel.hidden;
+    panel.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    if (open) {
+      try {
+        await devicesPanel(service, panel);
+      } catch (error) {
+        panel.hidden = true;
+        showMessage([error.message], "error");
+      }
+    }
+  });
+  return { button, panel };
+}
+
+async function devicesPanel(service, panel, created) {
+  const path = `services/${encodeURIComponent(service.name)}/wireguard`;
+  const status = await api(path);
+  const nodes = [];
+  nodes.push(element("p", t("Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.", status.home_networks.join(", ")), "note"));
+  nodes.push(element("p", t("Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.", status.port), "note"));
+  if (status.endpoint_local) {
+    nodes.push(element("p", t("Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur."), "note"));
+  }
+  if (created) {
+    const box = element("div", undefined, "qr");
+    const image = element("img");
+    image.src = created.qr_code;
+    image.alt = t("QR code de configuration WireGuard");
+    image.width = 256;
+    image.height = 256;
+    const text = element("details");
+    text.append(element("summary", t("Configuration en texte")), element("pre", created.config));
+    box.append(element("p", t("Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois."), "note"), image, text);
+    nodes.push(box);
+  }
+  const list = element("ul", undefined, "device-list");
+  for (const device of status.devices) {
+    const item = element("li");
+    const remove = element("button", t("Retirer"), "secondary");
+    remove.addEventListener("click", async () => {
+      if (!window.confirm(t("Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.", device.name))) return;
+      remove.disabled = true;
+      try {
+        await api(`${path}/devices/${device.id}`, { method: "DELETE" });
+        await devicesPanel(service, panel);
+      } catch (error) {
+        showMessage([error.message], "error");
+        remove.disabled = false;
+      }
+    });
+    item.append(element("span", `${device.name} (${device.address})`), remove);
+    list.append(item);
+  }
+  nodes.push(status.devices.length > 0 ? list : element("p", t("Aucun appareil pour l'instant."), "meta"));
+  const form = element("form");
+  const label = element("label", t("Nom de l'appareil"));
+  const input = element("input");
+  input.name = "device";
+  input.maxLength = 40;
+  input.required = true;
+  label.append(input);
+  const add = element("button", t("Ajouter un appareil"));
+  form.append(label, add);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    add.disabled = true;
+    try {
+      const device = await api(`${path}/devices`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: input.value }),
+      });
+      await devicesPanel(service, panel, device);
+    } catch (error) {
+      showMessage([error.message], "error");
+      add.disabled = false;
+    }
+  });
+  nodes.push(form);
+  panel.replaceChildren(...nodes);
 }
 
 // Carte « Docker Compose libre », à la fin de la marketplace.

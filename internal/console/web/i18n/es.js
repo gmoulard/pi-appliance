@@ -221,5 +221,19 @@ piTranslations("es", {
   "Les réglages DuckDNS sont effacés.": "Se borraron los ajustes de DuckDNS.",
   "Marketplace": "Marketplace",
   "Langue": "Idioma",
-  "Période des graphiques": "Periodo de los gráficos"
+  "Période des graphiques": "Periodo de los gráficos",
+  "Port {0} {1} du Pi": "Puerto {0} {1} del Pi",
+  "{0} est prêt.": "{0} está listo.",
+  "Appareils": "Dispositivos",
+  "Le téléphone pourra joindre le réseau de la maison ({0}) ; sa navigation sur internet ne passera pas par la maison.": "El teléfono podrá acceder a la red de casa ({0}); su navegación por Internet no pasará por casa.",
+  "Sur votre box internet, redirigez le port UDP {0} vers ce Raspberry Pi pour vous connecter de l'extérieur.": "En su router de Internet, redirija el puerto UDP {0} a esta Raspberry Pi para conectarse desde fuera.",
+  "Le Pi n'a pas encore d'adresse sur internet : réglez-la dans « Adresse sur internet » pour vous connecter de l'extérieur.": "La Pi aún no tiene dirección en Internet: configúrela en «Dirección en Internet» para conectarse desde fuera.",
+  "QR code de configuration WireGuard": "Código QR de configuración de WireGuard",
+  "Configuration en texte": "Configuración en texto",
+  "Scannez ce code avec l'application WireGuard du téléphone (bouton +, puis « Scanner un QR code »). Il ne s'affichera qu'une seule fois.": "Escanee este código con la aplicación WireGuard del teléfono (botón +, luego «Escanear código QR»). Solo se mostrará una vez.",
+  "Retirer": "Quitar",
+  "Retirer l'appareil « {0} » ? Il ne pourra plus se connecter.": "¿Quitar el dispositivo «{0}»? Ya no podrá conectarse.",
+  "Aucun appareil pour l'instant.": "Ningún dispositivo por ahora.",
+  "Nom de l'appareil": "Nombre del dispositivo",
+  "Ajouter un appareil": "Añadir un dispositivo"
 });
