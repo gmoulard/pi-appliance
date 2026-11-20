@@ -436,5 +436,15 @@ piTranslations("de", {
   "Aucune baisse de tension depuis le démarrage du Pi.": "Kein Spannungsabfall seit dem Start des Pi.",
   "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "Der Pi ist auf das Land „{0}“ eingestellt, aber Ihr Browser gibt „{1}“ an. Wählen Sie das Land, in dem sich der Pi befindet.",
   "Choisir « {0} »": "„{0}“ wählen",
-  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "Als der Pi zuletzt mit Ihrem Netzwerk verbunden war, hieß er „{0}“ und hatte die Adresse {1}: Öffnen Sie aus Ihrem Netzwerk https://{0}.local/pi-appliance oder https://{1}/pi-appliance"
+  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "Als der Pi zuletzt mit Ihrem Netzwerk verbunden war, hieß er „{0}“ und hatte die Adresse {1}: Öffnen Sie aus Ihrem Netzwerk https://{0}.local/pi-appliance oder https://{1}/pi-appliance",
+  "Site web": "Website",
+  "Fichiers": "Dateien",
+  "Documents": "Dokumente",
+  "Travail à plusieurs": "Zusammenarbeit",
+  "Base de données": "Datenbank",
+  "Administration": "Verwaltung",
+  "Réseau": "Netzwerk",
+  "Maison": "Zuhause",
+  "Tous les services": "Alle Dienste",
+  "Filtrer les services": "Dienste filtern"
 });

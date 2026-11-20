@@ -31,6 +31,7 @@ const valid = `x-pi-appliance:
   description: Un wiki.
   icon: M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5
   category: Documents
+  tags: [documents]
   license: GPL-2.0
   subdomain: wiki
   service: web
@@ -159,6 +160,10 @@ func TestParseRejects(t *testing.T) {
 		"clé inconnue":           {"port: 8080", "port: 8080\n  porte: 80", "porte"},
 		"clé inconnue imbriquée": {"name: TITLE", "name: TITLE\n      secret: true", "secret"},
 		"fichiers racine":        {"port: 8080", "port: 8080\n  files:\n    - service: web\n      path: /", "files : chemin"},
+		"sans étiquette":         {"tags: [documents]", "tags: []", "tags : de 1 à 4"},
+		"étiquette inconnue":     {"tags: [documents]", "tags: [jeux]", "étiquette \"jeux\" inconnue"},
+		"étiquette en double":    {"tags: [documents]", "tags: [documents, documents]", "en double"},
+		"trop d'étiquettes":      {"tags: [documents]", "tags: [documents, fichiers, reseau, maison, donnees]", "tags : de 1 à 4"},
 	}
 	for name, c := range cases {
 		t.Run(name, func(t *testing.T) {

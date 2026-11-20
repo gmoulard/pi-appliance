@@ -37,12 +37,13 @@ var todoPattern = regexp.MustCompile(`^TODO-[0-9]+\.[0-9]+$`)
 
 // Planned : application prévue, pas encore installable.
 type Planned struct {
-	ID          string `yaml:"id" json:"id"`
-	Name        string `yaml:"name" json:"name"`
-	Description string `yaml:"description" json:"description"`
-	Icon        string `yaml:"icon" json:"icon"`
-	Category    string `yaml:"category" json:"category"`
-	TODO        string `yaml:"todo" json:"todo"`
+	ID          string   `yaml:"id" json:"id"`
+	Name        string   `yaml:"name" json:"name"`
+	Description string   `yaml:"description" json:"description"`
+	Icon        string   `yaml:"icon" json:"icon"`
+	Category    string   `yaml:"category" json:"category"`
+	Tags        []string `yaml:"tags" json:"tags"`
+	TODO        string   `yaml:"todo" json:"todo"`
 }
 
 // PublishedApp : une application du catalogue publié, avec son manifeste.
@@ -56,6 +57,7 @@ type Document struct {
 	Format  int            `json:"format"`
 	Apps    []PublishedApp `json:"apps"`
 	Planned []Planned      `json:"planned"`
+	Tags    []Tag          `json:"tags"`
 }
 
 // BuiltinPlanned : les applications prévues (planned.yaml), vérifiées contre
@@ -79,6 +81,8 @@ func BuiltinPlanned(catalog Catalog) ([]Planned, error) {
 			return nil, fmt.Errorf("planned.yaml : %s incomplet", p.ID)
 		case len(p.Icon) > 2000 || !iconPattern.MatchString(p.Icon):
 			return nil, fmt.Errorf("planned.yaml : icône de %s invalide", p.ID)
+		case len(checkTags(p.Tags)) > 0:
+			return nil, fmt.Errorf("planned.yaml : %s : %s", p.ID, strings.Join(checkTags(p.Tags), " ; "))
 		case !todoPattern.MatchString(p.TODO):
 			return nil, fmt.Errorf("planned.yaml : todo de %s invalide (TODO-x.y)", p.ID)
 		}
@@ -90,7 +94,7 @@ func BuiltinPlanned(catalog Catalog) ([]Planned, error) {
 // Publish : le document publié pour un catalogue.
 func Publish(catalog Catalog, planned []Planned) Document {
 	apps := catalog.Apps()
-	document := Document{Format: DocumentFormat, Apps: make([]PublishedApp, 0, len(apps)), Planned: planned}
+	document := Document{Format: DocumentFormat, Apps: make([]PublishedApp, 0, len(apps)), Planned: planned, Tags: Tags}
 	for _, app := range apps {
 		document.Apps = append(document.Apps, PublishedApp{App: app, Compose: string(app.Compose)})
 	}

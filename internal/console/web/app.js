@@ -500,6 +500,54 @@ function startDashboard() {
   }, 60000);
 }
 
+// Étiquettes des services (marketplace.Tags, spécification 6.5) : libellés traduits.
+const TAG_LABELS = {
+  "site-web": t("Site web"),
+  fichiers: t("Fichiers"),
+  documents: t("Documents"),
+  collaboration: t("Travail à plusieurs"),
+  donnees: t("Base de données"),
+  administration: t("Administration"),
+  reseau: t("Réseau"),
+  maison: t("Maison"),
+};
+const tagFilters = document.getElementById("tagFilters");
+let tagFilter = "";
+
+function showTagFilters(apps) {
+  const used = Object.keys(TAG_LABELS).filter((tag) => apps.some((app) => (app.tags || []).includes(tag)));
+  if (!used.includes(tagFilter)) {
+    tagFilter = "";
+  }
+  tagFilters.hidden = used.length < 2;
+  tagFilters.replaceChildren(...[["", t("Tous les services")], ...used.map((tag) => [tag, TAG_LABELS[tag]])].map(([tag, label]) => {
+    const button = element("button", label, "secondary");
+    button.type = "button";
+    button.dataset.tag = tag;
+    button.addEventListener("click", () => {
+      tagFilter = tag;
+      applyTagFilter();
+    });
+    return button;
+  }));
+  applyTagFilter();
+}
+
+function applyTagFilter() {
+  for (const button of tagFilters.querySelectorAll("button")) {
+    button.setAttribute("aria-pressed", String(button.dataset.tag === tagFilter));
+  }
+  for (const card of catalogList.children) {
+    card.hidden = tagFilter !== "" && !(card.dataset.tags || "").split(" ").includes(tagFilter);
+  }
+}
+
+function tagList(tags) {
+  const list = element("ul", undefined, "app-tags");
+  list.append(...tags.filter((tag) => TAG_LABELS[tag]).map((tag) => element("li", TAG_LABELS[tag])));
+  return list;
+}
+
 async function loadCatalog() {
   const { apps, source } = await api("catalog");
   showCatalogSource(source);
@@ -509,6 +557,7 @@ async function loadCatalog() {
   catalogList.replaceChildren(...apps.map((app) => {
     const card = element("li", undefined, "card app");
     tint(card, app.id);
+    card.dataset.tags = (app.tags || []).join(" ");
     card.append(cardHead(app.id, app.name, element("p", app.description)));
     const details = element("details", undefined, "install-details");
     const summary = element("summary", t("Installer"));
@@ -548,12 +597,13 @@ async function loadCatalog() {
       install(app, form, button, details);
     });
     details.append(form);
-    card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"));
+    card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"), tagList(app.tags || []));
     return card;
   }));
   if (currentAccount && currentAccount.role === "admin") {
     catalogList.append(customComposeCard());
   }
+  showTagFilters(apps);
 }
 
 async function install(app, form, button, details) {

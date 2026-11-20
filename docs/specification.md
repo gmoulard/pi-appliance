@@ -263,6 +263,7 @@ Un manifeste est un fichier `marketplace/<identifiant>/compose.yaml` : un fichie
 | Clé | Sens |
 |-----|------|
 | `name`, `description`, `category`, `license` | Présentation dans la marketplace |
+| `tags` | Étiquettes, de 1 à 4, pour filtrer le catalogue, choisies dans une liste fermée (`marketplace/tags.go`) : `site-web`, `fichiers`, `documents`, `collaboration` (travail à plusieurs), `donnees` (base de données), `administration`, `reseau`, `maison` |
 | `icon` | Icône : tracé SVG (attribut `d`) sur 24 × 24, dessiné en trait blanc sur la couleur de l'application (charte graphique) |
 | `subdomain` | Nom proposé pour le service, donc son sous-domaine |
 | `service`, `port` | Service Compose publié par Traefik et son port interne |
@@ -273,7 +274,9 @@ Un manifeste est un fichier `marketplace/<identifiant>/compose.yaml` : un fichie
 | `files` | Dossier des fichiers du site (dépôt par un dossier Nextcloud) monté dans un ou plusieurs services : liste de `service` et `path` (chemin absolu dans le conteneur). Site web : Apache en `/var/www/html` ; générateurs de sites statiques : le constructeur en `/src` |
 | `host_ports` | Ports ouverts directement sur le Pi, sans Traefik, pour un service qui n'est pas un site web : liste de `port` et `protocol` (`tcp` ou `udp`), même numéro sur le Pi et dans le conteneur `service`. Sans `port`, le service n'a pas de page web (VPN WireGuard) |
 
-Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du service) et `PI_HOST` (son adresse complète). Les volumes sont des volumes Docker nommés, propres à chaque instance. Le manifeste est refusé (identifiant, icône, sous-domaine, service publié absent, service sans image, port, valeurs inconnues, paramètre invalide ou en double, préfixe `PI_` réservé, port du Pi invalide, en double ou réservé : 80, 443 et 8080, `files` vers un service absent ou un chemin qui n'est pas absolu, clé inconnue dans `x-pi-appliance` ou ses listes).
+Le fichier Compose peut utiliser ces variables, plus `PI_INSTANCE` (nom du service) et `PI_HOST` (son adresse complète). Les volumes sont des volumes Docker nommés, propres à chaque instance. Le manifeste est refusé (identifiant, icône, étiquettes absentes, inconnues, en double ou plus de 4, sous-domaine, service publié absent, service sans image, port, valeurs inconnues, paramètre invalide ou en double, préfixe `PI_` réservé, port du Pi invalide, en double ou réservé : 80, 443 et 8080, `files` vers un service absent ou un chemin qui n'est pas absolu, clé inconnue dans `x-pi-appliance` ou ses listes).
+
+**Réalisé** (`tags`, TODO-2.59) : chaque manifeste et chaque application prévue (`planned.yaml`) a ses étiquettes, reprises dans le catalogue publié (`tags` de chaque application, et la liste `tags` des étiquettes avec leur libellé français) et dans `GET api/catalog`. L'écran Marketplace de la console propose un filtre (« Tous les services », puis une étiquette) et montre les étiquettes de chaque application, traduites dans les 12 langues (`TAG_LABELS` de `app.js`, vérifié par un test Go) ; la page marketplace du site a la même colonne et le même filtre. Une console d'avant les étiquettes refuse les manifestes en ligne qui en ont (clé inconnue, section 6.1) et garde ses manifestes intégrés.
 
 **Réalisé** (`files`, TODO-2.46) : `pi-appliance.override.json` monte `<données>/services/<nom>/www` dans chaque service de `files` (`site_files` dans `GET api/services` et `GET api/catalog`) ; la console indique le dossier à ajouter dans Nextcloud. Le dépôt d'un ZIP (`POST api/services/<nom>/files`) a été retiré le 2026-11-20.
 

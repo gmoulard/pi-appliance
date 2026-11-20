@@ -3,6 +3,7 @@ x-pi-appliance:
   description: "Un site moderne construit avec Astro. Déposez le projet (package.json et src) : il est reconstruit tout seul."
   icon: M12 2c3 3 4 7 3 11H9c-1-4 0-8 3-11zM9 13l-3 4h4M15 13l3 4h-4M11 19h2
   category: Site web
+  tags: [site-web]
   license: MIT (Astro, Node.js) et BSD-2-Clause (nginx)
   subdomain: astro
   service: web

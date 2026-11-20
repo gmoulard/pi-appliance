@@ -436,5 +436,15 @@ piTranslations("tr", {
   "Aucune baisse de tension depuis le démarrage du Pi.": "Pi başladığından beri voltaj düşüşü yok.",
   "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "Pi “{0}” ülkesine ayarlı, ancak tarayıcınız “{1}” gösteriyor. Pi'nin bulunduğu ülkeyi seçin.",
   "Choisir « {0} »": "“{0}” seç",
-  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "Pi ağınıza en son bağlıyken adı “{0}”, adresi {1} idi: ağınızdan https://{0}.local/pi-appliance veya https://{1}/pi-appliance adresini açın"
+  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "Pi ağınıza en son bağlıyken adı “{0}”, adresi {1} idi: ağınızdan https://{0}.local/pi-appliance veya https://{1}/pi-appliance adresini açın",
+  "Site web": "Web sitesi",
+  "Fichiers": "Dosyalar",
+  "Documents": "Belgeler",
+  "Travail à plusieurs": "Birlikte çalışma",
+  "Base de données": "Veritabanı",
+  "Administration": "Yönetim",
+  "Réseau": "Ağ",
+  "Maison": "Ev",
+  "Tous les services": "Tüm hizmetler",
+  "Filtrer les services": "Hizmetleri filtrele"
 });

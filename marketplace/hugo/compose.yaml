@@ -3,6 +3,7 @@ x-pi-appliance:
   description: "Un site rapide écrit en Markdown avec Hugo. Déposez les fichiers source du site : il est reconstruit tout seul."
   icon: M12 2l9 5v10l-9 5l-9-5V7zM9 8v8M15 8v8M9 12h6
   category: Site web
+  tags: [site-web]
   license: Apache-2.0 (Hugo) et BSD-2-Clause (nginx)
   subdomain: hugo
   service: web

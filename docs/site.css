@@ -162,6 +162,8 @@ p { margin: 0; }
 .steps li div { display: grid; gap: 0.25rem; }
 .todo-filters { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; margin: 1rem 0; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 0.75rem; background: #ffffff; }
 .todo-filters label { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; }
+.todo-filters button { font: inherit; font-weight: 700; padding: 0.25rem 0.875rem; border: 1px solid var(--line); border-radius: 999px; background: #ffffff; cursor: pointer; }
+.todo-filters button[aria-pressed="true"] { background: #c71f5d; border-color: #c71f5d; color: #ffffff; }
 .prose li[hidden] { display: none !important; }
 .prose li.todo-context { opacity: 0.75; }
 .num {

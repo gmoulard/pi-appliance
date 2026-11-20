@@ -34,6 +34,7 @@ const essai = `x-pi-appliance:
   description: Une application d'essai.
   icon: M4 5h16v14H4z
   category: Outils
+  tags: [documents]
   license: MIT
   subdomain: essai
   service: app

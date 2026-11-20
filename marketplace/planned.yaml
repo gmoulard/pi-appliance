@@ -6,22 +6,26 @@
   description: Un lecteur réseau à la maison, avec un dossier commun et un dossier par personne.
   icon: M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z
   category: Fichiers
+  tags: [fichiers, reseau]
   todo: TODO-4.8
 - id: camera
   name: Caméra et timelapse
   description: Surveiller une pièce ou filmer en accéléré avec la caméra du Pi (Motion).
   icon: M4 7h3l2-2h6l2 2h3v12H4zM12 10a3 3 0 1 0 0 6a3 3 0 1 0 0-6z
   category: Maison
+  tags: [maison]
   todo: TODO-4.9
 - id: portainer
   name: Portainer
   description: Voir et gérer les conteneurs Docker du Pi depuis le navigateur, pour les utilisateurs avertis.
   icon: M4 10h16v10H4zM7 10V6h10v4M10 14h4
   category: Administration
+  tags: [administration]
   todo: TODO-2.49
 - id: cockpit
   name: Cockpit
   description: Administrer le système du Pi depuis le navigateur (journaux, services, disques), pour les utilisateurs avertis.
   icon: M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 12l4-4M12 7v1M7 12h1M16 12h1
   category: Administration
+  tags: [administration]
   todo: TODO-2.50

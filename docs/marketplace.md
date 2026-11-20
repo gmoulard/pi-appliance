@@ -12,8 +12,9 @@ La marketplace regroupe les applications que l'on peut installer et gérer depui
 
 <div id="marketplace-catalog" data-catalog-index="{{ '/static/pi-appliance-catalog.json' | relative_url }}">
 <p id="marketplace-catalog-status" role="status">Chargement du catalogue…</p>
+<div id="marketplace-tags" class="todo-filters" role="group" aria-label="Filtrer par étiquette" hidden></div>
 <table id="marketplace-catalog-table" hidden>
-<thead><tr><th>Application</th><th>Description</th><th>Catégorie</th><th>Mémoire</th><th>Disque</th></tr></thead>
+<thead><tr><th>Application</th><th>Description</th><th>Catégorie</th><th>Étiquettes</th><th>Mémoire</th><th>Disque</th></tr></thead>
 <tbody></tbody>
 </table>
 </div>
@@ -48,6 +49,7 @@ x-pi-appliance:
   description: Une description claire pour les utilisateurs.
   icon: M4 5h16v14H4z
   category: Outils
+  tags: [administration]
   license: AGPL-3.0
   subdomain: outil
   service: app

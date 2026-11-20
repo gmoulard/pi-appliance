@@ -3,6 +3,7 @@ x-pi-appliance:
   description: Retrouvez depuis l'extérieur les appareils de la maison (imprimante, disque réseau, ce Pi) avec votre téléphone, configuré en scannant un QR code. Votre navigation sur internet ne passe pas par la maison.
   icon: M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4
   category: Réseau
+  tags: [reseau]
   license: GPL-3.0
   subdomain: vpn
   # Pas de page web : rien n'est publié par Traefik. La console ouvre le port

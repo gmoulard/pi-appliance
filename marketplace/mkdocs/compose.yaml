@@ -3,6 +3,7 @@ x-pi-appliance:
   description: "Une documentation en Markdown avec MkDocs et le thème Material. Déposez les fichiers source : elle est reconstruite toute seule."
   icon: M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z
   category: Site web
+  tags: [site-web]
   license: BSD-2-Clause (MkDocs, nginx) et MIT (Material for MkDocs)
   subdomain: docs
   service: web

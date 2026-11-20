@@ -436,5 +436,15 @@ piTranslations("ja", {
   "Aucune baisse de tension depuis le démarrage du Pi.": "Pi の起動後、電圧の低下はありません。",
   "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "Pi の国は「{0}」に設定されていますが、ブラウザーは「{1}」を示しています。Pi が置かれている国を選んでください。",
   "Choisir « {0} »": "「{0}」を選ぶ",
-  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "前回ネットワークにつながっていたとき、Pi の名前は「{0}」、アドレスは {1} でした。ご自宅のネットワークから https://{0}.local/pi-appliance または https://{1}/pi-appliance を開いてください"
+  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "前回ネットワークにつながっていたとき、Pi の名前は「{0}」、アドレスは {1} でした。ご自宅のネットワークから https://{0}.local/pi-appliance または https://{1}/pi-appliance を開いてください",
+  "Site web": "ウェブサイト",
+  "Fichiers": "ファイル",
+  "Documents": "文書",
+  "Travail à plusieurs": "共同作業",
+  "Base de données": "データベース",
+  "Administration": "管理",
+  "Réseau": "ネットワーク",
+  "Maison": "家庭",
+  "Tous les services": "すべてのサービス",
+  "Filtrer les services": "サービスを絞り込む"
 });

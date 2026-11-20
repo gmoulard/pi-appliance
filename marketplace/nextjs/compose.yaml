@@ -3,6 +3,7 @@ x-pi-appliance:
   description: "Un site React construit avec Next.js, en export statique (output: 'export'). Déposez le projet : il est reconstruit tout seul."
   icon: M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM9 16V8l6 8V8
   category: Site web
+  tags: [site-web]
   license: MIT (Next.js, Node.js) et BSD-2-Clause (nginx)
   subdomain: next
   service: web

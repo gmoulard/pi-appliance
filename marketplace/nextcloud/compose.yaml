@@ -3,6 +3,7 @@ x-pi-appliance:
   description: Vos fichiers, photos, agenda et contacts, chez vous, sur tous vos appareils.
   icon: M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z
   category: Fichiers
+  tags: [fichiers, collaboration]
   license: AGPL-3.0
   subdomain: cloud
   service: app

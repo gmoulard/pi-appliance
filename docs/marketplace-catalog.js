@@ -24,7 +24,11 @@
     if (!response.ok) throw new Error(`Catalogue : HTTP ${response.status}`);
     const catalog = await response.json();
     if (!Array.isArray(catalog.apps)) throw new Error("Format du catalogue invalide.");
-    return { apps: catalog.apps, planned: Array.isArray(catalog.planned) ? catalog.planned : [] };
+    return {
+      apps: catalog.apps,
+      planned: Array.isArray(catalog.planned) ? catalog.planned : [],
+      tags: Array.isArray(catalog.tags) ? catalog.tags : [],
+    };
   }
 
   function appCard(app, index, label) {
@@ -52,7 +56,28 @@
     return card;
   }
 
-  function populateMarketplace(apps, planned) {
+  function showTagFilters(apps, tags, body) {
+    const box = document.getElementById("marketplace-tags");
+    const used = tags.filter((tag) => apps.some((app) => (app.tags || []).includes(tag.id)));
+    if (!box || used.length < 2) return;
+    const buttons = [{ id: "", label: "Toutes" }, ...used].map((tag) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = tag.label;
+      button.setAttribute("aria-pressed", String(tag.id === ""));
+      button.addEventListener("click", () => {
+        for (const other of buttons) other.setAttribute("aria-pressed", String(other === button));
+        for (const row of body.children) {
+          row.hidden = tag.id !== "" && !row.dataset.tags.split(" ").includes(tag.id);
+        }
+      });
+      return button;
+    });
+    box.replaceChildren(...buttons);
+    box.hidden = false;
+  }
+
+  function populateMarketplace(apps, planned, tags) {
     if (!marketplaceRoot) return;
     const plannedList = document.getElementById("marketplace-planned");
     if (plannedList) {
@@ -70,10 +95,12 @@
     const body = table.querySelector("tbody");
     body.replaceChildren(...apps.map((app) => {
       const row = document.createElement("tr");
+      row.dataset.tags = (app.tags || []).join(" ");
       for (const value of [
         app.name,
         app.description,
         app.category,
+        (app.tags || []).map((id) => (tags.find((tag) => tag.id === id) || { label: id }).label).join(", "),
         `${app.memory_mb} Mo`,
         `${app.disk_mb} Mo`,
       ]) {
@@ -85,6 +112,7 @@
     }));
     status.hidden = true;
     table.hidden = false;
+    showTagFilters(apps, tags, body);
   }
 
   function populateHome(apps, planned) {
@@ -99,8 +127,8 @@
   }
 
   loadCatalog()
-    .then(({ apps, planned }) => {
-      populateMarketplace(apps, planned);
+    .then(({ apps, planned, tags }) => {
+      populateMarketplace(apps, planned, tags);
       populateHome(apps, planned);
     })
     .catch((error) => {

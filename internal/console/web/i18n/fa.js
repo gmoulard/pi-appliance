@@ -436,5 +436,15 @@ piTranslations("fa", {
   "Aucune baisse de tension depuis le démarrage du Pi.": "از زمان روشن شدن Pi افت ولتاژی نبوده است.",
   "Le Pi est réglé sur le pays « {0} », mais votre navigateur indique « {1} ». Choisissez le pays où se trouve le Pi.": "Pi روی کشور «{0}» تنظیم شده است، اما مرورگر شما «{1}» را نشان می‌دهد. کشوری را که Pi در آن است انتخاب کنید.",
   "Choisir « {0} »": "انتخاب «{0}»",
-  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "آخرین باری که Pi به شبکه شما وصل بود، نامش «{0}» و نشانی‌اش {1} بود: از شبکه خود https://{0}.local/pi-appliance یا https://{1}/pi-appliance را باز کنید"
+  "La dernière fois qu'il était relié à votre réseau, le Pi s'appelait « {0} » et avait l'adresse {1} : depuis votre réseau, ouvrez https://{0}.local/pi-appliance ou https://{1}/pi-appliance": "آخرین باری که Pi به شبکه شما وصل بود، نامش «{0}» و نشانی‌اش {1} بود: از شبکه خود https://{0}.local/pi-appliance یا https://{1}/pi-appliance را باز کنید",
+  "Site web": "وب‌سایت",
+  "Fichiers": "فایل‌ها",
+  "Documents": "اسناد",
+  "Travail à plusieurs": "کار گروهی",
+  "Base de données": "پایگاه داده",
+  "Administration": "مدیریت",
+  "Réseau": "شبکه",
+  "Maison": "خانه",
+  "Tous les services": "همه سرویس‌ها",
+  "Filtrer les services": "پالایش سرویس‌ها"
 });

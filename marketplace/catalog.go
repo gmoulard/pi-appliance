@@ -71,6 +71,7 @@ type App struct {
 	Description string      `yaml:"description" json:"description"`
 	Icon        string      `yaml:"icon" json:"icon"`
 	Category    string      `yaml:"category" json:"category"`
+	Tags        []string    `yaml:"tags" json:"tags"`
 	License     string      `yaml:"license" json:"license"`
 	Subdomain   string      `yaml:"subdomain" json:"subdomain"`
 	Service     string      `yaml:"service" json:"-"`
@@ -175,6 +176,7 @@ func check(app App, file composeFile) []string {
 			fail("%s manquant", field)
 		}
 	}
+	problems = append(problems, checkTags(app.Tags)...)
 	if len(app.Icon) > 2000 || !iconPattern.MatchString(app.Icon) {
 		fail("icon invalide (tracé SVG sur 24 × 24 : lettres de commande, chiffres, espaces, virgules, points, tirets)")
 	}
