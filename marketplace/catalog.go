@@ -128,6 +128,9 @@ func Load(fsys fs.FS) (Catalog, error) {
 		if err != nil {
 			return Catalog{}, err
 		}
+		if app.Tags == nil {
+			return Catalog{}, fmt.Errorf("manifeste %s : %s", app.ID, strings.Join(checkTags(nil), " ; "))
+		}
 		catalog.apps[app.ID] = app
 	}
 	return catalog, nil
@@ -156,7 +159,7 @@ func Parse(id string, data []byte) (App, error) {
 	app.ID = id
 	app.Web = app.Port != 0
 	app.SiteFiles = len(app.Files) > 0
-	app.Compose = data
+	app.Compose = withoutTags(data)
 	if problems := check(app, file); len(problems) > 0 {
 		return App{}, fmt.Errorf("manifeste %s : %s", id, strings.Join(problems, " ; "))
 	}
@@ -176,7 +179,9 @@ func check(app App, file composeFile) []string {
 			fail("%s manquant", field)
 		}
 	}
-	problems = append(problems, checkTags(app.Tags)...)
+	if app.Tags != nil {
+		problems = append(problems, checkTags(app.Tags)...)
+	}
 	if len(app.Icon) > 2000 || !iconPattern.MatchString(app.Icon) {
 		fail("icon invalide (tracé SVG sur 24 × 24 : lettres de commande, chiffres, espaces, virgules, points, tirets)")
 	}

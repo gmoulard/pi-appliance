@@ -16,6 +16,7 @@
 package marketplace
 
 import (
+	"encoding/json"
 	"io/fs"
 	"path"
 	"regexp"
@@ -237,5 +238,58 @@ func TestBuiltinSiteFiles(t *testing.T) {
 	}
 	if wiki, _ := catalog.Get("dokuwiki"); wiki.SiteFiles {
 		t.Error("dokuwiki ne reçoit pas de fichiers de site")
+	}
+}
+
+// Les étiquettes ne sont pas dans le fichier Compose publié (lu strictement
+// par les consoles 0.1.x) mais dans le champ tags, repris à la lecture.
+func TestPublishedTags(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(Publish(catalog, nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	manifests, err := ReadDocument(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, manifest := range manifests {
+		builtin, _ := catalog.Get(manifest.ID)
+		if manifest.Err != nil || strings.Join(manifest.App.Tags, ",") != strings.Join(builtin.Tags, ",") {
+			t.Errorf("%s : %v, étiquettes %v", manifest.ID, manifest.Err, manifest.App.Tags)
+		}
+		if strings.Contains(string(manifest.App.Compose), "tags:") {
+			t.Errorf("%s : tags dans le fichier Compose publié", manifest.ID)
+		}
+	}
+	refused := strings.Replace(string(data), `"tags":["site-web"]`, `"tags":["jeux"]`, 1)
+	manifests, err = ReadDocument([]byte(refused))
+	if err != nil {
+		t.Fatal(err)
+	}
+	bad := 0
+	for _, manifest := range manifests {
+		if manifest.Err != nil {
+			bad++
+		}
+	}
+	if bad != 1 {
+		t.Fatalf("%d manifestes refusés, attendu 1", bad)
+	}
+}
+
+func TestWithoutTags(t *testing.T) {
+	cases := map[string]string{
+		"x-pi-appliance:\n  name: A\n  tags: [site-web]\n  port: 80\nservices: {}\n":                    "x-pi-appliance:\n  name: A\n  port: 80\nservices: {}\n",
+		"x-pi-appliance:\n  name: A\n  tags:\n    - site-web\n    - maison\n  port: 80\nservices: {}\n": "x-pi-appliance:\n  name: A\n  port: 80\nservices: {}\n",
+		"x-pi-appliance:\n  name: A\n  tags:\n  - site-web\n  port: 80\nservices:\n  tags: {}\n":        "x-pi-appliance:\n  name: A\n  port: 80\nservices:\n  tags: {}\n",
+	}
+	for in, want := range cases {
+		if got := string(withoutTags([]byte(in))); got != want {
+			t.Errorf("withoutTags(%q) = %q", in, got)
+		}
 	}
 }

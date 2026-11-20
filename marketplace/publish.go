@@ -28,6 +28,10 @@ import (
 
 // DocumentFormat : version du catalogue publié (docs/static), lu par le site
 // et par les consoles. Une console refuse un autre format.
+// NE PAS ajouter de clé au fichier Compose publié (compose) sans changer de
+// format : les consoles déjà installées le relisent strictement et refusent
+// une clé inconnue de x-pi-appliance. Une nouvelle information va à côté,
+// dans les champs de l'application, que ces consoles ignorent.
 const DocumentFormat = 1
 
 //go:embed planned.yaml
@@ -116,8 +120,9 @@ func ReadDocument(data []byte) ([]Manifest, error) {
 	var document struct {
 		Format int `json:"format"`
 		Apps   []struct {
-			ID      string `json:"id"`
-			Compose string `json:"compose"`
+			ID      string   `json:"id"`
+			Compose string   `json:"compose"`
+			Tags    []string `json:"tags"`
 		} `json:"apps"`
 	}
 	if err := json.Unmarshal(data, &document); err != nil {
@@ -137,6 +142,12 @@ func ReadDocument(data []byte) ([]Manifest, error) {
 		}
 		seen[entry.ID] = true
 		app, err := Parse(entry.ID, []byte(entry.Compose))
+		if err == nil && app.Tags == nil {
+			app.Tags = entry.Tags
+			if problems := checkTags(app.Tags); len(problems) > 0 {
+				err = fmt.Errorf("manifeste %s : %s", entry.ID, strings.Join(problems, " ; "))
+			}
+		}
 		manifests = append(manifests, Manifest{ID: entry.ID, App: app, Err: err})
 	}
 	return manifests, nil

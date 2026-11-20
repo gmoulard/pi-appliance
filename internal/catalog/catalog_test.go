@@ -69,7 +69,7 @@ func publish(t *testing.T, changes map[string]string) []byte {
 			compose = changed
 			delete(changes, app.ID)
 		}
-		document.Apps = append(document.Apps, marketplace.PublishedApp{App: marketplace.App{ID: app.ID}, Compose: compose})
+		document.Apps = append(document.Apps, marketplace.PublishedApp{App: marketplace.App{ID: app.ID, Tags: app.Tags}, Compose: compose})
 	}
 	for id, compose := range changes {
 		document.Apps = append(document.Apps, marketplace.PublishedApp{App: marketplace.App{ID: id}, Compose: compose})

@@ -15,7 +15,10 @@
 
 package marketplace
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // Tag : étiquette d'un service de la marketplace, pour filtrer le catalogue
 // (spécification 6.5). La liste est fermée : la console traduit chaque libellé
@@ -64,4 +67,36 @@ func checkTags(tags []string) []string {
 		seen[tag] = true
 	}
 	return problems
+}
+
+// withoutTags retire la clé tags de x-pi-appliance du fichier Compose : les
+// consoles 0.1.0 à 0.1.3 refusent cette clé, et les étiquettes voyagent dans
+// le champ tags du catalogue publié (spécification 6.5).
+func withoutTags(data []byte) []byte {
+	lines := strings.SplitAfter(string(data), "\n")
+	var kept strings.Builder
+	inMeta, skipping := false, false
+	keyIndent := -1
+	for _, line := range lines {
+		trimmed := strings.TrimLeft(line, " ")
+		indent := len(line) - len(trimmed)
+		blank := strings.TrimSpace(line) == ""
+		if !blank && indent == 0 {
+			inMeta = strings.HasPrefix(trimmed, "x-pi-appliance:")
+			skipping = false
+			keyIndent = -1
+		} else if inMeta && !blank {
+			if keyIndent < 0 {
+				keyIndent = indent
+			}
+			if indent == keyIndent && !strings.HasPrefix(trimmed, "- ") {
+				skipping = strings.HasPrefix(trimmed, "tags:")
+			}
+		}
+		if inMeta && skipping && (blank || indent >= keyIndent) {
+			continue
+		}
+		kept.WriteString(line)
+	}
+	return []byte(kept.String())
 }
