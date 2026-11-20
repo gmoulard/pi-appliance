@@ -11,8 +11,10 @@ Piste 5, « La maison » : une maison avec un π à l'intérieur, en framboise. 
 | `logo.svg` | Logo complet, fond clair |
 | `logo-sombre.svg` | Logo complet sur fond aubergine ou sombre |
 | `symbole.svg`, `symbole-sombre.svg` | Maison seule |
-| `icone-app.svg` | Icône d'application : maison blanche sur carré framboise |
-| `favicon.svg` | Icône simplifiée, 16 à 32 px |
+| `favicon.svg` | Icône de l'onglet : le symbole lui-même, recadré (toit framboise, maison aubergine, π blanc) ; aussi en `apple-touch-icon.png` (180 px), `docs/favicon.ico` et `favicon.ico` (16, 32 et 48 px), `docs/pi-appliance-logo.png` (512 px, image du README) |
+| `icone-app.svg` | Ancienne icône d'application (maison blanche sur carré framboise), plus utilisée |
+
+**Le même symbole partout** : en-tête et onglet de la console, en-tête, onglet et icône d'écran d'accueil du site, README. Pas d'autre variante (photo, maison blanche sur carré framboise).
 
 Le nom « pi-appliance » est converti en tracés (dessiné avec Inter, licence OFL) : le logo ne dépend d'aucune police installée. « pi » en framboise et en gras, « -appliance » en aubergine.
 
@@ -21,7 +23,7 @@ Le nom « pi-appliance » est converti en tracés (dessiné avec Inter, licence 
 | Fichier | Usage |
 |---------|-------|
 | `symbole.svg` | Maison en tête de la console, en 40 px, suivie du nom « **pi**-appliance » en texte (classe `wordmark`) |
-| `favicon.svg` | Icône de l'onglet de la console |
+| `favicon.svg` | Icône de l'onglet de la console, le même symbole recadré |
 
 Le logo photo (une main tenant des framboises, [`docs/logo/photo/`](logo/photo/)) n'est plus utilisé : jugé hors charte au premier essai sur un vrai Pi (2026-11-20). Le reste de la charte (couleurs, polices, formes) s'applique à la console sans changement.
 
