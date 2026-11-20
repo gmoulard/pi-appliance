@@ -91,7 +91,7 @@ func main() {
 	} else if found {
 		log.Printf("fichier reset trouvé : réinitialisation du mot de passe administrateur ouverte")
 	}
-	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Measure: services.Measure, FollowName: true}
+	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Images: services.DockerAPI{}, Measure: services.Measure, FollowName: true}
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name == "domain" {
 			manager.FollowName = false

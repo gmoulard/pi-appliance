@@ -485,5 +485,14 @@ piTranslations("ar", {
   "Votre mot de passe": "كلمة المرور الخاصة بك",
   "Code de vérification, si la double authentification est activée": "رمز التحقق، إذا كانت المصادقة الثنائية مفعّلة",
   "J'ai compris ce qui sera effacé": "فهمت ما الذي سيُمسح",
-  "Ne rien effacer et revenir à la console": "لا تمسح شيئًا وعُد إلى وحدة التحكم"
+  "Ne rien effacer et revenir à la console": "لا تمسح شيئًا وعُد إلى وحدة التحكم",
+  "Préparation": "التحضير",
+  "Téléchargement": "التنزيل",
+  "Création du service": "إنشاء الخدمة",
+  "Démarrage": "التشغيل",
+  "Vérification que le service répond": "التحقق من أن الخدمة تستجيب",
+  "L'installation s'est arrêtée à cette étape.": "توقف التثبيت عند هذه الخطوة.",
+  "{0} reçus sur {1}": "تم استلام {0} من {1}",
+  "Image {0} sur {1}": "الصورة {0} من {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "تحتاج بعض الخدمات إلى عدة دقائق لتستجيب في المرة الأولى."
 });

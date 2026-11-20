@@ -485,5 +485,14 @@ piTranslations("nl", {
   "Votre mot de passe": "Uw wachtwoord",
   "Code de vérification, si la double authentification est activée": "Verificatiecode, als tweestapsverificatie aan staat",
   "J'ai compris ce qui sera effacé": "Ik begrijp wat er gewist wordt",
-  "Ne rien effacer et revenir à la console": "Niets wissen en terug naar de console"
+  "Ne rien effacer et revenir à la console": "Niets wissen en terug naar de console",
+  "Préparation": "Voorbereiding",
+  "Téléchargement": "Downloaden",
+  "Création du service": "Dienst aanmaken",
+  "Démarrage": "Starten",
+  "Vérification que le service répond": "Controleren of de dienst antwoordt",
+  "L'installation s'est arrêtée à cette étape.": "De installatie is bij deze stap gestopt.",
+  "{0} reçus sur {1}": "{0} van {1} ontvangen",
+  "Image {0} sur {1}": "Image {0} van {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "Sommige diensten hebben de eerste keer enkele minuten nodig om te antwoorden."
 });

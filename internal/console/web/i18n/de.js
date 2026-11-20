@@ -485,5 +485,14 @@ piTranslations("de", {
   "Votre mot de passe": "Ihr Passwort",
   "Code de vérification, si la double authentification est activée": "Bestätigungscode, wenn die Zwei-Faktor-Authentifizierung aktiviert ist",
   "J'ai compris ce qui sera effacé": "Ich habe verstanden, was gelöscht wird",
-  "Ne rien effacer et revenir à la console": "Nichts löschen und zur Konsole zurückkehren"
+  "Ne rien effacer et revenir à la console": "Nichts löschen und zur Konsole zurückkehren",
+  "Préparation": "Vorbereitung",
+  "Téléchargement": "Herunterladen",
+  "Création du service": "Dienst wird angelegt",
+  "Démarrage": "Start",
+  "Vérification que le service répond": "Prüfung, ob der Dienst antwortet",
+  "L'installation s'est arrêtée à cette étape.": "Die Installation ist bei diesem Schritt stehen geblieben.",
+  "{0} reçus sur {1}": "{0} von {1} empfangen",
+  "Image {0} sur {1}": "Abbild {0} von {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "Manche Dienste brauchen beim ersten Mal einige Minuten, bis sie antworten."
 });

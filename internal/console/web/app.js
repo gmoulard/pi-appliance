@@ -615,6 +615,78 @@ async function loadCatalog() {
   showTagFilters(apps);
 }
 
+// Avancement d'une installation (spécification 6.2) : la console relit
+// api/services/<nom>/progress chaque seconde tant que l'installation se fait.
+const INSTALL_STEPS = [
+  ["prepare", t("Préparation")],
+  ["download", t("Téléchargement")],
+  ["create", t("Création du service")],
+  ["start", t("Démarrage")],
+  ["check", t("Vérification que le service répond")],
+];
+
+function showInstallProgress(box, progress) {
+  const current = INSTALL_STEPS.findIndex(([step]) => step === progress.step);
+  const list = element("ol", undefined, "steps");
+  INSTALL_STEPS.forEach(([step, label], index) => {
+    const item = element("li", label);
+    if (progress.step === "done" || index < current) {
+      item.className = "done";
+    } else if (index === current) {
+      item.className = progress.error ? "failed" : "current";
+    }
+    if (index === current && progress.error) {
+      item.append(element("p", t("L'installation s'est arrêtée à cette étape."), "meta"));
+    }
+    if (step === "download" && index === current && progress.total_bytes > 0) {
+      const bar = element("progress");
+      bar.max = progress.total_bytes;
+      bar.value = progress.received_bytes;
+      item.append(bar, element("p", t("{0} reçus sur {1}", sizeText(progress.received_bytes / 1048576), sizeText(progress.total_bytes / 1048576)), "meta"));
+    }
+    if (step === "download" && index === current && progress.images > 1) {
+      item.append(element("p", t("Image {0} sur {1}", progress.image, progress.images), "meta"));
+    }
+    if (step === "check" && index === current && !progress.error) {
+      item.append(element("p", t("Certains services mettent plusieurs minutes à répondre la première fois."), "meta"));
+    }
+    list.append(item);
+  });
+  box.replaceChildren(list);
+}
+
+function watchInstall(name, button) {
+  for (const old of button.parentElement.querySelectorAll(".install-progress")) old.remove();
+  const box = element("div", undefined, "install-progress");
+  box.setAttribute("aria-live", "polite");
+  button.before(box);
+  showInstallProgress(box, { step: "prepare" });
+  const read = () => api(`services/${encodeURIComponent(name)}/progress`);
+  let stopped = false;
+  let timer = null;
+  const poll = async () => {
+    const progress = await read().catch(() => null);
+    if (stopped) return;
+    if (progress && !progress.finished) showInstallProgress(box, progress);
+    timer = setTimeout(poll, 1000);
+  };
+  timer = setTimeout(poll, 1000);
+  return async (succeeded) => {
+    stopped = true;
+    clearTimeout(timer);
+    if (succeeded) {
+      box.remove();
+      return;
+    }
+    const progress = await read().catch(() => null);
+    if (progress && progress.error) {
+      showInstallProgress(box, progress);
+    } else {
+      box.remove();
+    }
+  };
+}
+
 async function install(app, form, button, details) {
   const data = new FormData(form);
   const parameters = {};
@@ -623,6 +695,8 @@ async function install(app, form, button, details) {
   }
   button.disabled = true;
   showMessage([t("Installation de {0}… Le premier téléchargement peut prendre plusieurs minutes.", app.name)], "info");
+  const stop = watchInstall(data.get("name"), button);
+  let succeeded = false;
   try {
     const result = await api("services", {
       method: "POST",
@@ -634,6 +708,7 @@ async function install(app, form, button, details) {
       lines.push(t("{0} : {1} (notez-le, il ne sera plus affiché)", label, value));
     }
     lines.push(...(result.warnings || []));
+    succeeded = true;
     showMessage(lines, "success");
     details.open = false;
     await loadServices();
@@ -641,6 +716,7 @@ async function install(app, form, button, details) {
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
+    await stop(succeeded);
     button.disabled = false;
   }
 }
@@ -990,6 +1066,8 @@ function customComposeCard() {
     const data = new FormData(form);
     button.disabled = true;
     showMessage([t("Installation de {0}… Le premier téléchargement peut prendre plusieurs minutes.", data.get("name"))], "info");
+    const stop = watchInstall(data.get("name"), button);
+    let succeeded = false;
     try {
       const result = await withRisks((confirm) => api("compose", {
         method: "POST",
@@ -1003,6 +1081,7 @@ function customComposeCard() {
         message.hidden = true;
         return;
       }
+      succeeded = true;
       showMessage([t("{0} est prêt : https://{1}", result.instance.name, result.instance.address), ...(result.warnings || [])], "success");
       form.reset();
       await loadServices();
@@ -1010,6 +1089,7 @@ function customComposeCard() {
     } catch (error) {
       showMessage([error.message], "error");
     } finally {
+      await stop(succeeded);
       button.disabled = false;
     }
   });

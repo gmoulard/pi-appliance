@@ -485,5 +485,14 @@ piTranslations("en", {
   "Votre mot de passe": "Your password",
   "Code de vérification, si la double authentification est activée": "Verification code, if two-factor authentication is on",
   "J'ai compris ce qui sera effacé": "I understand what will be erased",
-  "Ne rien effacer et revenir à la console": "Erase nothing and go back to the console"
+  "Ne rien effacer et revenir à la console": "Erase nothing and go back to the console",
+  "Préparation": "Getting ready",
+  "Téléchargement": "Downloading",
+  "Création du service": "Creating the service",
+  "Démarrage": "Starting",
+  "Vérification que le service répond": "Checking that the service responds",
+  "L'installation s'est arrêtée à cette étape.": "The installation stopped at this step.",
+  "{0} reçus sur {1}": "{0} received out of {1}",
+  "Image {0} sur {1}": "Image {0} of {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "Some services take several minutes to respond the first time."
 });

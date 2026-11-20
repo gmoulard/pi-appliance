@@ -485,5 +485,14 @@ piTranslations("ja", {
   "Votre mot de passe": "パスワード",
   "Code de vérification, si la double authentification est activée": "確認コード（2 段階認証が有効な場合）",
   "J'ai compris ce qui sera effacé": "何が消去されるか理解しました",
-  "Ne rien effacer et revenir à la console": "何も消去せずにコンソールに戻る"
+  "Ne rien effacer et revenir à la console": "何も消去せずにコンソールに戻る",
+  "Préparation": "準備",
+  "Téléchargement": "ダウンロード",
+  "Création du service": "サービスの作成",
+  "Démarrage": "起動",
+  "Vérification que le service répond": "サービスが応答するかの確認",
+  "L'installation s'est arrêtée à cette étape.": "インストールはこの段階で止まりました。",
+  "{0} reçus sur {1}": "{1} のうち {0} を受信",
+  "Image {0} sur {1}": "イメージ {0} / {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "初回は応答するまで数分かかるサービスもあります。"
 });

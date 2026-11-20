@@ -485,5 +485,14 @@ piTranslations("es", {
   "Votre mot de passe": "Su contraseña",
   "Code de vérification, si la double authentification est activée": "Código de verificación, si la verificación en dos pasos está activada",
   "J'ai compris ce qui sera effacé": "He entendido lo que se borrará",
-  "Ne rien effacer et revenir à la console": "No borrar nada y volver a la consola"
+  "Ne rien effacer et revenir à la console": "No borrar nada y volver a la consola",
+  "Préparation": "Preparación",
+  "Téléchargement": "Descarga",
+  "Création du service": "Creación del servicio",
+  "Démarrage": "Arranque",
+  "Vérification que le service répond": "Comprobación de que el servicio responde",
+  "L'installation s'est arrêtée à cette étape.": "La instalación se detuvo en este paso.",
+  "{0} reçus sur {1}": "{0} recibidos de {1}",
+  "Image {0} sur {1}": "Imagen {0} de {1}",
+  "Certains services mettent plusieurs minutes à répondre la première fois.": "Algunos servicios tardan varios minutos en responder la primera vez."
 });

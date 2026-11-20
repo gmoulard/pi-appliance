@@ -200,6 +200,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/{action}", c.adminOnly(c.control))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.advancedSettings))
+	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/progress", c.adminOnly(c.installProgress))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/access", c.adminOnly(c.setAccess))
 	mux.HandleFunc("POST "+BasePath+"/api/compose", c.adminOnly(c.installCompose))
@@ -622,6 +623,17 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusCreated, result)
+}
+
+// installProgress : avancement de l'installation lancée par POST api/services
+// ou api/compose, lu pendant qu'elle se fait (spécification 6.2).
+func (c *console) installProgress(w http.ResponseWriter, r *http.Request) {
+	progress, ok := c.Services.InstallProgress(r.PathValue("name"))
+	if !ok {
+		writeError(w, http.StatusNotFound, "Aucune installation en cours pour ce service.")
+		return
+	}
+	writeJSON(w, http.StatusOK, progress)
 }
 
 func (c *console) remove(w http.ResponseWriter, r *http.Request) {
