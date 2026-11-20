@@ -72,10 +72,10 @@ func newNetworkFixture(t *testing.T) (fixture, *fakeNetwork) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}}
+	manager := &services.Manager{Dir: dir, Domain: "pi-appliance-1a2b.local", Runner: okRunner{}, FollowName: true}
 	fake := &fakeNetwork{joined: make(chan struct{})}
 	client := &network.Client{Runner: fake}
-	return fixture{handler: Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, Network: client}), accounts: accounts}, fake
+	return fixture{handler: Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, Network: client}), accounts: accounts, manager: manager}, fake
 }
 
 func TestNetworkAdminOnly(t *testing.T) {

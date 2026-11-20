@@ -77,7 +77,12 @@ func main() {
 	} else if found {
 		log.Printf("fichier reset trouvé : réinitialisation du mot de passe administrateur ouverte")
 	}
-	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Measure: services.Measure}
+	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Measure: services.Measure, FollowName: true}
+	flag.Visit(func(f *flag.Flag) {
+		if f.Name == "domain" {
+			manager.FollowName = false
+		}
+	})
 	var net *network.Client
 	if *networkScript != "" {
 		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}

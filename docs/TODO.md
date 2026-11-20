@@ -89,7 +89,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Wi-Fi de configuration sans accès à internet ni à la maison (pare-feu `ap-firewall.nft`, `system/tests/ap-firewall-test.sh`) : cause probable de l'incident du 2026-11-19.
   - [x] Procédure d'essai sur du vrai matériel, dans une maison (controlTower et autres Pi) et dans plusieurs (DuckDNS, accès direct, VPN) : [Essais avec plusieurs Pi](essais-plusieurs-pi.md). Essais à faire avec une image construite après `bed9884`.
   - [ ] Les adresses des services (`<service>.<nom>.local`) ne sont pas annoncées par avahi : depuis un autre appareil de la maison, elles ne se trouvent pas sans ligne dans le fichier `hosts`.
-  - [ ] Après un changement de nom, la console n'est pas relancée : les nouveaux services gardent l'ancien `<nom>.local` jusqu'au redémarrage de la console (`-domain` lu au démarrage). À confirmer sur un vrai Pi.
+  - [x] Après un changement de nom, les nouveaux services prennent le nouveau `<nom>.local` sans redémarrer la console (`services.Manager.Renamed`, appelé par `POST api/network/name` ; une adresse donnée par `-domain` ne bouge pas). À vérifier sur un vrai Pi.
+  - [ ] Les services déjà installés gardent l'ancien `<service>.<ancien nom>.local` (labels Traefik, `PI_HOST`) : proposer de les déplacer vers le nouveau nom.
   - [X] **TODO-2.8**: test PI4B OK
     - [ ] **TODO-2.9**: ajouté un bouton pour pouvoir voir le password du wiki
     - [ ] **TODO-2.10**: ne pas proposer l'intallation directe des service.

@@ -254,7 +254,7 @@ func (m *Manager) WireGuard(name string) (WireGuardStatus, error) {
 	if err != nil {
 		return WireGuardStatus{}, err
 	}
-	status := WireGuardStatus{Endpoint: m.Domain, Port: WireGuardPort, EndpointLocal: !m.usesLetsEncrypt(), HomeNetworks: []string{}, Devices: []Device{}}
+	status := WireGuardStatus{Endpoint: m.CurrentDomain(), Port: WireGuardPort, EndpointLocal: !m.usesLetsEncrypt(), HomeNetworks: []string{}, Devices: []Device{}}
 	for _, network := range m.homeNetworks() {
 		status.HomeNetworks = append(status.HomeNetworks, network.String())
 	}
@@ -344,7 +344,7 @@ func (m *Manager) AddDevice(ctx context.Context, name, deviceName string) (NewDe
 		allowed = append(allowed, network.String())
 	}
 	config := fmt.Sprintf("[Interface]\nPrivateKey = %s\nAddress = %s/32\n\n[Peer]\nPublicKey = %s\nPresharedKey = %s\nEndpoint = %s:%d\nAllowedIPs = %s\nPersistentKeepalive = 25\n",
-		private, address, serverPublic, preshared, endpointHost(m.Domain), WireGuardPort, strings.Join(allowed, ", "))
+		private, address, serverPublic, preshared, endpointHost(m.CurrentDomain()), WireGuardPort, strings.Join(allowed, ", "))
 	png, err := qrcode.Encode(config, qrcode.Medium, 512)
 	if err != nil {
 		return NewDevice{}, err

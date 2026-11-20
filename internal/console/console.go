@@ -859,14 +859,24 @@ func (c *console) country(w http.ResponseWriter, r *http.Request) {
 }
 
 // setName change le nom du Pi (spécification 4) : la console devient
-// https://<nom>.local/pi-appliance, et Traefik redémarre après la réponse.
+// https://<nom>.local/pi-appliance, Traefik redémarre après la réponse, et
+// les services installés ensuite prennent <service>.<nom>.local.
 func (c *console) setName(w http.ResponseWriter, r *http.Request) {
 	var request NameRequest
 	if !decodeJSON(w, r, &request) {
 		return
 	}
 	c.networkCall(w, r, func(n *network.Client, ctx context.Context) (json.RawMessage, error) {
-		return n.SetName(ctx, request.Name)
+		out, err := n.SetName(ctx, request.Name)
+		if err == nil {
+			var renamed struct {
+				Name string `json:"name"`
+			}
+			if json.Unmarshal(out, &renamed) == nil && renamed.Name != "" {
+				c.Services.Renamed(renamed.Name)
+			}
+		}
+		return out, err
 	})
 }
 

@@ -284,3 +284,20 @@ func TestRemoveFailure(t *testing.T) {
 		t.Fatalf("service perdu : %v", instances)
 	}
 }
+
+func TestRenamed(t *testing.T) {
+	fixed := &Manager{Domain: "maison.example.org"}
+	fixed.Renamed("controltower")
+	if got := fixed.CurrentDomain(); got != "maison.example.org" {
+		t.Fatalf("adresse donnée par -domain changée : %s", got)
+	}
+	m := &Manager{Domain: "pi-appliance-1a2b.local", FollowName: true}
+	m.Renamed("-mauvais-")
+	if got := m.CurrentDomain(); got != "pi-appliance-1a2b.local" {
+		t.Fatalf("nom invalide accepté : %s", got)
+	}
+	m.Renamed("controltower")
+	if got := m.CurrentDomain(); got != "controltower.local" {
+		t.Fatalf("adresse après renommage : %s", got)
+	}
+}

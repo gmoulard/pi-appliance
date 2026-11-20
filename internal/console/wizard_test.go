@@ -91,6 +91,9 @@ func TestSetName(t *testing.T) {
 	if response := f.do(http.MethodPost, "/pi-appliance/api/network/name", "application/json", `{"name": "Salon"}`, cookie); response.Code != http.StatusBadRequest {
 		t.Fatalf("majuscules : code %d", response.Code)
 	}
+	if got := f.manager.CurrentDomain(); got != "pi-appliance-1a2b.local" {
+		t.Fatalf("adresse après un nom refusé : %s", got)
+	}
 	if response := f.do(http.MethodPost, "/pi-appliance/api/network/name", "application/json", `{"name": "controltower"}`, nil); response.Code != http.StatusUnauthorized {
 		t.Fatalf("sans session : code %d", response.Code)
 	}
@@ -100,6 +103,9 @@ func TestSetName(t *testing.T) {
 	}
 	if got := strings.Join(fake.calls, ","); got != "name" {
 		t.Fatalf("commandes %s", got)
+	}
+	if got := f.manager.CurrentDomain(); got != "controltower.local" {
+		t.Fatalf("adresse des nouveaux services : %s", got)
 	}
 }
 

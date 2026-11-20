@@ -36,6 +36,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/marketplace"
@@ -85,10 +86,13 @@ type Result struct {
 }
 
 type Manager struct {
-	Dir      string
-	Domain   string
-	Runner   Runner
-	MemoryMB func() int
+	Dir    string
+	Domain string
+	// FollowName : l'adresse des services suit le nom du Pi, <nom>.local,
+	// quand l'administrateur le change (Renamed) ; faux si -domain est donné.
+	FollowName bool
+	Runner     Runner
+	MemoryMB   func() int
 	// Measure mesure la mémoire et le disque du Pi ; nil : inconnus.
 	Measure func(dir string) Resources
 	// Copier copie les données d'un service avant sa mise à jour ; nil : « cp -a ».
@@ -100,6 +104,25 @@ type Manager struct {
 	// sur les interfaces du Pi.
 	HomeNetworks func() []netip.Prefix
 	mu           sync.Mutex
+	renamed      atomic.Pointer[string]
+}
+
+// CurrentDomain : adresse de l'appliance, suffixe de l'adresse de chaque service.
+func (m *Manager) CurrentDomain() string {
+	if domain := m.renamed.Load(); domain != nil {
+		return *domain
+	}
+	return m.Domain
+}
+
+// Renamed prend le nouveau nom du Pi sans relancer la console : les services
+// installés ensuite ont l'adresse <service>.<nom>.local.
+func (m *Manager) Renamed(name string) {
+	if !m.FollowName || !marketplace.ValidLabel(name) {
+		return
+	}
+	domain := strings.ToLower(name) + ".local"
+	m.renamed.Store(&domain)
 }
 
 // Resources mesure la mémoire du Pi et la place libre du dossier de données.
@@ -136,7 +159,7 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	if _, err := os.Stat(filepath.Join(dir, stateName)); err == nil {
 		return Result{}, fmt.Errorf("%w : un service s'appelle déjà « %s », choisissez un autre nom", ErrExists, name)
 	}
-	address := name + "." + m.Domain
+	address := name + "." + m.CurrentDomain()
 	env, secrets, err := m.environment(app, dir, name, address, values)
 	if err != nil {
 		return Result{}, err
@@ -302,7 +325,7 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 }
 
 func (m *Manager) usesLetsEncrypt() bool {
-	domain := strings.TrimSuffix(strings.ToLower(strings.TrimSpace(m.Domain)), ".")
+	domain := strings.TrimSuffix(strings.ToLower(strings.TrimSpace(m.CurrentDomain())), ".")
 	if domain == "" || net.ParseIP(domain) != nil || !strings.Contains(domain, ".") {
 		return false
 	}
