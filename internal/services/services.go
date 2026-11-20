@@ -16,15 +16,12 @@
 package services
 
 import (
-	"archive/zip"
 	"bufio"
-	"bytes"
 	"context"
 	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"math/big"
 	"net"
 	"net/netip"
@@ -48,7 +45,7 @@ const (
 	overrideName = "pi-appliance.override.json"
 	envName      = ".env"
 	stateName    = "instance.json"
-	// siteDir : fichiers du site, déposés par ZIP, Nextcloud ou FTP.
+	// siteDir : fichiers du site, déposés par Nextcloud.
 	siteDir = "www"
 )
 
@@ -79,7 +76,7 @@ type Instance struct {
 	// NoWebPage : service sans page web (VPN…), joint par ses HostPorts.
 	NoWebPage bool                   `json:"no_web_page,omitempty"`
 	HostPorts []marketplace.HostPort `json:"host_ports,omitempty"`
-	// SiteFiles : fichiers du site déposés par ZIP ou Nextcloud (manifeste, champ files).
+	// SiteFiles : fichiers du site déposés par Nextcloud (manifeste, champ files).
 	SiteFiles bool `json:"site_files,omitempty"`
 	// Build : dernière construction d'un générateur de site statique.
 	Build *Build `json:"build,omitempty"`
@@ -322,7 +319,7 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 		service["volumes"] = []string{filepath.Join(m.Dir, "services") + ":/srv/pi-appliance/services"}
 	}
 	services := map[string]any{app.Service: service}
-	// Dossier des fichiers du site (ZIP, Nextcloud, FTP), dans chaque service qui le lit.
+	// Dossier des fichiers du site (Nextcloud), dans chaque service qui le lit.
 	for _, mount := range app.Files {
 		target, ok := services[mount.Service].(map[string]any)
 		if !ok {
@@ -373,129 +370,6 @@ func (m *Manager) List() ([]Instance, error) {
 	}
 	sort.Slice(instances, func(i, j int) bool { return instances[i].Name < instances[j].Name })
 	return instances, nil
-}
-
-// DeployZIP remplace le contenu du site par une archive sûre.
-func (m *Manager) DeployZIP(ctx context.Context, name string, r io.Reader) error {
-	_ = ctx
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	if !marketplace.ValidLabel(name) {
-		return fmt.Errorf("%w : %s", ErrInvalid, name)
-	}
-	dir := m.serviceDir(name)
-	data, err := os.ReadFile(filepath.Join(dir, stateName))
-	if err != nil {
-		return fmt.Errorf("%w : %s", ErrNotFound, name)
-	}
-	var instance Instance
-	if err := json.Unmarshal(data, &instance); err != nil || !m.siteFiles(name, instance.App) {
-		return fmt.Errorf("%w : %s ne reçoit pas de fichiers de site", ErrInvalid, name)
-	}
-
-	temp, err := os.CreateTemp(m.Dir, "site-*.zip")
-	if err != nil {
-		return err
-	}
-	tempName := temp.Name()
-	defer os.Remove(tempName)
-	if err := temp.Close(); err != nil {
-		return err
-	}
-
-	limited := io.LimitReader(r, 256<<20)
-	zipData, err := io.ReadAll(limited)
-	if err != nil {
-		return err
-	}
-	if len(zipData) == (256 << 20) {
-		return fmt.Errorf("%w : archive trop volumineuse (256 Mo maximum)", ErrInvalid)
-	}
-	if err := os.WriteFile(tempName, zipData, 0o600); err != nil {
-		return err
-	}
-	archive, err := zip.NewReader(bytes.NewReader(zipData), int64(len(zipData)))
-	if err != nil {
-		return fmt.Errorf("%w : fichier ZIP illisible", ErrInvalid)
-	}
-
-	root := filepath.Join(dir, siteDir)
-	staging, err := os.MkdirTemp(m.Dir, "site-deploy-*")
-	if err != nil {
-		return err
-	}
-	defer os.RemoveAll(staging)
-	var extracted int64
-	for _, file := range archive.File {
-		name := filepath.Clean(filepath.FromSlash(file.Name))
-		if name == "." || name == "" {
-			continue
-		}
-		if filepath.IsAbs(name) || name == ".." || strings.HasPrefix(name, ".."+string(os.PathSeparator)) {
-			return fmt.Errorf("%w : chemin interdit dans l'archive", ErrInvalid)
-		}
-		target := filepath.Join(staging, name)
-		if file.FileInfo().IsDir() {
-			if err := os.MkdirAll(target, 0o700); err != nil {
-				return err
-			}
-			continue
-		}
-		if file.Mode()&os.ModeSymlink != 0 {
-			return fmt.Errorf("%w : liens symboliques interdits", ErrInvalid)
-		}
-		if file.UncompressedSize64 > 1<<30 || extracted+int64(file.UncompressedSize64) > 1<<30 {
-			return fmt.Errorf("%w : contenu trop volumineux (1 Go maximum)", ErrInvalid)
-		}
-		extracted += int64(file.UncompressedSize64)
-		if err := os.MkdirAll(filepath.Dir(target), 0o700); err != nil {
-			return err
-		}
-		src, err := file.Open()
-		if err != nil {
-			return err
-		}
-		dst, err := os.OpenFile(target, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o600)
-		if err != nil {
-			src.Close()
-			return err
-		}
-		_, copyErr := io.Copy(dst, src)
-		closeErr := dst.Close()
-		srcCloseErr := src.Close()
-		if copyErr != nil || closeErr != nil || srcCloseErr != nil {
-			return fmt.Errorf("archive illisible : %v", firstError(copyErr, closeErr, srcCloseErr))
-		}
-	}
-	return replaceContent(root, staging)
-}
-
-// replaceContent remplace le contenu de root par celui de staging en gardant
-// le dossier root lui-même : les conteneurs démarrés le montent (bind mount)
-// et ne verraient pas un nouveau dossier mis à sa place.
-func replaceContent(root, staging string) error {
-	if err := os.MkdirAll(root, 0o700); err != nil {
-		return err
-	}
-	old, err := os.ReadDir(root)
-	if err != nil {
-		return err
-	}
-	for _, entry := range old {
-		if err := os.RemoveAll(filepath.Join(root, entry.Name())); err != nil {
-			return err
-		}
-	}
-	added, err := os.ReadDir(staging)
-	if err != nil {
-		return err
-	}
-	for _, entry := range added {
-		if err := os.Rename(filepath.Join(staging, entry.Name()), filepath.Join(root, entry.Name())); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (m *Manager) Remove(ctx context.Context, name string, keepData bool) error {
@@ -560,15 +434,6 @@ func randomSecret() string {
 		secret[i] = alphabet[n.Int64()]
 	}
 	return string(secret)
-}
-
-func firstError(errors ...error) error {
-	for _, err := range errors {
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func trimOutput(output []byte, err error) string {

@@ -16,6 +16,7 @@
 // Traduction de la console : néerlandais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("nl", {
+  "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Plaats de bronbestanden van de site in Nextcloud: de site wordt vanzelf gebouwd.",
   "Démarrer": "Starten",
   "{0} est démarré : {1}": "{0} is gestart: {1}",
   "Arrêter": "Stoppen",
@@ -25,11 +26,9 @@ piTranslations("nl", {
   "Mettre à jour": "Bijwerken",
   "Erreur {0}": "Fout {0}",
   "Ouvrir": "Openen",
-  "Déposer un ZIP": "ZIP uploaden",
   "Désinstaller": "Verwijderen",
   "Nouvelle version disponible.": "Nieuwe versie beschikbaar.",
   "Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www": "Nextcloud: externe map /srv/pi-appliance/services/{0}/www",
-  "FTP : compte pi sur le port 2121, sauf port personnalisé.": "FTP: gebruiker pi op poort 2121, tenzij een andere poort is gekozen.",
   "Téléchargement de pi-appliance {0}…": "pi-appliance {0} wordt gedownload…",
   "Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.": "pi-appliance {0} wordt geïnstalleerd… De console start opnieuw: deze pagina laadt vanzelf opnieuw.",
   "L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.": "Installatie van pi-appliance {0} mislukt: de vorige versie is teruggezet, uw diensten zijn niet veranderd.",
@@ -42,7 +41,6 @@ piTranslations("nl", {
   "Catalogue mis à jour en ligne le {0}.": "Catalogus online bijgewerkt op {0}.",
   "Catalogue intégré à la console : il n'a pas encore pu être lu en ligne.": "Catalogus ingebouwd in de console: hij kon nog niet online worden gelezen.",
   "Pas encore disponibles sur cette console : {0}.": "Nog niet beschikbaar op deze console: {0}.",
-  "Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.": "Plaats de bronbestanden van de site (ZIP of Nextcloud): de site wordt vanzelf gebouwd.",
   "Construction du site en cours…": "De site wordt gebouwd…",
   "Site construit le {0}.": "Site gebouwd op {0}.",
   "La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.": "Het bouwen van de site is mislukt op {0}: de vorige site blijft online. Details staan in het bestand .pi-appliance-build.log in de map van de site.",
@@ -113,8 +111,6 @@ piTranslations("nl", {
   "Fichier compose.yaml": "Bestand compose.yaml",
   "Conteneur à ouvrir à l'adresse du service": "Container die op het adres van de dienst opent",
   "Son port dans le conteneur": "Zijn poort in de container",
-  "Remplacer tout le contenu du site {0} par « {1} » ?": "De hele inhoud van de site {0} vervangen door ‘{1}’?",
-  "Déploiement du ZIP sur {0}…": "ZIP wordt op {0} gezet…",
   "Mettre à jour {0} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.": "{0} bijwerken? De dienst ligt enkele minuten stil; start hij niet opnieuw, dan gaat hij vanzelf terug naar de huidige versie.",
   "{0} est à jour.": "{0} is bijgewerkt.",
   "Désinstaller {0} ?": "{0} verwijderen?",

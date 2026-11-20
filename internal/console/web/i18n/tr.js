@@ -16,6 +16,7 @@
 // Traduction de la console : turc. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("tr", {
+  "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Sitenin kaynak dosyalarını Nextcloud'a bırakın: site kendiliğinden oluşturulur.",
   "Démarrer": "Başlat",
   "{0} est démarré : {1}": "{0} başlatıldı: {1}",
   "Arrêter": "Durdur",
@@ -25,11 +26,9 @@ piTranslations("tr", {
   "Mettre à jour": "Güncelle",
   "Erreur {0}": "Hata {0}",
   "Ouvrir": "Aç",
-  "Déposer un ZIP": "ZIP yükle",
   "Désinstaller": "Kaldır",
   "Nouvelle version disponible.": "Yeni sürüm mevcut.",
   "Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www": "Nextcloud: harici klasör /srv/pi-appliance/services/{0}/www",
-  "FTP : compte pi sur le port 2121, sauf port personnalisé.": "FTP: 2121 numaralı bağlantı noktasında pi kullanıcısı (başka bir bağlantı noktası seçilmediyse).",
   "Téléchargement de pi-appliance {0}…": "pi-appliance {0} indiriliyor…",
   "Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.": "pi-appliance {0} kuruluyor… Konsol yeniden başlayacak: bu sayfa kendiliğinden yenilenecek.",
   "L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.": "pi-appliance {0} kurulumu başarısız oldu: önceki sürüm geri yüklendi, hizmetleriniz değişmedi.",
@@ -42,7 +41,6 @@ piTranslations("tr", {
   "Catalogue mis à jour en ligne le {0}.": "Katalog {0} tarihinde çevrim içi güncellendi.",
   "Catalogue intégré à la console : il n'a pas encore pu être lu en ligne.": "Konsola yerleşik katalog: henüz çevrim içi okunamadı.",
   "Pas encore disponibles sur cette console : {0}.": "Bu konsolda henüz yok: {0}.",
-  "Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.": "Sitenin kaynak dosyalarını bırakın (ZIP veya Nextcloud): site kendiliğinden oluşturulur.",
   "Construction du site en cours…": "Site oluşturuluyor…",
   "Site construit le {0}.": "Site {0} tarihinde oluşturuldu.",
   "La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.": "Site oluşturma {0} tarihinde başarısız oldu: önceki site yayında kalıyor. Ayrıntılar site klasöründeki .pi-appliance-build.log dosyasında.",
@@ -113,8 +111,6 @@ piTranslations("tr", {
   "Fichier compose.yaml": "compose.yaml dosyası",
   "Conteneur à ouvrir à l'adresse du service": "Hizmet adresinde açılacak konteyner",
   "Son port dans le conteneur": "Konteynerdeki bağlantı noktası",
-  "Remplacer tout le contenu du site {0} par « {1} » ?": "{0} sitesinin tüm içeriği “{1}” ile değiştirilsin mi?",
-  "Déploiement du ZIP sur {0}…": "ZIP {0} üzerine yükleniyor…",
   "Mettre à jour {0} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.": "{0} güncellensin mi? Hizmet birkaç dakika kapalı kalacak; yeniden başlamazsa kendiliğinden mevcut sürüme dönecek.",
   "{0} est à jour.": "{0} güncel.",
   "Désinstaller {0} ?": "{0} kaldırılsın mı?",

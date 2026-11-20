@@ -211,7 +211,7 @@ func TestValidLabel(t *testing.T) {
 }
 
 // Les générateurs de sites statiques (TODO-2.46) reçoivent leurs fichiers
-// source dans le constructeur, et le site web dans Apache et FTP.
+// source dans le constructeur, et le site web dans Apache.
 func TestBuiltinSiteFiles(t *testing.T) {
 	catalog, err := Builtin()
 	if err != nil {
@@ -227,7 +227,7 @@ func TestBuiltinSiteFiles(t *testing.T) {
 		}
 	}
 	site, _ := catalog.Get("site-web")
-	if len(site.Files) != 2 || site.Files[1] != (FileMount{Service: "ftp", Path: "/var/www/html"}) {
+	if len(site.Files) != 1 || site.Files[0] != (FileMount{Service: "web", Path: "/var/www/html"}) {
 		t.Errorf("site-web : %+v", site.Files)
 	}
 	if wiki, _ := catalog.Get("dokuwiki"); wiki.SiteFiles {

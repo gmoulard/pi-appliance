@@ -51,8 +51,8 @@ type HostPort struct {
 	Protocol string `yaml:"protocol" json:"protocol"`
 }
 
-// FileMount : le dossier des fichiers du site (dépôt par ZIP, Nextcloud ou
-// FTP) monté dans un service, à un chemin absolu.
+// FileMount : le dossier des fichiers du site (dépôt par Nextcloud) monté
+// dans un service, à un chemin absolu.
 type FileMount struct {
 	Service string `yaml:"service" json:"-"`
 	Path    string `yaml:"path" json:"-"`
