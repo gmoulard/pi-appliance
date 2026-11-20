@@ -20,6 +20,8 @@ x-pi-appliance:
       generate: true
     - name: USER_SECRET
       generate: true
+    - name: ETHERPAD_USER_PASSWORD
+      generate: true
 
 services:
   pad:
@@ -27,6 +29,9 @@ services:
     restart: unless-stopped
     # ADMIN_SECRET et USER_SECRET remplacent les secrets par défaut
     # (« admin », « user ») de la connexion interne d'Etherpad.
+    # USER_PASSWORD : compte interne « user », que la console donne à Etherpad
+    # par Traefik quand il est réservé aux personnes qui ont un compte (liens
+    # de partage, REQUIRE_AUTHENTICATION posé par la console).
     # Les mises à jour passent par la console (UPDATES_TIER off).
     environment:
       TITLE: Etherpad
@@ -40,6 +45,7 @@ services:
       ADMIN_REDIRECT: https://${PI_HOST}/admin/
       USER_SECRET: ${USER_SECRET}
       USER_REDIRECT: https://${PI_HOST}/
+      USER_PASSWORD: ${ETHERPAD_USER_PASSWORD}
       UPDATES_TIER: "off"
       PRIVACY_UPDATE_CHECK: "false"
       PRIVACY_PLUGIN_CATALOG: "false"

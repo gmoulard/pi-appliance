@@ -485,5 +485,18 @@ piTranslations("fa", {
   "Votre mot de passe": "گذرواژه شما",
   "Code de vérification, si la double authentification est activée": "کد تأیید، اگر احراز هویت دومرحله‌ای فعال است",
   "J'ai compris ce qui sera effacé": "فهمیدم چه چیزهایی پاک می‌شود",
-  "Ne rien effacer et revenir à la console": "هیچ چیز پاک نشود و به کنسول برگرد"
+  "Ne rien effacer et revenir à la console": "هیچ چیز پاک نشود و به کنسول برگرد",
+  "1 jour": "۱ روز",
+  "7 jours": "۷ روز",
+  "Aucun lien de partage pour l'instant.": "هنوز پیوند اشتراکی وجود ندارد.",
+  "Créer le lien": "ساختن پیوند",
+  "Durée du lien": "مدت اعتبار پیوند",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "این پیوند را برای آن شخص بفرستید: فقط یک بار نمایش داده می‌شود. تا {0} کار می‌کند.",
+  "Lien de partage": "پیوند اشتراک",
+  "Nom du document ou son adresse": "نام سند یا نشانی آن",
+  "Partager un document": "اشتراک‌گذاری یک سند",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "پیوند سند «{0}» برداشته شود؟ آن شخص دیگر نمی‌تواند آن را باز کند.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "پیوند اشتراک یک سند را برای کسی که حساب ندارد باز می‌کند: او می‌تواند آن را بخواند و در آن بنویسد، بی‌آنکه چیز دیگری ببیند.",
+  "« {0} », créé par {1}, jusqu'au {2}": "«{0}»، ساخته‌شده به دست {1}، تا {2}",
+  "« {0} », jusqu'au {1}": "«{0}»، تا {1}"
 });

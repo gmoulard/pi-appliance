@@ -485,5 +485,18 @@ piTranslations("ar", {
   "Votre mot de passe": "كلمة المرور الخاصة بك",
   "Code de vérification, si la double authentification est activée": "رمز التحقق، إذا كانت المصادقة الثنائية مفعّلة",
   "J'ai compris ce qui sera effacé": "فهمت ما الذي سيُمسح",
-  "Ne rien effacer et revenir à la console": "لا تمسح شيئًا وعُد إلى وحدة التحكم"
+  "Ne rien effacer et revenir à la console": "لا تمسح شيئًا وعُد إلى وحدة التحكم",
+  "1 jour": "يوم واحد",
+  "7 jours": "7 أيام",
+  "Aucun lien de partage pour l'instant.": "لا توجد روابط مشاركة بعد.",
+  "Créer le lien": "إنشاء الرابط",
+  "Durée du lien": "مدة صلاحية الرابط",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "أرسل هذا الرابط إلى الشخص: لن يظهر إلا مرة واحدة. يعمل حتى {0}.",
+  "Lien de partage": "رابط المشاركة",
+  "Nom du document ou son adresse": "اسم المستند أو عنوانه",
+  "Partager un document": "مشاركة مستند",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "إزالة رابط المستند «{0}»؟ لن يتمكن الشخص من فتحه بعد الآن.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "يفتح رابط المشاركة مستندًا واحدًا لشخص ليس لديه حساب: يمكنه قراءته والكتابة فيه، دون رؤية أي شيء آخر.",
+  "« {0} », créé par {1}, jusqu'au {2}": "«{0}»، أنشأه {1}، حتى {2}",
+  "« {0} », jusqu'au {1}": "«{0}»، حتى {1}"
 });

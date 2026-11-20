@@ -485,5 +485,18 @@ piTranslations("pt", {
   "Votre mot de passe": "A sua palavra-passe",
   "Code de vérification, si la double authentification est activée": "Código de verificação, se a autenticação de dois fatores estiver ativada",
   "J'ai compris ce qui sera effacé": "Percebi o que será apagado",
-  "Ne rien effacer et revenir à la console": "Não apagar nada e voltar à consola"
+  "Ne rien effacer et revenir à la console": "Não apagar nada e voltar à consola",
+  "1 jour": "1 dia",
+  "7 jours": "7 dias",
+  "Aucun lien de partage pour l'instant.": "Ainda não há links de partilha.",
+  "Créer le lien": "Criar o link",
+  "Durée du lien": "Duração do link",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "Envie este link à pessoa: só será mostrado uma vez. Funciona até {0}.",
+  "Lien de partage": "Link de partilha",
+  "Nom du document ou son adresse": "Nome do documento ou o seu endereço",
+  "Partager un document": "Partilhar um documento",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "Retirar o link do documento «{0}»? A pessoa deixará de o poder abrir.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Um link de partilha abre um único documento a uma pessoa que não tem conta: pode lê-lo e escrever nele, sem ver mais nada.",
+  "« {0} », créé par {1}, jusqu'au {2}": "«{0}», criado por {1}, até {2}",
+  "« {0} », jusqu'au {1}": "«{0}», até {1}"
 });

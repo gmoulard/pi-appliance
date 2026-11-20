@@ -180,10 +180,14 @@ type Store struct {
 	sessions map[string]session
 	failures map[string]failure
 	reset    bool
+	shares   map[string]Share
 }
 
 func Open(path string) (*Store, error) {
-	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, failures: map[string]failure{}}
+	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, failures: map[string]failure{}, shares: map[string]Share{}}
+	if err := s.loadShares(); err != nil {
+		return nil, err
+	}
 	data, err := os.ReadFile(path)
 	if errors.Is(err, os.ErrNotExist) {
 		return s, nil

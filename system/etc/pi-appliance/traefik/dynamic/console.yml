@@ -73,6 +73,15 @@ http:
       forwardAuth:
         address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward"
         authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups]
+    # Etherpad « utilisateurs connectés » (spécification 6.3, 8.2) : comme
+    # pi-appliance-auth, et un lien de partage ouvre un seul document à une
+    # personne sans compte. Authorization connecte au compte interne
+    # d'Etherpad ; il est toujours remplacé par celui de la console (ou retiré) :
+    # un visiteur ne peut pas le forger.
+    pi-appliance-pad:
+      forwardAuth:
+        address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward-pad"
+        authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups, Authorization]
     # Service « maison seulement » (spécification 8.2) : mêmes plages que la
     # console ci-dessus, adresse TCP vue par Traefik (pas d'en-tête). Ailleurs :
     # 403. Label traefik.http.routers.<routeur>.middlewares=pi-appliance-home@file.

@@ -485,5 +485,18 @@ piTranslations("zh", {
   "Votre mot de passe": "您的密码",
   "Code de vérification, si la double authentification est activée": "验证码（如果已开启双重验证）",
   "J'ai compris ce qui sera effacé": "我已了解将被删除的内容",
-  "Ne rien effacer et revenir à la console": "不删除任何内容，返回控制台"
+  "Ne rien effacer et revenir à la console": "不删除任何内容，返回控制台",
+  "1 jour": "1 天",
+  "7 jours": "7 天",
+  "Aucun lien de partage pour l'instant.": "还没有分享链接。",
+  "Créer le lien": "创建链接",
+  "Durée du lien": "链接有效期",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "把这个链接发给对方：它只会显示一次。有效期至 {0}。",
+  "Lien de partage": "分享链接",
+  "Nom du document ou son adresse": "文档名称或其地址",
+  "Partager un document": "分享文档",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "删除文档“{0}”的链接？对方将无法再打开它。",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "分享链接让没有账户的人打开一个文档：对方可以阅读和编辑它，看不到其他任何内容。",
+  "« {0} », créé par {1}, jusqu'au {2}": "“{0}”，由 {1} 创建，有效期至 {2}",
+  "« {0} », jusqu'au {1}": "“{0}”，有效期至 {1}"
 });

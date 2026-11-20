@@ -485,5 +485,18 @@ piTranslations("de", {
   "Votre mot de passe": "Ihr Passwort",
   "Code de vérification, si la double authentification est activée": "Bestätigungscode, wenn die Zwei-Faktor-Authentifizierung aktiviert ist",
   "J'ai compris ce qui sera effacé": "Ich habe verstanden, was gelöscht wird",
-  "Ne rien effacer et revenir à la console": "Nichts löschen und zur Konsole zurückkehren"
+  "Ne rien effacer et revenir à la console": "Nichts löschen und zur Konsole zurückkehren",
+  "1 jour": "1 Tag",
+  "7 jours": "7 Tage",
+  "Aucun lien de partage pour l'instant.": "Noch keine Freigabelinks.",
+  "Créer le lien": "Link erstellen",
+  "Durée du lien": "Gültigkeit des Links",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "Senden Sie diesen Link an die Person: Er wird nur einmal angezeigt. Er funktioniert bis zum {0}.",
+  "Lien de partage": "Freigabelink",
+  "Nom du document ou son adresse": "Name des Dokuments oder seine Adresse",
+  "Partager un document": "Dokument teilen",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "Den Link zum Dokument „{0}“ entfernen? Die Person kann es dann nicht mehr öffnen.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Ein Freigabelink öffnet einer Person ohne Konto ein einziges Dokument: Sie kann es lesen und bearbeiten, ohne etwas anderes zu sehen.",
+  "« {0} », créé par {1}, jusqu'au {2}": "„{0}“, erstellt von {1}, bis zum {2}",
+  "« {0} », jusqu'au {1}": "„{0}“, bis zum {1}"
 });

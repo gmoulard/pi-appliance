@@ -638,6 +638,9 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 		writeServiceError(w, err)
 		return
 	}
+	if err := c.Accounts.RevokeServiceShares(r.PathValue("name")); err != nil {
+		log.Printf("liens de partage de %s : %v", r.PathValue("name"), err)
+	}
 	w.WriteHeader(http.StatusNoContent)
 }
 

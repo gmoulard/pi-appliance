@@ -99,6 +99,10 @@ func (c *console) accountRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST "+BasePath+"/api/auth/return", c.signedIn(c.forwardReturn))
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward", c.forward)
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-admin", c.forwardAdmin)
+	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-pad", c.forwardPad)
+	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/shares", c.signedIn(c.listShares))
+	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/shares", c.signedIn(c.createShare))
+	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}/shares/{id}", c.signedIn(c.revokeShare))
 }
 
 // ownAccount : réglages de son propre compte, permis même quand la double
@@ -342,13 +346,23 @@ func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly b
 				writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
 				return
 			}
-			w.Header().Set("Remote-User", account.Name)
-			w.Header().Set("Remote-Email", account.Email)
-			w.Header().Set("Remote-Groups", string(account.Role))
+			remoteHeaders(w, account)
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 	}
+	c.forwardLogin(w, r, adminOnly)
+}
+
+func remoteHeaders(w http.ResponseWriter, account auth.Account) {
+	w.Header().Set("Remote-User", account.Name)
+	w.Header().Set("Remote-Email", account.Email)
+	w.Header().Set("Remote-Groups", string(account.Role))
+}
+
+// forwardLogin : sans session déléguée, une page mène à la connexion de la
+// console ; le reste reçoit 401.
+func (c *console) forwardLogin(w http.ResponseWriter, r *http.Request, adminOnly bool) {
 	method := r.Header.Get("X-Forwarded-Method")
 	host := r.Header.Get("X-Forwarded-Host")
 	if (method != "" && method != http.MethodGet && method != http.MethodHead) || host == "" || strings.ContainsAny(host, "/\\@ ") {

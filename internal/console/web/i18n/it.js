@@ -485,5 +485,18 @@ piTranslations("it", {
   "Votre mot de passe": "La vostra password",
   "Code de vérification, si la double authentification est activée": "Codice di verifica, se l'autenticazione a due fattori è attiva",
   "J'ai compris ce qui sera effacé": "Ho capito che cosa sarà cancellato",
-  "Ne rien effacer et revenir à la console": "Non cancellare nulla e tornare alla console"
+  "Ne rien effacer et revenir à la console": "Non cancellare nulla e tornare alla console",
+  "1 jour": "1 giorno",
+  "7 jours": "7 giorni",
+  "Aucun lien de partage pour l'instant.": "Ancora nessun link di condivisione.",
+  "Créer le lien": "Crea il link",
+  "Durée du lien": "Durata del link",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "Invia questo link alla persona: verrà mostrato una sola volta. Funziona fino al {0}.",
+  "Lien de partage": "Link di condivisione",
+  "Nom du document ou son adresse": "Nome del documento o il suo indirizzo",
+  "Partager un document": "Condividi un documento",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "Rimuovere il link al documento «{0}»? La persona non potrà più aprirlo.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Un link di condivisione apre un solo documento a una persona che non ha un account: può leggerlo e scriverci, senza vedere nient'altro.",
+  "« {0} », créé par {1}, jusqu'au {2}": "«{0}», creato da {1}, fino al {2}",
+  "« {0} », jusqu'au {1}": "«{0}», fino al {1}"
 });

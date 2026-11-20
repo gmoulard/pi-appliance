@@ -485,5 +485,18 @@ piTranslations("en", {
   "Votre mot de passe": "Your password",
   "Code de vérification, si la double authentification est activée": "Verification code, if two-factor authentication is on",
   "J'ai compris ce qui sera effacé": "I understand what will be erased",
-  "Ne rien effacer et revenir à la console": "Erase nothing and go back to the console"
+  "Ne rien effacer et revenir à la console": "Erase nothing and go back to the console",
+  "1 jour": "1 day",
+  "7 jours": "7 days",
+  "Aucun lien de partage pour l'instant.": "No share links yet.",
+  "Créer le lien": "Create the link",
+  "Durée du lien": "Link duration",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "Send this link to the person: it will only be shown once. It works until {0}.",
+  "Lien de partage": "Share link",
+  "Nom du document ou son adresse": "Document name or its address",
+  "Partager un document": "Share a document",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "Remove the link to the document “{0}”? The person will no longer be able to open it.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "A share link opens a single document to someone who has no account: they can read and write it, without seeing anything else.",
+  "« {0} », créé par {1}, jusqu'au {2}": "“{0}”, created by {1}, until {2}",
+  "« {0} », jusqu'au {1}": "“{0}”, until {1}"
 });

@@ -485,5 +485,18 @@ piTranslations("ja", {
   "Votre mot de passe": "パスワード",
   "Code de vérification, si la double authentification est activée": "確認コード（2 段階認証が有効な場合）",
   "J'ai compris ce qui sera effacé": "何が消去されるか理解しました",
-  "Ne rien effacer et revenir à la console": "何も消去せずにコンソールに戻る"
+  "Ne rien effacer et revenir à la console": "何も消去せずにコンソールに戻る",
+  "1 jour": "1日",
+  "7 jours": "7日",
+  "Aucun lien de partage pour l'instant.": "共有リンクはまだありません。",
+  "Créer le lien": "リンクを作成",
+  "Durée du lien": "リンクの有効期間",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "このリンクを相手に送ってください。表示されるのは一度だけです。{0}まで使えます。",
+  "Lien de partage": "共有リンク",
+  "Nom du document ou son adresse": "文書の名前またはアドレス",
+  "Partager un document": "文書を共有",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "文書「{0}」へのリンクを削除しますか？相手はその文書を開けなくなります。",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "共有リンクを使うと、アカウントのない人が一つの文書だけを開けます。読み書きはできますが、ほかには何も見えません。",
+  "« {0} », créé par {1}, jusqu'au {2}": "「{0}」、{1} が作成、{2}まで",
+  "« {0} », jusqu'au {1}": "「{0}」、{1}まで"
 });
