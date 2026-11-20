@@ -16,6 +16,15 @@
 // Traduction de la console : allemand. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("de", {
+  "Versions proposées": "Angebotene Versionen",
+  "Stables (conseillé)": "Stabil (empfohlen)",
+  "Bêta : nouveautés en avance, moins éprouvées": "Beta: Neuerungen früher, weniger erprobt",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "Beta-Versionen erhalten?\n\nSie bringen Neuerungen früher, können aber Fehler enthalten. Nichts wird von selbst installiert: Sie entscheiden immer.",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "Sie haben eine Beta-Version: Sie bleiben dabei bis zur nächsten, neueren stabilen Version.",
+  "Vous recevrez désormais les versions bêta.": "Sie erhalten ab jetzt Beta-Versionen.",
+  "Vous recevrez désormais les versions stables seulement.": "Sie erhalten ab jetzt nur stabile Versionen.",
+  "canal bêta": "Beta-Kanal",
+  "canal stable": "stabiler Kanal",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Legen Sie die Quelldateien der Website in Nextcloud ab: Sie wird automatisch erstellt.",
   "Démarrer": "Starten",
   "{0} est démarré : {1}": "{0} ist gestartet: {1}",

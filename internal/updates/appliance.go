@@ -59,7 +59,7 @@ func ArchiveName(version string) string {
 }
 
 func (c *Checker) installable(release *Release) bool {
-	if c.Runner == nil || c.DownloadDir == "" || release == nil || !versionPattern.MatchString(release.Tag) {
+	if c.Runner == nil || c.DownloadDir == "" || release == nil || !versionPattern.MatchString(release.Tag) || !release.Allowed(c.Channel()) {
 		return false
 	}
 	_, archive := release.Asset(ArchiveName(release.Tag))
@@ -78,7 +78,7 @@ func (c *Checker) InstallAppliance(ctx context.Context) (string, error) {
 	if busy {
 		return "", Failure{Code: "busy", Message: "La nouvelle version est déjà en cours de téléchargement."}
 	}
-	if release == nil || !Newer(c.Version, release.Tag) {
+	if release == nil || !release.Allowed(c.Channel()) || !Newer(c.Version, release.Tag) {
 		return "", Failure{Code: "nothing", Message: "pi-appliance est à jour."}
 	}
 	if !c.installable(release) {

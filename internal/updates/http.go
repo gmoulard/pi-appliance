@@ -29,8 +29,10 @@ import (
 //	POST prefix/check    nouvelle recherche, sans l'attendre
 //	POST prefix/system   installation des correctifs du système
 //	POST prefix/appliance installation de la dernière version de pi-appliance
+//	PUT  prefix/channel  canal de version, {"channel": "stable"|"beta"}
 func (c *Checker) Routes(mux *http.ServeMux, prefix string, wrap func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET "+prefix, wrap(c.serveStatus))
+	mux.HandleFunc("PUT "+prefix+"/channel", wrap(c.serveChannel))
 	mux.HandleFunc("POST "+prefix+"/check", wrap(c.serveCheck))
 	mux.HandleFunc("POST "+prefix+"/system", wrap(c.serveApply))
 	mux.HandleFunc("POST "+prefix+"/appliance", wrap(c.serveInstall))
@@ -47,6 +49,30 @@ func (c *Checker) serveInstall(w http.ResponseWriter, r *http.Request) {
 	default:
 		c.logf("nouvelle version de pi-appliance : %v", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "L'installation de la nouvelle version n'a pas pu démarrer."})
+	}
+}
+
+func (c *Checker) serveChannel(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Channel string `json:"channel"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<10)).Decode(&body); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Demande illisible."})
+		return
+	}
+	err := c.SetChannel(body.Channel)
+	var failure Failure
+	switch {
+	case err == nil:
+		c.CheckNow()
+		writeJSON(w, http.StatusOK, map[string]string{"channel": c.Channel()})
+	case errors.As(err, &failure) && failure.Code == "channel":
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": failure.Message, "code": failure.Code})
+	case errors.As(err, &failure):
+		writeJSON(w, http.StatusConflict, map[string]string{"error": failure.Message, "code": failure.Code})
+	default:
+		c.logf("canal de version : %v", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Le canal n'a pas pu être enregistré."})
 	}
 }
 

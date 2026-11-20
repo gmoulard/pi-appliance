@@ -164,7 +164,7 @@ func TestGitHubAssets(t *testing.T) {
 		w.Write([]byte(`{"tag_name": "v1.1.0", "assets": [{"name": "pi-appliance-v1.1.0-arm64.tar.gz", "browser_download_url": "https://github.com/x", "size": 42}]}`))
 	}))
 	defer server.Close()
-	release, err := GitHub{Repo: "gmoulard/pi-appliance", BaseURL: server.URL}.Latest(context.Background())
+	release, err := GitHub{Repo: "gmoulard/pi-appliance", BaseURL: server.URL}.Latest(context.Background(), Stable)
 	if err != nil {
 		t.Fatal(err)
 	}

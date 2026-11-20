@@ -16,6 +16,15 @@
 // Traduction de la console : arabe. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ar", {
+  "Versions proposées": "الإصدارات المعروضة",
+  "Stables (conseillé)": "مستقرة (موصى بها)",
+  "Bêta : nouveautés en avance, moins éprouvées": "تجريبية: ميزات جديدة مبكرًا، أقل اختبارًا",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "تلقي الإصدارات التجريبية؟\n\nتأتي بالميزات الجديدة مبكرًا، لكنها قد تحتوي على أخطاء. لا يُثبَّت شيء من تلقاء نفسه: أنت تختار دائمًا.",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "لديك إصدار تجريبي: ستبقى عليه حتى الإصدار المستقر الأحدث التالي.",
+  "Vous recevrez désormais les versions bêta.": "ستتلقى من الآن الإصدارات التجريبية.",
+  "Vous recevrez désormais les versions stables seulement.": "ستتلقى من الآن الإصدارات المستقرة فقط.",
+  "canal bêta": "القناة التجريبية",
+  "canal stable": "القناة المستقرة",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "ضع الملفات المصدرية للموقع في Nextcloud: سيُبنى تلقائيًا.",
   "Démarrer": "تشغيل",
   "{0} est démarré : {1}": "تم تشغيل {0}: {1}",

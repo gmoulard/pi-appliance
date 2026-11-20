@@ -25,6 +25,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -100,7 +102,9 @@ func (s System) Busy() bool {
 
 // Appliance : version de pi-appliance en service et dernière version publiée.
 type Appliance struct {
-	Current   string     `json:"current"`
+	Current string `json:"current"`
+	// Channel : canal de version choisi par l'administrateur (Stable ou Beta).
+	Channel   string     `json:"channel"`
 	Latest    string     `json:"latest,omitempty"`
 	Available bool       `json:"available"`
 	URL       string     `json:"url,omitempty"`
@@ -133,6 +137,9 @@ type Checker struct {
 	// DownloadDir : dossier où la nouvelle version est téléchargée, lu par
 	// updates.sh ($PI_STATE/upgrade) ; vide : pas d'installation d'ici.
 	DownloadDir string
+	// SettingsFile garde le canal choisi (updates.json, droits 600) ; vide :
+	// canal stable, non modifiable.
+	SettingsFile string
 	// Client télécharge les archives ; nil : délai de 10 minutes.
 	Client *http.Client
 	Logf   func(format string, args ...any)
@@ -143,6 +150,106 @@ type Checker struct {
 	release   *Release
 	download  *Download
 	checking  bool
+	channel   string
+}
+
+type settings struct {
+	Channel string `json:"channel"`
+}
+
+// Load lit le canal choisi ; un fichier absent ou un canal inconnu vaut le
+// canal stable.
+func (c *Checker) Load() error {
+	if c.SettingsFile == "" {
+		return nil
+	}
+	data, err := os.ReadFile(c.SettingsFile)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	var saved settings
+	if err := json.Unmarshal(data, &saved); err != nil {
+		return fmt.Errorf("%s : %w", c.SettingsFile, err)
+	}
+	c.mu.Lock()
+	c.channel = ""
+	if saved.Channel == Beta {
+		c.channel = Beta
+	}
+	c.mu.Unlock()
+	return nil
+}
+
+// Channel rend le canal choisi : Stable tant que l'administrateur n'a pas
+// choisi le canal bêta.
+func (c *Checker) Channel() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.channelLocked()
+}
+
+func (c *Checker) channelLocked() string {
+	if c.channel == Beta {
+		return Beta
+	}
+	return Stable
+}
+
+// SetChannel change de canal et l'enregistre ; la dernière version connue
+// est oubliée jusqu'à la prochaine recherche, pour ne rien installer de
+// l'ancien canal.
+func (c *Checker) SetChannel(channel string) error {
+	if channel != Stable && channel != Beta {
+		return Failure{Code: "channel", Message: "Canal inconnu : choisissez « stable » ou « bêta »."}
+	}
+	if c.SettingsFile == "" {
+		return Failure{Code: "unavailable", Message: "Le canal ne se change pas depuis cette console."}
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.download != nil && c.download.State == "downloading" {
+		return Failure{Code: "busy", Message: "Une nouvelle version est en cours de téléchargement : attendez la fin."}
+	}
+	if c.channelLocked() == channel {
+		return nil
+	}
+	data, err := json.Marshal(settings{Channel: channel})
+	if err != nil {
+		return err
+	}
+	if err := writeFile(c.SettingsFile, data); err != nil {
+		return err
+	}
+	c.channel = channel
+	c.release = nil
+	c.appliance.Latest, c.appliance.URL, c.appliance.Error = "", "", ""
+	return nil
+}
+
+func writeFile(path string, data []byte) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
+		return err
+	}
+	temp, err := os.CreateTemp(filepath.Dir(path), ".updates-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(temp.Name())
+	if _, err := temp.Write(append(data, '\n')); err != nil {
+		temp.Close()
+		return err
+	}
+	if err := temp.Chmod(0o600); err != nil {
+		temp.Close()
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(temp.Name(), path)
 }
 
 const (
@@ -219,6 +326,7 @@ func (c *Checker) ApplySystem(ctx context.Context) error {
 func (c *Checker) Status(ctx context.Context) Status {
 	c.mu.Lock()
 	status := Status{Appliance: c.appliance, Checking: c.checking}
+	status.Appliance.Channel = c.channelLocked()
 	release := c.release
 	if c.download != nil {
 		download := *c.download
@@ -263,10 +371,18 @@ func (c *Checker) Check(ctx context.Context) bool {
 			c.logf("mises à jour du système : %v", err)
 		}
 	}
-	if c.Releases != nil {
-		release, err := c.Releases.Latest(ctx)
+	for c.Releases != nil {
+		channel := c.Channel()
+		release, err := c.Releases.Latest(ctx, channel)
+		if release != nil && !release.Allowed(channel) {
+			release = nil
+		}
 		now := c.now()
 		c.mu.Lock()
+		if c.channelLocked() != channel {
+			c.mu.Unlock()
+			continue
+		}
 		c.appliance.CheckedAt = &now
 		if err != nil {
 			c.appliance.Error = "Impossible de savoir si une nouvelle version de pi-appliance est sortie : le site de publication ne répond pas."
@@ -282,6 +398,7 @@ func (c *Checker) Check(ctx context.Context) bool {
 		if err != nil {
 			c.logf("dernière version de pi-appliance : %v", err)
 		}
+		break
 	}
 	return true
 }

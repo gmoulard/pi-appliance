@@ -236,4 +236,6 @@ git tag -a v0.1.0 -m "pi-appliance v0.1.0" ce785b2df668676976f05d81f1774df954f58
 git push origin v0.1.0
 ```
 
+Une préversion, proposée seulement aux Pi réglés sur le canal bêta (spécification 5.4), porte un suffixe : `1.3.0-beta.1` dans `VERSION`, étiquette `v1.3.0-beta.1` ; le workflow la publie marquée « préversion ».
+
 Pour les suivantes (skill `release`) : mettre le nouveau numéro dans le fichier `VERSION` et ajouter une ligne en bas de `CHANGELOG.md`, dans le même commit, puis étiqueter ce commit avec le même numéro précédé de `v` (`origin/master` à la place de l'empreinte). Le workflow « Image » s'arrête si l'étiquette diffère de `VERSION` : ne jamais déplacer l'étiquette, publier une nouvelle version. Les Pi installés avec une image `v0.1.0` ou plus récente proposent ensuite la nouvelle version dans « Mon Pi ».

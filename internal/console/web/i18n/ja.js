@@ -16,6 +16,15 @@
 // Traduction de la console : japonais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ja", {
+  "Versions proposées": "提供するバージョン",
+  "Stables (conseillé)": "安定版（おすすめ）",
+  "Bêta : nouveautés en avance, moins éprouvées": "ベータ版：新機能を先取り、検証は少なめ",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "ベータ版を受け取りますか？\n\n新機能をいち早く使えますが、不具合があるかもしれません。勝手にインストールされることはありません。いつもあなたが選びます。",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "ベータ版をお使いです。次の新しい安定版が出るまで、そのまま使い続けます。",
+  "Vous recevrez désormais les versions bêta.": "今後はベータ版を受け取ります。",
+  "Vous recevrez désormais les versions stables seulement.": "今後は安定版だけを受け取ります。",
+  "canal bêta": "ベータ版チャンネル",
+  "canal stable": "安定版チャンネル",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "サイトのソースファイルを Nextcloud に置いてください。自動でビルドされます。",
   "Démarrer": "起動",
   "{0} est démarré : {1}": "{0} を起動しました：{1}",

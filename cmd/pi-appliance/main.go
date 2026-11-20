@@ -142,7 +142,10 @@ func main() {
 		backups.Disks = &backup.Disks{Runner: network.Script(*backupScript)}
 	}
 	// Mises à jour proposées, jamais installées d'office (spécification 9.2).
-	checker := &updates.Checker{Version: version, DownloadDir: filepath.Join(*data, "system", "upgrade"), Logf: log.Printf}
+	checker := &updates.Checker{Version: version, DownloadDir: filepath.Join(*data, "system", "upgrade"), SettingsFile: filepath.Join(*data, "updates.json"), Logf: log.Printf}
+	if err := checker.Load(); err != nil {
+		log.Printf("canal de version : %v ; canal stable", err)
+	}
 	if *updatesScript != "" {
 		checker.Runner = network.Script(*updatesScript)
 	}

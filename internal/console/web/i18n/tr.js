@@ -16,6 +16,15 @@
 // Traduction de la console : turc. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("tr", {
+  "Versions proposées": "Önerilen sürümler",
+  "Stables (conseillé)": "Kararlı (önerilir)",
+  "Bêta : nouveautés en avance, moins éprouvées": "Beta: yenilikler erken, daha az denenmiş",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "Beta sürümleri alınsın mı?\n\nYenilikleri erken getirirler ama hata içerebilirler. Hiçbir şey kendiliğinden kurulmaz: her zaman siz seçersiniz.",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "Bir beta sürümünüz var: bir sonraki, daha yeni kararlı sürüme kadar onda kalacaksınız.",
+  "Vous recevrez désormais les versions bêta.": "Artık beta sürümleri alacaksınız.",
+  "Vous recevrez désormais les versions stables seulement.": "Artık yalnızca kararlı sürümleri alacaksınız.",
+  "canal bêta": "beta kanalı",
+  "canal stable": "kararlı kanal",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Sitenin kaynak dosyalarını Nextcloud'a bırakın: site kendiliğinden oluşturulur.",
   "Démarrer": "Başlat",
   "{0} est démarré : {1}": "{0} başlatıldı: {1}",

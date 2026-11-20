@@ -1528,6 +1528,7 @@ const updatesDetails = document.getElementById("updatesDetails");
 const updatesApply = document.getElementById("updatesApply");
 const updatesCheck = document.getElementById("updatesCheck");
 const updatesAppliance = document.getElementById("updatesAppliance");
+const updatesChannel = document.getElementById("updatesChannel");
 let applianceTimer = null;
 let updatesStatus = null;
 let updatesTimer = null;
@@ -1594,6 +1595,9 @@ function showUpdates() {
     }
     lines.push(line);
   }
+  if (status.appliance.channel === "stable" && status.appliance.current.includes("-")) {
+    lines.push(element("p", t("Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente."), "meta"));
+  }
   if (!upgrading && download && download.state === "failed") {
     lines.push(element("p", download.message, "warning"));
   }
@@ -1635,6 +1639,9 @@ function showUpdates() {
   updatesAppliance.textContent = t("Installer pi-appliance {0}", status.appliance.latest || "");
   updatesAppliance.disabled = false;
   updatesCheck.disabled = busy || upgrading || status.checking;
+  updatesChannel.value = status.appliance.channel || "stable";
+  updatesChannel.disabled = upgrading;
+  footer.textContent = `pi-appliance ${status.appliance.current} · ${status.appliance.channel === "beta" ? t("canal bêta") : t("canal stable")}`;
 }
 
 // loadUpdates rend vrai quand plus rien n'est en cours (installation, recherche).
@@ -1697,6 +1704,27 @@ function watchAppliance(version) {
     }
   }, 5000);
 }
+
+// Canal de version (spécification 5.4) : stable par défaut ; le canal bêta
+// demande une confirmation, et rien ne s'installe tout seul.
+updatesChannel.addEventListener("change", async () => {
+  const channel = updatesChannel.value;
+  if (channel === "beta" && !window.confirm(t("Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours."))) {
+    updatesChannel.value = (updatesStatus && updatesStatus.appliance.channel) || "stable";
+    return;
+  }
+  updatesChannel.disabled = true;
+  try {
+    await api("updates/channel", { method: "PUT", body: JSON.stringify({ channel }) });
+    showMessage([channel === "beta" ? t("Vous recevrez désormais les versions bêta.") : t("Vous recevrez désormais les versions stables seulement.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    updatesChannel.disabled = false;
+  }
+  await loadUpdates();
+  watchUpdates();
+});
 
 updatesAppliance.addEventListener("click", async () => {
   const version = updatesStatus && updatesStatus.appliance.latest;

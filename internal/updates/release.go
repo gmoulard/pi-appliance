@@ -16,6 +16,7 @@
 package updates
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -28,9 +29,33 @@ import (
 
 // Release : une version publiée de pi-appliance.
 type Release struct {
-	Tag    string  `json:"tag_name"`
-	URL    string  `json:"html_url"`
-	Assets []Asset `json:"assets"`
+	Tag        string  `json:"tag_name"`
+	URL        string  `json:"html_url"`
+	Assets     []Asset `json:"assets"`
+	Prerelease bool    `json:"prerelease"`
+	Draft      bool    `json:"draft"`
+}
+
+// Canaux de version (spécification 5.4) : stable par défaut, bêta au choix
+// de l'administrateur.
+const (
+	Stable = "stable"
+	Beta   = "beta"
+)
+
+// Preview dit si la version est une préversion : marquée comme telle sur
+// GitHub, ou numérotée avec un suffixe (« 1.3.0-beta.1 »).
+func (r Release) Preview() bool {
+	return r.Prerelease || strings.Contains(r.Tag, "-")
+}
+
+// Allowed dit si la version peut être proposée sur ce canal : jamais de
+// brouillon, et jamais de préversion sur le canal stable.
+func (r Release) Allowed(channel string) bool {
+	if r.Draft || r.Tag == "" {
+		return false
+	}
+	return channel == Beta || !r.Preview()
 }
 
 // Asset : un fichier joint à une version publiée (image, archive de mise à jour…).
@@ -50,15 +75,16 @@ func (r Release) Asset(name string) (Asset, bool) {
 	return Asset{}, false
 }
 
-// Releases donne la dernière version publiée ; nil sans erreur quand aucune
-// version n'est encore publiée.
+// Releases donne la dernière version publiée sur un canal (Stable ou Beta) ;
+// nil sans erreur quand aucune version n'est encore publiée sur ce canal.
 type Releases interface {
-	Latest(ctx context.Context) (*Release, error)
+	Latest(ctx context.Context, channel string) (*Release, error)
 }
 
-// GitHub lit la dernière version publiée d'un dépôt GitHub (ni brouillon ni
-// préversion), sans jeton : 60 demandes par heure suffisent largement à une
-// recherche par jour.
+// GitHub lit la dernière version publiée d'un dépôt GitHub, sans jeton : 60
+// demandes par heure suffisent largement à une recherche par jour. Canal
+// stable : releases/latest (ni brouillon ni préversion). Canal bêta : la plus
+// récente des 30 dernières versions, préversions comprises.
 type GitHub struct {
 	// Repo : « propriétaire/dépôt ».
 	Repo string
@@ -70,7 +96,45 @@ type GitHub struct {
 // DefaultRepo : dépôt où sont publiées les versions de pi-appliance.
 const DefaultRepo = "gmoulard/pi-appliance"
 
-func (g GitHub) Latest(ctx context.Context) (*Release, error) {
+func (g GitHub) Latest(ctx context.Context, channel string) (*Release, error) {
+	if channel == Beta {
+		var releases []Release
+		found, err := g.get(ctx, "/releases?per_page=30", &releases)
+		if err != nil || !found {
+			return nil, err
+		}
+		var best *Release
+		for i := range releases {
+			candidate := &releases[i]
+			if !candidate.Allowed(Beta) {
+				continue
+			}
+			if _, ok := parseVersion(strings.TrimPrefix(candidate.Tag, "v")); !ok {
+				continue
+			}
+			if best == nil || Newer(best.Tag, candidate.Tag) {
+				best = candidate
+			}
+		}
+		return best, nil
+	}
+	var release Release
+	found, err := g.get(ctx, "/releases/latest", &release)
+	if err != nil || !found {
+		return nil, err
+	}
+	if release.Tag == "" {
+		return nil, fmt.Errorf("GitHub : version sans étiquette")
+	}
+	if !release.Allowed(Stable) {
+		return nil, nil
+	}
+	return &release, nil
+}
+
+// get lit une réponse JSON de l'API GitHub du dépôt ; faux sans erreur pour
+// une réponse 404 (aucune version publiée).
+func (g GitHub) get(ctx context.Context, path string, value any) (bool, error) {
 	base := g.BaseURL
 	if base == "" {
 		base = "https://api.github.com"
@@ -79,31 +143,27 @@ func (g GitHub) Latest(ctx context.Context) (*Release, error) {
 	if client == nil {
 		client = &http.Client{Timeout: 30 * time.Second}
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimSuffix(base, "/")+"/repos/"+g.Repo+"/releases/latest", nil)
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, strings.TrimSuffix(base, "/")+"/repos/"+g.Repo+path, nil)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 	request.Header.Set("Accept", "application/vnd.github+json")
 	request.Header.Set("User-Agent", "pi-appliance")
 	response, err := client.Do(request)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode == http.StatusNotFound {
-		return nil, nil
+		return false, nil
 	}
 	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GitHub : réponse %d", response.StatusCode)
+		return false, fmt.Errorf("GitHub : réponse %d", response.StatusCode)
 	}
-	var release Release
-	if err := json.NewDecoder(io.LimitReader(response.Body, 1<<20)).Decode(&release); err != nil {
-		return nil, fmt.Errorf("GitHub : réponse illisible : %w", err)
+	if err := json.NewDecoder(io.LimitReader(response.Body, 4<<20)).Decode(value); err != nil {
+		return false, fmt.Errorf("GitHub : réponse illisible : %w", err)
 	}
-	if release.Tag == "" {
-		return nil, fmt.Errorf("GitHub : version sans étiquette")
-	}
-	return &release, nil
+	return true, nil
 }
 
 // Newer dit si latest est plus récente que current. Les versions de la forme
@@ -134,8 +194,34 @@ func Newer(current, latest string) bool {
 	case a.pre == "":
 		return false
 	default:
-		return b.pre > a.pre
+		return comparePre(a.pre, b.pre) < 0
 	}
+}
+
+// comparePre compare deux suffixes de préversion à la manière de SemVer :
+// partie par partie, les nombres comme des nombres (« beta.10 » après
+// « beta.9 »), un nombre avant un mot.
+func comparePre(a, b string) int {
+	left, right := strings.Split(a, "."), strings.Split(b, ".")
+	for i := 0; i < len(left) && i < len(right); i++ {
+		x, xErr := strconv.Atoi(left[i])
+		y, yErr := strconv.Atoi(right[i])
+		switch {
+		case xErr == nil && yErr == nil:
+			if x != y {
+				return cmp.Compare(x, y)
+			}
+		case xErr == nil:
+			return -1
+		case yErr == nil:
+			return 1
+		default:
+			if c := strings.Compare(left[i], right[i]); c != 0 {
+				return c
+			}
+		}
+	}
+	return cmp.Compare(len(left), len(right))
 }
 
 type version struct {

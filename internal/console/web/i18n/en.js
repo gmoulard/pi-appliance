@@ -16,6 +16,15 @@
 // Traduction de la console : anglais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("en", {
+  "Versions proposées": "Versions offered",
+  "Stables (conseillé)": "Stable (recommended)",
+  "Bêta : nouveautés en avance, moins éprouvées": "Beta: new features early, less tested",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "Receive beta versions?\n\nThey bring new features early, but may contain bugs. Nothing installs by itself: you always choose.",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "You have a beta version: you will stay on it until the next, newer stable version.",
+  "Vous recevrez désormais les versions bêta.": "You will now receive beta versions.",
+  "Vous recevrez désormais les versions stables seulement.": "You will now receive stable versions only.",
+  "canal bêta": "beta channel",
+  "canal stable": "stable channel",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Put the site's source files in Nextcloud: it will be built automatically.",
   "Démarrer": "Start",
   "{0} est démarré : {1}": "{0} is started: {1}",

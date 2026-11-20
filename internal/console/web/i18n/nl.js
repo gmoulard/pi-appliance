@@ -16,6 +16,15 @@
 // Traduction de la console : néerlandais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("nl", {
+  "Versions proposées": "Aangeboden versies",
+  "Stables (conseillé)": "Stabiel (aanbevolen)",
+  "Bêta : nouveautés en avance, moins éprouvées": "Bèta: nieuwigheden eerder, minder getest",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "Bètaversies ontvangen?\n\nZe brengen nieuwigheden eerder, maar kunnen fouten bevatten. Niets installeert zichzelf: u kiest altijd.",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "U hebt een bètaversie: u blijft erop tot de volgende, nieuwere stabiele versie.",
+  "Vous recevrez désormais les versions bêta.": "U ontvangt voortaan bètaversies.",
+  "Vous recevrez désormais les versions stables seulement.": "U ontvangt voortaan alleen stabiele versies.",
+  "canal bêta": "bètakanaal",
+  "canal stable": "stabiel kanaal",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Plaats de bronbestanden van de site in Nextcloud: de site wordt vanzelf gebouwd.",
   "Démarrer": "Starten",
   "{0} est démarré : {1}": "{0} is gestart: {1}",

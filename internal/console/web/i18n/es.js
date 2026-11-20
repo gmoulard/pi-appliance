@@ -16,6 +16,15 @@
 // Traduction de la console : espagnol. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("es", {
+  "Versions proposées": "Versiones ofrecidas",
+  "Stables (conseillé)": "Estables (recomendado)",
+  "Bêta : nouveautés en avance, moins éprouvées": "Beta: novedades antes, menos probadas",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "¿Recibir las versiones beta?\n\nTraen las novedades antes, pero pueden contener errores. Nada se instala solo: usted siempre elige.",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "Tiene una versión beta: seguirá en ella hasta la próxima versión estable más reciente.",
+  "Vous recevrez désormais les versions bêta.": "A partir de ahora recibirá las versiones beta.",
+  "Vous recevrez désormais les versions stables seulement.": "A partir de ahora solo recibirá las versiones estables.",
+  "canal bêta": "canal beta",
+  "canal stable": "canal estable",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Deposite los archivos fuente del sitio en Nextcloud: se construirá automáticamente.",
   "Démarrer": "Iniciar",
   "{0} est démarré : {1}": "{0} se ha iniciado: {1}",

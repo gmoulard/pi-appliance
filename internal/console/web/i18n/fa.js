@@ -16,6 +16,15 @@
 // Traduction de la console : persan. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("fa", {
+  "Versions proposées": "نسخه‌های پیشنهادی",
+  "Stables (conseillé)": "پایدار (توصیه‌شده)",
+  "Bêta : nouveautés en avance, moins éprouvées": "بتا: امکانات تازه زودتر، کمتر آزموده",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "نسخه‌های بتا دریافت شود؟\n\nامکانات تازه را زودتر می‌آورند، اما ممکن است خطا داشته باشند. هیچ چیز خودبه‌خود نصب نمی‌شود: همیشه شما انتخاب می‌کنید.",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "شما نسخهٔ بتا دارید: تا نسخهٔ پایدار جدیدتر بعدی روی آن می‌مانید.",
+  "Vous recevrez désormais les versions bêta.": "از این پس نسخه‌های بتا را دریافت می‌کنید.",
+  "Vous recevrez désormais les versions stables seulement.": "از این پس فقط نسخه‌های پایدار را دریافت می‌کنید.",
+  "canal bêta": "کانال بتا",
+  "canal stable": "کانال پایدار",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "فایل‌های منبع سایت را در Nextcloud قرار دهید: سایت خودکار ساخته می‌شود.",
   "Démarrer": "راه‌اندازی",
   "{0} est démarré : {1}": "{0} راه‌اندازی شد: {1}",

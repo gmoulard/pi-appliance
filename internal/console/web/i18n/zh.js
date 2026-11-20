@@ -16,6 +16,15 @@
 // Traduction de la console : chinois. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("zh", {
+  "Versions proposées": "提供的版本",
+  "Stables (conseillé)": "稳定版（推荐）",
+  "Bêta : nouveautés en avance, moins éprouvées": "测试版：抢先体验新功能，测试较少",
+  "Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours.": "接收测试版？\n\n测试版会提前带来新功能，但可能有错误。不会自动安装任何东西：始终由您选择。",
+  "Vous avez une version bêta : vous resterez dessus jusqu'à la prochaine version stable plus récente.": "您正在使用测试版：在出现更新的稳定版之前，您会一直使用它。",
+  "Vous recevrez désormais les versions bêta.": "从现在起您将收到测试版。",
+  "Vous recevrez désormais les versions stables seulement.": "从现在起您只会收到稳定版。",
+  "canal bêta": "测试版渠道",
+  "canal stable": "稳定版渠道",
   "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "把网站的源文件放入 Nextcloud：网站会自动构建。",
   "Démarrer": "启动",
   "{0} est démarré : {1}": "{0} 已启动：{1}",

@@ -83,7 +83,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
-          gh release create "${GITHUB_REF_NAME}" deploy/*.img.xz deploy/*.img.xz.sha256 \
+          # Une étiquette avec suffixe (v1.3.0-beta.1) est une préversion :
+          # proposée seulement sur le canal bêta (spécification 5.4).
+          prerelease=
+          case "${GITHUB_REF_NAME}" in *-*) prerelease=--prerelease ;; esac
+          # shellcheck disable=SC2086
+          gh release create "${GITHUB_REF_NAME}" $prerelease deploy/*.img.xz deploy/*.img.xz.sha256 \
             deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
             --title "pi-appliance ${GITHUB_REF_NAME}" \
             --notes "Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).

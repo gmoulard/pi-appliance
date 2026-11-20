@@ -63,7 +63,7 @@ type fakeReleases struct {
 	err     error
 }
 
-func (f fakeReleases) Latest(context.Context) (*Release, error) {
+func (f fakeReleases) Latest(context.Context, string) (*Release, error) {
 	return f.release, f.err
 }
 
@@ -155,7 +155,7 @@ type switchReleases struct {
 	err     error
 }
 
-func (s *switchReleases) Latest(context.Context) (*Release, error) {
+func (s *switchReleases) Latest(context.Context, string) (*Release, error) {
 	if s.err != nil {
 		return nil, s.err
 	}
@@ -176,6 +176,10 @@ func TestNewer(t *testing.T) {
 		{"1.2.0-beta.1", "1.2.0", true},
 		{"1.2.0", "1.2.0-beta.1", false},
 		{"1.2.0-beta.1", "1.2.0-beta.2", true},
+		{"1.2.0-beta.9", "1.2.0-beta.10", true},
+		{"1.2.0-beta.10", "1.2.0-beta.9", false},
+		{"1.2.0-beta", "1.2.0-beta.1", true},
+		{"1.2.0-alpha.1", "1.2.0-beta.1", true},
 		{"0c602d9", "1.0.0", true},
 		{"1234567", "1.0.0", true},
 		{"dev", "1.0.0", false},
@@ -196,7 +200,7 @@ func TestGitHubLatest(t *testing.T) {
 		w.Write([]byte(`{"tag_name": "v1.3.0", "html_url": "https://example.test/v1.3.0", "prerelease": false}`))
 	}))
 	defer server.Close()
-	release, err := GitHub{Repo: DefaultRepo, BaseURL: server.URL, Client: server.Client()}.Latest(context.Background())
+	release, err := GitHub{Repo: DefaultRepo, BaseURL: server.URL, Client: server.Client()}.Latest(context.Background(), Stable)
 	if err != nil || release == nil || release.Tag != "v1.3.0" || release.URL != "https://example.test/v1.3.0" {
 		t.Fatalf("version : %+v, %v", release, err)
 	}
@@ -205,7 +209,7 @@ func TestGitHubLatest(t *testing.T) {
 func TestGitHubNoRelease(t *testing.T) {
 	server := httptest.NewServer(http.NotFoundHandler())
 	defer server.Close()
-	release, err := GitHub{Repo: DefaultRepo, BaseURL: server.URL, Client: server.Client()}.Latest(context.Background())
+	release, err := GitHub{Repo: DefaultRepo, BaseURL: server.URL, Client: server.Client()}.Latest(context.Background(), Stable)
 	if err != nil || release != nil {
 		t.Fatalf("aucune version publiée : %+v, %v", release, err)
 	}
@@ -216,7 +220,7 @@ func TestGitHubError(t *testing.T) {
 		w.WriteHeader(http.StatusForbidden)
 	}))
 	defer server.Close()
-	if _, err := (GitHub{Repo: DefaultRepo, BaseURL: server.URL, Client: server.Client()}).Latest(context.Background()); err == nil {
+	if _, err := (GitHub{Repo: DefaultRepo, BaseURL: server.URL, Client: server.Client()}).Latest(context.Background(), Stable); err == nil {
 		t.Fatal("limite de GitHub : erreur attendue")
 	}
 }
