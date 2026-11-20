@@ -16,6 +16,7 @@
 // Traduction de la console : arabe. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ar", {
+  "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "ضع الملفات المصدرية للموقع في Nextcloud: سيُبنى تلقائيًا.",
   "Démarrer": "تشغيل",
   "{0} est démarré : {1}": "تم تشغيل {0}: {1}",
   "Arrêter": "إيقاف",
@@ -25,11 +26,9 @@ piTranslations("ar", {
   "Mettre à jour": "تحديث",
   "Erreur {0}": "خطأ {0}",
   "Ouvrir": "فتح",
-  "Déposer un ZIP": "رفع ملف ZIP",
   "Désinstaller": "إلغاء التثبيت",
   "Nouvelle version disponible.": "يتوفر إصدار جديد.",
   "Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www": "Nextcloud: مجلد خارجي /srv/pi-appliance/services/{0}/www",
-  "FTP : compte pi sur le port 2121, sauf port personnalisé.": "FTP: المستخدم pi على المنفذ 2121، ما لم يُختر منفذ آخر.",
   "Téléchargement de pi-appliance {0}…": "جارٍ تنزيل pi-appliance {0}…",
   "Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.": "جارٍ تثبيت pi-appliance {0}… ستُعاد تشغيل وحدة التحكم: ستُعاد هذه الصفحة تلقائيًا.",
   "L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.": "فشل تثبيت pi-appliance {0}: أُعيد الإصدار السابق، ولم تتغير خدماتك.",
@@ -42,7 +41,6 @@ piTranslations("ar", {
   "Catalogue mis à jour en ligne le {0}.": "حُدّث الفهرس عبر الإنترنت في {0}.",
   "Catalogue intégré à la console : il n'a pas encore pu être lu en ligne.": "فهرس مدمج في وحدة التحكم: لم تتسنَّ قراءته عبر الإنترنت بعد.",
   "Pas encore disponibles sur cette console : {0}.": "غير متاحة بعد على وحدة التحكم هذه: {0}.",
-  "Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.": "ضع الملفات المصدرية للموقع (ZIP أو Nextcloud): سيُبنى تلقائيًا.",
   "Construction du site en cours…": "جارٍ بناء الموقع…",
   "Site construit le {0}.": "بُني الموقع في {0}.",
   "La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.": "فشل بناء الموقع في {0}: يبقى الموقع السابق متاحًا. التفاصيل في الملف .pi-appliance-build.log داخل مجلد الموقع.",
@@ -113,8 +111,6 @@ piTranslations("ar", {
   "Fichier compose.yaml": "ملف compose.yaml",
   "Conteneur à ouvrir à l'adresse du service": "الحاوية التي تُفتح على عنوان الخدمة",
   "Son port dans le conteneur": "منفذها داخل الحاوية",
-  "Remplacer tout le contenu du site {0} par « {1} » ?": "هل تريد استبدال كل محتوى الموقع {0} بـ«{1}»؟",
-  "Déploiement du ZIP sur {0}…": "جارٍ نشر ملف ZIP على {0}…",
   "Mettre à jour {0} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.": "هل تريد تحديث {0}؟ ستتوقف الخدمة بضع دقائق؛ وإن لم تعد إلى العمل، فستعود وحدها إلى الإصدار الحالي.",
   "{0} est à jour.": "{0} محدَّث.",
   "Désinstaller {0} ?": "هل تريد إلغاء تثبيت {0}؟",

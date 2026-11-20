@@ -16,6 +16,7 @@
 // Traduction de la console : japonais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ja", {
+  "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "サイトのソースファイルを Nextcloud に置いてください。自動でビルドされます。",
   "Démarrer": "起動",
   "{0} est démarré : {1}": "{0} を起動しました：{1}",
   "Arrêter": "停止",
@@ -25,11 +26,9 @@ piTranslations("ja", {
   "Mettre à jour": "更新",
   "Erreur {0}": "エラー {0}",
   "Ouvrir": "開く",
-  "Déposer un ZIP": "ZIP をアップロード",
   "Désinstaller": "アンインストール",
   "Nouvelle version disponible.": "新しいバージョンがあります。",
   "Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www": "Nextcloud：外部フォルダー /srv/pi-appliance/services/{0}/www",
-  "FTP : compte pi sur le port 2121, sauf port personnalisé.": "FTP：ユーザー pi、ポート 2121（別のポートを設定していない場合）。",
   "Téléchargement de pi-appliance {0}…": "pi-appliance {0} をダウンロードしています…",
   "Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.": "pi-appliance {0} をインストールしています… コンソールが再起動します。このページは自動で再読み込みされます。",
   "L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.": "pi-appliance {0} のインストールに失敗しました。以前のバージョンに戻したので、サービスは変わっていません。",
@@ -42,7 +41,6 @@ piTranslations("ja", {
   "Catalogue mis à jour en ligne le {0}.": "カタログは {0} にオンラインで更新されました。",
   "Catalogue intégré à la console : il n'a pas encore pu être lu en ligne.": "コンソール内蔵のカタログ：まだオンラインで読み込めていません。",
   "Pas encore disponibles sur cette console : {0}.": "このコンソールではまだ利用できません：{0}。",
-  "Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.": "サイトのソースファイルを置いてください（ZIP または Nextcloud）。自動でビルドされます。",
   "Construction du site en cours…": "サイトをビルドしています…",
   "Site construit le {0}.": "{0} にサイトをビルドしました。",
   "La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.": "{0} にサイトのビルドに失敗しました。以前のサイトは公開されたままです。詳細はサイトのフォルダーにある .pi-appliance-build.log ファイルにあります。",
@@ -113,8 +111,6 @@ piTranslations("ja", {
   "Fichier compose.yaml": "compose.yaml ファイル",
   "Conteneur à ouvrir à l'adresse du service": "サービスのアドレスで開くコンテナー",
   "Son port dans le conteneur": "コンテナー内のポート",
-  "Remplacer tout le contenu du site {0} par « {1} » ?": "サイト {0} の内容をすべて「{1}」に置き換えますか？",
-  "Déploiement du ZIP sur {0}…": "{0} に ZIP を配置しています…",
   "Mettre à jour {0} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.": "{0} を更新しますか？ サービスは数分間止まります。再起動しない場合は、自動で現在のバージョンに戻ります。",
   "{0} est à jour.": "{0} は最新です。",
   "Désinstaller {0} ?": "{0} をアンインストールしますか？",

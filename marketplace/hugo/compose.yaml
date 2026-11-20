@@ -11,7 +11,7 @@ x-pi-appliance:
   disk_mb: 1024
   login: application
   access: public
-  # Fichiers source déposés par ZIP ou Nextcloud.
+  # Fichiers source déposés par Nextcloud.
   files:
     - service: builder
       path: /src

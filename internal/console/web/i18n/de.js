@@ -16,6 +16,7 @@
 // Traduction de la console : allemand. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("de", {
+  "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "Legen Sie die Quelldateien der Website in Nextcloud ab: Sie wird automatisch erstellt.",
   "Démarrer": "Starten",
   "{0} est démarré : {1}": "{0} ist gestartet: {1}",
   "Arrêter": "Stoppen",
@@ -25,11 +26,9 @@ piTranslations("de", {
   "Mettre à jour": "Aktualisieren",
   "Erreur {0}": "Fehler {0}",
   "Ouvrir": "Öffnen",
-  "Déposer un ZIP": "ZIP hochladen",
   "Désinstaller": "Deinstallieren",
   "Nouvelle version disponible.": "Neue Version verfügbar.",
   "Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www": "Nextcloud: externer Ordner /srv/pi-appliance/services/{0}/www",
-  "FTP : compte pi sur le port 2121, sauf port personnalisé.": "FTP: Benutzer pi auf Port 2121, sofern kein anderer Port gewählt wurde.",
   "Téléchargement de pi-appliance {0}…": "pi-appliance {0} wird heruntergeladen…",
   "Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.": "pi-appliance {0} wird installiert… Die Konsole startet neu: Diese Seite lädt sich von selbst neu.",
   "L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.": "Die Installation von pi-appliance {0} ist fehlgeschlagen: Die vorherige Version wurde wiederhergestellt, Ihre Dienste sind unverändert.",
@@ -42,7 +41,6 @@ piTranslations("de", {
   "Catalogue mis à jour en ligne le {0}.": "Katalog online aktualisiert am {0}.",
   "Catalogue intégré à la console : il n'a pas encore pu être lu en ligne.": "In die Konsole eingebauter Katalog: Er konnte noch nicht online gelesen werden.",
   "Pas encore disponibles sur cette console : {0}.": "Auf dieser Konsole noch nicht verfügbar: {0}.",
-  "Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.": "Legen Sie die Quelldateien der Website ab (ZIP oder Nextcloud): Sie wird automatisch erstellt.",
   "Construction du site en cours…": "Die Website wird erstellt…",
   "Site construit le {0}.": "Website erstellt am {0}.",
   "La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.": "Die Erstellung der Website ist am {0} fehlgeschlagen: Die bisherige Website bleibt online. Details stehen in der Datei .pi-appliance-build.log im Ordner der Website.",
@@ -113,8 +111,6 @@ piTranslations("de", {
   "Fichier compose.yaml": "Datei compose.yaml",
   "Conteneur à ouvrir à l'adresse du service": "Container, der unter der Adresse des Dienstes geöffnet wird",
   "Son port dans le conteneur": "Sein Port im Container",
-  "Remplacer tout le contenu du site {0} par « {1} » ?": "Den gesamten Inhalt der Website {0} durch „{1}“ ersetzen?",
-  "Déploiement du ZIP sur {0}…": "ZIP wird auf {0} bereitgestellt…",
   "Mettre à jour {0} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.": "{0} aktualisieren? Der Dienst ist einige Minuten aus; startet er nicht wieder, kehrt er von selbst zur aktuellen Version zurück.",
   "{0} est à jour.": "{0} ist aktuell.",
   "Désinstaller {0} ?": "{0} deinstallieren?",

@@ -16,6 +16,7 @@
 // Traduction de la console : chinois. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("zh", {
+  "Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.": "把网站的源文件放入 Nextcloud：网站会自动构建。",
   "Démarrer": "启动",
   "{0} est démarré : {1}": "{0} 已启动：{1}",
   "Arrêter": "停止",
@@ -25,11 +26,9 @@ piTranslations("zh", {
   "Mettre à jour": "更新",
   "Erreur {0}": "错误 {0}",
   "Ouvrir": "打开",
-  "Déposer un ZIP": "上传 ZIP",
   "Désinstaller": "卸载",
   "Nouvelle version disponible.": "有新版本可用。",
   "Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www": "Nextcloud：外部文件夹 /srv/pi-appliance/services/{0}/www",
-  "FTP : compte pi sur le port 2121, sauf port personnalisé.": "FTP：用户 pi，端口 2121（除非另设了端口）。",
   "Téléchargement de pi-appliance {0}…": "正在下载 pi-appliance {0}…",
   "Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.": "正在安装 pi-appliance {0}… 控制台将重启：此页面会自动重新加载。",
   "L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.": "pi-appliance {0} 安装失败：已恢复旧版本，您的服务没有变化。",
@@ -42,7 +41,6 @@ piTranslations("zh", {
   "Catalogue mis à jour en ligne le {0}.": "目录已于 {0} 在线更新。",
   "Catalogue intégré à la console : il n'a pas encore pu être lu en ligne.": "控制台内置目录：尚未能在线读取。",
   "Pas encore disponibles sur cette console : {0}.": "此控制台尚不可用：{0}。",
-  "Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.": "放入网站的源文件（ZIP 或 Nextcloud）：网站会自动构建。",
   "Construction du site en cours…": "正在构建网站…",
   "Site construit le {0}.": "网站已于 {0} 构建。",
   "La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.": "网站于 {0} 构建失败：之前的网站仍在线。详情见网站文件夹中的 .pi-appliance-build.log 文件。",
@@ -113,8 +111,6 @@ piTranslations("zh", {
   "Fichier compose.yaml": "compose.yaml 文件",
   "Conteneur à ouvrir à l'adresse du service": "在服务地址上打开的容器",
   "Son port dans le conteneur": "它在容器中的端口",
-  "Remplacer tout le contenu du site {0} par « {1} » ?": "用“{1}”替换网站 {0} 的全部内容吗？",
-  "Déploiement du ZIP sur {0}…": "正在把 ZIP 部署到 {0}…",
   "Mettre à jour {0} ? Le service sera coupé quelques minutes ; s'il ne redémarre pas, il reviendra tout seul à la version actuelle.": "要更新 {0} 吗？服务会中断几分钟；如果无法重启，它会自动回到当前版本。",
   "{0} est à jour.": "{0} 已是最新。",
   "Désinstaller {0} ?": "要卸载 {0} 吗？",

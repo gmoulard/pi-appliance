@@ -16,11 +16,8 @@
 package services
 
 import (
-	"archive/zip"
-	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
@@ -63,33 +60,16 @@ func overrideVolumes(t *testing.T, m *Manager, name string) map[string][]string 
 	return volumes
 }
 
-func siteZIP(t *testing.T, files map[string]string) *bytes.Reader {
-	t.Helper()
-	var buffer bytes.Buffer
-	archive := zip.NewWriter(&buffer)
-	for name, content := range files {
-		w, err := archive.Create(name)
-		if err != nil {
-			t.Fatal(err)
-		}
-		w.Write([]byte(content))
-	}
-	if err := archive.Close(); err != nil {
-		t.Fatal(err)
-	}
-	return bytes.NewReader(buffer.Bytes())
-}
-
-// Le dossier du site est monté dans chaque service du champ files : Apache et
-// FTP voient les mêmes fichiers, le constructeur Hugo reçoit les sources.
+// Le dossier du site est monté dans chaque service du champ files : Apache
+// voit les fichiers du site, le constructeur Hugo reçoit les sources.
 func TestSiteFilesMounted(t *testing.T) {
 	m := manager(t, &fakeRunner{})
-	if _, err := m.Install(context.Background(), builtinApp(t, "site-web"), "www", map[string]string{"FTP_PASSWORD": ""}); err != nil {
+	if _, err := m.Install(context.Background(), builtinApp(t, "site-web"), "www", nil); err != nil {
 		t.Fatal(err)
 	}
 	site := filepath.Join(m.serviceDir("www"), siteDir)
 	volumes := overrideVolumes(t, m, "www")
-	if len(volumes["web"]) != 1 || volumes["web"][0] != site+":/var/www/html" || len(volumes["ftp"]) != 1 || volumes["ftp"][0] != site+":/var/www/html" {
+	if len(volumes["web"]) != 1 || volumes["web"][0] != site+":/var/www/html" {
 		t.Fatalf("volumes %v", volumes)
 	}
 	if _, err := m.Install(context.Background(), builtinApp(t, "hugo"), "blog", nil); err != nil {
@@ -98,25 +78,6 @@ func TestSiteFilesMounted(t *testing.T) {
 	volumes = overrideVolumes(t, m, "blog")
 	if len(volumes["builder"]) != 1 || volumes["builder"][0] != filepath.Join(m.serviceDir("blog"), siteDir)+":/src" || len(volumes["web"]) != 0 {
 		t.Fatalf("volumes %v", volumes)
-	}
-}
-
-func TestDeployZIPStaticSite(t *testing.T) {
-	m := manager(t, &fakeRunner{})
-	if _, err := m.Install(context.Background(), builtinApp(t, "mkdocs"), "docs", nil); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := m.Install(context.Background(), builtinApp(t, "dokuwiki"), "wiki", nil); err != nil {
-		t.Fatal(err)
-	}
-	if err := m.DeployZIP(context.Background(), "docs", siteZIP(t, map[string]string{"mkdocs.yml": "site_name: Essai\n", "docs/index.md": "# Essai\n"})); err != nil {
-		t.Fatal(err)
-	}
-	if data, err := os.ReadFile(filepath.Join(m.serviceDir("docs"), siteDir, "docs", "index.md")); err != nil || string(data) != "# Essai\n" {
-		t.Fatalf("fichier déposé : %q, %v", data, err)
-	}
-	if err := m.DeployZIP(context.Background(), "wiki", siteZIP(t, map[string]string{"index.html": "x"})); !errors.Is(err, ErrInvalid) {
-		t.Fatalf("ZIP accepté pour DokuWiki : %v", err)
 	}
 }
 
@@ -160,38 +121,5 @@ func TestListSiteBuild(t *testing.T) {
 		if build := list()["vitrine"].Build; build != nil {
 			t.Errorf("%q lu comme %+v", content, build)
 		}
-	}
-}
-
-// Un nouveau dépôt garde le dossier du site : les conteneurs démarrés le
-// montent et doivent voir les nouveaux fichiers.
-func TestDeployZIPKeepsFolder(t *testing.T) {
-	m := manager(t, &fakeRunner{})
-	if _, err := m.Install(context.Background(), builtinApp(t, "hugo"), "blog", nil); err != nil {
-		t.Fatal(err)
-	}
-	if err := m.DeployZIP(context.Background(), "blog", siteZIP(t, map[string]string{"ancien.md": "a"})); err != nil {
-		t.Fatal(err)
-	}
-	root := filepath.Join(m.serviceDir("blog"), siteDir)
-	before, err := os.Stat(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := m.DeployZIP(context.Background(), "blog", siteZIP(t, map[string]string{"hugo.toml": "title = 'x'\n", "content/a.md": "b"})); err != nil {
-		t.Fatal(err)
-	}
-	after, err := os.Stat(root)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !os.SameFile(before, after) {
-		t.Fatal("dossier du site remplacé : les conteneurs ne verraient pas les nouveaux fichiers")
-	}
-	if _, err := os.Stat(filepath.Join(root, "ancien.md")); !errors.Is(err, os.ErrNotExist) {
-		t.Fatalf("ancien fichier gardé : %v", err)
-	}
-	if _, err := os.Stat(filepath.Join(root, "content", "a.md")); err != nil {
-		t.Fatal(err)
 	}
 }

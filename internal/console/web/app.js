@@ -130,11 +130,6 @@ async function loadServices() {
         devices = devicesButton(service);
         buttons.append(devices.button);
       }
-      if (service.site_files) {
-        const upload = element("button", t("Déposer un ZIP"), "secondary");
-        upload.addEventListener("click", () => chooseSiteArchive(service, upload));
-        buttons.append(upload);
-      }
       // Un Compose libre ne se met pas à jour depuis la marketplace.
       for (const control of CONTROLS.filter((c) => c.when(service.status.color) && !(c.action === "update" && service.app === CUSTOM_APP))) {
         const button = element("button", control.label, "secondary");
@@ -167,9 +162,7 @@ async function loadServices() {
     if (service.site_files) {
       detail.append(element("p", t("Nextcloud : dossier externe /srv/pi-appliance/services/{0}/www", service.name), "meta"));
     }
-    if (service.app === "site-web") {
-      detail.append(element("p", t("FTP : compte pi sur le port 2121, sauf port personnalisé."), "meta"));
-    } else if (service.site_files) {
+    if (service.site_files && service.app !== "site-web") {
       detail.append(element("p", buildText(service.build), "meta"));
     }
     card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
@@ -968,35 +961,11 @@ function showCatalogSource(source) {
 
 // Dernière construction d'un générateur de site statique (Hugo, MkDocs…).
 function buildText(build) {
-  if (!build) return t("Déposez les fichiers source du site (ZIP ou Nextcloud) : il sera construit tout seul.");
+  if (!build) return t("Déposez les fichiers source du site dans Nextcloud : il sera construit tout seul.");
   const when = new Date(build.at).toLocaleString(LOCALE);
   if (build.state === "building") return t("Construction du site en cours…");
   if (build.state === "ok") return t("Site construit le {0}.", when);
   return t("La construction du site a échoué le {0} : le site précédent reste en ligne. Le détail est dans le fichier .pi-appliance-build.log du dossier du site.", when);
-}
-
-function chooseSiteArchive(service, button) {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = ".zip,application/zip";
-  input.addEventListener("change", async () => {
-    const file = input.files && input.files[0];
-    if (!file) return;
-    if (!window.confirm(t("Remplacer tout le contenu du site {0} par « {1} » ?", service.name, file.name))) return;
-    button.disabled = true;
-    showMessage([t("Déploiement du ZIP sur {0}…", service.name)], "info");
-    const data = new FormData();
-    data.append("archive", file);
-    try {
-      const result = await api(`services/${encodeURIComponent(service.name)}/files`, { method: "POST", body: data });
-      showMessage([result.message], "success");
-    } catch (error) {
-      showMessage([error.message], "error");
-    } finally {
-      button.disabled = false;
-    }
-  });
-  input.click();
 }
 
 async function act(service, control, button) {
