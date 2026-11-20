@@ -164,6 +164,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] API `api/cockpit` (administrateur) et carte « Administration du système » dans « Mon Pi », traduite dans les 12 langues.
   - [ ] À vérifier sur un vrai Pi : installation des paquets sous Raspberry Pi OS, connexion par `https://<Pi>/cockpit/` (en-tête `Origin` accepté derrière Traefik, WebSocket), terminal, page réseau sans casser le point d'accès, page des disques avec le disque USB monté par la console.
 - [ ] **TODO-2.51**:Faire une actions dans github pour mettre a jours le fichier pi-appliance-….json et les fichier qui y font reference quans cela est necessaire
+- [ ] **TODO-2.59**: Étiquettes (tags) sur les services de la marketplace pour les filtrer (par exemple « site web », « fichiers », « base de données », « administration ») : clé dans le manifeste (6.5), reprise dans le catalogue publié `docs/static/pi-appliance-<MD5>.json`, filtre dans l'écran de la marketplace et sur le site, libellés traduits dans les 12 langues.
+- [ ] **TODO-2.60**: Jauge d'avancement pendant l'installation d'un service : étapes en langage courant (téléchargement des images avec la part déjà reçue, création, démarrage, vérification), mise à jour en direct dans la console, message clair en cas d'échec ; utile surtout sur les petits Pi où le téléchargement est long.
 
 ## 3. Étape 2 — Internet (7)
 
