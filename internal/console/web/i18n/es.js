@@ -468,5 +468,20 @@ piTranslations("es", {
   "Réseau": "Red",
   "Maison": "Hogar",
   "Tous les services": "Todos los servicios",
-  "Filtrer les services": "Filtrar los servicios"
+  "Filtrer les services": "Filtrar los servicios",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "¿Borrar las cuentas, los ajustes, los servicios y todos sus datos? No se podrá recuperar nada.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "¿Borrar las cuentas y los ajustes? Los servicios y sus datos se conservan.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "El Pi se ha restablecido. Se abrirá la puesta en marcha: cree la cuenta de administrador.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Inicie sesión con una cuenta de administrador para restablecer el Pi.",
+  "Remettre le Pi à zéro": "Restablecer el Pi",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "El Pi vuelve a su puesta en marcha, como en el primer arranque: habrá que volver a crear la cuenta de administrador.",
+  "Sera effacé :": "Se borrará:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "todas las cuentas (administradores, usuarios, invitados e invitaciones), la puesta en marcha, la elección de las estadísticas anónimas y el ajuste de DuckDNS.",
+  "Sera gardé :": "Se conservará:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "la red de casa (Wi-Fi o cable), el nombre del Pi, las copias de seguridad ya hechas y la dirección pi-appliance.com reservada. Los servicios instalados y sus datos también se conservan, salvo si marca la casilla de abajo.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "Borrar también los servicios instalados y todos sus datos (archivos, sitios, bases de datos): no se podrá recuperar nada",
+  "Votre mot de passe": "Su contraseña",
+  "Code de vérification, si la double authentification est activée": "Código de verificación, si la verificación en dos pasos está activada",
+  "J'ai compris ce qui sera effacé": "He entendido lo que se borrará",
+  "Ne rien effacer et revenir à la console": "No borrar nada y volver a la consola"
 });

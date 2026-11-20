@@ -468,5 +468,20 @@ piTranslations("it", {
   "Réseau": "Rete",
   "Maison": "Casa",
   "Tous les services": "Tutti i servizi",
-  "Filtrer les services": "Filtrare i servizi"
+  "Filtrer les services": "Filtrare i servizi",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "Cancellare gli account, le impostazioni, i servizi e tutti i loro dati? Non si potrà recuperare nulla.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "Cancellare gli account e le impostazioni? I servizi e i loro dati vengono conservati.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "Il Pi è stato azzerato. Si aprirà la messa in funzione: create l'account amministratore.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Accedete con un account amministratore per azzerare il Pi.",
+  "Remettre le Pi à zéro": "Azzerare il Pi",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "Il Pi torna alla messa in funzione, come al primo avvio: bisognerà ricreare l'account amministratore.",
+  "Sera effacé :": "Sarà cancellato:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "tutti gli account (amministratori, utenti, ospiti e inviti), la messa in funzione, la scelta delle statistiche anonime e l'impostazione DuckDNS.",
+  "Sera gardé :": "Sarà conservato:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "la rete di casa (Wi-Fi o cavo), il nome del Pi, i backup già fatti e l'indirizzo pi-appliance.com riservato. Anche i servizi installati e i loro dati vengono conservati, a meno che non spuntiate la casella qui sotto.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "Cancellare anche i servizi installati e tutti i loro dati (file, siti, database): non si potrà recuperare nulla",
+  "Votre mot de passe": "La vostra password",
+  "Code de vérification, si la double authentification est activée": "Codice di verifica, se l'autenticazione a due fattori è attiva",
+  "J'ai compris ce qui sera effacé": "Ho capito che cosa sarà cancellato",
+  "Ne rien effacer et revenir à la console": "Non cancellare nulla e tornare alla console"
 });

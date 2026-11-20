@@ -468,5 +468,20 @@ piTranslations("de", {
   "Réseau": "Netzwerk",
   "Maison": "Zuhause",
   "Tous les services": "Alle Dienste",
-  "Filtrer les services": "Dienste filtern"
+  "Filtrer les services": "Dienste filtern",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "Konten, Einstellungen, Dienste und alle ihre Daten löschen? Nichts kann wiederhergestellt werden.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "Konten und Einstellungen löschen? Die Dienste und ihre Daten bleiben erhalten.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "Der Pi wurde zurückgesetzt. Die Einrichtung öffnet sich: Legen Sie das Administratorkonto an.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Melden Sie sich mit einem Administratorkonto an, um den Pi zurückzusetzen.",
+  "Remettre le Pi à zéro": "Pi zurücksetzen",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "Der Pi kehrt zur Einrichtung zurück, wie beim ersten Start: Das Administratorkonto muss neu angelegt werden.",
+  "Sera effacé :": "Wird gelöscht:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "alle Konten (Administratoren, Benutzer, Gäste und Einladungen), die Einrichtung, die Wahl zu den anonymen Statistiken und die DuckDNS-Einstellung.",
+  "Sera gardé :": "Bleibt erhalten:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "das Heimnetz (WLAN oder Kabel), der Name des Pi, die bereits erstellten Sicherungen und die reservierte pi-appliance.com-Adresse. Die installierten Dienste und ihre Daten bleiben ebenfalls erhalten, außer Sie kreuzen das Kästchen unten an.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "Auch die installierten Dienste und alle ihre Daten löschen (Dateien, Websites, Datenbanken): Nichts kann wiederhergestellt werden",
+  "Votre mot de passe": "Ihr Passwort",
+  "Code de vérification, si la double authentification est activée": "Bestätigungscode, wenn die Zwei-Faktor-Authentifizierung aktiviert ist",
+  "J'ai compris ce qui sera effacé": "Ich habe verstanden, was gelöscht wird",
+  "Ne rien effacer et revenir à la console": "Nichts löschen und zur Konsole zurückkehren"
 });

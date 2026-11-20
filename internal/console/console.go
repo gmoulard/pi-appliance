@@ -191,6 +191,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/session", c.session)
 	mux.HandleFunc("POST "+BasePath+"/api/setup", c.setup)
 	mux.HandleFunc("POST "+BasePath+"/api/reset", c.reset)
+	mux.HandleFunc("POST "+BasePath+"/api/factory-reset", c.factoryReset)
 	mux.HandleFunc("POST "+BasePath+"/api/login", c.login)
 	mux.HandleFunc("POST "+BasePath+"/api/logout", c.logout)
 	mux.HandleFunc("GET "+BasePath+"/api/catalog", c.signedIn(c.listCatalog))
@@ -237,6 +238,9 @@ func Handler(config Config) http.Handler {
 	if c.Cockpit != nil {
 		c.Cockpit.Routes(mux, BasePath+"/api/cockpit", c.adminOnly)
 	}
+	mux.HandleFunc("GET "+BasePath+"/reset-to-factory", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFileFS(w, r, web, "index.html")
+	})
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux

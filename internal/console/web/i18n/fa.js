@@ -468,5 +468,20 @@ piTranslations("fa", {
   "Réseau": "شبکه",
   "Maison": "خانه",
   "Tous les services": "همه سرویس‌ها",
-  "Filtrer les services": "پالایش سرویس‌ها"
+  "Filtrer les services": "پالایش سرویس‌ها",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "حساب‌ها، تنظیمات، سرویس‌ها و همه داده‌هایشان پاک شوند؟ هیچ چیز قابل بازیابی نخواهد بود.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "حساب‌ها و تنظیمات پاک شوند؟ سرویس‌ها و داده‌هایشان نگه داشته می‌شوند.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "Pi بازنشانی شد. راه‌اندازی باز می‌شود: حساب مدیر را بسازید.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "برای بازنشانی Pi با یک حساب مدیر وارد شوید.",
+  "Remettre le Pi à zéro": "بازنشانی Pi",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "Pi مانند نخستین روشن شدن به راه‌اندازی برمی‌گردد: باید حساب مدیر را دوباره بسازید.",
+  "Sera effacé :": "پاک می‌شود:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "همه حساب‌ها (مدیران، کاربران، مهمانان و دعوت‌ها)، راه‌اندازی، انتخاب آمار ناشناس و تنظیم DuckDNS.",
+  "Sera gardé :": "نگه داشته می‌شود:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "شبکه خانه (Wi-Fi یا کابل)، نام Pi، پشتیبان‌های گرفته‌شده و نشانی رزروشده pi-appliance.com. سرویس‌های نصب‌شده و داده‌هایشان هم نگه داشته می‌شوند، مگر اینکه کادر زیر را علامت بزنید.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "سرویس‌های نصب‌شده و همه داده‌هایشان (فایل‌ها، سایت‌ها، پایگاه‌های داده) هم پاک شوند: هیچ چیز قابل بازیابی نخواهد بود",
+  "Votre mot de passe": "گذرواژه شما",
+  "Code de vérification, si la double authentification est activée": "کد تأیید، اگر احراز هویت دومرحله‌ای فعال است",
+  "J'ai compris ce qui sera effacé": "فهمیدم چه چیزهایی پاک می‌شود",
+  "Ne rien effacer et revenir à la console": "هیچ چیز پاک نشود و به کنسول برگرد"
 });

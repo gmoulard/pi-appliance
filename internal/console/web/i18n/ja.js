@@ -468,5 +468,20 @@ piTranslations("ja", {
   "Réseau": "ネットワーク",
   "Maison": "家庭",
   "Tous les services": "すべてのサービス",
-  "Filtrer les services": "サービスを絞り込む"
+  "Filtrer les services": "サービスを絞り込む",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "アカウント、設定、サービスとそのすべてのデータを消去しますか？元に戻すことはできません。",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "アカウントと設定を消去しますか？サービスとそのデータは残ります。",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "Pi をリセットしました。セットアップが開きます。管理者アカウントを作成してください。",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Pi をリセットするには、管理者アカウントでログインしてください。",
+  "Remettre le Pi à zéro": "Pi をリセット",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "Pi は初回起動時と同じセットアップに戻ります。管理者アカウントを作り直す必要があります。",
+  "Sera effacé :": "消去されるもの：",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "すべてのアカウント（管理者、ユーザー、ゲスト、招待）、セットアップ、匿名統計の選択、DuckDNS の設定。",
+  "Sera gardé :": "残るもの：",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "家庭のネットワーク（Wi-Fi またはケーブル）、Pi の名前、作成済みのバックアップ、予約した pi-appliance.com のアドレス。下のボックスにチェックを入れない限り、インストール済みのサービスとそのデータも残ります。",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "インストール済みのサービスとそのすべてのデータ（ファイル、サイト、データベース）も消去する：元に戻すことはできません",
+  "Votre mot de passe": "パスワード",
+  "Code de vérification, si la double authentification est activée": "確認コード（2 段階認証が有効な場合）",
+  "J'ai compris ce qui sera effacé": "何が消去されるか理解しました",
+  "Ne rien effacer et revenir à la console": "何も消去せずにコンソールに戻る"
 });

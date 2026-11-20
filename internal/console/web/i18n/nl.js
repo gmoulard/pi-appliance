@@ -468,5 +468,20 @@ piTranslations("nl", {
   "Réseau": "Netwerk",
   "Maison": "Thuis",
   "Tous les services": "Alle diensten",
-  "Filtrer les services": "Diensten filteren"
+  "Filtrer les services": "Diensten filteren",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "De accounts, de instellingen, de diensten en al hun gegevens wissen? Niets kan worden teruggehaald.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "De accounts en de instellingen wissen? De diensten en hun gegevens blijven bewaard.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "De Pi is teruggezet. De ingebruikname wordt geopend: maak het beheerdersaccount aan.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Meld u aan met een beheerdersaccount om de Pi terug te zetten.",
+  "Remettre le Pi à zéro": "De Pi terugzetten",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "De Pi gaat terug naar de ingebruikname, zoals bij de eerste start: het beheerdersaccount moet opnieuw worden aangemaakt.",
+  "Sera effacé :": "Wordt gewist:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "alle accounts (beheerders, gebruikers, gasten en uitnodigingen), de ingebruikname, de keuze voor anonieme statistieken en de DuckDNS-instelling.",
+  "Sera gardé :": "Blijft bewaard:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "het thuisnetwerk (wifi of kabel), de naam van de Pi, de al gemaakte back-ups en het gereserveerde pi-appliance.com-adres. De geïnstalleerde diensten en hun gegevens blijven ook bewaard, tenzij u het vakje hieronder aanvinkt.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "Ook de geïnstalleerde diensten en al hun gegevens wissen (bestanden, sites, databases): niets kan worden teruggehaald",
+  "Votre mot de passe": "Uw wachtwoord",
+  "Code de vérification, si la double authentification est activée": "Verificatiecode, als tweestapsverificatie aan staat",
+  "J'ai compris ce qui sera effacé": "Ik begrijp wat er gewist wordt",
+  "Ne rien effacer et revenir à la console": "Niets wissen en terug naar de console"
 });

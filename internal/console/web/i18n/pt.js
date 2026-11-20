@@ -468,5 +468,20 @@ piTranslations("pt", {
   "Réseau": "Rede",
   "Maison": "Casa",
   "Tous les services": "Todos os serviços",
-  "Filtrer les services": "Filtrar os serviços"
+  "Filtrer les services": "Filtrar os serviços",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "Apagar as contas, as definições, os serviços e todos os seus dados? Nada poderá ser recuperado.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "Apagar as contas e as definições? Os serviços e os seus dados são mantidos.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "O Pi foi reposto. A configuração inicial vai abrir: crie a conta de administrador.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Inicie sessão com uma conta de administrador para repor o Pi.",
+  "Remettre le Pi à zéro": "Repor o Pi",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "O Pi volta à configuração inicial, como no primeiro arranque: será preciso criar de novo a conta de administrador.",
+  "Sera effacé :": "Será apagado:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "todas as contas (administradores, utilizadores, convidados e convites), a configuração inicial, a escolha das estatísticas anónimas e a definição do DuckDNS.",
+  "Sera gardé :": "Será mantido:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "a rede de casa (Wi-Fi ou cabo), o nome do Pi, as cópias de segurança já feitas e o endereço pi-appliance.com reservado. Os serviços instalados e os seus dados também são mantidos, a menos que marque a caixa abaixo.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "Apagar também os serviços instalados e todos os seus dados (ficheiros, sites, bases de dados): nada poderá ser recuperado",
+  "Votre mot de passe": "A sua palavra-passe",
+  "Code de vérification, si la double authentification est activée": "Código de verificação, se a autenticação de dois fatores estiver ativada",
+  "J'ai compris ce qui sera effacé": "Percebi o que será apagado",
+  "Ne rien effacer et revenir à la console": "Não apagar nada e voltar à consola"
 });

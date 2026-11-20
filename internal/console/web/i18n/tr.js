@@ -468,5 +468,20 @@ piTranslations("tr", {
   "Réseau": "Ağ",
   "Maison": "Ev",
   "Tous les services": "Tüm hizmetler",
-  "Filtrer les services": "Hizmetleri filtrele"
+  "Filtrer les services": "Hizmetleri filtrele",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "Hesaplar, ayarlar, hizmetler ve tüm verileri silinsin mi? Hiçbir şey geri alınamaz.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "Hesaplar ve ayarlar silinsin mi? Hizmetler ve verileri korunur.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "Pi sıfırlandı. Kurulum açılacak: yönetici hesabını oluşturun.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Pi'yi sıfırlamak için bir yönetici hesabıyla oturum açın.",
+  "Remettre le Pi à zéro": "Pi'yi sıfırla",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "Pi, ilk açılıştaki gibi kuruluma döner: yönetici hesabını yeniden oluşturmanız gerekir.",
+  "Sera effacé :": "Silinecekler:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "tüm hesaplar (yöneticiler, kullanıcılar, konuklar ve davetler), kurulum, anonim istatistik tercihi ve DuckDNS ayarı.",
+  "Sera gardé :": "Korunacaklar:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "ev ağı (Wi-Fi veya kablo), Pi'nin adı, daha önce alınmış yedekler ve ayrılmış pi-appliance.com adresi. Aşağıdaki kutuyu işaretlemezseniz kurulu hizmetler ve verileri de korunur.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "Kurulu hizmetleri ve tüm verilerini de sil (dosyalar, siteler, veritabanları): hiçbir şey geri alınamaz",
+  "Votre mot de passe": "Parolanız",
+  "Code de vérification, si la double authentification est activée": "İki adımlı doğrulama açıksa doğrulama kodu",
+  "J'ai compris ce qui sera effacé": "Neyin silineceğini anladım",
+  "Ne rien effacer et revenir à la console": "Hiçbir şeyi silme ve konsola dön"
 });

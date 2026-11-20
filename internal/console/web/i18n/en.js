@@ -468,5 +468,20 @@ piTranslations("en", {
   "Réseau": "Network",
   "Maison": "Home",
   "Tous les services": "All services",
-  "Filtrer les services": "Filter services"
+  "Filtrer les services": "Filter services",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "Erase the accounts, the settings, the services and all their data? Nothing can be recovered.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "Erase the accounts and the settings? The services and their data are kept.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "The Pi has been reset. The setup will open: create the administrator account.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "Sign in with an administrator account to reset the Pi.",
+  "Remettre le Pi à zéro": "Reset the Pi",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "The Pi goes back to its setup, as on first start: you will have to create the administrator account again.",
+  "Sera effacé :": "Will be erased:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "all accounts (administrators, users, guests and invitations), the setup, the anonymous statistics choice and the DuckDNS setting.",
+  "Sera gardé :": "Will be kept:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "the home network (Wi-Fi or cable), the Pi's name, the backups already made and the reserved pi-appliance.com address. The installed services and their data are kept too, unless you tick the box below.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "Also erase the installed services and all their data (files, sites, databases): nothing can be recovered",
+  "Votre mot de passe": "Your password",
+  "Code de vérification, si la double authentification est activée": "Verification code, if two-factor authentication is on",
+  "J'ai compris ce qui sera effacé": "I understand what will be erased",
+  "Ne rien effacer et revenir à la console": "Erase nothing and go back to the console"
 });

@@ -46,6 +46,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <button id="authButton"></button>
 </form>
 </section>
+<section id="factorySection" class="card" hidden>
+<h2>Remettre le Pi à zéro</h2>
+<p>Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.</p>
+<p><strong>Sera effacé :</strong> tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.</p>
+<p><strong>Sera gardé :</strong> le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.</p>
+<form id="factoryForm">
+<label class="check"><input name="delete_services" type="checkbox">Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré</label>
+<label id="factoryPassword">Votre mot de passe<input name="password" type="password" autocomplete="current-password" maxlength="256"></label>
+<label id="factoryCode">Code de vérification, si la double authentification est activée<input name="code" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" maxlength="16"></label>
+<label class="check"><input name="confirm" type="checkbox" required>J'ai compris ce qui sera effacé</label>
+<button>Remettre le Pi à zéro</button>
+</form>
+<p><a href="./">Ne rien effacer et revenir à la console</a></p>
+</section>
 <p id="emailReminder" class="empty" hidden></p>
 <section id="wizard" class="card" hidden>
 <h2>Mise en route</h2>

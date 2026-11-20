@@ -468,5 +468,20 @@ piTranslations("ar", {
   "Réseau": "الشبكة",
   "Maison": "المنزل",
   "Tous les services": "كل الخدمات",
-  "Filtrer les services": "تصفية الخدمات"
+  "Filtrer les services": "تصفية الخدمات",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "هل تريد مسح الحسابات والإعدادات والخدمات وكل بياناتها؟ لن يمكن استرجاع أي شيء.",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "هل تريد مسح الحسابات والإعدادات؟ تبقى الخدمات وبياناتها محفوظة.",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "تمت إعادة ضبط Pi. سيُفتح الإعداد الأولي: أنشئ حساب المسؤول.",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "سجّل الدخول بحساب مسؤول لإعادة ضبط Pi.",
+  "Remettre le Pi à zéro": "إعادة ضبط Pi",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "يعود Pi إلى الإعداد الأولي كما في التشغيل الأول: سيلزم إنشاء حساب المسؤول من جديد.",
+  "Sera effacé :": "سيُمسح:",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "كل الحسابات (المسؤولون والمستخدمون والضيوف والدعوات)، والإعداد الأولي، واختيار الإحصاءات المجهولة، وإعداد DuckDNS.",
+  "Sera gardé :": "سيُحفظ:",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "شبكة المنزل (Wi-Fi أو كابل)، واسم Pi، والنسخ الاحتياطية المنجزة، وعنوان pi-appliance.com المحجوز. وتبقى الخدمات المثبتة وبياناتها أيضًا، إلا إذا حدّدت المربع أدناه.",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "امسح أيضًا الخدمات المثبتة وكل بياناتها (الملفات والمواقع وقواعد البيانات): لن يمكن استرجاع أي شيء",
+  "Votre mot de passe": "كلمة المرور الخاصة بك",
+  "Code de vérification, si la double authentification est activée": "رمز التحقق، إذا كانت المصادقة الثنائية مفعّلة",
+  "J'ai compris ce qui sera effacé": "فهمت ما الذي سيُمسح",
+  "Ne rien effacer et revenir à la console": "لا تمسح شيئًا وعُد إلى وحدة التحكم"
 });

@@ -468,5 +468,20 @@ piTranslations("zh", {
   "Réseau": "网络",
   "Maison": "家居",
   "Tous les services": "所有服务",
-  "Filtrer les services": "筛选服务"
+  "Filtrer les services": "筛选服务",
+  "Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.": "要删除账户、设置、服务及其全部数据吗？删除后无法恢复。",
+  "Effacer les comptes et les réglages ? Les services et leurs données sont gardés.": "要删除账户和设置吗？服务及其数据会保留。",
+  "Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.": "树莓派已重置。即将打开初始设置：请创建管理员账户。",
+  "Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.": "请使用管理员账户登录以重置树莓派。",
+  "Remettre le Pi à zéro": "重置树莓派",
+  "Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.": "树莓派会回到初始设置，就像第一次启动时一样：需要重新创建管理员账户。",
+  "Sera effacé :": "将被删除：",
+  "tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.": "所有账户（管理员、用户、访客和邀请）、初始设置、匿名统计的选择以及 DuckDNS 设置。",
+  "Sera gardé :": "将被保留：",
+  "le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.": "家庭网络（Wi-Fi 或网线）、树莓派的名称、已完成的备份以及已预留的 pi-appliance.com 地址。已安装的服务及其数据也会保留，除非您勾选下面的方框。",
+  "Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré": "同时删除已安装的服务及其全部数据（文件、网站、数据库）：删除后无法恢复",
+  "Votre mot de passe": "您的密码",
+  "Code de vérification, si la double authentification est activée": "验证码（如果已开启双重验证）",
+  "J'ai compris ce qui sera effacé": "我已了解将被删除的内容",
+  "Ne rien effacer et revenir à la console": "不删除任何内容，返回控制台"
 });

@@ -2933,7 +2933,58 @@ logoutButton.addEventListener("click", async () => {
   showAuth("login");
 });
 
+// Remise à zéro (spécification 8.5, TODO-2.52) : page /pi-appliance/reset-to-factory,
+// pour un administrateur qui redonne son mot de passe, ou pendant une
+// réinitialisation par le fichier reset (accès à la carte SD).
+const FACTORY_PAGE = /\/reset-to-factory$/.test(window.location.pathname);
+const factorySection = document.getElementById("factorySection");
+const factoryForm = document.getElementById("factoryForm");
+
+function showFactory(byResetFile) {
+  authSection.hidden = true;
+  factorySection.hidden = false;
+  for (const id of ["factoryPassword", "factoryCode"]) {
+    document.getElementById(id).hidden = byResetFile;
+  }
+  factoryForm.elements.password.required = !byResetFile;
+}
+
+factoryForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const data = new FormData(factoryForm);
+  const deleteServices = data.get("delete_services") === "on";
+  const question = deleteServices
+    ? t("Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.")
+    : t("Effacer les comptes et les réglages ? Les services et leurs données sont gardés.");
+  if (!window.confirm(question)) {
+    return;
+  }
+  const button = factoryForm.querySelector("button");
+  button.disabled = true;
+  try {
+    const result = await api("factory-reset", jsonBody("POST", {
+      confirm: data.get("confirm") === "on",
+      delete_services: deleteServices,
+      password: data.get("password") || "",
+      code: data.get("code") || "",
+    }));
+    factorySection.hidden = true;
+    showMessage([t("Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur."), ...(result.problems || [])], "success");
+    window.setTimeout(() => window.location.assign("./"), 4000);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
 async function showConsole(account, wizard) {
+  if (FACTORY_PAGE && account.role === "admin") {
+    currentAccount = account;
+    logoutButton.hidden = false;
+    showFactory(false);
+    return;
+  }
   currentAccount = account;
   authSection.hidden = true;
   logoutButton.hidden = false;
@@ -2988,11 +3039,18 @@ api("health")
     }
     const session = await api("session");
     if (session.reset) {
+      if (FACTORY_PAGE) {
+        showFactory(true);
+        return;
+      }
       showAuth("reset");
     } else if (session.setup) {
       showAuth("setup");
     } else if (!session.account) {
       showAuth("login");
+      if (FACTORY_PAGE) {
+        showMessage([t("Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.")], "info");
+      }
     } else {
       await showConsole(session.account, session.wizard);
     }
