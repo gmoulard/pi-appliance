@@ -115,7 +115,8 @@ fi
 
 systemctl enable docker.service NetworkManager.service avahi-daemon.service \
 	pi-appliance-secrets.service pi-appliance-traefik.service \
-	pi-appliance-firewall.service pi-appliance-ap.service pi-appliance.service
+	pi-appliance-firewall.service pi-appliance-ap.service pi-appliance.service \
+	pi-appliance-mdns.service
 # Rien n'est mis à jour sans l'accord de l'administrateur (spécification 9.2) :
 # pas d'installation automatique par apt, les correctifs passent par la console
 # (updates.sh).
@@ -124,7 +125,7 @@ systemctl mask apt-daily-upgrade.timer apt-daily-upgrade.service
 if [ "$update" = 1 ]; then
 	systemctl daemon-reload
 	systemctl restart avahi-daemon.service || true
-	systemctl restart pi-appliance-traefik.service pi-appliance.service
+	systemctl restart pi-appliance-traefik.service pi-appliance.service pi-appliance-mdns.service
 	echo "pi-appliance mis à jour"
 	exit 0
 fi
@@ -135,6 +136,6 @@ if [ -d /run/systemd/system ] && ! systemd-detect-virt --chroot >/dev/null 2>&1;
 	systemctl reload NetworkManager.service || true
 	systemctl restart avahi-daemon.service || true
 	systemctl restart docker.service pi-appliance-secrets.service
-	systemctl restart pi-appliance-traefik.service pi-appliance.service pi-appliance-ap.service
+	systemctl restart pi-appliance-traefik.service pi-appliance.service pi-appliance-ap.service pi-appliance-mdns.service
 fi
 echo "pi-appliance installé"

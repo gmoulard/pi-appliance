@@ -154,6 +154,11 @@ async function loadServices() {
       : service.address;
     detail.append(element("p", where, "address"), state);
     if (!service.no_web_page) {
+      // Adresse <service>.<nom>.local annoncée par mdns.sh : à deux niveaux,
+      // Windows et une partie d'Android ne la résolvent pas (TODO-2.61).
+      if (service.address.endsWith(".local")) {
+        detail.append(element("p", t("Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant."), "meta"));
+      }
       detail.append(accessChooser(service));
     }
     if (service.update_available) {
