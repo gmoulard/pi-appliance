@@ -197,6 +197,10 @@ h2 {
   box-shadow: 0 3px 0 var(--line);
 }
 
+section > .card:not([hidden]) ~ .card {
+  margin-top: 0.75rem;
+}
+
 .card.app {
   background: var(--pale);
   box-shadow: none;
