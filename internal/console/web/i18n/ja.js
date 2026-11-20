@@ -425,5 +425,6 @@ piTranslations("ja", {
   "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "Wi-Fi の規則（使えるチャンネルと出力）は国によって異なります。正しい国を選ぶと、Pi がご自宅の Wi-Fi を見つけられます。",
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "このアドレスが開かない場合（一部の Android スマートフォンや Windows パソコンは .local アドレスを見つけられません）、ルーターの機器一覧で「pi-appliance」を探し、https://<そのアドレス>/pi-appliance を開いてください。ブラウザーに証明書の警告が表示されますが、続行できます。",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "{0} を開くこともできます。ブラウザーに証明書の警告が表示されますが、続行できます。",
-  "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "ネットワーク上の別の機器がすでに「{0}」という名前です。Pi は「{1}」という名前になりました。"
+  "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "ネットワーク上の別の機器がすでに「{0}」という名前です。Pi は「{1}」という名前になりました。",
+  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "このアドレスは、自宅の iPhone、Mac、Linux パソコンから開けます。Windows パソコンと一部の Android スマートフォンはまだ見つけられません。それまでは別の機器を使ってください。"
 });
