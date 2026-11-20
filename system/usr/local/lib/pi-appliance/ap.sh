@@ -30,6 +30,7 @@ INTERVAL=${AP_INTERVAL:-15}  # secondes entre deux vérifications
 RETRY=${AP_RETRY:-600}       # Wi-Fi de la maison retenté toutes les 10 minutes, si personne n'est connecté au point d'accès
 STATE_FILE=$PI_RUN/ap-state  # état des règles, perdu au redémarrage : la fenêtre de 24 heures repart
 last_retry=0
+name_checked=0
 
 save_state() {
 	cat >"$STATE_FILE.tmp" <<-STATE
@@ -79,6 +80,12 @@ step() {
 			ap_close
 		fi
 		save_state closed
+		# Une fois par démarrage, dès que le Pi est sur le réseau de la maison :
+		# nom <nom>.local déjà pris par un autre appareil ? (name.sh check)
+		if [ "$name_checked" = 0 ] && [ "$uplink" = 1 ]; then
+			name_checked=1
+			"$PI_LIB/name.sh" check >/dev/null || echo "nom du Pi : vérification en échec" >&2
+		fi
 	fi
 }
 

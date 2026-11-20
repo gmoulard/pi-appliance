@@ -147,7 +147,7 @@ func (c *Client) WifiScan(ctx context.Context) (json.RawMessage, error) {
 
 // Wired garde le câble comme réseau du Pi.
 func (c *Client) Wired(ctx context.Context) (json.RawMessage, error) {
-	return c.run(ctx, shortTimeout, nil, "wired")
+	return c.run(ctx, scanTimeout, nil, "wired")
 }
 
 // SetCountry change le pays du Wi-Fi (code ISO 3166 à deux lettres majuscules).

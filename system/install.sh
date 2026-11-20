@@ -59,7 +59,7 @@ if [ "$update" = 0 ]; then
 	apt-get update
 	apt-get install -y --no-install-recommends \
 		ca-certificates curl gnupg jq openssl iw \
-		network-manager dnsmasq-base avahi-daemon \
+		network-manager dnsmasq-base avahi-daemon avahi-utils \
 		fdisk e2fsprogs nftables
 
 	install -m 0755 -d /etc/apt/keyrings

@@ -1937,9 +1937,11 @@ wifiForm.addEventListener("submit", async (event) => {
 wiredButton.addEventListener("click", async () => {
   wiredButton.disabled = true;
   try {
+    const previousName = piName;
     await api("network/wired", { method: "POST" });
     const state = await loadNetwork();
-    const lines = [named(t("C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau."))];
+    const lines = piName === previousName ? [] : [t("Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».", previousName, piName)];
+    lines.push(named(t("C'est noté : le Pi utilise le câble réseau. Le Wi-Fi « pi-appliance » va se fermer : ouvrez ensuite https://pi-appliance.local/pi-appliance depuis votre réseau.")));
     if (state && state.addresses.length > 0) {
       lines.push(t("Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.", state.addresses.map((address) => `https://${address}/pi-appliance`).join(", ")));
     }

@@ -180,7 +180,8 @@ wired() {
 	mkdir -p "$PI_STATE"
 	echo wired >"$NETWORK_CHOICE"
 	rm -f "$ERROR_FILE"
-	jq -n '{ok: true}'
+	"$PI_LIB/name.sh" check >/dev/null 2>&1 || true
+	jq -n --arg name "$("$PI_LIB/name.sh" get 2>/dev/null || hostname)" '{ok: true, name: $name}'
 }
 
 # Pays du Wi-Fi : celui choisi dans le portail, sinon celui du noyau (FR dans l'image).

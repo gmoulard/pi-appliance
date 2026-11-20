@@ -83,6 +83,53 @@ printf '127.0.0.1\tlocalhost\n' >"$HOSTS_FILE"
 apply_name salon
 grep -q '^127\.0\.1\.1[[:space:]]salon$' "$HOSTS_FILE" || fail "ligne 127.0.1.1 ajoutée : $(cat "$HOSTS_FILE")"
 
+# Nom déjà pris sur le réseau de la maison (name.sh check) : avahi simulé.
+CHECK_DELAY=0
+taken=""
+renamed=""
+renamed_to=""
+own_addresses() { echo 192.168.1.20; echo 172.17.0.1; }
+resolve_host() {
+	case " $taken " in
+	*" $1 "*) echo 192.168.1.50 ;;
+	*) if [ "$1" = "$(current_name)" ]; then echo 192.168.1.20; fi ;;
+	esac
+}
+resolve_address() { echo "${renamed:-$(current_name)}.local"; }
+set_name() { save_name "$1"; renamed_to=$1; }
+
+save_name salon
+[ "$(check)" = salon ] || fail "nom libre changé"
+[ -z "$renamed_to" ] || fail "nom libre renommé en $renamed_to"
+
+taken="salon"
+check >/dev/null 2>&1
+[ "$renamed_to" = salon-2 ] || fail "nom pris : $renamed_to au lieu de salon-2"
+
+save_name salon
+renamed_to=""
+taken="salon salon-2 salon-3"
+check >/dev/null 2>&1
+[ "$renamed_to" = salon-4 ] || fail "suffixe suivant : $renamed_to au lieu de salon-4"
+
+save_name salon
+renamed_to=""
+taken="salon salon-2 salon-3 salon-4"
+check >/dev/null 2>&1
+printf '%s\n' "$renamed_to" | grep -Eqx 'pi-appliance-[0-9a-f]{4}' || fail "nom au hasard : $renamed_to"
+
+save_name salon
+renamed_to=""
+taken=""
+renamed="salon-2"
+check >/dev/null 2>&1
+[ "$renamed_to" = salon-2 ] || fail "renommage d'avahi : $renamed_to au lieu de salon-2"
+renamed=""
+
+long="$(printf 'a%.0s' $(seq 32))"
+valid_name "$(candidate "$long" 4)" || fail "nom suivant trop long : $(candidate "$long" 4)"
+[ "$(candidate pi-appliance-3f2a 2)" = pi-appliance-3f2a-2 ] || fail "nom suivant : $(candidate pi-appliance-3f2a 2)"
+
 if [ "$failures" -gt 0 ]; then
 	echo "$failures échec(s)"
 	exit 1

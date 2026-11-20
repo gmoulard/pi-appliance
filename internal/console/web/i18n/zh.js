@@ -424,5 +424,6 @@ piTranslations("zh", {
   "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis vos premiers services. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard.": "欢迎！本向导分三步准备您的 Pi：您的账户（已完成）、家庭网络，然后是您的第一批服务。大约需要五分钟。在您完成之前，每次登录都会再次显示；以后可以随时更改。",
   "Les règles du Wi-Fi (canaux et puissance permis) changent d'un pays à l'autre : avec le bon pays, le Pi trouve votre Wi-Fi.": "Wi-Fi 规则（允许的信道和功率）因国家而异：选对国家，Pi 才能找到您的 Wi-Fi。",
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "如果此地址无法打开（部分 Android 手机和 Windows 电脑找不到 .local 地址），请在路由器的设备列表中找到“pi-appliance”设备，然后打开 https://<它的地址>/pi-appliance。浏览器会显示证书警告：可以继续。",
-  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "您也可以打开 {0}：浏览器会显示证书警告，可以继续。"
+  "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "您也可以打开 {0}：浏览器会显示证书警告，可以继续。",
+  "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "您网络中的另一台设备已经叫“{0}”：Pi 已改名为“{1}”。"
 });
