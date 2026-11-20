@@ -120,6 +120,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-2.24**: Canaux de version stable et bêta.
 - [x] **TODO-2.25**: Traduction dans les 12 langues, arabe et persan de droite à gauche : interface de la console traduite (`i18n.js`, `i18n/<code>.js`, test de complétude) ; traductions à faire relire par des locuteurs natifs. Restent en français : les messages du serveur Go (erreurs, état des services) et le catalogue des applications.
 - [x] **TODO-2.26**: Disque USB : détection, formatage en ext4 avec accord, déplacement des données de Docker (volumes et images), alerte de remplissage de la carte SD dans la console (`storage.sh`, `internal/storage`) ; à vérifier sur un vrai Pi (copie, redémarrage de Docker et de Traefik, disque débranché au démarrage). Reste : revenir sur la carte SD, changer de disque, alerte par e-mail (avec le service d'e-mails).
+- [ ] **TODO-2.52**: Remise à zéro de l'installation depuis l'adresse `https://<adresse du Pi>/pi-appliance/reset-to-factory` : retour au premier démarrage (comptes, réglages, assistant), avec confirmation claire de ce qui sera effacé. À décider : ce qui est gardé (services installés et leurs données, réseau Wi-Fi) et qui peut l'ouvrir. Sans protection, toute personne du réseau de la maison effacerait le Pi : réserver la page à un administrateur connecté, ou à la présence du fichier `reset` sur la carte SD (8.5).
 
 ### Marketplace (6)
 
@@ -223,3 +224,4 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] **TODO-5.12**: Ajouter à la TODO une option pour masquer et réafficher les actions réalisées.
 - [x] **TODO-5.13**: Pied de page du site : dépôt, version et sa date, commit et sa date (section 13).
 - [x] **TODO-5.14**: Gestion des versions : fichier `VERSION`, historique `CHANGELOG.md`, contrôle de l'étiquette dans le workflow « Image », paramètres du skill `release` dans `CLAUDE.md` (9.2).
+- [ ] **TODO-5.15**: Documenter dans le guide utilisateur la récupération par le fichier `reset` (8.5) : quand l'utiliser (message « identifiant ou mot de passe incorrect », identifiant et non adresse e-mail), créer un fichier vide nommé exactement `reset` sans extension `.txt` sur la partition de démarrage de la carte SD, redémarrer, choisir un nouveau mot de passe ; services et données gardés.
