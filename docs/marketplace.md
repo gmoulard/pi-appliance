@@ -19,7 +19,7 @@ La marketplace regroupe les applications que l'on peut installer et gérer depui
 </table>
 </div>
 
-Cette liste est chargée depuis le catalogue JSON généré à partir des manifestes de [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). Les consoles lisent ce même fichier dans le dépôt GitHub : une application acceptée apparaît sur les Pi sans nouvelle version de pi-appliance. Après toute modification d'un manifeste ou de `marketplace/planned.yaml`, régénérez le fichier avec `go run ./cmd/marketplace-json` depuis la racine du dépôt ; les tests (`go test ./...`) échouent sinon. Le nom du fichier contient le MD5 de son contenu ; l'index `docs/static/pi-appliance-catalog.json` indique la version courante.
+Cette liste est chargée depuis le catalogue JSON généré à partir des manifestes de [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). Les consoles lisent ce même fichier dans le dépôt GitHub : une application acceptée apparaît sur les Pi sans nouvelle version de pi-appliance. Après toute modification d'un manifeste ou de `marketplace/planned.yaml`, régénérez le fichier avec `go run ./cmd/marketplace-json` depuis la racine du dépôt ; les tests (`go test ./...`) échouent sinon. Si vous l'oubliez, une action GitHub le régénère sur `master` après l'acceptation. Le nom du fichier contient le MD5 de son contenu ; l'index `docs/static/pi-appliance-catalog.json` indique la version courante.
 
 La console gère plusieurs instances, leur démarrage et leur arrêt, les mises à jour avec retour arrière, ainsi que la conservation ou la suppression des données à la désinstallation.
 

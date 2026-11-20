@@ -55,12 +55,12 @@ jobs:
           for f in $(grep -rlE '^#!/bin/(ba)?sh' image system) system/usr/local/lib/pi-appliance/*.sh; do
             grep -qx 'set -eu' "$f" || { echo "$f : « set -eu » manquant"; status=1; }
           done
-          for f in $(find image system -type f ! -name '*.json') .github/workflows/image.yml .github/workflows/system.yml; do
+          for f in $(find image system -type f ! -name '*.json') .github/workflows/image.yml .github/workflows/system.yml .github/workflows/catalog.yml; do
             grep -q 'GNU Affero General Public License' "$f" || { echo "$f : en-tête de licence manquant"; status=1; }
           done
           exit "$status"
       - name: YAML
-        run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml system
+        run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml .github/workflows/catalog.yml system
       - name: Accès à la console dans Traefik
         run: sh system/tests/traefik-console-test.sh
       - name: Règles du point d'accès
