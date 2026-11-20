@@ -35,7 +35,7 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 
 | Chemin | Contenu |
 |--------|---------|
-| `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services, réseau du Pi, tableau de bord, mise à jour DuckDNS, sauvegardes chiffrées sur disque USB, statistiques anonymes, catalogue lu en ligne ; `cmd/pi-appliance-stats` : service du projet qui les reçoit ; `cmd/marketplace-json` : catalogue publié dans `docs/static/` |
+| `cmd/pi-appliance/`, `internal/` | Console pi-appliance, en Go : interface web, installation des services, réseau du Pi, tableau de bord, mise à jour DuckDNS, sauvegardes chiffrées sur disque USB, statistiques anonymes, catalogue lu en ligne, administration du système par Cockpit ; `cmd/pi-appliance-stats` : service du projet qui les reçoit ; `cmd/marketplace-json` : catalogue publié dans `docs/static/` |
 | `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud, site web, DokuWiki, Etherpad, PostgreSQL, VPN WireGuard, sites statiques Hugo, MkDocs, Jekyll, Astro et Next.js) et `planned.yaml`, les applications prévues |
 | `image/` | Construction de l'image système avec pi-gen (`image/build.sh`) et de l'archive de mise à jour publiée avec chaque version (`image/update-archive.sh`) |
 | `system/` | Couche système installée sur le Pi : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage (`system/install.sh`) |

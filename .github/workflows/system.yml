@@ -75,6 +75,8 @@ jobs:
         run: sh system/tests/backup-disk-test.sh
       - name: Correctifs du système
         run: sh system/tests/updates-test.sh
+      - name: Administration du système (Cockpit)
+        run: sh system/tests/cockpit-test.sh
       - name: pi-gen (préparation, sans construction)
         run: |
           set -eu

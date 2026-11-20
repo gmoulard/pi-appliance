@@ -132,7 +132,11 @@ func TestRequiredTOTPBlocksConsole(t *testing.T) {
 }
 
 func forwardRequest(f fixture, remote string, cookie *http.Cookie, headers map[string]string) *httptest.ResponseRecorder {
-	request := httptest.NewRequest(http.MethodGet, "/pi-appliance/api/auth/forward", nil)
+	return forwardTo(f, "/pi-appliance/api/auth/forward", remote, cookie, headers)
+}
+
+func forwardTo(f fixture, path, remote string, cookie *http.Cookie, headers map[string]string) *httptest.ResponseRecorder {
+	request := httptest.NewRequest(http.MethodGet, path, nil)
 	request.RemoteAddr = remote
 	if cookie != nil {
 		request.AddCookie(cookie)
@@ -198,6 +202,53 @@ func TestForwardAuth(t *testing.T) {
 	}
 	if response := forwardRequest(f, "127.0.0.1:5000", forward, service); response.Code != http.StatusFound {
 		t.Fatalf("après déconnexion : %d", response.Code)
+	}
+}
+
+// forwardCookieFor : cookie délégué d'une personne connectée à la console.
+func forwardCookieFor(t *testing.T, f fixture, session *http.Cookie) *http.Cookie {
+	t.Helper()
+	back := f.do(http.MethodPost, "http://maison.example.org/pi-appliance/api/auth/return", "application/json", `{"return": "http://maison.example.org/cockpit/"}`, session)
+	if back.Code != http.StatusOK {
+		t.Fatalf("retour vers Cockpit : %d %s", back.Code, back.Body.String())
+	}
+	for _, cookie := range back.Result().Cookies() {
+		if cookie.Name == forwardCookie {
+			return cookie
+		}
+	}
+	t.Fatal("pas de cookie délégué")
+	return nil
+}
+
+// Administration du système (Cockpit) : réservée aux administrateurs, connexion
+// sur l'adresse même de la console.
+func TestForwardAdmin(t *testing.T) {
+	f := newFixture(t)
+	admin := f.admin(t)
+	cockpit := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "maison.example.org", "X-Forwarded-Uri": "/cockpit/system", "X-Forwarded-Method": "GET"}
+	const path = "/pi-appliance/api/auth/forward-admin"
+
+	if response := forwardTo(f, path, "192.168.1.20:5000", nil, cockpit); response.Code != http.StatusForbidden {
+		t.Fatalf("appel hors de Traefik : %d", response.Code)
+	}
+	response := forwardTo(f, path, "127.0.0.1:5000", nil, cockpit)
+	want := "https://maison.example.org/pi-appliance/?return=" + url.QueryEscape("https://maison.example.org/cockpit/system")
+	if response.Code != http.StatusFound || response.Header().Get("Location") != want {
+		t.Fatalf("sans session : %d %q", response.Code, response.Header().Get("Location"))
+	}
+	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, admin), cockpit); response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" {
+		t.Fatalf("administrateur : %d %v", response.Code, response.Header())
+	}
+
+	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
+	paul := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil))
+	cookie := forwardCookieFor(t, f, paul)
+	if response := forwardTo(f, path, "127.0.0.1:5000", cookie, cockpit); response.Code != http.StatusForbidden || response.Header().Get("Remote-User") != "" {
+		t.Fatalf("utilisateur : %d %v", response.Code, response.Header())
+	}
+	if response := forwardRequest(f, "127.0.0.1:5000", cookie, cockpit); response.Code != http.StatusOK {
+		t.Fatalf("utilisateur, service ordinaire : %d", response.Code)
 	}
 }
 

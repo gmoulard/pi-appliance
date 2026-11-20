@@ -84,6 +84,7 @@ func (c *console) accountRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST "+BasePath+"/api/account/totp/disable", c.ownAccount(c.disableTOTP))
 	mux.HandleFunc("POST "+BasePath+"/api/auth/return", c.signedIn(c.forwardReturn))
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward", c.forward)
+	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-admin", c.forwardAdmin)
 }
 
 // ownAccount : réglages de son propre compte, permis même quand la double
@@ -288,12 +289,27 @@ func (c *console) forwardReturn(w http.ResponseWriter, r *http.Request) {
 // session déléguée valide ; sinon redirection vers la connexion de la console
 // (navigation) ou 401. Seul Traefik (bouclage ou réseau Docker) peut l'appeler.
 func (c *console) forward(w http.ResponseWriter, r *http.Request) {
+	c.forwardFor(w, r, false)
+}
+
+// forwardAdmin : comme forward, réservé aux administrateurs (middleware
+// pi-appliance-admin, administration du système par Cockpit) ; 403 pour une
+// autre personne connectée.
+func (c *console) forwardAdmin(w http.ResponseWriter, r *http.Request) {
+	c.forwardFor(w, r, true)
+}
+
+func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly bool) {
 	if !trustedProxy(r) {
 		writeError(w, http.StatusForbidden, "Réservé à Traefik.")
 		return
 	}
 	if cookie, err := r.Cookie(forwardCookie); err == nil {
 		if account, ok := c.Accounts.ForwardSession(cookie.Value); ok {
+			if adminOnly && account.Role != auth.RoleAdmin {
+				writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
+				return
+			}
 			w.Header().Set("Remote-User", account.Name)
 			w.Header().Set("Remote-Email", account.Email)
 			w.Header().Set("Remote-Groups", string(account.Role))
@@ -316,7 +332,13 @@ func (c *console) forward(w http.ResponseWriter, r *http.Request) {
 		uri = "/"
 	}
 	original := scheme + "://" + host + uri
-	login := scheme + "://" + parentHost(host) + BasePath + "/?return=" + url.QueryEscape(original)
+	// Un service a son sous-domaine, la console est sur l'adresse parente ;
+	// Cockpit (adminOnly) est servi sous l'adresse même de la console.
+	consoleHost := parentHost(host)
+	if adminOnly {
+		consoleHost = host
+	}
+	login := scheme + "://" + consoleHost + BasePath + "/?return=" + url.QueryEscape(original)
 	w.Header().Set("Cache-Control", "no-store")
 	http.Redirect(w, r, login, http.StatusFound)
 }

@@ -32,6 +32,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
+	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/console"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
@@ -64,6 +65,7 @@ func main() {
 	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")
 	backupScript := flag.String("backup-script", backup.DefaultScript, "script du disque USB des sauvegardes (vide : disque non réglable depuis la console)")
 	updatesScript := flag.String("updates-script", updates.DefaultScript, "script des correctifs du système (vide : système non mis à jour depuis la console)")
+	cockpitScript := flag.String("cockpit-script", cockpit.DefaultScript, "script de l'administration du système par Cockpit (vide : non installable depuis la console)")
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
@@ -130,6 +132,11 @@ func main() {
 	if *releaseRepo != "" {
 		checker.Releases = updates.GitHub{Repo: *releaseRepo}
 	}
+	// Administration du système par Cockpit, installée à la demande (spécification 6.4).
+	var admin *cockpit.Client
+	if *cockpitScript != "" {
+		admin = &cockpit.Client{Runner: network.Script(*cockpitScript), Logf: log.Printf}
+	}
 	// Statistiques anonymes : désactivées tant que l'administrateur ne les accepte pas.
 	reporter, err := stats.Open(filepath.Join(*data, "stats.json"))
 	if err != nil {
@@ -177,6 +184,7 @@ func main() {
 			DuckDNS:       duckdns,
 			Backups:       backups,
 			Updates:       checker,
+			Cockpit:       admin,
 			Stats:         reporter,
 			WizardFile:    filepath.Join(*data, "wizard-done"),
 			ACMEEmailFile: filepath.Join(*data, "system", "traefik", "acme-email"),

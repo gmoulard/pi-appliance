@@ -1,0 +1,56 @@
+---
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Administration du système par Cockpit (spécification 6.4), sous /cockpit/ :
+# maison seulement (mêmes plages que la console, dynamic/console.yml) et
+# réservée aux administrateurs connectés à la console (forward auth
+# api/auth/forward-admin), puis connexion à Cockpit avec le compte système
+# pi-admin. Tant que Cockpit n'est pas installé (cockpit.sh install), rien
+# n'écoute sur 127.0.0.1:9090 : Traefik répond « Bad Gateway ».
+
+http:
+  routers:
+    # Priorité 2 : au-dessus de la console (1), sous les routeurs des services
+    # (longueur de leur règle), qui gardent /cockpit sur leur propre adresse.
+    pi-appliance-cockpit:
+      entryPoints: [websecure]
+      rule: >-
+        PathPrefix(`/cockpit`) &&
+        (ClientIP(`10.0.0.0/8`) ||
+        ClientIP(`172.16.0.0/12`) ||
+        ClientIP(`192.168.0.0/16`) ||
+        ClientIP(`127.0.0.0/8`) ||
+        ClientIP(`::1/128`) ||
+        ClientIP(`fc00::/7`) ||
+        ClientIP(`fe80::/10`))
+      priority: 2
+      middlewares: [pi-appliance-admin]
+      service: pi-appliance-cockpit
+      tls: {}
+
+  middlewares:
+    # Comme pi-appliance-auth (dynamic/console.yml), réservé aux administrateurs :
+    # une autre personne connectée reçoit « 403 ».
+    pi-appliance-admin:
+      forwardAuth:
+        address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward-admin"
+        authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups]
+
+  services:
+    pi-appliance-cockpit:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:9090"

@@ -35,6 +35,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
+	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
@@ -160,6 +161,8 @@ type Config struct {
 	Backups *backup.Manager
 	// Updates propose les mises à jour (spécification 9.2) ; nil : pas d'écran des mises à jour.
 	Updates *updates.Checker
+	// Cockpit : administration du système (spécification 6.4) ; nil : non installable ici.
+	Cockpit *cockpit.Client
 	// Stats : statistiques anonymes (spécification 8.4) ; nil : non réglables ici.
 	Stats *stats.Reporter
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
@@ -222,6 +225,9 @@ func Handler(config Config) http.Handler {
 	}
 	if c.Updates != nil {
 		c.Updates.Routes(mux, BasePath+"/api/updates", c.adminOnly)
+	}
+	if c.Cockpit != nil {
+		c.Cockpit.Routes(mux, BasePath+"/api/cockpit", c.adminOnly)
 	}
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
