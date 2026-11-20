@@ -32,6 +32,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gmoulard/pi-appliance/internal/addresses"
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
@@ -213,6 +214,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsSave))
 	mux.HandleFunc("DELETE "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsForget))
+	mux.HandleFunc("GET "+BasePath+"/api/address/check", c.adminOnly(c.addressCheck))
 	mux.HandleFunc("GET "+BasePath+"/api/stats", c.adminOnly(c.statsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/stats", c.adminOnly(c.statsSave))
 	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
@@ -770,6 +772,28 @@ func writeServiceError(w http.ResponseWriter, err error) {
 		log.Printf("service : %v", err)
 		writeError(w, http.StatusInternalServerError, err.Error())
 	}
+}
+
+// AddressCheck : réponse de GET api/address/check, règles des noms <nom>.pi-appliance.com
+// appliquées sur le Pi (spécification 7.1). Elle ne dit pas encore si le nom est pris :
+// c'est le service d'adresses du projet qui le saura (TODO-5.10).
+type AddressCheck struct {
+	Name     string `json:"name"`
+	Hostname string `json:"hostname,omitempty"`
+	Valid    bool   `json:"valid"`
+	Reason   string `json:"reason,omitempty"`
+}
+
+func (c *console) addressCheck(w http.ResponseWriter, r *http.Request) {
+	name := addresses.Normalize(r.URL.Query().Get("name"))
+	result := AddressCheck{Name: name}
+	if err := addresses.Check(name); err != nil {
+		result.Reason = strings.TrimPrefix(err.Error(), addresses.ErrInvalid.Error()+" : ")
+	} else {
+		result.Valid = true
+		result.Hostname = addresses.Hostname(name)
+	}
+	writeJSON(w, http.StatusOK, result)
 }
 
 // Adresse sur internet par DuckDNS (spécification 7.1), réservée à l'administrateur.
