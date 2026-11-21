@@ -626,5 +626,7 @@ piTranslations("ja", {
   "Retirer l'adresse personnelle {0} ?": "独自のアドレス {0} を削除しますか？",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Pi にインターネットアドレス（上の DuckDNS または pi-appliance.com）ができ次第、コンソールはインターネットで開きます。",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "インターネットでコンソールを開きますか？インターネットからは 2 段階認証を有効にしたアカウントだけがログインできます。",
-  "Ouvrir la console sur internet": "インターネットでコンソールを開く"
+  "Ouvrir la console sur internet": "インターネットでコンソールを開く",
+  "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "いちばん簡単なのは {0} へのエイリアス（CNAME レコード）です。ルーターのアドレスに追従し、Pi に業者のパスワードは不要です。",
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "DuckDNS がない場合は、名前をルーターのグローバル IP アドレスに向けてください（A レコード）。このアドレスは変わることがあります。上の DuckDNS を設定するほうがおすすめです。"
 });

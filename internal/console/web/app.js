@@ -2583,6 +2583,14 @@ function showInternet(status) {
   // L'adresse personnelle se règle à la maison seulement.
   internetDomainForm.hidden = status.internet;
   internetDomainForm.elements.domain.value = status.domain || "";
+  const help = document.getElementById("internetDomainHelp");
+  help.replaceChildren();
+  if (status.domain_target) {
+    help.append(element("p", t("Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.", status.domain_target), "meta"));
+    help.append(element("pre", `${status.domain || "maison.exemple.fr"}. CNAME ${status.domain_target}.`, "stats-preview"));
+  } else {
+    help.append(element("p", t("Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut."), "meta"));
+  }
   internetDomainRemove.hidden = !status.domain;
   internetOpen.hidden = status.enabled || !status.totp || status.internet;
   internetClose.hidden = !status.enabled;

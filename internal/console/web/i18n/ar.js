@@ -626,5 +626,7 @@ piTranslations("ar", {
   "Retirer l'adresse personnelle {0} ?": "إزالة العنوان الخاص {0}؟",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "ستُفتح لوحة التحكم على الإنترنت فور حصول الـ Pi على عنوان على الإنترنت (DuckDNS أو pi-appliance.com، أعلاه).",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "فتح لوحة التحكم على الإنترنت؟ لن يتمكن من تسجيل الدخول من الإنترنت إلا أصحاب الحسابات التي فعّلت التحقق بخطوتين.",
-  "Ouvrir la console sur internet": "فتح لوحة التحكم على الإنترنت"
+  "Ouvrir la console sur internet": "فتح لوحة التحكم على الإنترنت",
+  "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "الأبسط: اسم مستعار (سجل CNAME) يشير إلى {0}. يتبع عنوان الراوتر، دون كلمة مرور مزوّدك على الـ Pi.",
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، اجعل الاسم يشير إلى عنوان IP العام للراوتر (سجل A)؛ قد يتغيّر: الأفضل إعداد DuckDNS في الأعلى."
 });

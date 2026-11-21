@@ -60,6 +60,10 @@ type InternetStatus struct {
 	Enabled bool `json:"enabled"`
 	// Domain : adresse personnelle choisie, vide sinon.
 	Domain string `json:"domain"`
+	// DomainTarget : cible conseillée de l'alias (CNAME) de l'adresse
+	// personnelle : <nom>.pi-appliance.com réservée, sinon le nom DuckDNS ;
+	// vide sans l'un ni l'autre (entrée A vers l'adresse publique de la box).
+	DomainTarget string `json:"domain_target"`
 	// Hosts : adresses internet du Pi ; vide tant qu'il n'en a pas.
 	Hosts []string `json:"hosts"`
 	// URL : adresse de la console sur internet, vide sans adresse.
@@ -250,7 +254,7 @@ func (c *console) internetStatus(w http.ResponseWriter, r *http.Request) {
 func (c *console) internetState(r *http.Request, totp bool) InternetStatus {
 	hosts := c.internetHosts()
 	settings := c.internetSettings()
-	status := InternetStatus{Enabled: settings.Enabled, Domain: settings.Domain, Hosts: hosts, TOTP: totp, Internet: fromInternet(r)}
+	status := InternetStatus{Enabled: settings.Enabled, Domain: settings.Domain, DomainTarget: c.domainTarget(), Hosts: hosts, TOTP: totp, Internet: fromInternet(r)}
 	if status.Hosts == nil {
 		status.Hosts = []string{}
 	}
@@ -258,6 +262,21 @@ func (c *console) internetState(r *http.Request, totp bool) InternetStatus {
 		status.URL = "https://" + hosts[0] + BasePath + "/"
 	}
 	return status
+}
+
+// domainTarget : nom vers lequel faire pointer l'adresse personnelle (alias
+// CNAME), qui suit l'adresse de la box sans identifiant du fournisseur de
+// domaine sur le Pi.
+func (c *console) domainTarget() string {
+	if c.Address != nil {
+		if host := c.Address.Status().Hostname; host != "" {
+			return host
+		}
+	}
+	if c.DuckDNS != nil {
+		return c.DuckDNS.Status().Hostname
+	}
+	return ""
 }
 
 // internetSave : PUT api/internet-console?enabled=true|false. Ouvrir demande

@@ -626,5 +626,7 @@ piTranslations("zh", {
   "Retirer l'adresse personnelle {0} ?": "移除个人地址 {0}？",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "一旦 Pi 有了互联网地址（上方的 DuckDNS 或 pi-appliance.com），控制台就会在互联网上开放。",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "在互联网上开放控制台？从互联网只有启用两步验证的账户才能登录。",
-  "Ouvrir la console sur internet": "在互联网上开放控制台"
+  "Ouvrir la console sur internet": "在互联网上开放控制台",
+  "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "最简单的方法：指向 {0} 的别名（CNAME 记录）。它会跟随您路由器的地址，Pi 上不需要您服务商的密码。",
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "没有 DuckDNS 时，请将该名称指向您路由器的公网 IP 地址（A 记录）；该地址可能会变：最好在上方设置 DuckDNS。"
 });

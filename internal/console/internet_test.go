@@ -28,6 +28,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/marketplace"
 	"github.com/pquerna/otp/totp"
@@ -339,5 +340,26 @@ func TestConsolePersonalDomain(t *testing.T) {
 	status = decode[InternetStatus](t, put(`{"domain": ""}`))
 	if status.Domain != "" || !status.Enabled || status.URL != "https://maison.example.org/pi-appliance/" {
 		t.Fatalf("après retrait : %+v", status)
+	}
+}
+
+func TestDomainTarget(t *testing.T) {
+	c := &console{}
+	if got := c.domainTarget(); got != "" {
+		t.Fatalf("sans DuckDNS : %q", got)
+	}
+	updater, err := ddns.Open(filepath.Join(t.TempDir(), "duckdns.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.DuckDNS = updater
+	if got := c.domainTarget(); got != "" {
+		t.Fatalf("DuckDNS pas réglé : %q", got)
+	}
+	if err := updater.Save(ddns.Settings{Domain: "monpi", Token: "12345678-1234-1234-1234-123456789abc"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := c.domainTarget(); got != "monpi.duckdns.org" {
+		t.Fatalf("cible : %q", got)
 	}
 }

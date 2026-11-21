@@ -626,5 +626,7 @@ piTranslations("nl", {
   "Retirer l'adresse personnelle {0} ?": "Het eigen adres {0} verwijderen?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "De console opent op internet zodra de Pi een internetadres heeft (DuckDNS of pi-appliance.com, hierboven).",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "De console op internet openen? Alleen accounts met tweestapsverificatie kunnen zich dan vanaf internet aanmelden.",
-  "Ouvrir la console sur internet": "Console op internet openen"
+  "Ouvrir la console sur internet": "Console op internet openen",
+  "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "Het eenvoudigst: een alias (CNAME-vermelding) naar {0}. Die volgt het adres van uw router, zonder wachtwoord van uw aanbieder op de Pi.",
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Zonder DuckDNS laat u de naam naar het openbare IP-adres van uw router wijzen (A-vermelding); dat kan veranderen: stel liever DuckDNS in, hierboven."
 });
