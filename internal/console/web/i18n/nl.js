@@ -588,5 +588,12 @@ piTranslations("nl", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "De link naar het document ‘{0}’ verwijderen? De persoon kan het dan niet meer openen.",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Een deellink opent één document voor iemand zonder account: die kan het lezen en erin schrijven, zonder iets anders te zien.",
   "« {0} », créé par {1}, jusqu'au {2}": "‘{0}’, gemaakt door {1}, tot {2}",
-  "« {0} », jusqu'au {1}": "‘{0}’, tot {1}"
+  "« {0} », jusqu'au {1}": "‘{0}’, tot {1}",
+  "Application mobile": "Mobiele app",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "Vind deze Pi en zijn diensten terug op je telefoon: tik in de mobiele app op ‘Code scannen’ en richt op deze code.",
+  "Code à scanner avec l'application mobile": "Code om te scannen met de mobiele app",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Of open deze link op de telefoon, bijvoorbeeld door hem naar jezelf te sturen in een bericht. Er staat geen wachtwoord in.",
+  "Lien pour l'application mobile": "Link voor de mobiele app",
+  "Partager": "Delen",
+  "Ouvrir l'application mobile": "Mobiele app openen"
 });

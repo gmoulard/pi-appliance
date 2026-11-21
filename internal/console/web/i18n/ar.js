@@ -588,5 +588,12 @@ piTranslations("ar", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "إزالة رابط المستند «{0}»؟ لن يتمكن الشخص من فتحه بعد الآن.",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "يفتح رابط المشاركة مستندًا واحدًا لشخص ليس لديه حساب: يمكنه قراءته والكتابة فيه، دون رؤية أي شيء آخر.",
   "« {0} », créé par {1}, jusqu'au {2}": "«{0}»، أنشأه {1}، حتى {2}",
-  "« {0} », jusqu'au {1}": "«{0}»، حتى {1}"
+  "« {0} », jusqu'au {1}": "«{0}»، حتى {1}",
+  "Application mobile": "تطبيق الهاتف",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "اعثر على هذا الـ Pi وخدماته على هاتفك: في تطبيق الهاتف، المس «مسح الرمز»، ثم وجّه الكاميرا إلى هذا الرمز.",
+  "Code à scanner avec l'application mobile": "رمز يُمسح بتطبيق الهاتف",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "أو افتح هذا الرابط على الهاتف، مثلًا بإرساله إلى نفسك في رسالة. لا يحتوي على أي كلمة مرور.",
+  "Lien pour l'application mobile": "رابط لتطبيق الهاتف",
+  "Partager": "مشاركة",
+  "Ouvrir l'application mobile": "فتح تطبيق الهاتف"
 });

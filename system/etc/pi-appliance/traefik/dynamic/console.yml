@@ -37,6 +37,19 @@ http:
       priority: 1
       service: pi-appliance-console
       tls: {}
+    # NE PAS élargir : seule la demande api/hello de l'application mobile
+    # (nom, version, empreinte de la clé publique, adresses des services ;
+    # spécification 5.2) répond aussi depuis internet. Chemin exact, lecture
+    # seule ; le reste de la console reste fermé sur internet (8.3). Priorité 2 :
+    # devant la console, derrière les routeurs des services.
+    pi-appliance-hello:
+      entryPoints: [websecure]
+      rule: >-
+        Path(`/pi-appliance/api/hello`) &&
+        (Method(`GET`) || Method(`HEAD`) || Method(`OPTIONS`))
+      priority: 2
+      service: pi-appliance-console
+      tls: {}
     # Adresse nue (https://pi-appliance.local/) : vers la console.
     pi-appliance-root:
       entryPoints: [websecure]

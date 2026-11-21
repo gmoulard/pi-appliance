@@ -588,5 +588,12 @@ piTranslations("fa", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "پیوند سند «{0}» برداشته شود؟ آن شخص دیگر نمی‌تواند آن را باز کند.",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "پیوند اشتراک یک سند را برای کسی که حساب ندارد باز می‌کند: او می‌تواند آن را بخواند و در آن بنویسد، بی‌آنکه چیز دیگری ببیند.",
   "« {0} », créé par {1}, jusqu'au {2}": "«{0}»، ساخته‌شده به دست {1}، تا {2}",
-  "« {0} », jusqu'au {1}": "«{0}»، تا {1}"
+  "« {0} », jusqu'au {1}": "«{0}»، تا {1}",
+  "Application mobile": "برنامهٔ موبایل",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "این Pi و سرویس‌هایش را روی تلفن خود پیدا کنید: در برنامهٔ موبایل، «اسکن کد» را بزنید و دوربین را به سمت این کد بگیرید.",
+  "Code à scanner avec l'application mobile": "کدی برای اسکن با برنامهٔ موبایل",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "یا این پیوند را روی تلفن باز کنید، مثلاً با فرستادن آن به خودتان در یک پیام. هیچ گذرواژه‌ای در آن نیست.",
+  "Lien pour l'application mobile": "پیوند برای برنامهٔ موبایل",
+  "Partager": "هم‌رسانی",
+  "Ouvrir l'application mobile": "باز کردن برنامهٔ موبایل"
 });

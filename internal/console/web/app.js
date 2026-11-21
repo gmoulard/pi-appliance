@@ -306,9 +306,46 @@ async function loadResources() {
     await loadStorage();
     await loadBackups();
     if (!(await loadCockpit())) watchCockpit();
+    await loadMobile();
     await loadHistory();
   }
 }
+
+// Application mobile (spécification 5.2) : code QR et lien qui ajoutent ce Pi
+// à l'application, pour l'administrateur ; ni mot de passe ni clé.
+const mobileBox = document.getElementById("mobileBox");
+const mobileQR = document.getElementById("mobileQR");
+const mobileLink = document.getElementById("mobileLink");
+const mobileCopy = document.getElementById("mobileCopy");
+const mobileShare = document.getElementById("mobileShare");
+
+async function loadMobile() {
+  const mobile = await api("mobile").catch(() => null);
+  mobileBox.hidden = !mobile;
+  if (!mobile) return;
+  if (mobileLink.value !== mobile.link) {
+    mobileLink.value = mobile.link;
+    mobileQR.src = mobile.qr;
+  }
+  mobileShare.hidden = typeof navigator.share !== "function";
+}
+
+mobileCopy.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(mobileLink.value);
+    showMessage([t("Lien copié.")], "success");
+  } catch {
+    mobileLink.select();
+  }
+});
+
+mobileShare.addEventListener("click", async () => {
+  try {
+    await navigator.share({ url: mobileLink.value });
+  } catch {
+    // Partage annulé : rien à dire.
+  }
+});
 
 // Tableau de bord (spécification 5.2) : charge du processeur et température
 // en ce moment, état des services, graphiques des derniers jours.

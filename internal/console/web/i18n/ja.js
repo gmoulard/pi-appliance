@@ -588,5 +588,12 @@ piTranslations("ja", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "文書「{0}」へのリンクを削除しますか？相手はその文書を開けなくなります。",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "共有リンクを使うと、アカウントのない人が一つの文書だけを開けます。読み書きはできますが、ほかには何も見えません。",
   "« {0} », créé par {1}, jusqu'au {2}": "「{0}」、{1} が作成、{2}まで",
-  "« {0} », jusqu'au {1}": "「{0}」、{1}まで"
+  "« {0} », jusqu'au {1}": "「{0}」、{1}まで",
+  "Application mobile": "モバイルアプリ",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "この Pi とそのサービスをスマートフォンで使えます。モバイルアプリで「コードをスキャン」をタップし、このコードに向けてください。",
+  "Code à scanner avec l'application mobile": "モバイルアプリで読み取るコード",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "または、このリンクをスマートフォンで開いてください（メッセージで自分に送るなど）。パスワードは含まれていません。",
+  "Lien pour l'application mobile": "モバイルアプリ用のリンク",
+  "Partager": "共有",
+  "Ouvrir l'application mobile": "モバイルアプリを開く"
 });

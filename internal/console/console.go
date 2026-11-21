@@ -182,6 +182,11 @@ type Config struct {
 	ACMEEmailFile string
 	// Mailer envoie les invitations ; nil : le lien est montré à l'administrateur.
 	Mailer auth.Mailer
+	// DevicePublicKey : clé publique du Pi (device.pub), d'où vient son
+	// identifiant pour l'application mobile ; vide : pas d'identifiant.
+	DevicePublicKey string
+	// Hostname : nom du Pi sur le réseau ; nil : nom du système (os.Hostname).
+	Hostname func() (string, error)
 }
 
 type console struct {
@@ -197,6 +202,9 @@ func Handler(config Config) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET "+BasePath+"/api/health", c.health)
 	mux.HandleFunc("GET "+BasePath+"/api/session", c.session)
+	mux.HandleFunc("GET "+BasePath+"/api/hello", c.helloGet)
+	mux.HandleFunc("OPTIONS "+BasePath+"/api/hello", c.helloPreflight)
+	mux.HandleFunc("GET "+BasePath+"/api/mobile", c.adminOnly(c.mobile))
 	mux.HandleFunc("POST "+BasePath+"/api/setup", c.setup)
 	mux.HandleFunc("POST "+BasePath+"/api/reset", c.reset)
 	mux.HandleFunc("POST "+BasePath+"/api/factory-reset", c.factoryReset)

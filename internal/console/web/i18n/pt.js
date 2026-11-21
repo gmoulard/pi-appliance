@@ -588,5 +588,12 @@ piTranslations("pt", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "Retirar o link do documento «{0}»? A pessoa deixará de o poder abrir.",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Um link de partilha abre um único documento a uma pessoa que não tem conta: pode lê-lo e escrever nele, sem ver mais nada.",
   "« {0} », créé par {1}, jusqu'au {2}": "«{0}», criado por {1}, até {2}",
-  "« {0} », jusqu'au {1}": "«{0}», até {1}"
+  "« {0} », jusqu'au {1}": "«{0}», até {1}",
+  "Application mobile": "Aplicação móvel",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "Encontre este Pi e os seus serviços no telemóvel: na aplicação móvel, toque em «Ler o código» e aponte para este código.",
+  "Code à scanner avec l'application mobile": "Código a ler com a aplicação móvel",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Ou abra esta ligação no telemóvel, por exemplo enviando-a a si próprio numa mensagem. Não contém nenhuma palavra-passe.",
+  "Lien pour l'application mobile": "Ligação para a aplicação móvel",
+  "Partager": "Partilhar",
+  "Ouvrir l'application mobile": "Abrir a aplicação móvel"
 });

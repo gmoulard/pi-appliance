@@ -588,5 +588,12 @@ piTranslations("zh", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "删除文档“{0}”的链接？对方将无法再打开它。",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "分享链接让没有账户的人打开一个文档：对方可以阅读和编辑它，看不到其他任何内容。",
   "« {0} », créé par {1}, jusqu'au {2}": "“{0}”，由 {1} 创建，有效期至 {2}",
-  "« {0} », jusqu'au {1}": "“{0}”，有效期至 {1}"
+  "« {0} », jusqu'au {1}": "“{0}”，有效期至 {1}",
+  "Application mobile": "手机应用",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "在手机上找到这台 Pi 及其服务：在手机应用中点按“扫描二维码”，然后对准这个二维码。",
+  "Code à scanner avec l'application mobile": "用手机应用扫描的二维码",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "也可以在手机上打开这个链接，例如通过消息发给自己。链接中不含任何密码。",
+  "Lien pour l'application mobile": "手机应用链接",
+  "Partager": "分享",
+  "Ouvrir l'application mobile": "打开手机应用"
 });

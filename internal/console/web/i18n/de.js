@@ -588,5 +588,12 @@ piTranslations("de", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "Den Link zum Dokument „{0}“ entfernen? Die Person kann es dann nicht mehr öffnen.",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Ein Freigabelink öffnet einer Person ohne Konto ein einziges Dokument: Sie kann es lesen und bearbeiten, ohne etwas anderes zu sehen.",
   "« {0} », créé par {1}, jusqu'au {2}": "„{0}“, erstellt von {1}, bis zum {2}",
-  "« {0} », jusqu'au {1}": "„{0}“, bis zum {1}"
+  "« {0} », jusqu'au {1}": "„{0}“, bis zum {1}",
+  "Application mobile": "Mobile App",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "Finden Sie diesen Pi und seine Dienste auf Ihrem Telefon: Tippen Sie in der mobilen App auf „Code scannen“ und richten Sie die Kamera auf diesen Code.",
+  "Code à scanner avec l'application mobile": "Code zum Scannen mit der mobilen App",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Oder öffnen Sie diesen Link auf dem Telefon, zum Beispiel indem Sie ihn sich per Nachricht schicken. Er enthält kein Passwort.",
+  "Lien pour l'application mobile": "Link für die mobile App",
+  "Partager": "Teilen",
+  "Ouvrir l'application mobile": "Mobile App öffnen"
 });

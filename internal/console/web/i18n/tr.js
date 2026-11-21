@@ -588,5 +588,12 @@ piTranslations("tr", {
   "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "“{0}” belgesinin bağlantısı kaldırılsın mı? Kişi artık belgeyi açamayacak.",
   "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Paylaşım bağlantısı, hesabı olmayan bir kişiye tek bir belgeyi açar: kişi belgeyi okuyup yazabilir, başka hiçbir şey göremez.",
   "« {0} », créé par {1}, jusqu'au {2}": "“{0}”, {1} tarafından oluşturuldu, {2} tarihine kadar",
-  "« {0} », jusqu'au {1}": "“{0}”, {1} tarihine kadar"
+  "« {0} », jusqu'au {1}": "“{0}”, {1} tarihine kadar",
+  "Application mobile": "Mobil uygulama",
+  "Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.": "Bu Pi'yi ve hizmetlerini telefonunuzda bulun: mobil uygulamada «Kodu tara»ya dokunun, ardından bu koda doğrultun.",
+  "Code à scanner avec l'application mobile": "Mobil uygulamayla taranacak kod",
+  "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Ya da bu bağlantıyı telefonda açın, örneğin kendinize bir mesajla göndererek. Hiçbir parola içermez.",
+  "Lien pour l'application mobile": "Mobil uygulama bağlantısı",
+  "Partager": "Paylaş",
+  "Ouvrir l'application mobile": "Mobil uygulamayı aç"
 });

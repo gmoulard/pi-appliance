@@ -229,6 +229,7 @@ func main() {
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
 		Diagnostic:       diag,
 		DiagnosticWindow: window,
+		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),
 	})
 	server := &http.Server{
 		Addr:              *addr,

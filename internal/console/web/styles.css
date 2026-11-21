@@ -921,7 +921,8 @@ footer .language select {
   font-size: 1.1rem;
 }
 
-#inviteLink {
+#inviteLink,
+#mobileLink {
   width: 100%;
   box-sizing: border-box;
 }

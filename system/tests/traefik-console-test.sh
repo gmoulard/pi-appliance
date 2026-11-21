@@ -119,9 +119,10 @@ docker network connect --alias "$PROXY" "$NET172" "$PROXY"
 docker network connect --alias "$PROXY" "$NET192" "$PROXY"
 docker network connect --alias "$PROXY" "$NET_PUBLIC" "$PROXY"
 
+# request <réseau> <hôte> <code attendu> [texte attendu] [chemin]
 request() {
 	docker run --rm --network "$1" -v "$VOLUME_TMP/request.py:/request.py:ro" "$PYTHON_IMAGE" \
-		python /request.py "https://$PROXY/pi-appliance/" "$2" "$3" "${4:-}"
+		python /request.py "https://$PROXY${5:-/pi-appliance/}" "$2" "$3" "${4:-}"
 }
 
 ready=0
@@ -146,6 +147,12 @@ for network in "$NET10" "$NET172" "$NET192"; do
 	request "$network" console.test 502 >/dev/null
 done
 request "$NET_PUBLIC" console.test 404 >/dev/null
+# api/hello de l'application mobile : seule ouverte depuis internet, chemin exact.
+request "$NET_PUBLIC" console.test 502 "" /pi-appliance/api/hello >/dev/null
+request "$NET_PUBLIC" console.test 404 "" /pi-appliance/api/hello/ >/dev/null
+request "$NET_PUBLIC" console.test 404 "" /pi-appliance/api/session >/dev/null
+request "$NET10" console.test 502 "" /pi-appliance/api/hello >/dev/null
+request "$NET_PUBLIC" service.test 200 "service backend" /pi-appliance/api/hello >/dev/null
 request "$NET10" service.test 200 "service backend" >/dev/null
 request "$NET_PUBLIC" service.test 200 "service backend" >/dev/null
 for network in "$NET10" "$NET172" "$NET192"; do

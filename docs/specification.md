@@ -141,6 +141,19 @@ Une appliance se gère depuis sa propre console : pas de tableau de bord commun 
 - **Diagnostic du Pi** : lien vers la page `/pi-appliance/diagnostic` (état des programmes du système, erreurs récentes, journaux à télécharger, section 8.5).
 - Pas encore : adresse publique, état des certificats et mode d'accès (étape Internet, section 7).
 
+**Application mobile** (TODO-5.16 ; application à part, dépôt `gmoulard/pi-appliance-pwa`, publiée à `https://app.pi-appliance.com`). **Réalisé** (à vérifier sur un vrai Pi avec l'application) :
+
+- **Carte « Application mobile »** de « Mon Pi », pour l'administrateur seulement (`GET api/mobile`, réservée à l'administrateur : `{"link", "qr"}`). Elle montre un code QR, dessiné par la console elle-même (image PNG faite sur le Pi, bibliothèque `go-qrcode`, sans service extérieur), et le même lien, à copier ou à partager (bouton « Partager » du téléphone quand le navigateur en a un), avec un lien « Ouvrir l'application mobile » vers `https://app.pi-appliance.com`. Ni mot de passe, ni clé privée, ni jeton.
+- **Lien d'ajout** : `https://app.pi-appliance.com/#add?` suivi de paramètres encodés comme une adresse web (`application/x-www-form-urlencoded` : `:` → `%3A`, `/` → `%2F`, `,` → `%2C`), dans l'ordre alphabétique des noms de paramètres ; l'application les lit avec `new URLSearchParams(location.hash.slice("#add?".length))` :
+  - `n` : nom du Pi sur le réseau (`controltower`) ;
+  - `l` : adresse de la console à la maison, `https://<nom>.local/pi-appliance` ;
+  - `w` : adresse de la console sur internet, `https://<adresse>/pi-appliance`, seulement si le Pi en a une : l'adresse `<nom>.pi-appliance.com` réservée (7.1), sinon le nom DuckDNS, sinon le domaine personnel des services (option `-domain`) ; absent sinon. La console elle-même reste fermée sur internet (8.3) : à cette adresse, seule `api/hello` répond ;
+  - `id` : identifiant stable et non secret du Pi, les **16 premiers caractères hexadécimaux (minuscules) du SHA-256 des 32 octets de sa clé publique Ed25519** (`/var/lib/pi-appliance/system/device.pub`, faite avec `device.key` par `secrets.sh`) ; le même en shell : `openssl pkey -pubin -in device.pub -outform DER | tail -c 32 | sha256sum | cut -c1-16`. Il ne change pas quand le Pi change de nom ; absent si la clé manque ;
+  - `s` : **un paramètre `s` par service** qui a une page web, par ordre alphabétique du nom, de valeur `<nom>,<adresse>` : le nom du service (lettres minuscules, chiffres et tirets, jamais de virgule), une virgule, puis son adresse complète (`https://cloud-controltower.local`) ; l'application coupe à la première virgule (`params.getAll("s")`). Aucun `s` si le Pi n'a pas de service.
+  - Exemple : `https://app.pi-appliance.com/#add?id=f2b4ee79f5ba587b&l=https%3A%2F%2Fcontroltower.local%2Fpi-appliance&n=controltower&s=cloud%2Chttps%3A%2F%2Fcloud-controltower.local&s=www%2Chttps%3A%2F%2Fwww-controltower.local`.
+- **`GET /pi-appliance/api/hello`**, sans connexion : `{"name", "version", "id", "services": [{"name", "address"}]}`, mêmes valeurs que `n`, `id` et `s` ci-dessus (`id` vide si la clé manque, `services` liste vide sans service), et rien d'autre : ni état du système, ni comptes. En-têtes `Access-Control-Allow-Origin: https://app.pi-appliance.com` et `Cache-Control: no-store`, sans cookie ni `Access-Control-Allow-Credentials`. À la demande préalable du navigateur (`OPTIONS`, réponse 204), aussi `Access-Control-Allow-Methods: GET`, `Access-Control-Allow-Private-Network: true` (Chrome, accès au réseau local) et `Access-Control-Max-Age: 600`. **N'importe qui qui connaît l'adresse du Pi peut la lire**, choix accepté : c'est la seule demande de la console ouverte aussi depuis internet, par le routeur Traefik `pi-appliance-hello` (chemin exact, `GET`, `HEAD` et `OPTIONS` seulement ; 8.3).
+- Lien « Application mobile » aussi sur le site www.pi-appliance.com (menu et pied de page, section 13).
+
 ### 5.3 Langues
 
 L'interface est traduite dans les 12 langues de Wikipedia2Book : français, anglais, espagnol, portugais, italien, allemand, néerlandais, turc, chinois, japonais, arabe et persan (ces deux dernières de droite à gauche). Langue détectée d'après le navigateur, modifiable à tout moment. Le français fait foi.
@@ -398,8 +411,9 @@ Offre :
 
 - Fermée sur internet par défaut : accessible depuis la maison ou par le VPN.
 - Un administrateur peut l'ouvrir sur internet, **à condition d'activer la double authentification** (code à usage unique, TOTP).
+- Exception : la demande `api/hello` de l'application mobile (nom du Pi, version, identifiant, adresses des services ; 5.2) répond aussi depuis internet.
 
-**Réalisé en partie** (couche système) : le routeur Traefik de `/pi-appliance` n'accepte que les adresses IPv4 privées (RFC 1918), la boucle locale IPv4/IPv6 et les plages locales IPv6 (ULA et link-local). Sa priorité est fixée à 1 afin que les routeurs des services restent prioritaires. Le test `system/tests/traefik-console-test.sh` valide sur Traefik le refus d'une source hors liste autorisée, l'accès depuis les trois plages IPv4 privées et la priorité des services.
+**Réalisé en partie** (couche système) : seul le routeur `pi-appliance-hello` (chemin exact `/pi-appliance/api/hello`, `GET`, `HEAD`, `OPTIONS`, priorité 2) est ouvert à toutes les adresses. Le routeur Traefik de `/pi-appliance` n'accepte que les adresses IPv4 privées (RFC 1918), la boucle locale IPv4/IPv6 et les plages locales IPv6 (ULA et link-local). Sa priorité est fixée à 1 afin que les routeurs des services restent prioritaires. Le test `system/tests/traefik-console-test.sh` valide sur Traefik le refus d'une source hors liste autorisée, l'accès depuis les trois plages IPv4 privées, la priorité des services, et `api/hello` ouverte depuis internet sans rien d'autre de la console.
 
 **Limites à lever avant de considérer la console fermée par tous les chemins internet** : `ClientIP` se base sur l'adresse TCP vue par Traefik, et non sur l'adresse du visiteur relayée par un en-tête. Les plages exactes du VPN et du tunnel relais ne sont pas encore conçues ; si le pair du relais utilise une adresse privée autorisée, le trafic public relayé peut atteindre la console. Un réseau local IPv6 utilisant une adresse globale n'est pas autorisé non plus. Le TODO-3.11 reste ouvert jusqu'à la définition et à la validation de ces plages sur le vrai réseau.
 
@@ -639,6 +653,7 @@ Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache
 - **Téléchargement** : l'image, sa somme de contrôle et le guide de flashage.
 - **Documentation** : guide utilisateur pas à pas, FAQ, catalogue des applications.
 - **Inscription** : réservation d'une adresse `<nom>.pi-appliance.com`.
+- **Application mobile** : lien vers `https://app.pi-appliance.com` dans le menu et le pied de page (réalisé ; application décrite en 5.2).
 
 Dans les mêmes langues que la console (section 5.3).
 
