@@ -607,5 +607,6 @@ piTranslations("ja", {
   "Renommer": "名前を変更",
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "「{0}」を削除しますか？パスワードなしでコンソールを開くには、このスマートフォンをもう一度ペアリングする必要があります。",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "試行回数が多すぎます。数分待ってからもう一度お試しください。",
-  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "このコードはスマートフォンをあなたのアカウントにペアリングもします。その後アプリはパスワードなしでコンソールを開きます。自分のスマートフォン以外には見せないでください。コードは数分ごとに変わります。"
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "このコードはスマートフォンをあなたのアカウントにペアリングもします。その後アプリはパスワードなしでコンソールを開きます。自分のスマートフォン以外には見せないでください。コードは数分ごとに変わります。",
+  "Ce téléphone n'est plus appairé à ce Pi.": "このスマートフォンはもうこの Pi とペアリングされていません。"
 });

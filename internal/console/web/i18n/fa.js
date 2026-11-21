@@ -607,5 +607,6 @@ piTranslations("fa", {
   "Renommer": "تغییر نام",
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "«{0}» حذف شود؟ برای باز کردن کنسول بدون گذرواژه، این تلفن باید دوباره جفت شود.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "تلاش‌های بیش از حد: چند دقیقه صبر کنید و دوباره تلاش کنید.",
-  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "این کد تلفن را با حساب شما نیز جفت می‌کند: سپس برنامه کنسول را بدون گذرواژه باز می‌کند. آن را فقط به تلفن‌های خودتان نشان دهید؛ هر چند دقیقه یک بار تغییر می‌کند."
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "این کد تلفن را با حساب شما نیز جفت می‌کند: سپس برنامه کنسول را بدون گذرواژه باز می‌کند. آن را فقط به تلفن‌های خودتان نشان دهید؛ هر چند دقیقه یک بار تغییر می‌کند.",
+  "Ce téléphone n'est plus appairé à ce Pi.": "این تلفن دیگر با این Pi جفت نیست."
 });

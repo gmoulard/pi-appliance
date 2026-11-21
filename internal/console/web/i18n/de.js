@@ -607,5 +607,6 @@ piTranslations("de", {
   "Renommer": "Umbenennen",
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "„{0}“ entfernen? Dieses Telefon muss erneut gekoppelt werden, um die Konsole ohne Passwort zu öffnen.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Zu viele Versuche: Warten Sie einige Minuten, bevor Sie es erneut versuchen.",
-  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Dieser Code koppelt das Telefon auch mit Ihrem Konto: Die App öffnet danach die Konsole ohne Passwort. Zeigen Sie ihn nur Ihren eigenen Telefonen; er ändert sich alle paar Minuten."
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Dieser Code koppelt das Telefon auch mit Ihrem Konto: Die App öffnet danach die Konsole ohne Passwort. Zeigen Sie ihn nur Ihren eigenen Telefonen; er ändert sich alle paar Minuten.",
+  "Ce téléphone n'est plus appairé à ce Pi.": "Dieses Telefon ist nicht mehr mit diesem Pi gekoppelt."
 });

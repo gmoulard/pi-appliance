@@ -3088,6 +3088,7 @@ async function loadDevices() {
 // ?appareil= : retour d'un appairage ou d'une connexion depuis l'application mobile.
 const DEVICE_MESSAGES = {
   appaire: [t("Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe."), "success"],
+  retire: [t("Ce téléphone n'est plus appairé à ce Pi."), "success"],
   code: [t("Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile."), "error"],
   inconnu: [t("Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile."), "error"],
   heure: [t("L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez."), "error"],

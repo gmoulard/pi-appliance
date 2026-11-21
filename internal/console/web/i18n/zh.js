@@ -607,5 +607,6 @@ piTranslations("zh", {
   "Renommer": "重命名",
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "移除“{0}”？此手机需要重新配对才能无需密码打开控制台。",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "尝试次数过多：请等待几分钟后再试。",
-  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "此代码还会把手机与您的账户配对：之后应用将无需密码打开控制台。只给您自己的手机看；它每隔几分钟就会更换。"
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "此代码还会把手机与您的账户配对：之后应用将无需密码打开控制台。只给您自己的手机看；它每隔几分钟就会更换。",
+  "Ce téléphone n'est plus appairé à ce Pi.": "此手机已不再与这台 Pi 配对。"
 });

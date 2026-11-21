@@ -171,7 +171,7 @@ func (s *Store) PairingCode(owner string) (string, time.Time) {
 }
 
 // Pair enregistre la clé publique jwk (JSON) d'un appareil pour le compte qui
-// a montré le code, si message vaut « appairer\n<piID>\n<code> » et que
+// a montré le code, si message vaut « appairer|<piID>|<code> » et que
 // signature (r‖s, base64url) le signe avec cette clé ; puis ouvre une session.
 // Le code ne sert qu'une fois, même refusé.
 func (s *Store) Pair(code, jwk, name, message, signature, piID, client string) (string, Account, error) {
@@ -191,7 +191,7 @@ func (s *Store) Pair(code, jwk, name, message, signature, piID, client string) (
 		return "", Account{}, ErrPairingCode
 	}
 	key, id, err := parseDeviceKey(jwk)
-	if err != nil || piID == "" || message != "appairer\n"+piID+"\n"+code || !verifyDevice(key, message, signature) {
+	if err != nil || piID == "" || message != "appairer|"+piID+"|"+code || !verifyDevice(key, message, signature) {
 		s.fail(keys, now)
 		return "", Account{}, ErrDeviceSignature
 	}
@@ -219,49 +219,90 @@ func (s *Store) Pair(code, jwk, name, message, signature, piID, client string) (
 }
 
 // DeviceLogin ouvre une session pour l'appareil id si message vaut
-// « connexion\n<piID>\n<secondes Unix>\n<numéro> », daté à DeviceClockSkew
+// « connexion|<piID>|<secondes Unix>|<numéro> », daté à DeviceClockSkew
 // près, avec un numéro (16 octets en base64url) jamais vu, et que signature le
 // signe avec la clé enregistrée.
 func (s *Store) DeviceLogin(id, message, signature, piID, client string) (string, Account, error) {
-	keys := []string{"client:" + client, "device:" + id}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	now := s.Now()
+	device, account, err := s.checkSigned("connexion", id, message, signature, piID, client, now, true)
+	if err != nil {
+		return "", Account{}, err
+	}
+	device.LastUsed = now.UTC()
+	s.devices[id] = device
+	if err := s.saveDevices(); err != nil {
+		return "", Account{}, err
+	}
+	return s.openSession(account.Name, now), account, nil
+}
+
+// DeviceRevoke retire l'appareil id à la demande du téléphone lui-même, si
+// message vaut « retirer|<piID>|<secondes Unix>|<numéro> », avec les mêmes
+// vérifications que DeviceLogin ; aucune session n'est ouverte. Un appareil
+// inconnu ou déjà retiré n'est pas une erreur : le résultat voulu est atteint.
+func (s *Store) DeviceRevoke(id, message, signature, piID, client string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.Now()
+	if _, known := s.devices[id]; !known {
+		return nil
+	}
+	// Un invité expiré peut encore retirer son téléphone.
+	device, _, err := s.checkSigned("retirer", id, message, signature, piID, client, now, false)
+	if err != nil {
+		return err
+	}
+	delete(s.devices, id)
+	if err := s.saveDevices(); err != nil {
+		s.devices[id] = device
+		return err
+	}
+	return nil
+}
+
+// checkSigned vérifie un message « <action>|<piID>|<secondes Unix>|<numéro> »
+// signé par l'appareil id : appareil connu, compte actif, signature, Pi,
+// heure à DeviceClockSkew près, numéro jamais vu (verrou tenu). active : le
+// compte doit encore pouvoir se connecter.
+func (s *Store) checkSigned(action, id, message, signature, piID, client string, now time.Time, active bool) (Device, Account, error) {
+	keys := []string{"client:" + client, "device:" + id}
 	for _, key := range keys {
 		if wait := s.blocked(key, now); wait > 0 {
-			return "", Account{}, TooManyError{Wait: wait}
+			return Device{}, Account{}, TooManyError{Wait: wait}
 		}
 	}
 	device, ok := s.devices[id]
 	if !ok {
 		s.fail(keys[:1], now)
-		return "", Account{}, ErrDeviceUnknown
+		return Device{}, Account{}, ErrDeviceUnknown
 	}
 	account, ok := s.accounts[device.Owner]
-	if !ok || !account.active(now) {
-		return "", Account{}, ErrDeviceUnknown
+	if active && (!ok || !account.active(now)) {
+		return Device{}, Account{}, ErrDeviceUnknown
 	}
 	if !verifyDevice(device.Key, message, signature) {
 		s.fail(keys, now)
-		return "", Account{}, ErrDeviceSignature
+		return Device{}, Account{}, ErrDeviceSignature
 	}
-	parts := strings.Split(message, "\n")
-	if len(parts) != 4 || parts[0] != "connexion" || piID == "" || parts[1] != piID {
+	parts := strings.Split(message, "|")
+	if len(parts) != 4 || parts[0] != action || piID == "" || parts[1] != piID {
 		s.fail(keys, now)
-		return "", Account{}, ErrDeviceSignature
+		return Device{}, Account{}, ErrDeviceSignature
 	}
 	seconds, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
 		s.fail(keys, now)
-		return "", Account{}, ErrDeviceSignature
+		return Device{}, Account{}, ErrDeviceSignature
 	}
 	if skew := now.Sub(time.Unix(seconds, 0)); skew > DeviceClockSkew || skew < -DeviceClockSkew {
-		return "", Account{}, ErrDeviceClock
+		return Device{}, Account{}, ErrDeviceClock
 	}
 	nonce, err := base64.RawURLEncoding.DecodeString(parts[3])
 	if err != nil || len(nonce) != 16 {
 		s.fail(keys, now)
-		return "", Account{}, ErrDeviceSignature
+		return Device{}, Account{}, ErrDeviceSignature
 	}
 	for seen, expires := range s.nonces {
 		if now.After(expires) {
@@ -270,18 +311,13 @@ func (s *Store) DeviceLogin(id, message, signature, piID, client string) (string
 	}
 	if _, seen := s.nonces[parts[3]]; seen {
 		s.fail(keys, now)
-		return "", Account{}, ErrDeviceSignature
+		return Device{}, Account{}, ErrDeviceSignature
 	}
 	s.nonces[parts[3]] = now.Add(2 * DeviceClockSkew)
-	device.LastUsed = now.UTC()
-	s.devices[id] = device
-	if err := s.saveDevices(); err != nil {
-		return "", Account{}, err
-	}
 	for _, key := range keys {
 		delete(s.failures, key)
 	}
-	return s.openSession(account.Name, now), account, nil
+	return device, account, nil
 }
 
 func (s *Store) openSession(name string, now time.Time) string {

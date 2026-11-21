@@ -607,5 +607,6 @@ piTranslations("ar", {
   "Renommer": "إعادة التسمية",
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "إزالة «{0}»؟ يجب اقتران هذا الهاتف من جديد لفتح لوحة التحكم دون كلمة مرور.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "محاولات كثيرة جدًا: انتظر بضع دقائق قبل إعادة المحاولة.",
-  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "يقرن هذا الرمز الهاتف أيضًا بحسابك: سيفتح التطبيق بعدها لوحة التحكم دون كلمة مرور. لا تعرضه إلا على هواتفك؛ يتغيّر كل بضع دقائق."
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "يقرن هذا الرمز الهاتف أيضًا بحسابك: سيفتح التطبيق بعدها لوحة التحكم دون كلمة مرور. لا تعرضه إلا على هواتفك؛ يتغيّر كل بضع دقائق.",
+  "Ce téléphone n'est plus appairé à ce Pi.": "لم يعد هذا الهاتف مقترنًا بهذا الـ Pi."
 });

@@ -28,7 +28,6 @@ import (
 	"log"
 	"net/http"
 	"slices"
-	"strings"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 )
@@ -41,6 +40,7 @@ var mobileOrigins = []string{MobileApp, "https://gmoulard.github.io"}
 // langage courant dans la langue choisie ; « appaire » : appairage réussi.
 const (
 	devicePaired  = "appaire"
+	deviceRevoked = "retire"
 	deviceCode    = "code"
 	deviceUnknown = "inconnu"
 	deviceClock   = "heure"
@@ -51,6 +51,7 @@ const (
 func (c *console) deviceRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST "+BasePath+"/appareil/appairer", c.devicePair)
 	mux.HandleFunc("POST "+BasePath+"/appareil/connexion", c.deviceLogin)
+	mux.HandleFunc("POST "+BasePath+"/appareil/retirer", c.deviceRevoke)
 	mux.HandleFunc("GET "+BasePath+"/api/account/devices", c.ownAccount(c.listAccountDevices))
 	mux.HandleFunc("PUT "+BasePath+"/api/account/devices/{id}", c.ownAccount(c.renameAccountDevice))
 	mux.HandleFunc("DELETE "+BasePath+"/api/account/devices/{id}", c.ownAccount(c.removeAccountDevice))
@@ -64,13 +65,6 @@ func deviceForm(w http.ResponseWriter, r *http.Request) bool {
 	}
 	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
 	return r.ParseForm() == nil
-}
-
-// formMessage : le message signé. Un formulaire HTML envoie les retours à la
-// ligne de ses champs en « \r\n » (règle du HTML) ; le téléphone a signé le
-// message avec des « \n ».
-func formMessage(r *http.Request) string {
-	return strings.ReplaceAll(r.PostForm.Get("message"), "\r\n", "\n")
 }
 
 func deviceReason(err error) (int, string) {
@@ -99,7 +93,7 @@ func (c *console) devicePair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	form := r.PostForm
-	token, _, err := c.Accounts.Pair(form.Get("code"), form.Get("cle"), form.Get("appareil"), formMessage(r), form.Get("signature"), DeviceID(c.DevicePublicKey), clientIP(r))
+	token, _, err := c.Accounts.Pair(form.Get("code"), form.Get("cle"), form.Get("appareil"), form.Get("message"), form.Get("signature"), DeviceID(c.DevicePublicKey), clientIP(r))
 	if err != nil {
 		status, reason := deviceReason(err)
 		devicePage(w, status, reason)
@@ -116,7 +110,7 @@ func (c *console) deviceLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	form := r.PostForm
-	token, _, err := c.Accounts.DeviceLogin(form.Get("cle"), formMessage(r), form.Get("signature"), DeviceID(c.DevicePublicKey), clientIP(r))
+	token, _, err := c.Accounts.DeviceLogin(form.Get("cle"), form.Get("message"), form.Get("signature"), DeviceID(c.DevicePublicKey), clientIP(r))
 	if err != nil {
 		status, reason := deviceReason(err)
 		devicePage(w, status, reason)
@@ -124,6 +118,22 @@ func (c *console) deviceLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	openSession(w, r, token)
 	devicePage(w, http.StatusOK, "")
+}
+
+// deviceRevoke : POST appareil/retirer (cle, message, signature) : le
+// téléphone se retire lui-même, sans ouvrir de session.
+func (c *console) deviceRevoke(w http.ResponseWriter, r *http.Request) {
+	if !deviceForm(w, r) {
+		devicePage(w, http.StatusForbidden, deviceRefused)
+		return
+	}
+	form := r.PostForm
+	if err := c.Accounts.DeviceRevoke(form.Get("cle"), form.Get("message"), form.Get("signature"), DeviceID(c.DevicePublicKey), clientIP(r)); err != nil {
+		status, reason := deviceReason(err)
+		devicePage(w, status, reason)
+		return
+	}
+	devicePage(w, http.StatusOK, deviceRevoked)
 }
 
 // devicePage : page de passage vers la console, par une navigation du même

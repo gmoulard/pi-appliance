@@ -104,7 +104,7 @@ L'[application mobile](https://app.pi-appliance.com) garde la liste de vos Pi et
 2. Dans la console, ouvrez « Mon Pi » : la carte « Application mobile » montre un code à scanner (seulement pour l'administrateur).
 3. Dans l'application, touchez « Scanner le code » et visez ce code. Vous pouvez aussi copier le lien de la carte et l'ouvrir sur le téléphone, par exemple en vous l'envoyant par message.
 
-Scanner le code depuis l'application **appaire** aussi le téléphone à votre compte : ensuite, l'application ouvre la console sans mot de passe, à la maison. Le code change toutes les quelques minutes et ne sert qu'une fois : ne le montrez qu'à vos propres téléphones. Le lien à copier, lui, n'appaire pas le téléphone. Les téléphones appairés sont listés dans « Mon compte », rubrique « Appareils » : retirez-y un téléphone perdu ou que vous n'utilisez plus.
+Scanner le code depuis l'application **appaire** aussi le téléphone à votre compte : ensuite, l'application ouvre la console sans mot de passe, à la maison. Le code change toutes les quelques minutes et ne sert qu'une fois : ne le montrez qu'à vos propres téléphones. Le lien à copier, lui, n'appaire pas le téléphone. Les téléphones appairés sont listés dans « Mon compte », rubrique « Appareils » : retirez-y un téléphone perdu ou que vous n'utilisez plus. Depuis le téléphone lui-même, « Désappairer » dans l'application fait la même chose.
 
 Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, ses adresses et celles de ses services (et, pour le code, le code d'appairage de quelques minutes). Pour lire l'état du Pi, l'application demande au Pi son nom, sa version et la liste de ses services ; n'importe qui qui connaît l'adresse du Pi peut lire ces informations, rien d'autre.
 

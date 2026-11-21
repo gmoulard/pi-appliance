@@ -607,5 +607,6 @@ piTranslations("tr", {
   "Renommer": "Yeniden adlandır",
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "«{0}» kaldırılsın mı? Konsolu parolasız açmak için bu telefonun yeniden eşleştirilmesi gerekecek.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Çok fazla deneme: yeniden denemeden önce birkaç dakika bekleyin.",
-  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Bu kod telefonu hesabınızla da eşleştirir: uygulama ardından konsolu parolasız açar. Yalnızca kendi telefonlarınıza gösterin; birkaç dakikada bir değişir."
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Bu kod telefonu hesabınızla da eşleştirir: uygulama ardından konsolu parolasız açar. Yalnızca kendi telefonlarınıza gösterin; birkaç dakikada bir değişir.",
+  "Ce téléphone n'est plus appairé à ce Pi.": "Bu telefon artık bu Pi ile eşleştirilmiş değil."
 });

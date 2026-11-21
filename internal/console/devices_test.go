@@ -72,16 +72,8 @@ func (p testPhone) sign(t *testing.T, message string) string {
 	return base64.RawURLEncoding.EncodeToString(append(r.FillBytes(make([]byte, 32)), s.FillBytes(make([]byte, 32))...))
 }
 
-// postForm envoie le formulaire comme un navigateur : les retours à la ligne
-// des champs deviennent « \r\n » (règle du HTML).
 func (f fixture) postForm(path string, values url.Values, origin string) *httptest.ResponseRecorder {
-	browser := url.Values{}
-	for key, list := range values {
-		for _, value := range list {
-			browser.Add(key, strings.ReplaceAll(value, "\n", "\r\n"))
-		}
-	}
-	return f.do(http.MethodPost, path, "application/x-www-form-urlencoded", browser.Encode(), nil, "Origin", origin)
+	return f.do(http.MethodPost, path, "application/x-www-form-urlencoded", values.Encode(), nil, "Origin", origin)
 }
 
 // next : adresse vers laquelle la page de passage mène.
@@ -97,12 +89,16 @@ func next(t *testing.T, response *httptest.ResponseRecorder) string {
 }
 
 func pairForm(t *testing.T, p testPhone, id, code string) url.Values {
-	message := "appairer\n" + id + "\n" + code
+	message := "appairer|" + id + "|" + code
 	return url.Values{"code": {code}, "cle": {p.jwk()}, "appareil": {"Téléphone Android"}, "message": {message}, "signature": {p.sign(t, message)}}
 }
 
 func loginForm(t *testing.T, p testPhone, id string, at time.Time, nonce string) url.Values {
-	message := "connexion\n" + id + "\n" + strconv.FormatInt(at.Unix(), 10) + "\n" + nonce
+	return signedForm(t, "connexion", p, id, at, nonce)
+}
+
+func signedForm(t *testing.T, action string, p testPhone, id string, at time.Time, nonce string) url.Values {
+	message := action + "|" + id + "|" + strconv.FormatInt(at.Unix(), 10) + "|" + nonce
 	return url.Values{"cle": {p.thumbprint()}, "message": {message}, "signature": {p.sign(t, message)}}
 }
 
@@ -212,5 +208,30 @@ func TestAccountDevices(t *testing.T) {
 	login := f.postForm("/pi-appliance/appareil/connexion", loginForm(t, p, id, time.Now(), "AAAAAAAAAAAAAAAAAAAAAA"), MobileApp)
 	if next(t, login) != "/pi-appliance/?appareil=inconnu" {
 		t.Fatalf("appareil retiré : vers %q", next(t, login))
+	}
+}
+
+func TestDeviceRevokeFromPhone(t *testing.T) {
+	f, id := mobileFixture(t, "controltower.local")
+	f.admin(t)
+	code, _ := f.accounts.PairingCode("marie")
+	p := newTestPhone(t)
+	if response := f.postForm("/pi-appliance/appareil/appairer", pairForm(t, p, id, code), MobileApp); response.Code != http.StatusOK {
+		t.Fatalf("appairage : code %d", response.Code)
+	}
+	if response := f.postForm("/pi-appliance/appareil/retirer", signedForm(t, "retirer", p, id, time.Now(), "AAAAAAAAAAAAAAAAAAAAAA"), "https://exemple.org"); next(t, response) != "/pi-appliance/?appareil=refus" {
+		t.Fatalf("autre site : vers %q", next(t, response))
+	}
+	response := f.postForm("/pi-appliance/appareil/retirer", signedForm(t, "retirer", p, id, time.Now(), "BBBBBBBBBBBBBBBBBBBBBB"), MobileApp)
+	if response.Code != http.StatusOK || len(response.Result().Cookies()) != 0 || next(t, response) != "/pi-appliance/?appareil=retire" {
+		t.Fatalf("retrait : code %d, %v, vers %q", response.Code, response.Result().Cookies(), next(t, response))
+	}
+	if got := f.accounts.Devices("marie"); len(got) != 0 {
+		t.Fatalf("appareil gardé : %+v", got)
+	}
+	// Clé inconnue ou déjà retirée : même page.
+	again := f.postForm("/pi-appliance/appareil/retirer", signedForm(t, "retirer", p, id, time.Now(), "CCCCCCCCCCCCCCCCCCCCCC"), MobileApp)
+	if next(t, again) != "/pi-appliance/?appareil=retire" {
+		t.Fatalf("déjà retiré : vers %q", next(t, again))
 	}
 }

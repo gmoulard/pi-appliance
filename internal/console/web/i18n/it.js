@@ -607,5 +607,6 @@ piTranslations("it", {
   "Renommer": "Rinomina",
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "Rimuovere «{0}»? Questo telefono dovrà essere associato di nuovo per aprire la console senza password.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Troppi tentativi: attendi qualche minuto prima di riprovare.",
-  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Questo codice associa anche il telefono al tuo account: poi l'app aprirà la console senza password. Mostralo solo ai tuoi telefoni; cambia ogni pochi minuti."
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Questo codice associa anche il telefono al tuo account: poi l'app aprirà la console senza password. Mostralo solo ai tuoi telefoni; cambia ogni pochi minuti.",
+  "Ce téléphone n'est plus appairé à ce Pi.": "Questo telefono non è più associato a questo Pi."
 });
