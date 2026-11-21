@@ -18,7 +18,8 @@
 // et nouvelle version de pi-appliance publiée sur GitHub (appliance.go),
 // installés à la demande de l'administrateur ; les nouvelles versions de
 // pi-appliance et les mises à jour du système s'installent toutes seules la
-// nuit si l'administrateur l'a choisi, chacune de son côté (auto.go).
+// nuit à l'heure choisie si l'administrateur l'a voulu, chacune de son côté
+// (auto.go).
 package updates
 
 import (
@@ -126,11 +127,8 @@ type Status struct {
 	SystemError string    `json:"system_error,omitempty"`
 	Appliance   Appliance `json:"appliance"`
 	Checking    bool      `json:"checking"`
-	// Auto : installation automatique des nouvelles versions de pi-appliance.
+	// Auto : installation automatique de pi-appliance et du système.
 	Auto Auto `json:"auto"`
-	// AutoSystem : installation automatique des mises à jour du système,
-	// réglée à part.
-	AutoSystem Auto `json:"auto_system"`
 }
 
 // Checker cherche les mises à jour, chaque jour et à la demande.
@@ -160,7 +158,6 @@ type Checker struct {
 	checking  bool
 	channel   string
 	auto      *Auto
-	system    *Auto
 	// autoDay, systemDay : jour (AAAA-MM-JJ) de la dernière tentative
 	// d'installation automatique, une seule par nuit pour chacune.
 	autoDay   string
@@ -171,9 +168,8 @@ type settings struct {
 	Channel string `json:"channel"`
 	Auto    *bool  `json:"auto,omitempty"`
 	Hour    *int   `json:"hour,omitempty"`
-	// SystemAuto, SystemHour : mises à jour du système.
+	// SystemAuto : mises à jour du système ; Hour vaut pour les deux.
 	SystemAuto *bool `json:"system_auto,omitempty"`
-	SystemHour *int  `json:"system_hour,omitempty"`
 }
 
 // Load lit le canal choisi et l'installation automatique ; un fichier absent
@@ -198,28 +194,24 @@ func (c *Checker) Load() error {
 	if saved.Channel == Beta {
 		c.channel = Beta
 	}
-	auto := loadAuto(saved.Auto, saved.Hour, DefaultHour)
-	system := loadAuto(saved.SystemAuto, saved.SystemHour, DefaultSystemHour)
-	c.auto, c.system = &auto, &system
+	auto := Auto{Hour: DefaultHour}
+	if saved.Auto != nil {
+		auto.Appliance = *saved.Auto
+	}
+	if saved.SystemAuto != nil {
+		auto.System = *saved.SystemAuto
+	}
+	if saved.Hour != nil && *saved.Hour >= 0 && *saved.Hour <= 23 {
+		auto.Hour = *saved.Hour
+	}
+	c.auto = &auto
 	c.mu.Unlock()
 	return nil
 }
 
-func loadAuto(enabled *bool, hour *int, defaultHour int) Auto {
-	auto := Auto{Hour: defaultHour}
-	if enabled != nil {
-		auto.Enabled = *enabled
-	}
-	if hour != nil && *hour >= 0 && *hour <= 23 {
-		auto.Hour = *hour
-	}
-	return auto
-}
-
 // saveLocked enregistre les réglages (c.mu tenu).
-func (c *Checker) saveLocked(channel string, auto, system Auto) error {
-	data, err := json.Marshal(settings{Channel: channel, Auto: &auto.Enabled, Hour: &auto.Hour,
-		SystemAuto: &system.Enabled, SystemHour: &system.Hour})
+func (c *Checker) saveLocked(channel string, auto Auto) error {
+	data, err := json.Marshal(settings{Channel: channel, Auto: &auto.Appliance, SystemAuto: &auto.System, Hour: &auto.Hour})
 	if err != nil {
 		return err
 	}
@@ -259,7 +251,7 @@ func (c *Checker) SetChannel(channel string) error {
 	if c.channelLocked() == channel {
 		return nil
 	}
-	if err := c.saveLocked(channel, c.autoLocked(), c.systemLocked()); err != nil {
+	if err := c.saveLocked(channel, c.autoLocked()); err != nil {
 		return err
 	}
 	c.channel = channel
@@ -364,7 +356,7 @@ func (c *Checker) ApplySystem(ctx context.Context) error {
 // la dernière version publiée est celle de la dernière recherche.
 func (c *Checker) Status(ctx context.Context) Status {
 	c.mu.Lock()
-	status := Status{Appliance: c.appliance, Checking: c.checking, Auto: c.autoLocked(), AutoSystem: c.systemLocked()}
+	status := Status{Appliance: c.appliance, Checking: c.checking, Auto: c.autoLocked()}
 	status.Appliance.Channel = c.channelLocked()
 	release := c.release
 	if c.download != nil {
@@ -457,7 +449,7 @@ func (c *Checker) CheckNow() bool {
 
 // Run cherche les mises à jour peu après le démarrage, puis chaque jour, et
 // installe la nouvelle version de pi-appliance et les mises à jour du système,
-// chacune à son heure quand son installation automatique est en marche,
+// à l'heure choisie quand leur installation automatique est en marche,
 // jusqu'à l'arrêt de ctx.
 func (c *Checker) Run(ctx context.Context, first time.Duration) {
 	timer := time.NewTimer(first)

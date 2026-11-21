@@ -50,7 +50,6 @@ func TestUpdatesAdminOnly(t *testing.T) {
 		{http.MethodPost, "/pi-appliance/api/updates/system"},
 		{http.MethodPut, "/pi-appliance/api/updates/channel"},
 		{http.MethodPut, "/pi-appliance/api/updates/auto"},
-		{http.MethodPut, "/pi-appliance/api/updates/auto-system"},
 	} {
 		if response := f.do(route.method, route.path, "", "", nil); response.Code != http.StatusUnauthorized {
 			t.Errorf("%s %s sans session : code %d", route.method, route.path, response.Code)
