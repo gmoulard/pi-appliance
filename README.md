@@ -16,7 +16,7 @@ Tout s'appelle pi-appliance :
 
 1. **l'image pi-appliance**, à flasher sur la carte SD : Raspberry Pi OS Lite 64 bits et le socle, publiée avec chaque [version](https://github.com/gmoulard/pi-appliance/releases/latest) ;
 2. **le socle pi-appliance**, toujours installé sur le Pi : Docker, Traefik, les services et les outils du système, la **console** web (`/pi-appliance`), d'où tout se fait, et la **commande `pia`**, ligne de commande du Pi ; il se met à jour depuis la console ;
-3. **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) (dépôt [pi-appliance-pwa](https://github.com/gmoulard/pi-appliance-pwa)) : la documentation sans réseau et un lien direct vers ses Pi.
+3. **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) (adresse provisoire : [gmoulard.github.io/pi-appliance-pwa](https://gmoulard.github.io/pi-appliance-pwa/)) (dépôt [pi-appliance-pwa](https://github.com/gmoulard/pi-appliance-pwa)) : la documentation sans réseau et un lien direct vers ses Pi.
 
 ## Comment ça marche
 

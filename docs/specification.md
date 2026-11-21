@@ -46,7 +46,7 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 | **Image pi-appliance** | Le système à flasher sur la carte SD : Raspberry Pi OS Lite 64 bits et le socle pi-appliance (section 4), publié avec chaque version. |
 | **Socle pi-appliance** | Le logiciel toujours installé sur le Pi, fourni par l'image et non par la marketplace : Docker, Traefik, les services et les outils du système (`/usr/local/lib/pi-appliance/`), la console et la commande `pia`. Il se met à jour depuis la console (section 9.2). `pia version` donne sa version. |
 | **Console** | L'interface web du socle, servie sous `/pi-appliance` : c'est par elle que tout se fait. |
-| **Application mobile** | L'application web installable `https://app.pi-appliance.com` (dépôt `gmoulard/pi-appliance-pwa`) : la documentation sans réseau et un lien direct vers ses Pi (section 5.2). |
+| **Application mobile** | L'application web installable `https://app.pi-appliance.com` (adresse provisoire `https://gmoulard.github.io/pi-appliance-pwa/`, GitHub Pages) (dépôt `gmoulard/pi-appliance-pwa`) : la documentation sans réseau et un lien direct vers ses Pi (section 5.2). |
 | **Commande `pia`** | La ligne de commande du Pi, partie du socle, toujours installée avec lui (section 5.2) ; pour le grand public, la console reste le moyen prévu. |
 | **Appliance** | Le Raspberry Pi équipé de l'image pi-appliance. |
 | **Administrateur** | Compte qui gère l'appliance ; le premier est créé au premier démarrage. |
@@ -145,7 +145,7 @@ Une appliance se gère depuis sa propre console : pas de tableau de bord commun 
 - **Diagnostic du Pi** : lien vers la page `/pi-appliance/diagnostic` (état des programmes du système, erreurs récentes, journaux à télécharger, section 8.5).
 - Pas encore : adresse publique, état des certificats et mode d'accès (étape Internet, section 7).
 
-**Application mobile** (TODO-5.16 ; application à part, dépôt `gmoulard/pi-appliance-pwa`, publiée à `https://app.pi-appliance.com`). **Réalisé** (à vérifier sur un vrai Pi avec l'application) :
+**Application mobile** (TODO-5.16 ; application à part, dépôt `gmoulard/pi-appliance-pwa`, publiée à `https://app.pi-appliance.com`, et à son adresse provisoire `https://gmoulard.github.io/pi-appliance-pwa/` tant que ce nom n'est pas en service). **Réalisé** (à vérifier sur un vrai Pi avec l'application) :
 
 - **Carte « Application mobile »** de « Mon Pi », pour l'administrateur seulement (`GET api/mobile`, réservée à l'administrateur : `{"link", "qr"}` ; `link` sans code d'appairage, le code QR avec). Elle montre un code QR, dessiné par la console elle-même (image PNG faite sur le Pi, bibliothèque `go-qrcode`, sans service extérieur), et le même lien, à copier ou à partager (bouton « Partager » du téléphone quand le navigateur en a un), avec un lien « Ouvrir l'application mobile » vers `https://app.pi-appliance.com`. Ni mot de passe, ni clé privée, ni jeton.
 - **Lien d'ajout** : `https://app.pi-appliance.com/#add?` suivi de paramètres encodés comme une adresse web (`application/x-www-form-urlencoded` : `:` → `%3A`, `/` → `%2F`, `,` → `%2C`), dans l'ordre alphabétique des noms de paramètres ; l'application les lit avec `new URLSearchParams(location.hash.slice("#add?".length))` :

@@ -4,7 +4,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 
 - **l'image pi-appliance**, à copier sur la carte SD : le système du Pi, prêt à l'emploi ;
 - **le socle pi-appliance**, toujours installé sur le Pi : sa **console**, la page web d'où l'on règle le Pi et installe ses services, et ses outils, dont la commande **`pia`** pour ceux qui passent par la ligne de commande ([voir plus bas](#ligne-de-commande)) ;
-- **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) : ce guide lisible sans réseau, et un raccourci vers vos Pi.
+- **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) (ou son adresse provisoire, [gmoulard.github.io/pi-appliance-pwa](https://gmoulard.github.io/pi-appliance-pwa/)) : ce guide lisible sans réseau, et un raccourci vers vos Pi.
 
 > **État du projet : expérimental.** L'image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Ce n'est pas encore une version stable : gardez une copie de vos données importantes ailleurs.
 
@@ -106,9 +106,9 @@ La partition, le premier démarrage, le Wi-Fi de configuration et la mise à jou
 
 L'[application mobile](https://app.pi-appliance.com) garde la liste de vos Pi et de leurs services sur le téléphone, avec ce guide lisible sans réseau.
 
-1. Sur le téléphone, ouvrez `https://app.pi-appliance.com` et ajoutez l'application à l'écran d'accueil.
+1. Sur le téléphone, ouvrez `https://app.pi-appliance.com` et ajoutez l'application à l'écran d'accueil. Tant que cette adresse ne répond pas, utilisez l'adresse provisoire `https://gmoulard.github.io/pi-appliance-pwa/`. Les deux adresses ne partagent pas leurs données : une liste de Pi faite sur l'une n'apparaît pas sur l'autre.
 2. Dans la console, ouvrez « Mon Pi » : la carte « Application mobile » montre un code à scanner (seulement pour l'administrateur).
-3. Dans l'application, touchez « Scanner le code » et visez ce code. Vous pouvez aussi copier le lien de la carte et l'ouvrir sur le téléphone, par exemple en vous l'envoyant par message.
+3. Dans l'application, touchez « Scanner le code » et visez ce code. Vous pouvez aussi copier le lien de la carte et l'ouvrir sur le téléphone, par exemple en vous l'envoyant par message. Sans la console sous la main, « Ajouter un Pi » accepte aussi la seule adresse du Pi sur internet (par exemple `salon.pi-appliance.com`) : l'application demande au Pi son nom et ses services (pi-appliance v0.1.10 ou plus récent depuis l'adresse provisoire).
 
 Scanner le code depuis l'application **appaire** aussi le téléphone à votre compte : ensuite, l'application ouvre la console sans mot de passe, à la maison. Le code change toutes les quelques minutes et ne sert qu'une fois : ne le montrez qu'à vos propres téléphones. Le lien à copier, lui, n'appaire pas le téléphone. Les téléphones appairés sont listés dans « Mon compte », rubrique « Appareils » : retirez-y un téléphone perdu ou que vous n'utilisez plus. Depuis le téléphone lui-même, « Désappairer » dans l'application fait la même chose.
 
