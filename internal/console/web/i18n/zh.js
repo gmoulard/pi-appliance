@@ -529,5 +529,18 @@ piTranslations("zh", {
   "Redémarrage dans {0} secondes.": "{0} 秒后重新启动。",
   "Le Pi redémarre…": "Pi 正在重新启动…",
   "Le Pi n'a pas redémarré. Débranchez-le, attendez dix secondes, puis rebranchez-le.": "Pi 没有重新启动。请拔掉电源，等待十秒，然后重新插上。",
-  "Votre appliance est prête. Choisissez maintenant vos services dans la marketplace, ci-dessous. Vous retrouverez aussi ici le réseau et l'état du Pi.": "您的设备已准备就绪。现在请在下方的应用市场中选择服务。您也可以在这里查看网络和 Pi 的状态。"
+  "Votre appliance est prête. Choisissez maintenant vos services dans la marketplace, ci-dessous. Vous retrouverez aussi ici le réseau et l'état du Pi.": "您的设备已准备就绪。现在请在下方的应用市场中选择服务。您也可以在这里查看网络和 Pi 的状态。",
+  "1 jour": "1 天",
+  "7 jours": "7 天",
+  "Aucun lien de partage pour l'instant.": "还没有分享链接。",
+  "Créer le lien": "创建链接",
+  "Durée du lien": "链接有效期",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "把这个链接发给对方：它只会显示一次。有效期至 {0}。",
+  "Lien de partage": "分享链接",
+  "Nom du document ou son adresse": "文档名称或其地址",
+  "Partager un document": "分享文档",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "删除文档“{0}”的链接？对方将无法再打开它。",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "分享链接让没有账户的人打开一个文档：对方可以阅读和编辑它，看不到其他任何内容。",
+  "« {0} », créé par {1}, jusqu'au {2}": "“{0}”，由 {1} 创建，有效期至 {2}",
+  "« {0} », jusqu'au {1}": "“{0}”，有效期至 {1}"
 });

@@ -364,12 +364,15 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 	if m.usesLetsEncrypt() {
 		labels[router+".tls.certresolver"] = "letsencrypt"
 	}
-	if middleware := accessMiddleware(app.Access); middleware != "" {
+	if middleware := accessMiddleware(app.ID, app.Access); middleware != "" {
 		labels[router+".middlewares"] = middleware
 	}
 	service := map[string]any{
 		"labels":   labels,
 		"networks": []string{"default", Network},
+	}
+	if app.ID == EtherpadApp {
+		service["environment"] = etherpadEnvironment(app.Access)
 	}
 	if app.ID == "nextcloud" {
 		service["volumes"] = []string{filepath.Join(m.Dir, "services") + ":" + nextcloudSitesMount}

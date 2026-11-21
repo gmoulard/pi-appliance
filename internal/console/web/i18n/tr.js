@@ -529,5 +529,18 @@ piTranslations("tr", {
   "Redémarrage dans {0} secondes.": "{0} saniye içinde yeniden başlatılıyor.",
   "Le Pi redémarre…": "Pi yeniden başlıyor…",
   "Le Pi n'a pas redémarré. Débranchez-le, attendez dix secondes, puis rebranchez-le.": "Pi yeniden başlamadı. Fişini çekin, on saniye bekleyin, sonra yeniden takın.",
-  "Votre appliance est prête. Choisissez maintenant vos services dans la marketplace, ci-dessous. Vous retrouverez aussi ici le réseau et l'état du Pi.": "Cihazınız hazır. Şimdi aşağıdaki marketplace'ten hizmetlerinizi seçin. Ağı ve Pi'nin durumunu da burada bulabilirsiniz."
+  "Votre appliance est prête. Choisissez maintenant vos services dans la marketplace, ci-dessous. Vous retrouverez aussi ici le réseau et l'état du Pi.": "Cihazınız hazır. Şimdi aşağıdaki marketplace'ten hizmetlerinizi seçin. Ağı ve Pi'nin durumunu da burada bulabilirsiniz.",
+  "1 jour": "1 gün",
+  "7 jours": "7 gün",
+  "Aucun lien de partage pour l'instant.": "Henüz paylaşım bağlantısı yok.",
+  "Créer le lien": "Bağlantıyı oluştur",
+  "Durée du lien": "Bağlantının süresi",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "Bu bağlantıyı kişiye gönderin: yalnızca bir kez gösterilecek. {0} tarihine kadar çalışır.",
+  "Lien de partage": "Paylaşım bağlantısı",
+  "Nom du document ou son adresse": "Belgenin adı veya adresi",
+  "Partager un document": "Bir belge paylaş",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "“{0}” belgesinin bağlantısı kaldırılsın mı? Kişi artık belgeyi açamayacak.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Paylaşım bağlantısı, hesabı olmayan bir kişiye tek bir belgeyi açar: kişi belgeyi okuyup yazabilir, başka hiçbir şey göremez.",
+  "« {0} », créé par {1}, jusqu'au {2}": "“{0}”, {1} tarafından oluşturuldu, {2} tarihine kadar",
+  "« {0} », jusqu'au {1}": "“{0}”, {1} tarihine kadar"
 });

@@ -529,5 +529,18 @@ piTranslations("nl", {
   "Redémarrage dans {0} secondes.": "Herstart over {0} seconden.",
   "Le Pi redémarre…": "De Pi herstart…",
   "Le Pi n'a pas redémarré. Débranchez-le, attendez dix secondes, puis rebranchez-le.": "De Pi is niet herstart. Haal de stekker eruit, wacht tien seconden en steek hem er weer in.",
-  "Votre appliance est prête. Choisissez maintenant vos services dans la marketplace, ci-dessous. Vous retrouverez aussi ici le réseau et l'état du Pi.": "Je appliance is klaar. Kies nu hieronder je diensten in de marketplace. Hier vind je ook het netwerk en de toestand van de Pi."
+  "Votre appliance est prête. Choisissez maintenant vos services dans la marketplace, ci-dessous. Vous retrouverez aussi ici le réseau et l'état du Pi.": "Je appliance is klaar. Kies nu hieronder je diensten in de marketplace. Hier vind je ook het netwerk en de toestand van de Pi.",
+  "1 jour": "1 dag",
+  "7 jours": "7 dagen",
+  "Aucun lien de partage pour l'instant.": "Nog geen deellinks.",
+  "Créer le lien": "Link maken",
+  "Durée du lien": "Geldigheid van de link",
+  "Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.": "Stuur deze link naar de persoon: hij wordt maar één keer getoond. Hij werkt tot {0}.",
+  "Lien de partage": "Deellink",
+  "Nom du document ou son adresse": "Naam van het document of het adres ervan",
+  "Partager un document": "Een document delen",
+  "Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.": "De link naar het document ‘{0}’ verwijderen? De persoon kan het dan niet meer openen.",
+  "Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre.": "Een deellink opent één document voor iemand zonder account: die kan het lezen en erin schrijven, zonder iets anders te zien.",
+  "« {0} », créé par {1}, jusqu'au {2}": "‘{0}’, gemaakt door {1}, tot {2}",
+  "« {0} », jusqu'au {1}": "‘{0}’, tot {1}"
 });

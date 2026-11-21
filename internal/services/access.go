@@ -53,9 +53,13 @@ func ValidAccess(access string) bool {
 }
 
 // accessMiddleware : middleware Traefik du niveau d'accès ; vide : public.
-func accessMiddleware(access string) string {
+// Etherpad a le sien, qui accepte aussi ses liens de partage (etherpad.go).
+func accessMiddleware(app, access string) string {
 	switch access {
 	case AccessUsers:
+		if app == EtherpadApp {
+			return padMiddleware
+		}
 		return authMiddleware
 	case AccessHome:
 		return homeMiddleware
@@ -110,7 +114,13 @@ func (m *Manager) SetAccess(ctx context.Context, name, access string) (Instance,
 	if err != nil {
 		return Instance{}, err
 	}
-	updated, err := withAccess(previous, name, access)
+	app := instance.App
+	// NE PAS exiger la connexion d'Etherpad sans le mot de passe de son compte
+	// interne (installé avant les liens de partage) : plus personne n'entrerait.
+	if _, ok := m.etherpadAuthorization(name); app == EtherpadApp && !ok {
+		app = ""
+	}
+	updated, err := withAccess(previous, name, app, access)
 	if err != nil {
 		return Instance{}, err
 	}
@@ -137,7 +147,7 @@ func (m *Manager) SetAccess(ctx context.Context, name, access string) (Instance,
 
 // withAccess pose (ou retire, pour public) le middleware d'accès sur le
 // routeur Traefik du service dans le fichier pi-appliance.override.json.
-func withAccess(override []byte, name, access string) ([]byte, error) {
+func withAccess(override []byte, name, app, access string) ([]byte, error) {
 	var file map[string]any
 	if err := json.Unmarshal(override, &file); err != nil {
 		return nil, fmt.Errorf("réglages de %s illisibles : %w", name, err)
@@ -152,10 +162,13 @@ func withAccess(override []byte, name, access string) ([]byte, error) {
 			continue
 		}
 		found = true
-		if middleware := accessMiddleware(access); middleware != "" {
+		if middleware := accessMiddleware(app, access); middleware != "" {
 			labels[router+".middlewares"] = middleware
 		} else {
 			delete(labels, router+".middlewares")
+		}
+		if app == EtherpadApp {
+			service["environment"] = etherpadEnvironment(access)
 		}
 	}
 	if !found {

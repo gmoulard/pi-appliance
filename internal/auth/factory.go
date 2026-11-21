@@ -20,8 +20,8 @@ import (
 	"os"
 )
 
-// FactoryReset efface tous les comptes (invitations comprises), les sessions et
-// la réinitialisation en attente : la console revient à la création du compte
+// FactoryReset efface tous les comptes (invitations comprises), les sessions, les
+// liens de partage et la réinitialisation en attente : la console revient à la création du compte
 // administrateur (spécification 8.5, TODO-2.52).
 func (s *Store) FactoryReset() error {
 	s.mu.Lock()
@@ -35,6 +35,10 @@ func (s *Store) FactoryReset() error {
 	if err := os.Remove(s.pendingPath()); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
+	if err := os.Remove(s.sharesPath()); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	s.shares = map[string]Share{}
 	s.reset = false
 	s.sessions = map[string]session{}
 	s.failures = map[string]failure{}

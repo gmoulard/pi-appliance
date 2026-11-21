@@ -151,6 +151,11 @@ async function loadServices() {
       open.rel = "noopener";
       actions.append(open);
     }
+    // Liens de partage d'Etherpad : pour toute personne connectée.
+    if (service.app === ETHERPAD_APP && service.access === "users") {
+      const shares = sharesButton(service);
+      actions.append(shares.button, shares.panel);
+    }
     let devices = null;
     if (currentAccount && currentAccount.role === "admin") {
       const buttons = element("div", undefined, "controls");
@@ -1060,6 +1065,118 @@ async function devicesPanel(service, panel, created) {
         body: JSON.stringify({ name: input.value }),
       });
       await devicesPanel(service, panel, device);
+    } catch (error) {
+      showMessage([error.message], "error");
+      add.disabled = false;
+    }
+  });
+  nodes.push(form);
+  panel.replaceChildren(...nodes);
+}
+
+// Liens de partage d'Etherpad (spécification 6.3, 8.2) : un lien ouvre un
+// seul document à une personne sans compte, jusqu'à une date. Le lien n'est
+// montré qu'une fois ; la console n'en garde que l'empreinte.
+const ETHERPAD_APP = "etherpad";
+
+function sharesButton(service) {
+  const button = element("button", t("Partager un document"), "secondary");
+  button.setAttribute("aria-expanded", "false");
+  const panel = element("div", undefined, "devices");
+  panel.hidden = true;
+  button.addEventListener("click", async () => {
+    const open = panel.hidden;
+    panel.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    if (open) {
+      try {
+        await sharesPanel(service, panel);
+      } catch (error) {
+        panel.hidden = true;
+        showMessage([error.message], "error");
+      }
+    }
+  });
+  return { button, panel };
+}
+
+async function sharesPanel(service, panel, created) {
+  const path = `services/${encodeURIComponent(service.name)}/shares`;
+  const { shares } = await api(path);
+  const nodes = [element("p", t("Un lien de partage ouvre un seul document à une personne qui n'a pas de compte : elle peut le lire et l'écrire, sans rien voir d'autre."), "note")];
+  if (created) {
+    const box = element("div");
+    const link = element("input");
+    link.readOnly = true;
+    link.value = created.link;
+    link.dir = "ltr";
+    link.setAttribute("aria-label", t("Lien de partage"));
+    const copy = element("button", t("Copier le lien"), "secondary");
+    copy.type = "button";
+    copy.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(link.value);
+        showMessage([t("Lien copié.")], "success");
+      } catch {
+        link.select();
+      }
+    });
+    const controls = element("div", undefined, "controls");
+    controls.append(copy);
+    box.append(element("p", t("Envoyez ce lien à la personne : il ne s'affichera qu'une seule fois. Il marche jusqu'au {0}.", dayText(created.share.expires_at)), "note"), link, controls);
+    nodes.push(box);
+  }
+  const list = element("ul", undefined, "device-list");
+  for (const share of shares) {
+    const item = element("li");
+    const remove = element("button", t("Retirer"), "secondary");
+    remove.addEventListener("click", async () => {
+      if (!window.confirm(t("Retirer le lien du document « {0} » ? La personne ne pourra plus l'ouvrir.", share.pad))) return;
+      remove.disabled = true;
+      try {
+        await api(`${path}/${share.id}`, { method: "DELETE" });
+        await sharesPanel(service, panel);
+      } catch (error) {
+        showMessage([error.message], "error");
+        remove.disabled = false;
+      }
+    });
+    const text = currentAccount && share.owner !== currentAccount.name
+      ? t("« {0} », créé par {1}, jusqu'au {2}", share.pad, share.owner, dayText(share.expires_at))
+      : t("« {0} », jusqu'au {1}", share.pad, dayText(share.expires_at));
+    item.append(element("span", text), remove);
+    list.append(item);
+  }
+  nodes.push(shares.length > 0 ? list : element("p", t("Aucun lien de partage pour l'instant."), "meta"));
+  const form = element("form");
+  const padLabel = element("label", t("Nom du document ou son adresse"));
+  const pad = element("input");
+  pad.name = "pad";
+  pad.required = true;
+  pad.maxLength = 300;
+  padLabel.append(pad);
+  const daysLabel = element("label", t("Durée du lien"));
+  const days = element("select");
+  days.name = "days";
+  for (const [value, label] of [[1, t("1 jour")], [7, t("7 jours")], [30, t("30 jours")]]) {
+    const option = element("option", label);
+    option.value = String(value);
+    days.append(option);
+  }
+  days.value = "7";
+  daysLabel.append(days);
+  const add = element("button", t("Créer le lien"));
+  form.append(padLabel, daysLabel, add);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    add.disabled = true;
+    try {
+      const reply = await api(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pad: pad.value, days: Number(days.value) }),
+      });
+      await sharesPanel(service, panel, reply);
     } catch (error) {
       showMessage([error.message], "error");
       add.disabled = false;
