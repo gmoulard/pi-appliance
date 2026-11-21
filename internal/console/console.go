@@ -17,6 +17,7 @@ package console
 
 import (
 	"context"
+	"crypto/subtle"
 	"embed"
 	"encoding/json"
 	"errors"
@@ -195,6 +196,10 @@ type Config struct {
 	// TraefikInternetFile : configuration dynamique de Traefik écrite quand la
 	// console est ouverte sur internet ; vide : Traefik pas réglé par la console.
 	TraefikInternetFile string
+	// CLIToken : jeton de la ligne de commande du Pi (pi-appliance <commande>),
+	// tiré à chaque démarrage et gardé dans un fichier lisible par root seul ;
+	// vide : pas de ligne de commande.
+	CLIToken string
 }
 
 type console struct {
@@ -284,6 +289,9 @@ func Handler(config Config) http.Handler {
 }
 
 func (c *console) account(r *http.Request) (auth.Account, bool) {
+	if account, ok := c.cliAccount(r); ok {
+		return account, true
+	}
 	cookie, err := r.Cookie(cookieName)
 	if err != nil {
 		return auth.Account{}, false
@@ -295,6 +303,28 @@ func (c *console) account(r *http.Request) (auth.Account, bool) {
 		return auth.Account{}, false
 	}
 	return account, ok
+}
+
+// CLIAccount : compte de la ligne de commande du Pi, administrateur.
+const CLIAccount = "ligne-de-commande"
+
+// NE PAS relâcher : la ligne de commande vaut un administrateur ; son jeton
+// n'est lisible que par root sur le Pi, et n'est accepté qu'en direct sur la
+// boucle locale, jamais à travers Traefik (qui pose X-Forwarded-For).
+func (c *console) cliAccount(r *http.Request) (auth.Account, bool) {
+	header := r.Header.Get("Authorization")
+	token, ok := strings.CutPrefix(header, "Bearer ")
+	if !ok || c.CLIToken == "" || token == "" || r.Header.Get("X-Forwarded-For") != "" {
+		return auth.Account{}, false
+	}
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if ip := net.ParseIP(host); err != nil || ip == nil || !ip.IsLoopback() {
+		return auth.Account{}, false
+	}
+	if subtle.ConstantTimeCompare([]byte(token), []byte(c.CLIToken)) != 1 {
+		return auth.Account{}, false
+	}
+	return auth.Account{Name: CLIAccount, Role: auth.RoleAdmin}, true
 }
 
 // NE PAS relâcher : tant que la double authentification exigée par l'administrateur

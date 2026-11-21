@@ -33,6 +33,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
+	"github.com/gmoulard/pi-appliance/internal/cli"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/console"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
@@ -58,6 +59,11 @@ func defaultDomain() string {
 }
 
 func main() {
+	// pi-appliance <commande> : ligne de commande du Pi (internal/cli) ; sans
+	// commande, ou avec des options seulement, le programme est la console.
+	if len(os.Args) > 1 && !strings.HasPrefix(os.Args[1], "-") {
+		os.Exit(cli.Run(os.Args[1:], cli.Defaults(version)))
+	}
 	addr := flag.String("addr", ":8080", "adresse d'écoute de la console")
 	data := flag.String("data", "/var/lib/pi-appliance", "dossier des services installés")
 	domain := flag.String("domain", defaultDomain(), "adresse de l'appliance, suffixe de l'adresse de chaque service")
@@ -74,6 +80,7 @@ func main() {
 	cockpitScript := flag.String("cockpit-script", cockpit.DefaultScript, "script de l'administration du système par Cockpit (vide : non installable depuis la console)")
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
+	cliTokenFile := flag.String("cli-token-file", cli.DefaultTokenFile, "jeton de la ligne de commande du Pi, lisible par root seul (vide : pas de ligne de commande)")
 	traefikInternet := flag.String("traefik-internet", "/etc/pi-appliance/traefik/dynamic/console-internet.yml", "configuration dynamique de Traefik écrite quand la console est ouverte sur internet (vide : jamais ouverte)")
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
@@ -231,6 +238,14 @@ func main() {
 		Diagnostic:       diag,
 		DiagnosticWindow: window,
 		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),
+	}
+	if *cliTokenFile != "" {
+		token, err := cli.WriteToken(*cliTokenFile)
+		if err != nil {
+			log.Printf("ligne de commande : %v", err)
+		} else {
+			config.CLIToken = token
+		}
 	}
 	if *traefikInternet != "" {
 		config.InternetFile = filepath.Join(*data, "internet-console.json")

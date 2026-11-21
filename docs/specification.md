@@ -155,6 +155,21 @@ Une appliance se gère depuis sa propre console : pas de tableau de bord commun 
 - **`GET /pi-appliance/api/hello`**, sans connexion : `{"name", "version", "id", "services": [{"name", "address"}]}`, mêmes valeurs que `n`, `id` et `s` ci-dessus (`id` vide si la clé manque, `services` liste vide sans service), et rien d'autre : ni état du système, ni comptes. En-têtes `Access-Control-Allow-Origin: https://app.pi-appliance.com` et `Cache-Control: no-store`, sans cookie ni `Access-Control-Allow-Credentials`. À la demande préalable du navigateur (`OPTIONS`, réponse 204), aussi `Access-Control-Allow-Methods: GET`, `Access-Control-Allow-Private-Network: true` (Chrome, accès au réseau local) et `Access-Control-Max-Age: 600`. **N'importe qui qui connaît l'adresse du Pi peut la lire**, choix accepté : c'est la seule demande de la console ouverte aussi depuis internet, par le routeur Traefik `pi-appliance-hello` (chemin exact, `GET`, `HEAD` et `OPTIONS` seulement ; 8.3).
 - Lien « Application mobile » aussi sur le site www.pi-appliance.com (menu et pied de page, section 13).
 
+**Ligne de commande du Pi** (TODO-5.17 ; paquet `internal/cli`, tests `internal/cli/cli_test.go` ; à vérifier sur un vrai Pi). Pour les personnes à l'aise avec SSH : la console reste le moyen prévu pour tout le monde. Même binaire que la console : `pi-appliance <commande>` (sans commande, ou avec des options seulement, le programme est la console). Commandes en français, quelques équivalents anglais (`install`, `uninstall`, `start`, `stop`, `restart`, `status`, `help`) :
+
+- `version` : version du socle : pi-appliance (binaire et console en marche), système (`/etc/os-release`) et noyau, modèle du Pi (`/proc/device-tree/model`), Docker, image de Traefik ; « inconnu » pour ce qui ne répond pas.
+- `etat` : la console répond-elle, et l'état des services en une phrase.
+- `catalogue [application]` : applications installables ; avec un nom, sa description, la mémoire et le disque, l'accès par défaut et ses paramètres (`--param nom=valeur`).
+- `services` : services installés, leur état en clair et leur adresse.
+- `installer <application> [--nom NOM] [--acces public|users|home] [--param nom=valeur]… [--confirmer]` : installe et affiche l'avancement (préparation, téléchargement image par image, création, démarrage, vérification), puis l'adresse et les mots de passe créés par le Pi, montrés une seule fois. Une application qui a la main sur tout le Pi (Portainer) demande `--confirmer`.
+- `desinstaller <service> [--effacer-donnees] [--oui]` : données **gardées par défaut** ; `--effacer-donnees` les efface, après une question (ou `--oui`).
+- `demarrer`, `arreter`, `redemarrer <service>`.
+- `ssh [etat]` : SSH en marche, allumé au démarrage, connexion par mot de passe acceptée ou non (`sshd -T`), nombre de clés, commande de connexion (`ssh <compte>@<nom>.local`).
+- `ssh activer|desactiver [--oui]` : `systemctl enable|disable --now ssh` ; éteindre demande confirmation, avec un avertissement si la commande est lancée par SSH.
+- `ssh cle liste|ajouter|retirer [--utilisateur NOM]` : clés de `~/.ssh/authorized_keys` (dossier 700, fichier 600, au compte), du compte qui a lancé `sudo` par défaut, sinon du premier compte de personne. Une clé est vérifiée (type OpenSSH connu, contenu qui annonce le même type) ; une clé privée est refusée ; un doublon n'est pas ajouté ; les lignes non comprises (commentaires, options) sont gardées. La dernière clé ne peut pas être retirée quand les mots de passe sont refusés.
+- `ssh mot-de-passe activer|desactiver` : écrit `/etc/ssh/sshd_config.d/00-pi-appliance.conf` (`PasswordAuthentication`, `KbdInteractiveAuthentication`), lu avant les autres réglages ; refusé sans clé SSH pour le compte ; vérifié par `sshd -t` (en cas de refus, l'ancien réglage revient), puis `systemctl try-reload-or-restart ssh`.
+- *Services par la console* : la ligne de commande ne gère pas les services elle-même, elle appelle l'API de la console en marche (`http://127.0.0.1:8080/pi-appliance/api/…`), comme l'écran. Elle s'y présente avec un **jeton** tiré à chaque démarrage de la console et écrit dans `/var/lib/pi-appliance/system/cli-token` (droits 600, root ; option `-cli-token-file`, vide : pas de ligne de commande). La console accepte ce jeton (`Authorization: Bearer`) comme un administrateur, seulement en direct sur la boucle locale et sans `X-Forwarded-For`, jamais à travers Traefik. Seules `version`, `aide` et `ssh` (lecture) se lancent sans `sudo` ; les autres lisent le jeton ou changent le système, et la commande demande `sudo` quand il manque.
+
 ### 5.3 Langues
 
 L'interface est traduite dans les 12 langues de Wikipedia2Book : français, anglais, espagnol, portugais, italien, allemand, néerlandais, turc, chinois, japonais, arabe et persan (ces deux dernières de droite à gauche). Langue détectée d'après le navigateur, modifiable à tout moment. Le français fait foi.
@@ -639,6 +654,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
+| `internal/cli/` | Ligne de commande du Pi, `pi-appliance <commande>` : version du socle, état, catalogue, installation et désinstallation des services par l'API de la console, réglage de SSH (5.2) |
 | `internal/auth/` | Fournisseur d'identité : comptes et invités, invitations, connexion, double authentification, sessions de la console et déléguées, liens de partage d'Etherpad, appareils appairés de l'application mobile, fichier `reset` (6.3, 8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `internal/ddns/` | Mise à jour du nom DuckDNS avec l'adresse publique de la box (7.1) |

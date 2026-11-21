@@ -119,6 +119,27 @@ La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir
 
 Depuis internet, la console demande votre mot de passe puis le code de votre application d'authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 
+## Ligne de commande du Pi (SSH) {#ligne-de-commande}
+
+Pour les personnes à l'aise avec SSH, le Pi a une commande `pi-appliance`. Tout ce qu'elle fait se fait aussi dans la console. Connectez-vous au Pi (`ssh <compte>@<nom-du-pi>.local`), puis :
+
+```sh
+pi-appliance aide                             # toutes les commandes
+pi-appliance version                          # version du socle : pi-appliance, système, Docker, Traefik
+sudo pi-appliance etat                        # la console répond-elle, état des services
+sudo pi-appliance catalogue                   # applications installables
+sudo pi-appliance catalogue nextcloud         # détail et paramètres d'une application
+sudo pi-appliance installer nextcloud         # installer (--nom, --acces, --param nom=valeur)
+sudo pi-appliance services                    # services installés
+sudo pi-appliance redemarrer cloud            # demarrer, arreter, redemarrer
+sudo pi-appliance desinstaller cloud          # données gardées ; --effacer-donnees pour les effacer
+pi-appliance ssh                              # SSH : en marche ? mots de passe ? clés ?
+sudo pi-appliance ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
+sudo pi-appliance ssh mot-de-passe desactiver # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
+```
+
+Seules `version`, `aide` et `ssh` (pour regarder) se lancent sans `sudo` : les autres passent par la console ou changent le système. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
+
 ## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
 
 Si la console répond « identifiant ou mot de passe incorrect », vérifiez d'abord l'identifiant : c'est le nom choisi à la création du compte (par exemple `marie`), **pas l'adresse e-mail**. Si le mot de passe administrateur est vraiment perdu, le fichier `reset` permet d'en choisir un nouveau sans rien perdre : les services installés, leurs données et les autres comptes sont conservés.

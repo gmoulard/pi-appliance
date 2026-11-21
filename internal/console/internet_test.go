@@ -240,3 +240,42 @@ func TestFromInternet(t *testing.T) {
 		t.Fatal("X-Forwarded-For d'un visiteur direct pris en compte")
 	}
 }
+
+func TestCLIToken(t *testing.T) {
+	catalog, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	dir := t.TempDir()
+	accounts, err := auth.Open(filepath.Join(dir, "accounts.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := fixture{handler: Handler(Config{Version: "1.2.3", Catalog: catalog, Accounts: accounts, CLIToken: "jeton",
+		Services: &services.Manager{Dir: dir, Domain: "maison.local", Runner: okRunner{}}}), accounts: accounts}
+	f.admin(t)
+	try := func(remote, token, forwarded string) int {
+		request := httptest.NewRequest(http.MethodGet, "/pi-appliance/api/services", nil)
+		request.RemoteAddr = remote
+		request.Header.Set("Authorization", "Bearer "+token)
+		if forwarded != "" {
+			request.Header.Set("X-Forwarded-For", forwarded)
+		}
+		recorder := httptest.NewRecorder()
+		f.handler.ServeHTTP(recorder, request)
+		return recorder.Code
+	}
+	if code := try("127.0.0.1:5000", "jeton", ""); code != http.StatusOK {
+		t.Fatalf("jeton en direct : code %d", code)
+	}
+	for name, code := range map[string]int{
+		"mauvais jeton":    try("127.0.0.1:5000", "autre", ""),
+		"jeton vide":       try("127.0.0.1:5000", "", ""),
+		"par Traefik":      try("127.0.0.1:5000", "jeton", "192.168.1.20"),
+		"depuis le réseau": try("192.168.1.20:5000", "jeton", ""),
+	} {
+		if code != http.StatusUnauthorized {
+			t.Errorf("%s : code %d", name, code)
+		}
+	}
+}
