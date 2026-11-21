@@ -29,7 +29,7 @@ L'image pi-appliance empile trois couches :
 7. Je coche dans la marketplace les services que je veux : Nextcloud, site web, wiki, Etherpad, VPN…
 8. pi-appliance télécharge les images Docker, configure Traefik et ouvre chaque service, à la maison comme sur internet, à l'adresse `https://<service>.<nom>.pi-appliance.com`, avec un seul identifiant pour tous les services.
 
-Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur internet, sans aucune connaissance technique.
+Objectif : moins de 15 minutes entre la carte SD et un service prêt à l'emploi, à la maison et sur internet, sans aucune connaissance technique. Toutes vos données restent chez vous, en sécurité. Cette version est encore expérimentale.
 
 ## Contenu du dépôt
 
