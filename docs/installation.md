@@ -1,6 +1,6 @@
 # Installer le socle pi-appliance sans l'image
 
-Le **socle pi-appliance** est composé de Docker, Docker Compose, de la console pi-appliance, de Traefik et des services systemd qui les démarrent. Il est inclus dans l'image pi-appliance ; ce n'est pas une application à installer depuis la marketplace. La personne qui configure le Pi crée son compte administrateur au premier démarrage. Cette procédure, pour les personnes à l'aise avec la ligne de commande, installe le même socle sur un Raspberry Pi OS Lite 64 bits déjà installé.
+Le **socle pi-appliance** est composé de Docker, Docker Compose, de la console pi-appliance, de Traefik, des outils du système, de la commande `pia` et des services systemd qui les démarrent. Il est inclus dans l'image pi-appliance ; ce n'est pas une application à installer depuis la marketplace. La personne qui configure le Pi crée son compte administrateur au premier démarrage. Cette procédure, pour les personnes à l'aise avec la ligne de commande, installe le même socle sur un Raspberry Pi OS Lite 64 bits déjà installé.
 
 > Cette procédure installe le prototype local. L’accès public et les certificats Let's Encrypt ne sont pas encore activés : Traefik utilise le certificat auto-signé propre au Pi. Ne publiez pas les ports 80 et 443 tant que l’étape Internet décrite dans [l’avancement](TODO.md) n’est pas terminée.
 

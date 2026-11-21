@@ -42,12 +42,12 @@ Une personne sans connaissances techniques, avec un Raspberry Pi neuf, ouvre son
 
 | Terme | Sens |
 |-------|------|
-| **pi-appliance** | Le nom de tout le produit, et de ses quatre parties ci-dessous. Le produit n'a pas d'autre nom. |
+| **pi-appliance** | Le nom de tout le produit, et de ses trois parties : l'image, le socle et l'application mobile. Le produit n'a pas d'autre nom. |
 | **Image pi-appliance** | Le système à flasher sur la carte SD : Raspberry Pi OS Lite 64 bits et le socle pi-appliance (section 4), publié avec chaque version. |
-| **Socle pi-appliance** | Le logiciel toujours installé sur le Pi, fourni par l'image et non par la marketplace : Docker, Traefik, les services du système et la console. Il se met à jour depuis la console (section 9.2). `pia version` donne sa version. |
+| **Socle pi-appliance** | Le logiciel toujours installé sur le Pi, fourni par l'image et non par la marketplace : Docker, Traefik, les services et les outils du système (`/usr/local/lib/pi-appliance/`), la console et la commande `pia`. Il se met à jour depuis la console (section 9.2). `pia version` donne sa version. |
 | **Console** | L'interface web du socle, servie sous `/pi-appliance` : c'est par elle que tout se fait. |
 | **Application mobile** | L'application web installable `https://app.pi-appliance.com` (dépôt `gmoulard/pi-appliance-pwa`) : la documentation sans réseau et un lien direct vers ses Pi (section 5.2). |
-| **Commande `pia`** | La ligne de commande du Pi, pour les personnes à l'aise avec SSH (section 5.2) ; la console reste le moyen prévu pour tout le monde. |
+| **Commande `pia`** | La ligne de commande du Pi, partie du socle, toujours installée avec lui (section 5.2) ; pour le grand public, la console reste le moyen prévu. |
 | **Appliance** | Le Raspberry Pi équipé de l'image pi-appliance. |
 | **Administrateur** | Compte qui gère l'appliance ; le premier est créé au premier démarrage. |
 | **Utilisateur** | Compte qui accède aux services autorisés. |

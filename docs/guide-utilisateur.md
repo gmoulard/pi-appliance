@@ -1,11 +1,10 @@
 # Guide de pi-appliance
 
-pi-appliance, ce sont quatre parties qui portent le même nom :
+pi-appliance, ce sont trois parties qui portent le même nom :
 
 - **l'image pi-appliance**, à copier sur la carte SD : le système du Pi, prêt à l'emploi ;
-- **le socle pi-appliance**, toujours installé sur le Pi, et sa **console** : la page web d'où l'on règle le Pi et installe ses services ;
-- **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) : ce guide lisible sans réseau, et un raccourci vers vos Pi ;
-- **la commande `pia`**, pour les personnes à l'aise avec la ligne de commande ([voir plus bas](#ligne-de-commande)). Elle n'est pas nécessaire : tout se fait depuis la console.
+- **le socle pi-appliance**, toujours installé sur le Pi : sa **console**, la page web d'où l'on règle le Pi et installe ses services, et ses outils, dont la commande **`pia`** pour ceux qui passent par la ligne de commande ([voir plus bas](#ligne-de-commande)) ;
+- **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) : ce guide lisible sans réseau, et un raccourci vers vos Pi.
 
 > **État du projet : expérimental.** L'image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Ce n'est pas encore une version stable : gardez une copie de vos données importantes ailleurs.
 

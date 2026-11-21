@@ -6,7 +6,7 @@ La marketplace regroupe les applications que l'on peut installer et gérer depui
 
 ## Le socle pi-appliance
 
-Le **socle pi-appliance** (Docker, Traefik, les services du système et la console) est fourni avec l'image : il n'est pas dans le catalogue et ne se désinstalle pas. Seul un administrateur, avec le compte créé au premier démarrage ou un autre compte administrateur, installe et gère les applications ci-dessous depuis la console.
+Le **socle pi-appliance** (Docker, Traefik, les services et les outils du système, la console et la commande `pia`) est fourni avec l'image : il n'est pas dans le catalogue et ne se désinstalle pas. Seul un administrateur, avec le compte créé au premier démarrage ou un autre compte administrateur, installe et gère les applications ci-dessous depuis la console.
 
 ## Applications déjà dans le catalogue
 
