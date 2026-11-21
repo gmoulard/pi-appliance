@@ -119,6 +119,8 @@ tls:
     default:
       # Certificat local auto-signé, propre à chaque Pi (secrets.sh). Le
       # navigateur affiche une alerte, expliquée dans le portail et le guide.
+      # Chaque service en .local a le sien, listé par mdns.sh dans
+      # services-tls.yml et choisi d'après le nom demandé.
       defaultCertificate:
         certFile: /etc/traefik/tls/local.crt
         keyFile: /etc/traefik/tls/local.key

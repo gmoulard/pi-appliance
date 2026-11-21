@@ -16,14 +16,19 @@
 package console
 
 import (
+	"encoding/json"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/pquerna/otp/totp"
 )
 
@@ -149,101 +154,200 @@ func forwardTo(f fixture, path, remote string, cookie *http.Cookie, headers map[
 	return recorder
 }
 
+// installed déclare un service installé (instance.json seulement).
+func installed(t *testing.T, f fixture, name, address, access string) {
+	t.Helper()
+	dir := filepath.Join(f.manager.Dir, "services", name)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	data, err := json.Marshal(services.Instance{Name: name, App: "site-web", Address: address, Access: access})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "instance.json"), data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// returnFrom : POST api/auth/return derrière Traefik en HTTPS, sur l'adresse host de la console.
+func returnFrom(f fixture, host, body string, session *http.Cookie) *httptest.ResponseRecorder {
+	request := httptest.NewRequest(http.MethodPost, "http://"+host+"/pi-appliance/api/auth/return", strings.NewReader(body))
+	request.RemoteAddr = "127.0.0.1:5000"
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("X-Forwarded-Proto", "https")
+	request.AddCookie(session)
+	recorder := httptest.NewRecorder()
+	f.handler.ServeHTTP(recorder, request)
+	return recorder
+}
+
+// loginRedirect : la redirection d'un service sans session vers la console,
+// et le cookie pi_login_state qu'elle pose.
+func loginRedirect(t *testing.T, f fixture, path string, headers map[string]string) (*url.URL, *http.Cookie) {
+	t.Helper()
+	response := forwardTo(f, path, "127.0.0.1:5000", nil, headers)
+	location, err := url.Parse(response.Header().Get("Location"))
+	state := cookieNamed(response, stateCookie)
+	if response.Code != http.StatusFound || err != nil || state == nil || state.Domain != "" || !state.HttpOnly || !state.Secure || location.Query().Get("state") != state.Value {
+		t.Fatalf("sans session : %d %v %+v", response.Code, response.Header(), state)
+	}
+	return location, state
+}
+
+// forwardCookieFor : cookie délégué d'une personne connectée à la console, par
+// tout le parcours : service sans session, console, retour au service avec le code.
+func forwardCookieFor(t *testing.T, f fixture, session *http.Cookie, path string, headers map[string]string) *http.Cookie {
+	t.Helper()
+	location, state := loginRedirect(t, f, path, headers)
+	body, _ := json.Marshal(ForwardRequest{Return: location.Query().Get("return"), State: state.Value})
+	back := returnFrom(f, location.Host, string(body), session)
+	target, err := url.Parse(decode[map[string]string](t, back)["url"])
+	if back.Code != http.StatusOK || err != nil || target.Query().Get(loginParam) == "" {
+		t.Fatalf("retour au service : %d %s", back.Code, back.Body.String())
+	}
+	callback := maps.Clone(headers)
+	callback["X-Forwarded-Uri"] = target.RequestURI()
+	response := forwardTo(f, path, "127.0.0.1:5000", state, callback)
+	forward := cookieNamed(response, forwardCookie)
+	if response.Code != http.StatusFound || response.Header().Get("Location") != location.Query().Get("return") || response.Header().Get("Referrer-Policy") != "no-referrer" {
+		t.Fatalf("échange du code : %d %v", response.Code, response.Header())
+	}
+	if forward == nil || forward.Domain != "" || forward.Path != "/" || !forward.HttpOnly || !forward.Secure || forward.SameSite != http.SameSiteLaxMode || forward.Value == session.Value {
+		t.Fatalf("cookie délégué : %+v", forward)
+	}
+	return forward
+}
+
+// Adresses de la maison à un seul niveau (TODO-2.61) : www-maison.local et la
+// console maison.local sont voisins, chaque service a son propre cookie.
 func TestForwardAuth(t *testing.T) {
 	f := newFixture(t)
+	f.manager.Domain = "maison.local"
 	admin := f.admin(t)
-	service := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "cloud.maison.example.org", "X-Forwarded-Uri": "/apps/files?dir=/", "X-Forwarded-Method": "GET"}
+	installed(t, f, "www", "www-maison.local", services.AccessUsers)
+	installed(t, f, "wiki", "wiki-maison.local", services.AccessUsers)
+	installed(t, f, "site", "site-maison.local", services.AccessPublic)
+	service := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "www-maison.local", "X-Forwarded-Uri": "/apps/files?dir=/", "X-Forwarded-Method": "GET"}
 
 	if response := forwardRequest(f, "192.168.1.20:5000", nil, service); response.Code != http.StatusForbidden {
 		t.Fatalf("appel hors de Traefik : %d", response.Code)
 	}
-	response := forwardRequest(f, "127.0.0.1:5000", nil, service)
-	want := "https://maison.example.org/pi-appliance/?return=" + url.QueryEscape("https://cloud.maison.example.org/apps/files?dir=/")
-	if response.Code != http.StatusFound || response.Header().Get("Location") != want {
-		t.Fatalf("sans session : %d %q", response.Code, response.Header().Get("Location"))
+	location, state := loginRedirect(t, f, "/pi-appliance/api/auth/forward", service)
+	if location.Host != "maison.local" || location.Path != "/pi-appliance/" || location.Query().Get("return") != "https://www-maison.local/apps/files?dir=/" {
+		t.Fatalf("connexion : %s", location)
 	}
-	post := map[string]string{"X-Forwarded-Host": "cloud.maison.example.org", "X-Forwarded-Method": "POST"}
+	post := map[string]string{"X-Forwarded-Host": "www-maison.local", "X-Forwarded-Method": "POST"}
 	if response := forwardRequest(f, "172.18.0.2:5000", nil, post); response.Code != http.StatusUnauthorized {
 		t.Fatalf("POST sans session : %d", response.Code)
 	}
-	// Le cookie de la console n'ouvre pas les services.
 	if response := forwardRequest(f, "127.0.0.1:5000", &http.Cookie{Name: forwardCookie, Value: admin.Value}, service); response.Code != http.StatusFound {
 		t.Fatalf("jeton de la console comme cookie délégué : %d", response.Code)
 	}
 
-	back := f.do(http.MethodPost, "http://maison.example.org/pi-appliance/api/auth/return", "application/json", `{"return": "https://cloud.maison.example.org/apps/files"}`, admin, "X-Forwarded-Proto", "https")
-	if back.Code != http.StatusBadRequest {
-		t.Fatalf("https demandé hors de Traefik : %d", back.Code)
+	request := func(target string) string {
+		body, _ := json.Marshal(ForwardRequest{Return: target, State: state.Value})
+		return string(body)
 	}
-	back = f.do(http.MethodPost, "http://maison.example.org/pi-appliance/api/auth/return", "application/json", `{"return": "http://cloud.maison.example.org/apps/files"}`, admin)
-	if back.Code != http.StatusOK || decode[map[string]string](t, back)["url"] != "http://cloud.maison.example.org/apps/files" {
-		t.Fatalf("retour au service : %d %s", back.Code, back.Body.String())
-	}
-	var forward *http.Cookie
-	for _, cookie := range back.Result().Cookies() {
-		if cookie.Name == forwardCookie {
-			forward = cookie
+	for _, refused := range []string{"https://evil.example/", "https://www-maison.local.evil.example/", "https://maison.evil/", "http://www-maison.local/", "https://autre-maison.local/"} {
+		if back := returnFrom(f, "maison.local", request(refused), admin); back.Code != http.StatusBadRequest {
+			t.Errorf("retour vers %s : %d %s", refused, back.Code, back.Body.String())
 		}
 	}
-	if forward == nil || forward.Domain != "maison.example.org" || forward.Path != "/" || !forward.HttpOnly || forward.SameSite != http.SameSiteLaxMode || forward.Value == admin.Value {
-		t.Fatalf("cookie délégué : %+v", forward)
+	if back := returnFrom(f, "maison.local", request("https://site-maison.local/"), admin); decode[map[string]string](t, back)["url"] != "https://site-maison.local/" {
+		t.Fatalf("service public : pas de code : %s", back.Body.String())
 	}
+
+	back := returnFrom(f, "maison.local", request("https://www-maison.local/apps/files?dir=/"), admin)
+	target, _ := url.Parse(decode[map[string]string](t, back)["url"])
+	code := target.Query().Get(loginParam)
+	if back.Code != http.StatusOK || target.Host != "www-maison.local" || target.Query().Get("dir") != "/" || code == "" {
+		t.Fatalf("retour au service : %d %s", back.Code, back.Body.String())
+	}
+	callback := maps.Clone(service)
+	callback["X-Forwarded-Uri"] = target.RequestURI()
+	if response := forwardRequest(f, "127.0.0.1:5000", &http.Cookie{Name: stateCookie, Value: "autre-navigateur"}, callback); response.Code != http.StatusForbidden || cookieNamed(response, forwardCookie) != nil || !strings.Contains(response.Body.String(), "plus valable") {
+		t.Fatalf("code venu d'un autre navigateur : %d %v", response.Code, response.Header())
+	}
+	if response := forwardRequest(f, "127.0.0.1:5000", state, callback); response.Code != http.StatusForbidden {
+		t.Fatalf("code déjà essayé, accepté : %d", response.Code)
+	}
+
+	forward := forwardCookieFor(t, f, admin, "/pi-appliance/api/auth/forward", service)
 	if response := f.do(http.MethodGet, "/pi-appliance/api/services", "", "", &http.Cookie{Name: cookieName, Value: forward.Value}); response.Code != http.StatusUnauthorized {
 		t.Fatalf("le cookie délégué ouvre la console : %d", response.Code)
 	}
-	response = forwardRequest(f, "127.0.0.1:5000", forward, service)
+	response := forwardRequest(f, "127.0.0.1:5000", forward, service)
 	if response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" || response.Header().Get("Remote-Email") != "marie@example.org" || response.Header().Get("Remote-Groups") != "admin" {
 		t.Fatalf("avec session déléguée : %d %v", response.Code, response.Header())
 	}
+	wiki := maps.Clone(service)
+	wiki["X-Forwarded-Host"] = "wiki-maison.local"
+	if response := forwardRequest(f, "127.0.0.1:5000", forward, wiki); response.Code != http.StatusFound {
+		t.Fatalf("cookie d'un service sur un autre : %d", response.Code)
+	}
+	old := &http.Cookie{Name: forwardCookie, Value: "ancien-cookie-de-maison.local"}
+	both := httptest.NewRequest(http.MethodGet, "/pi-appliance/api/auth/forward", nil)
+	both.RemoteAddr = "127.0.0.1:5000"
+	both.AddCookie(old)
+	both.AddCookie(forward)
+	for key, value := range service {
+		both.Header.Set(key, value)
+	}
+	recorder := httptest.NewRecorder()
+	f.handler.ServeHTTP(recorder, both)
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("ancien cookie avant le bon : %d", recorder.Code)
+	}
 
-	logout := f.do(http.MethodPost, "http://maison.example.org/pi-appliance/api/logout", "", "", admin, "Cookie", forwardCookie+"="+forward.Value+"; "+cookieName+"="+admin.Value)
+	logout := f.do(http.MethodPost, "http://maison.local/pi-appliance/api/logout", "", "", admin)
 	if logout.Code != http.StatusNoContent {
 		t.Fatalf("déconnexion : %d", logout.Code)
 	}
 	if response := forwardRequest(f, "127.0.0.1:5000", forward, service); response.Code != http.StatusFound {
-		t.Fatalf("après déconnexion : %d", response.Code)
+		t.Fatalf("après déconnexion de la console : %d", response.Code)
 	}
 }
 
-// forwardCookieFor : cookie délégué d'une personne connectée à la console.
-func forwardCookieFor(t *testing.T, f fixture, session *http.Cookie) *http.Cookie {
-	t.Helper()
-	back := f.do(http.MethodPost, "http://maison.example.org/pi-appliance/api/auth/return", "application/json", `{"return": "http://maison.example.org/cockpit/"}`, session)
-	if back.Code != http.StatusOK {
-		t.Fatalf("retour vers Cockpit : %d %s", back.Code, back.Body.String())
+// Un vrai nom de domaine garde les sous-domaines : cloud.maison.example.org.
+func TestForwardAuthDomain(t *testing.T) {
+	f := newFixture(t)
+	admin := f.admin(t)
+	installed(t, f, "cloud", "cloud.maison.example.org", services.AccessUsers)
+	service := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "cloud.maison.example.org", "X-Forwarded-Uri": "/", "X-Forwarded-Method": "GET"}
+	location, _ := loginRedirect(t, f, "/pi-appliance/api/auth/forward", service)
+	if location.Host != "maison.example.org" {
+		t.Fatalf("connexion : %s", location)
 	}
-	for _, cookie := range back.Result().Cookies() {
-		if cookie.Name == forwardCookie {
-			return cookie
-		}
+	forward := forwardCookieFor(t, f, admin, "/pi-appliance/api/auth/forward", service)
+	if response := forwardRequest(f, "127.0.0.1:5000", forward, service); response.Code != http.StatusOK {
+		t.Fatalf("avec session déléguée : %d", response.Code)
 	}
-	t.Fatal("pas de cookie délégué")
-	return nil
 }
 
 // Administration du système (Cockpit) : réservée aux administrateurs, connexion
 // sur l'adresse même de la console.
 func TestForwardAdmin(t *testing.T) {
 	f := newFixture(t)
+	f.manager.Domain = "maison.local"
 	admin := f.admin(t)
-	cockpit := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "maison.example.org", "X-Forwarded-Uri": "/cockpit/system", "X-Forwarded-Method": "GET"}
+	cockpit := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "maison.local", "X-Forwarded-Uri": "/cockpit/system", "X-Forwarded-Method": "GET"}
 	const path = "/pi-appliance/api/auth/forward-admin"
 
 	if response := forwardTo(f, path, "192.168.1.20:5000", nil, cockpit); response.Code != http.StatusForbidden {
 		t.Fatalf("appel hors de Traefik : %d", response.Code)
 	}
-	response := forwardTo(f, path, "127.0.0.1:5000", nil, cockpit)
-	want := "https://maison.example.org/pi-appliance/?return=" + url.QueryEscape("https://maison.example.org/cockpit/system")
-	if response.Code != http.StatusFound || response.Header().Get("Location") != want {
-		t.Fatalf("sans session : %d %q", response.Code, response.Header().Get("Location"))
+	location, _ := loginRedirect(t, f, path, cockpit)
+	if location.Host != "maison.local" || location.Query().Get("return") != "https://maison.local/cockpit/system" {
+		t.Fatalf("sans session : %s", location)
 	}
-	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, admin), cockpit); response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" {
+	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, admin, path, cockpit), cockpit); response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" {
 		t.Fatalf("administrateur : %d %v", response.Code, response.Header())
 	}
 
 	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
 	paul := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil))
-	cookie := forwardCookieFor(t, f, paul)
+	cookie := forwardCookieFor(t, f, paul, "/pi-appliance/api/auth/forward", cockpit)
 	if response := forwardTo(f, path, "127.0.0.1:5000", cookie, cockpit); response.Code != http.StatusForbidden || response.Header().Get("Remote-User") != "" {
 		t.Fatalf("utilisateur : %d %v", response.Code, response.Header())
 	}
@@ -252,58 +356,65 @@ func TestForwardAdmin(t *testing.T) {
 	}
 }
 
-// Service réservé aux administrateurs (accès « admins », Portainer) : sur son
-// sous-domaine, connexion sur l'adresse parente, celle de la console.
+// Service réservé aux administrateurs (accès « admins », Portainer) : à sa
+// propre adresse, connexion sur l'adresse de la console.
 func TestForwardServiceAdmin(t *testing.T) {
 	f := newFixture(t)
+	f.manager.Domain = "maison.local"
 	admin := f.admin(t)
-	portainer := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "portainer.maison.example.org", "X-Forwarded-Uri": "/", "X-Forwarded-Method": "GET"}
+	installed(t, f, "portainer", "portainer-maison.local", services.AccessAdmins)
+	portainer := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "portainer-maison.local", "X-Forwarded-Uri": "/", "X-Forwarded-Method": "GET"}
 	const path = "/pi-appliance/api/auth/forward-service-admin"
 
 	if response := forwardTo(f, path, "192.168.1.20:5000", nil, portainer); response.Code != http.StatusForbidden {
 		t.Fatalf("appel hors de Traefik : %d", response.Code)
 	}
-	response := forwardTo(f, path, "127.0.0.1:5000", nil, portainer)
-	want := "https://maison.example.org/pi-appliance/?return=" + url.QueryEscape("https://portainer.maison.example.org/")
-	if response.Code != http.StatusFound || response.Header().Get("Location") != want {
-		t.Fatalf("sans session : %d %q", response.Code, response.Header().Get("Location"))
+	if location, _ := loginRedirect(t, f, path, portainer); location.Host != "maison.local" || location.Query().Get("return") != "https://portainer-maison.local/" {
+		t.Fatalf("sans session : %s", location)
 	}
-	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, admin), portainer); response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" {
+	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, admin, path, portainer), portainer); response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" {
 		t.Fatalf("administrateur : %d %v", response.Code, response.Header())
 	}
 	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
 	paul := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil))
-	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, paul), portainer); response.Code != http.StatusForbidden || response.Header().Get("Remote-User") != "" {
+	if response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, paul, "/pi-appliance/api/auth/forward", portainer), portainer); response.Code != http.StatusForbidden || response.Header().Get("Remote-User") != "" {
 		t.Fatalf("utilisateur : %d %v", response.Code, response.Header())
 	}
 }
 
 func TestReturnURL(t *testing.T) {
+	hosts := map[string]bool{"www-maison.local": true, "site-maison.local": false}
 	for _, test := range []struct {
 		raw, host string
 		ok        bool
+		protected bool
 	}{
-		{"https://cloud.maison.example.org/x", "maison.example.org", true},
-		{"https://maison.example.org/pi-appliance/", "maison.example.org", true},
-		{"https://CLOUD.Maison.example.org./", "maison.example.org", true},
-		{"https://evil.example/", "maison.example.org", false},
-		{"https://maison.example.org.evil.example/", "maison.example.org", false},
-		{"https://evilmaison.example.org/", "maison.example.org", false},
-		{"https://marie@cloud.maison.example.org/", "maison.example.org", false},
-		{"http://cloud.maison.example.org/", "maison.example.org", false},
-		{"//cloud.maison.example.org/", "maison.example.org", false},
-		{"javascript:alert(1)", "maison.example.org", false},
-		{"https://1.168.192.0/", "192.168.1.20", false},
-		{"https://192.168.1.20/x", "192.168.1.20", true},
+		{"https://cloud.maison.example.org/x", "maison.example.org", true, false},
+		{"https://maison.example.org/pi-appliance/", "maison.example.org", true, true},
+		{"https://CLOUD.Maison.example.org./", "maison.example.org", true, false},
+		{"https://www-maison.local/x", "maison.local", true, true},
+		{"https://WWW-maison.local./x", "maison.local", true, true},
+		{"https://site-maison.local/", "maison.local", true, false},
+		{"https://www-maison.local/x", "192.168.1.20", true, true},
+		{"https://autre-maison.local/", "maison.local", false, false},
+		{"https://evil.example/", "maison.example.org", false, false},
+		{"https://maison.example.org.evil.example/", "maison.example.org", false, false},
+		{"https://evilmaison.example.org/", "maison.example.org", false, false},
+		{"https://marie@cloud.maison.example.org/", "maison.example.org", false, false},
+		{"http://cloud.maison.example.org/", "maison.example.org", false, false},
+		{"//cloud.maison.example.org/", "maison.example.org", false, false},
+		{"javascript:alert(1)", "maison.example.org", false, false},
+		{"https://1.168.192.0/", "192.168.1.20", false, false},
+		{"https://192.168.1.20/x", "192.168.1.20", true, true},
 	} {
-		if _, ok := returnURL(test.raw, test.host, true); ok != test.ok {
-			t.Errorf("returnURL(%q, %q) = %v", test.raw, test.host, ok)
+		if _, protected, ok := returnURL(test.raw, test.host, true, hosts); ok != test.ok || protected != test.protected {
+			t.Errorf("returnURL(%q, %q) = %v, %v", test.raw, test.host, ok, protected)
 		}
 	}
-	if cookieDomain("192.168.1.20") != "" || cookieDomain("localhost") != "" || cookieDomain("maison.example.org") != "maison.example.org" {
-		t.Error("domaine du cookie délégué")
+	if parentHost("cloud.maison.example.org") != "maison.example.org" || parentHost("example.org") != "example.org" || parentHost("192.168.1.20") != "192.168.1.20" {
+		t.Error("adresse parente")
 	}
-	if parentHost("cloud.maison.example.org") != "maison.example.org" || parentHost("example.org") != "example.org" || parentHost("cloud.maison.example.org:8443") != "maison.example.org:8443" {
-		t.Error("adresse de la console")
+	if value, rest, found := takeParam("a=1&pi_login=x&b=2", loginParam); value != "x" || rest != "a=1&b=2" || !found {
+		t.Errorf("takeParam : %q %q %v", value, rest, found)
 	}
 }

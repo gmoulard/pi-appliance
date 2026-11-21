@@ -16,23 +16,36 @@
 package console
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/services"
 )
 
 // Comptes, double authentification et authentification déléguée (spécification
 // 8.1, 8.3) : le fournisseur d'identité intégré à la console.
 
-// forwardCookie : cookie de la session déléguée, posé sur l'adresse de
-// l'appliance et vu par ses sous-domaines (les services). Il n'ouvre pas la console.
-const forwardCookie = "pi_forward"
+// forwardCookie : cookie de la session déléguée, posé par chaque service
+// protégé sur sa propre adresse (loginCallback). Il n'ouvre pas la console.
+// stateCookie : posé par le service avant la connexion à la console, il lie le
+// code de la console à ce navigateur (loginParam : le code dans l'adresse).
+const (
+	forwardCookie = "pi_forward"
+	stateCookie   = "pi_login_state"
+	loginParam    = "pi_login"
+	stateLifetime = 600
+)
+
+var statePattern = regexp.MustCompile(`^[A-Za-z0-9_-]{43}$`)
 
 // AccountRequest : nouveau compte, ou changement d'un compte existant (le nom et
 // l'e-mail ne changent pas). Expires : fin d'un compte invité.
@@ -79,8 +92,10 @@ type PasswordChangeReply struct {
 }
 
 // ForwardRequest : l'adresse du service où retourner une fois connecté.
+// State : le paramètre state de l'adresse de connexion (forwardLogin).
 type ForwardRequest struct {
 	Return string `json:"return"`
+	State  string `json:"state"`
 }
 
 func (c *console) accountRoutes(mux *http.ServeMux) {
@@ -292,33 +307,32 @@ func (c *console) changePassword(w http.ResponseWriter, r *http.Request, account
 }
 
 // forwardReturn : la personne, connectée à la console, voulait ouvrir un service
-// protégé. La console pose le cookie de la session déléguée sur sa propre adresse
-// (donc aussi pour ses sous-domaines) et renvoie l'adresse du service, si elle est
-// bien une adresse de l'appliance : jamais de redirection vers un autre site.
+// protégé. Les services n'ont pas tous une adresse sous celle de la console
+// (<service>-<nom>.local et <nom>.local sont voisins, et aucun cookie ne peut
+// valoir pour tout .local) : la console donne donc un code à usage unique, ajouté
+// à l'adresse du service, que ce service échange contre son propre cookie
+// délégué (loginCallback). Seulement vers la console ou un service de
+// l'appliance : jamais de redirection vers un autre site.
 func (c *console) forwardReturn(w http.ResponseWriter, r *http.Request) {
 	var request ForwardRequest
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	host := requestHost(r)
-	target, ok := returnURL(request.Return, host, secure(r))
+	target, protected, ok := returnURL(request.Return, requestHost(r), secure(r), c.serviceHosts())
 	if !ok {
 		writeError(w, http.StatusBadRequest, "Cette adresse n'est pas celle d'un service de l'appliance.")
 		return
 	}
-	account, _ := c.account(r)
-	http.SetCookie(w, &http.Cookie{
-		Name:     forwardCookie,
-		Value:    c.Accounts.StartForwardSession(account.Name),
-		Domain:   cookieDomain(host),
-		Path:     "/",
-		MaxAge:   int(auth.SessionLifetime / time.Second),
-		HttpOnly: true,
-		Secure:   secure(r),
-		// Lax : le cookie suit un lien venu d'un autre site vers un service.
-		SameSite: http.SameSiteLaxMode,
-	})
-	writeJSON(w, http.StatusOK, map[string]string{"url": target})
+	cookie, err := r.Cookie(cookieName)
+	if protected && err == nil && statePattern.MatchString(request.State) {
+		if code, ok := c.Accounts.StartLoginCode(cookie.Value, hostOf(target), request.State); ok {
+			if target.RawQuery != "" {
+				target.RawQuery += "&"
+			}
+			target.RawQuery += loginParam + "=" + code
+		}
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"url": target.String()})
 }
 
 // forward : authentification déléguée de Traefik (middleware forwardAuth
@@ -336,8 +350,8 @@ func (c *console) forwardAdmin(w http.ResponseWriter, r *http.Request) {
 	c.forwardFor(w, r, true, true)
 }
 
-// forwardServiceAdmin : comme forwardAdmin, pour un service sur son
-// sous-domaine réservé aux administrateurs (middleware pi-appliance-admins,
+// forwardServiceAdmin : comme forwardAdmin, pour un service à sa propre
+// adresse réservé aux administrateurs (middleware pi-appliance-admins,
 // accès « admins » d'un manifeste : Portainer).
 func (c *console) forwardServiceAdmin(w http.ResponseWriter, r *http.Request) {
 	c.forwardFor(w, r, true, false)
@@ -348,18 +362,112 @@ func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly, 
 		writeError(w, http.StatusForbidden, "Réservé à Traefik.")
 		return
 	}
-	if cookie, err := r.Cookie(forwardCookie); err == nil {
-		if account, ok := c.Accounts.ForwardSession(cookie.Value); ok {
-			if adminOnly && account.Role != auth.RoleAdmin {
-				writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
-				return
-			}
-			remoteHeaders(w, account)
-			w.WriteHeader(http.StatusOK)
+	if c.loginCallback(w, r) {
+		return
+	}
+	if account, ok := c.forwardAccount(r); ok {
+		if adminOnly && account.Role != auth.RoleAdmin {
+			writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
 			return
 		}
+		remoteHeaders(w, account)
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 	c.forwardLogin(w, r, onConsoleHost)
+}
+
+// forwardAccount : le compte d'une session déléguée valide pour l'adresse
+// demandée. Tous les cookies pi_forward sont essayés : un ancien cookie posé
+// pour tout <nom>.local (versions d'avant TODO-2.61) passe avant celui de
+// l'adresse.
+func (c *console) forwardAccount(r *http.Request) (auth.Account, bool) {
+	host := requestHostOf(r.Header.Get("X-Forwarded-Host"))
+	if host == "" {
+		return auth.Account{}, false
+	}
+	for _, cookie := range r.CookiesNamed(forwardCookie) {
+		if account, ok := c.Accounts.ForwardSession(cookie.Value, host); ok {
+			return account, true
+		}
+	}
+	return auth.Account{}, false
+}
+
+// loginCallback : retour de la console avec ?pi_login=<code> sur l'adresse du
+// service. Le code, à usage unique, valable deux minutes, lié à cette adresse et
+// au cookie pi_login_state posé par forwardLogin sur ce navigateur, devient le
+// cookie délégué de cette adresse ; le code quitte aussitôt l'adresse. Faux
+// sans code : la vérification continue.
+func (c *console) loginCallback(w http.ResponseWriter, r *http.Request) bool {
+	method := r.Header.Get("X-Forwarded-Method")
+	if method != "" && method != http.MethodGet && method != http.MethodHead {
+		return false
+	}
+	path, rawQuery, _ := strings.Cut(r.Header.Get("X-Forwarded-Uri"), "?")
+	code, rest, found := takeParam(rawQuery, loginParam)
+	forwardedHost := r.Header.Get("X-Forwarded-Host")
+	host := requestHostOf(forwardedHost)
+	if !found || host == "" {
+		return false
+	}
+	scheme := "https"
+	if r.Header.Get("X-Forwarded-Proto") == "http" {
+		scheme = "http"
+	}
+	if !strings.HasPrefix(path, "/") {
+		path = "/"
+	}
+	target := scheme + "://" + forwardedHost + path
+	if rest != "" {
+		target += "?" + rest
+	}
+	state := ""
+	if cookie, err := r.Cookie(stateCookie); err == nil {
+		state = cookie.Value
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Referrer-Policy", "no-referrer")
+	if token, ok := c.Accounts.UseLoginCode(code, host, state); ok {
+		http.SetCookie(w, &http.Cookie{
+			Name:     forwardCookie,
+			Value:    token,
+			Path:     "/",
+			MaxAge:   int(auth.SessionLifetime / time.Second),
+			HttpOnly: true,
+			Secure:   scheme == "https",
+			// Lax : le cookie suit un lien venu d'un autre site vers le service.
+			SameSite: http.SameSiteLaxMode,
+		})
+		http.SetCookie(w, &http.Cookie{Name: stateCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true, Secure: scheme == "https", SameSite: http.SameSiteLaxMode})
+		// NE PAS renvoyer une adresse relative : Traefik la lirait par rapport à l'adresse de la console.
+		http.Redirect(w, r, target, http.StatusFound)
+		return true
+	}
+	if _, ok := c.forwardAccount(r); ok {
+		http.Redirect(w, r, target, http.StatusFound)
+		return true
+	}
+	// NE PAS renvoyer vers la console ici : un navigateur qui refuse les cookies
+	// tournerait sans fin entre la console et le service.
+	messagePage(w, http.StatusForbidden, "pi-appliance", "Cette connexion n'est plus valable : elle ne sert qu'une fois, pendant deux minutes, dans le navigateur qui l'a demandée.", target, "Ouvrir de nouveau la page")
+	return true
+}
+
+// takeParam retire le paramètre name d'une requête, sans toucher aux autres.
+func takeParam(rawQuery, name string) (value, rest string, found bool) {
+	var kept []string
+	for _, part := range strings.Split(rawQuery, "&") {
+		key, raw, _ := strings.Cut(part, "=")
+		if key == name && !found {
+			value, found = raw, true
+			continue
+		}
+		if part != "" {
+			kept = append(kept, part)
+		}
+	}
+	return value, strings.Join(kept, "&"), found
 }
 
 func remoteHeaders(w http.ResponseWriter, account auth.Account) {
@@ -369,7 +477,9 @@ func remoteHeaders(w http.ResponseWriter, account auth.Account) {
 }
 
 // forwardLogin : sans session déléguée, une page mène à la connexion de la
-// console ; le reste reçoit 401.
+// console, après un cookie pi_login_state propre à ce navigateur et à cette
+// adresse (seul ce navigateur pourra échanger le code de la console) ; le reste
+// reçoit 401.
 func (c *console) forwardLogin(w http.ResponseWriter, r *http.Request, onConsoleHost bool) {
 	method := r.Header.Get("X-Forwarded-Method")
 	host := r.Header.Get("X-Forwarded-Host")
@@ -386,15 +496,24 @@ func (c *console) forwardLogin(w http.ResponseWriter, r *http.Request, onConsole
 		uri = "/"
 	}
 	original := scheme + "://" + host + uri
-	// Un service a son sous-domaine, la console est sur l'adresse parente ;
 	// Cockpit (onConsoleHost) est servi sous l'adresse même de la console.
-	consoleHost := parentHost(host)
-	if onConsoleHost {
-		consoleHost = host
+	consoleHost := host
+	if !onConsoleHost {
+		consoleHost = c.consoleHost(host)
 	}
-	login := scheme + "://" + consoleHost + BasePath + "/?return=" + url.QueryEscape(original)
+	state := randomState()
+	http.SetCookie(w, &http.Cookie{Name: stateCookie, Value: state, Path: "/", MaxAge: stateLifetime, HttpOnly: true, Secure: scheme == "https", SameSite: http.SameSiteLaxMode})
+	login := scheme + "://" + consoleHost + BasePath + "/?return=" + url.QueryEscape(original) + "&state=" + state
 	w.Header().Set("Cache-Control", "no-store")
 	http.Redirect(w, r, login, http.StatusFound)
+}
+
+func randomState() string {
+	state := make([]byte, 32)
+	if _, err := rand.Read(state); err != nil {
+		panic(err)
+	}
+	return base64.RawURLEncoding.EncodeToString(state)
 }
 
 // requestHost : l'adresse demandée par le navigateur, sans le port.
@@ -406,59 +525,94 @@ func requestHost(r *http.Request) string {
 	return strings.ToLower(strings.TrimSuffix(host, "."))
 }
 
-// returnURL accepte l'adresse de la console ou d'un de ses sous-domaines, dans le
-// même schéma que la console (https derrière Traefik).
-func returnURL(raw, host string, secure bool) (string, bool) {
+// hostOf : le nom d'une adresse, sans le port, en minuscules.
+func hostOf(target *url.URL) string {
+	return strings.ToLower(strings.TrimSuffix(target.Hostname(), "."))
+}
+
+// serviceHosts : adresse de chaque service installé qui a une page web, et
+// s'il demande une connexion (utilisateurs connectés, administrateurs).
+func (c *console) serviceHosts() map[string]bool {
+	hosts := map[string]bool{}
+	instances, err := c.Services.List()
+	if err != nil {
+		log.Printf("services illisibles : %v", err)
+		return hosts
+	}
+	for _, instance := range instances {
+		if !instance.NoWebPage && instance.Address != "" {
+			hosts[strings.ToLower(instance.Address)] = instance.Access == services.AccessUsers || instance.Access == services.AccessAdmins
+		}
+	}
+	return hosts
+}
+
+// consoleHost : adresse de la console pour l'adresse d'un service, sans changer
+// le port : www-maison.local → maison.local, cloud.maison.example.org →
+// maison.example.org ; l'adresse parente pour une adresse inconnue.
+func (c *console) consoleHost(host string) string {
+	name, port, err := net.SplitHostPort(host)
+	if err != nil {
+		name, port = host, ""
+	}
+	console := parentHost(name)
+	if instances, err := c.Services.List(); err == nil {
+		for _, instance := range instances {
+			if strings.EqualFold(instance.Address, name) && len(name) > len(instance.Name)+1 {
+				console = strings.ToLower(name[len(instance.Name)+1:])
+			}
+		}
+	}
+	if port != "" {
+		return net.JoinHostPort(console, port)
+	}
+	return console
+}
+
+// returnURL accepte, dans le même schéma que la console (https derrière Traefik),
+// l'adresse de la console, d'un de ses sous-domaines ou d'un service installé
+// (services : adresse → connexion demandée). protected : la page demande une
+// connexion (service protégé, ou Cockpit sous l'adresse de la console).
+func returnURL(raw, host string, secure bool, services map[string]bool) (target *url.URL, protected, ok bool) {
 	target, err := url.Parse(raw)
 	if err != nil || target.User != nil || target.Opaque != "" {
-		return "", false
+		return nil, false, false
 	}
 	scheme := "http"
 	if secure {
 		scheme = "https"
 	}
-	targetHost := strings.ToLower(strings.TrimSuffix(target.Hostname(), "."))
+	targetHost := hostOf(target)
 	if target.Scheme != scheme || host == "" || targetHost == "" {
-		return "", false
+		return nil, false, false
 	}
-	if targetHost != host && (net.ParseIP(host) != nil || !strings.HasSuffix(targetHost, "."+host)) {
-		return "", false
+	if targetHost == host {
+		return target, true, true
 	}
-	return target.String(), true
+	if protected, ok := services[targetHost]; ok {
+		return target, protected, true
+	}
+	if net.ParseIP(host) != nil || !strings.HasSuffix(targetHost, "."+host) {
+		return nil, false, false
+	}
+	return target, false, true
 }
 
-// cookieDomain : le cookie délégué vaut pour l'adresse et ses sous-domaines,
-// sauf pour une adresse IP ou un nom sans point (cookie limité à cette adresse).
-func cookieDomain(host string) string {
-	if net.ParseIP(host) != nil || !strings.Contains(host, ".") {
-		return ""
-	}
-	return host
-}
-
-// parentHost : cloud.maison.example.org → maison.example.org, où répond la console.
-func parentHost(host string) string {
-	name, port, err := net.SplitHostPort(host)
-	if err != nil {
-		name, port = host, ""
-	}
+// parentHost : cloud.maison.example.org → maison.example.org.
+func parentHost(name string) string {
 	if net.ParseIP(name) == nil {
 		if _, parent, ok := strings.Cut(name, "."); ok && strings.Contains(parent, ".") {
-			name = parent
+			return parent
 		}
-	}
-	if port != "" {
-		return net.JoinHostPort(name, port)
 	}
 	return name
 }
 
-// clearForwardCookie efface le cookie délégué à la déconnexion et ferme sa session.
-func (c *console) clearForwardCookie(w http.ResponseWriter, r *http.Request) {
-	if cookie, err := r.Cookie(forwardCookie); err == nil {
-		c.Accounts.Logout(cookie.Value)
-	}
-	http.SetCookie(w, &http.Cookie{Name: forwardCookie, Value: "", Domain: cookieDomain(requestHost(r)), Path: "/", MaxAge: -1, HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteLaxMode})
+// clearForwardCookie efface le cookie délégué de l'adresse de la console
+// (Cockpit) à la déconnexion ; Logout a déjà fermé les sessions déléguées
+// ouvertes depuis cette session, sur toutes les adresses.
+func clearForwardCookie(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{Name: forwardCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteLaxMode})
 }
 
 // accountError : messages des erreurs propres aux comptes ; faux si l'erreur n'en est pas une.

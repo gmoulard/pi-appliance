@@ -124,7 +124,7 @@ type Manager struct {
 	wake       chan struct{}
 }
 
-// CurrentDomain : adresse de l'appliance, suffixe de l'adresse de chaque service.
+// CurrentDomain : adresse de l'appliance, d'où vient l'adresse de chaque service (ServiceAddress).
 func (m *Manager) CurrentDomain() string {
 	if domain := m.renamed.Load(); domain != nil {
 		return *domain
@@ -133,7 +133,8 @@ func (m *Manager) CurrentDomain() string {
 }
 
 // Renamed prend le nouveau nom du Pi sans relancer la console : les services
-// installés ensuite ont l'adresse <service>.<nom>.local.
+// installés ensuite ont l'adresse <service>-<nom>.local, et Relocate y déplace
+// ceux déjà installés.
 func (m *Manager) Renamed(name string) {
 	if !m.FollowName || !marketplace.ValidLabel(name) {
 		return
@@ -190,7 +191,10 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 
 func (m *Manager) install(ctx context.Context, app marketplace.App, name string, values map[string]string) (Result, error) {
 	dir := m.serviceDir(name)
-	address := name + "." + m.CurrentDomain()
+	address := ServiceAddress(name, m.CurrentDomain())
+	if err := checkAddress(name, address); err != nil {
+		return Result{}, err
+	}
 	env, secrets, err := m.environment(app, dir, name, address, values)
 	if err != nil {
 		return Result{}, err
@@ -324,6 +328,13 @@ func (m *Manager) writeFiles(dir string, app marketplace.App, name, address stri
 	if err := os.WriteFile(filepath.Join(dir, composeName), app.Compose, 0o600); err != nil {
 		return err
 	}
+	if err := writeEnv(dir, env); err != nil {
+		return err
+	}
+	return writeJSON(filepath.Join(dir, overrideName), m.override(app, name, address), 0o600)
+}
+
+func writeEnv(dir string, env map[string]string) error {
 	keys := make([]string, 0, len(env))
 	for key := range env {
 		keys = append(keys, key)
@@ -333,10 +344,7 @@ func (m *Manager) writeFiles(dir string, app marketplace.App, name, address stri
 	for _, key := range keys {
 		fmt.Fprintf(&content, "%s='%s'\n", key, env[key])
 	}
-	if err := os.WriteFile(filepath.Join(dir, envName), []byte(content.String()), 0o600); err != nil {
-		return err
-	}
-	return writeJSON(filepath.Join(dir, overrideName), m.override(app, name, address), 0o600)
+	return os.WriteFile(filepath.Join(dir, envName), []byte(content.String()), 0o600)
 }
 
 func (m *Manager) override(app marketplace.App, name, address string) map[string]any {

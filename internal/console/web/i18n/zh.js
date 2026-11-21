@@ -448,7 +448,7 @@ piTranslations("zh", {
   "Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.": "如果此地址无法打开（部分 Android 手机和 Windows 电脑找不到 .local 地址），请在路由器的设备列表中找到“pi-appliance”设备，然后打开 https://<它的地址>/pi-appliance。浏览器会显示证书警告：可以继续。",
   "Vous pouvez aussi ouvrir {0} : le navigateur affichera une alerte sur le certificat, vous pouvez continuer.": "您也可以打开 {0}：浏览器会显示证书警告，可以继续。",
   "Un autre appareil de votre réseau s'appelle déjà « {0} » : le Pi a pris le nom « {1} ».": "您网络中的另一台设备已经叫“{0}”：Pi 已改名为“{1}”。",
-  "Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant.": "此地址可以在家中的 iPhone、Mac 或 Linux 电脑上打开。Windows 电脑和部分 Android 手机暂时找不到它：在此期间请使用其他设备。",
+  "La première fois, le navigateur affiche une alerte de sécurité pour cette adresse : c'est normal à la maison, vous pouvez continuer.": "第一次打开时，浏览器会对此地址显示安全警告：在家中这是正常的，您可以继续。",
   "Alimentation": "电源",
   "Trop faible": "太弱",
   "Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.": "电源太弱：请使用树莓派官方电源。树莓派会变慢，SD 卡也可能损坏。",

@@ -217,15 +217,8 @@ avahi-browse -art | grep -E 'controltower|pi-appliance-'
 ### 4.4 Les services de chaque Pi
 
 1. Installer un « Site web » sur controlTower et un autre sur le Pi 2, chacun sous le nom `www`.
-2. Les adresses des services sont `www.controltower.local` et `www.pi-appliance-XXXX.local`. **avahi n'annonce que le nom du Pi**, pas ces sous-noms : depuis un autre appareil, ils ne se trouvent pas d'eux-mêmes (à noter dans les résultats ; une correction est à prévoir). Pour l'essai, les ajouter dans le fichier `hosts` de l'ordinateur (PowerShell lancé en administrateur) :
-
-   ```powershell
-   Add-Content C:\Windows\System32\drivers\etc\hosts "<IP de controltower>  www.controltower.local"
-   Add-Content C:\Windows\System32\drivers\etc\hosts "<IP du Pi 2>  www.pi-appliance-XXXX.local"
-   ```
-
-3. Ouvrir les deux sites : chacun affiche son propre contenu, et non celui de l'autre Pi.
-4. Retirer ces lignes du fichier `hosts` à la fin de l'essai.
+2. Les adresses des services sont `www-controltower.local` et `www-pi-appliance-XXXX.local` (un seul niveau, TODO-2.61), annoncées par `mdns.sh` : elles doivent s'ouvrir sans toucher au fichier `hosts`, depuis Windows comme depuis un téléphone. Si l'une ne s'ouvre pas, noter l'appareil et le système dans les résultats.
+3. Ouvrir les deux sites : chacun affiche son propre contenu, et non celui de l'autre Pi ; le certificat présenté (cadenas du navigateur) porte l'adresse du service.
 
 ### 4.5 Après un redémarrage de la box
 

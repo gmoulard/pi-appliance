@@ -106,7 +106,7 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "Les comptes n'ont pas pu être effacés : le Pi n'est pas remis à zéro.")
 		return
 	}
-	c.clearForwardCookie(w, r)
+	clearForwardCookie(w, r)
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: BasePath, MaxAge: -1, HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteStrictMode})
 	writeJSON(w, http.StatusOK, result)
 }

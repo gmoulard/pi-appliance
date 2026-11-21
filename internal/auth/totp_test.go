@@ -202,12 +202,12 @@ func TestRequiredTOTP(t *testing.T) {
 	if _, ok := store.Session(session); !ok {
 		t.Fatal("la session de la console sert à l'activer")
 	}
-	forward := store.StartForwardSession("marie")
-	if _, ok := store.ForwardSession(forward); ok {
+	forward := forwardSession(t, store, session, "wiki-maison.local")
+	if _, ok := store.ForwardSession(forward, "wiki-maison.local"); ok {
 		t.Fatal("pas de service tant qu'elle n'est pas activée")
 	}
 	enableTOTP(t, store, c)
-	if _, ok := store.ForwardSession(forward); !ok {
+	if _, ok := store.ForwardSession(forward, "wiki-maison.local"); !ok {
 		t.Fatal("activée : services ouverts")
 	}
 }

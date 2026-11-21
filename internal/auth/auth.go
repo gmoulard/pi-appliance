@@ -55,9 +55,11 @@ const (
 	UserPasswordMin  = 8
 	passwordMax      = 256
 	SessionLifetime  = 7 * 24 * time.Hour
-	freeAttempts     = 5
-	maxBlock         = 15 * time.Minute
-	forgetFailures   = 24 * time.Hour
+	// LoginCodeLifetime : le temps d'aller de la console au service.
+	LoginCodeLifetime = 2 * time.Minute
+	freeAttempts      = 5
+	maxBlock          = 15 * time.Minute
+	forgetFailures    = 24 * time.Hour
 )
 
 // Iterations de PBKDF2-SHA256 (recommandation OWASP) ; réduit dans les tests.
@@ -144,10 +146,24 @@ func (a Account) active(now time.Time) bool {
 
 // session : session de la console (cookie du chemin /pi-appliance) ou session
 // déléguée (forward), qui n'ouvre que les services protégés par Traefik.
+// Une session déléguée vaut pour une seule adresse (host) et se ferme avec la
+// session de la console qui l'a ouverte (parent).
 type session struct {
 	name    string
 	expires time.Time
 	forward bool
+	host    string
+	parent  string
+}
+
+// loginCode : code à usage unique qui porte une connexion de la console vers
+// l'adresse d'un service (state : valeur du cookie posé par ce service sur le
+// navigateur qui a demandé la connexion).
+type loginCode struct {
+	parent  string
+	host    string
+	state   string
+	expires time.Time
 }
 
 type failure struct {
@@ -178,13 +194,14 @@ type Store struct {
 	mu       sync.Mutex
 	accounts map[string]Account
 	sessions map[string]session
+	codes    map[string]loginCode
 	failures map[string]failure
 	reset    bool
 	shares   map[string]Share
 }
 
 func Open(path string) (*Store, error) {
-	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, failures: map[string]failure{}, shares: map[string]Share{}}
+	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, codes: map[string]loginCode{}, failures: map[string]failure{}, shares: map[string]Share{}}
 	if err := s.loadShares(); err != nil {
 		return nil, err
 	}
@@ -439,31 +456,64 @@ func (s *Store) StartSession(name string) string {
 // Session renvoie le compte d'une session de la console encore valide et prolonge celle-ci.
 // Une session déléguée n'ouvre pas la console.
 func (s *Store) Session(token string) (Account, bool) {
-	return s.lookup(token, false)
+	return s.lookup(token, false, "")
 }
 
-// StartForwardSession ouvre une session déléguée pour un compte déjà connecté à
-// la console. Son cookie, posé sur l'adresse de l'appliance et ses sous-domaines,
-// est vu par les services : il n'ouvre donc pas la console.
-func (s *Store) StartForwardSession(name string) string {
+// StartLoginCode ouvre, pour une personne connectée à la console (session
+// consoleToken), un code à usage unique vers l'adresse host d'un service,
+// valable LoginCodeLifetime et seulement pour le navigateur qui porte state.
+func (s *Store) StartLoginCode(consoleToken, host, state string) (string, bool) {
+	if host == "" || state == "" {
+		return "", false
+	}
+	if _, ok := s.lookup(consoleToken, false, ""); !ok {
+		return "", false
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	token := randomToken()
-	s.sessions[token] = session{name: name, expires: s.Now().Add(SessionLifetime), forward: true}
-	return token
+	now := s.Now()
+	s.cleanup(now)
+	code := randomToken()
+	s.codes[code] = loginCode{parent: consoleToken, host: host, state: state, expires: now.Add(LoginCodeLifetime)}
+	return code, true
 }
 
-// ForwardSession renvoie le compte d'une session déléguée valide (forward auth
-// de Traefik), refusée tant que la double authentification exigée n'est pas activée.
-func (s *Store) ForwardSession(token string) (Account, bool) {
-	account, ok := s.lookup(token, true)
+// UseLoginCode échange un code contre une session déléguée limitée à host. Le
+// code ne sert qu'une fois, même refusé.
+func (s *Store) UseLoginCode(code, host, state string) (string, bool) {
+	if code == "" {
+		return "", false
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.Now()
+	current, ok := s.codes[code]
+	delete(s.codes, code)
+	if !ok || now.After(current.expires) || current.host != host || subtle.ConstantTimeCompare([]byte(current.state), []byte(state)) != 1 {
+		return "", false
+	}
+	parent, ok := s.sessions[current.parent]
+	if !ok || parent.forward || now.After(parent.expires) {
+		return "", false
+	}
+	token := randomToken()
+	s.sessions[token] = session{name: parent.name, expires: now.Add(SessionLifetime), forward: true, host: host, parent: current.parent}
+	return token, true
+}
+
+// ForwardSession renvoie le compte d'une session déléguée valide pour l'adresse
+// host (forward auth de Traefik), refusée tant que la double authentification
+// exigée n'est pas activée.
+func (s *Store) ForwardSession(token, host string) (Account, bool) {
+	account, ok := s.lookup(token, true, host)
 	if !ok || account.NeedsTOTPSetup() {
 		return Account{}, false
 	}
 	return account, true
 }
 
-func (s *Store) lookup(token string, forward bool) (Account, bool) {
+// lookup : host, pour une session déléguée, l'adresse demandée ; vide pour la console.
+func (s *Store) lookup(token string, forward bool, host string) (Account, bool) {
 	if token == "" {
 		return Account{}, false
 	}
@@ -471,7 +521,7 @@ func (s *Store) lookup(token string, forward bool) (Account, bool) {
 	defer s.mu.Unlock()
 	now := s.Now()
 	current, ok := s.sessions[token]
-	if !ok || current.forward != forward {
+	if !ok || current.forward != forward || current.host != host {
 		return Account{}, false
 	}
 	if now.After(current.expires) {
@@ -497,16 +547,27 @@ func (s *Store) closeSessions(name string) {
 	}
 }
 
+// Logout ferme une session et, pour la console, les sessions déléguées qu'elle a ouvertes.
 func (s *Store) Logout(token string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	delete(s.sessions, token)
+	for other, current := range s.sessions {
+		if current.parent == token {
+			delete(s.sessions, other)
+		}
+	}
 }
 
 func (s *Store) cleanup(now time.Time) {
 	for token, current := range s.sessions {
 		if now.After(current.expires) {
 			delete(s.sessions, token)
+		}
+	}
+	for code, current := range s.codes {
+		if now.After(current.expires) {
+			delete(s.codes, code)
 		}
 	}
 	for key, f := range s.failures {
