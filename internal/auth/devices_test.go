@@ -171,12 +171,21 @@ func TestDeviceLoginRefused(t *testing.T) {
 		"signature vide":   {p.id(), loginMessage(c.now, 6), "", ErrDeviceSignature},
 	}
 	for name, test := range cases {
-		// Un client différent par cas : la limite des essais ne s'en mêle pas.
+		// Compteurs remis à zéro à chaque cas : l'ordre de parcours d'une map
+		// change d'un essai à l'autre, la limite des essais ne doit pas s'en mêler.
+		store.failures = map[string]failure{}
 		if _, _, err := store.DeviceLogin(test.id, test.message, test.signature, piID, name); !errors.Is(err, test.want) {
 			t.Errorf("%s : %v, attendu %v", name, err, test.want)
 		}
 	}
-	// Cinq refus pour cet appareil : il attend avant un nouvel essai.
+	// Cinq refus pour cet appareil, de cinq clients : il attend avant un nouvel essai.
+	store.failures = map[string]failure{}
+	for i := range 5 {
+		bad := loginMessage(c.now, 20+i)
+		if _, _, err := store.DeviceLogin(p.id(), bad, other.sign(t, bad), piID, fmt.Sprint("client ", i)); !errors.Is(err, ErrDeviceSignature) {
+			t.Fatalf("refus %d : %v", i, err)
+		}
+	}
 	message = loginMessage(c.now, 8)
 	if _, _, err := store.DeviceLogin(p.id(), message, p.sign(t, message), piID, "ok"); !errors.Is(err, ErrTooMany) {
 		t.Fatalf("après 5 refus : %v", err)
