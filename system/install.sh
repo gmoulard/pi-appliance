@@ -138,7 +138,17 @@ systemctl enable docker.service NetworkManager.service avahi-daemon.service \
 # (updates.sh).
 systemctl mask apt-daily-upgrade.timer apt-daily-upgrade.service
 
+# SSH, s'il a été choisi dans Imager : clés seulement depuis internet
+# (sshd_config.d/10-pi-appliance.conf). Relu seulement si la configuration est
+# valable, pour ne jamais couper un SSH qui marche.
+reload_ssh() {
+	if [ -x /usr/sbin/sshd ] && /usr/sbin/sshd -t 2>/dev/null; then
+		systemctl try-reload-or-restart ssh.service || true
+	fi
+}
+
 if [ "$update" = 1 ]; then
+	reload_ssh
 	systemctl daemon-reload
 	systemctl restart avahi-daemon.service || true
 	systemctl restart pi-appliance-traefik.service pi-appliance.service pi-appliance-mdns.service
@@ -149,6 +159,7 @@ fi
 # Sur un Pi en marche (pas dans le chroot de pi-gen) : démarrer tout de suite.
 if [ -d /run/systemd/system ] && ! systemd-detect-virt --chroot >/dev/null 2>&1; then
 	systemctl daemon-reload
+	reload_ssh
 	systemctl reload NetworkManager.service || true
 	systemctl restart avahi-daemon.service || true
 	systemctl restart docker.service pi-appliance-secrets.service

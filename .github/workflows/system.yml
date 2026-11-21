@@ -85,6 +85,12 @@ jobs:
         run: sh system/tests/cockpit-test.sh
       - name: Diagnostic du Pi
         run: sh system/tests/diagnostic-test.sh
+      - name: SSH par clés seulement depuis internet
+        run: |
+          set -eu
+          sudo apt-get install -y openssh-server
+          sudo mkdir -p /run/sshd
+          sh system/tests/sshd-test.sh
       - name: pi-gen (préparation, sans construction)
         run: |
           set -eu

@@ -203,6 +203,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Spécification 8.2 marquée réalisée, limites notées.
 - [ ] **TODO-3.11**: Console fermée sur internet par défaut (8.3) : Traefik limite désormais `/pi-appliance` aux plages privées IPv4, à la boucle locale et aux plages locales IPv6, avec une priorité basse ; le test Traefik vérifie le refus d'une source hors liste autorisée et laisse passer les routeurs des services. Reste à définir les plages réelles du VPN et du tunnel relais : si le pair du relais a une adresse privée, `ClientIP` l'autorise aussi. L'accès depuis un LAN IPv6 à adresse globale est également refusé. Ne pas cocher avant d'avoir défini ces réseaux et validé leur séparation.
 - [ ] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3).
+- [x] **TODO-3.14**: SSH depuis internet par clé seulement, jamais par mot de passe ; mot de passe gardé à la maison ; `root` refusé (8.4, demande de l'utilisateur du 2026-11-21) : `sshd_config.d/10-pi-appliance.conf`, test `system/tests/sshd-test.sh` ; à vérifier sur un vrai Pi (connexion par mot de passe refusée depuis la 4G, port redirigé sur la box). À revoir avec le relais (TODO-3.9) et le VPN : leurs adresses privées compteraient comme la maison.
 
 ## 4. Étape 3 — Le reste
 

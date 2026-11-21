@@ -410,6 +410,7 @@ Offre :
 - Mots de passe stockés hachés ; limitation des tentatives de connexion.
 - Chaque service tourne dans ses conteneurs, avec ses propres volumes ; rien n'est monté du système hôte sans que le manifeste le déclare.
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
+- **SSH** (seulement s'il a été choisi dans Raspberry Pi Imager, section 4) : depuis internet, connexion par clé seulement, jamais par mot de passe ; à la maison (plages privées et locales, comme la console en 8.3), le mot de passe reste accepté pour poser une première clé ; connexion de `root` refusée. **Réalisé** (`system/etc/ssh/sshd_config.d/10-pi-appliance.conf`, passé avant le `50-cloud-init.conf` d'Imager, relu par `install.sh` seulement si `sshd -t` l'accepte ; test `system/tests/sshd-test.sh` avec le vrai sshd) ; à vérifier sur un vrai Pi. L'ouverture du port SSH sur la box reste un choix de l'administrateur, hors console. Limite : la règle se fie à l'adresse vue par le Pi ; un futur relais (7.3) ou VPN dont l'adresse est privée serait traité comme la maison.
 - **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
 
 **Réalisé** (statistiques anonymes, paquet `internal/stats`) :
