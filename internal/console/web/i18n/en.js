@@ -595,5 +595,17 @@ piTranslations("en", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Or open this link on the phone, for example by sending it to yourself in a message. It contains no password.",
   "Lien pour l'application mobile": "Link for the mobile app",
   "Partager": "Share",
-  "Ouvrir l'application mobile": "Open the mobile app"
+  "Ouvrir l'application mobile": "Open the mobile app",
+  "Appairé le {0}, dernière connexion le {1}.": "Paired on {0}, last sign-in on {1}.",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "This code has expired or was already used: show the code again in “My Pi”, then scan it with the mobile app.",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "This phone is paired: the mobile app will now open the console without a password.",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "This phone is no longer recognised by the Pi: sign in, then scan the code in “My Pi” again with the mobile app.",
+  "L'appareil « {0} » est retiré.": "The device “{0}” is removed.",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "The phone's clock and the Pi's clock do not match: check the time on the phone, then try again.",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "Signing in from the mobile app failed: try again from the app.",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "Phones paired with the mobile app open the console without a password. Remove a phone that is lost or that you no longer use.",
+  "Renommer": "Rename",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "Remove “{0}”? This phone will have to be paired again to open the console without a password.",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "Too many attempts: wait a few minutes before trying again.",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "This code also pairs the phone with your account: the app will then open the console without a password. Only show it to your own phones; it changes every few minutes."
 });

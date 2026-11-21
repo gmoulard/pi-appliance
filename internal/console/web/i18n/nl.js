@@ -595,5 +595,17 @@ piTranslations("nl", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Of open deze link op de telefoon, bijvoorbeeld door hem naar jezelf te sturen in een bericht. Er staat geen wachtwoord in.",
   "Lien pour l'application mobile": "Link voor de mobiele app",
   "Partager": "Delen",
-  "Ouvrir l'application mobile": "Mobiele app openen"
+  "Ouvrir l'application mobile": "Mobiele app openen",
+  "Appairé le {0}, dernière connexion le {1}.": "Gekoppeld op {0}, laatst aangemeld op {1}.",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "Deze code is verlopen of al gebruikt: toon de code opnieuw in ‘Mijn Pi’ en scan hem met de mobiele app.",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "Deze telefoon is gekoppeld: de mobiele app opent de console voortaan zonder wachtwoord.",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "De Pi herkent deze telefoon niet meer: meld je aan en scan de code in ‘Mijn Pi’ opnieuw met de mobiele app.",
+  "L'appareil « {0} » est retiré.": "Het apparaat ‘{0}’ is verwijderd.",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "De tijd van de telefoon en die van de Pi komen niet overeen: controleer de tijd van de telefoon en probeer het opnieuw.",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "Aanmelden via de mobiele app is mislukt: probeer het opnieuw vanuit de app.",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "Telefoons die met de mobiele app zijn gekoppeld, openen de console zonder wachtwoord. Verwijder een telefoon die kwijt is of die je niet meer gebruikt.",
+  "Renommer": "Naam wijzigen",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "‘{0}’ verwijderen? Deze telefoon moet opnieuw worden gekoppeld om de console zonder wachtwoord te openen.",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "Te veel pogingen: wacht een paar minuten voordat je het opnieuw probeert.",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Deze code koppelt de telefoon ook aan je account: de app opent daarna de console zonder wachtwoord. Toon hem alleen aan je eigen telefoons; hij verandert om de paar minuten."
 });

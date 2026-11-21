@@ -595,5 +595,17 @@ piTranslations("tr", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Ya da bu bağlantıyı telefonda açın, örneğin kendinize bir mesajla göndererek. Hiçbir parola içermez.",
   "Lien pour l'application mobile": "Mobil uygulama bağlantısı",
   "Partager": "Paylaş",
-  "Ouvrir l'application mobile": "Mobil uygulamayı aç"
+  "Ouvrir l'application mobile": "Mobil uygulamayı aç",
+  "Appairé le {0}, dernière connexion le {1}.": "{0} tarihinde eşleştirildi, son giriş {1}.",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "Bu kodun süresi doldu ya da kod zaten kullanıldı: «Pi'm» bölümünde kodu yeniden gösterin, ardından mobil uygulamayla tarayın.",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "Bu telefon eşleştirildi: mobil uygulama bundan sonra konsolu parolasız açacak.",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "Pi bu telefonu artık tanımıyor: giriş yapın, ardından «Pi'm» bölümündeki kodu mobil uygulamayla yeniden tarayın.",
+  "L'appareil « {0} » est retiré.": "«{0}» cihazı kaldırıldı.",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "Telefonun saati ile Pi'nin saati uyuşmuyor: telefonun saatini kontrol edin, ardından yeniden deneyin.",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "Mobil uygulamadan giriş başarısız oldu: uygulamadan yeniden deneyin.",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "Mobil uygulamayla eşleştirilmiş telefonlar konsolu parolasız açar. Kaybolan ya da artık kullanmadığınız bir telefonu kaldırın.",
+  "Renommer": "Yeniden adlandır",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "«{0}» kaldırılsın mı? Konsolu parolasız açmak için bu telefonun yeniden eşleştirilmesi gerekecek.",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "Çok fazla deneme: yeniden denemeden önce birkaç dakika bekleyin.",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Bu kod telefonu hesabınızla da eşleştirir: uygulama ardından konsolu parolasız açar. Yalnızca kendi telefonlarınıza gösterin; birkaç dakikada bir değişir."
 });

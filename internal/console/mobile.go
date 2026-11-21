@@ -194,9 +194,16 @@ func (c *console) mobileLink() string {
 	return mobileAdd + values.Encode()
 }
 
-func (c *console) mobile(w http.ResponseWriter, _ *http.Request) {
+// mobile : le lien à partager, sans code d'appairage, et le code QR, qui
+// ajoute le code d'appairage c de l'administrateur connecté (spécification 8.1).
+func (c *console) mobile(w http.ResponseWriter, r *http.Request) {
 	link := c.mobileLink()
-	png, err := qrcode.Encode(link, qrcode.Medium, 512)
+	scanned := link
+	if account, ok := c.account(r); ok && DeviceID(c.DevicePublicKey) != "" {
+		code, _ := c.Accounts.PairingCode(account.Name)
+		scanned += "&c=" + url.QueryEscape(code)
+	}
+	png, err := qrcode.Encode(scanned, qrcode.Medium, 512)
 	if err != nil {
 		log.Printf("code QR de l'application mobile : %v", err)
 		writeError(w, http.StatusInternalServerError, "Le code à scanner n'a pas pu être dessiné.")

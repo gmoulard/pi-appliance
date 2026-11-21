@@ -595,5 +595,17 @@ piTranslations("ar", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "أو افتح هذا الرابط على الهاتف، مثلًا بإرساله إلى نفسك في رسالة. لا يحتوي على أي كلمة مرور.",
   "Lien pour l'application mobile": "رابط لتطبيق الهاتف",
   "Partager": "مشاركة",
-  "Ouvrir l'application mobile": "فتح تطبيق الهاتف"
+  "Ouvrir l'application mobile": "فتح تطبيق الهاتف",
+  "Appairé le {0}, dernière connexion le {1}.": "تم الاقتران في {0}، آخر دخول في {1}.",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "انتهت صلاحية هذا الرمز أو استُخدم من قبل: اعرض الرمز من جديد في «الـPi الخاص بي»، ثم امسحه بتطبيق الهاتف.",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "تم اقتران هذا الهاتف: سيفتح تطبيق الهاتف لوحة التحكم من الآن دون كلمة مرور.",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "لم يعد الـ Pi يتعرّف على هذا الهاتف: سجّل الدخول، ثم امسح رمز «الـPi الخاص بي» من جديد بتطبيق الهاتف.",
+  "L'appareil « {0} » est retiré.": "تمت إزالة الجهاز «{0}».",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "ساعة الهاتف وساعة الـ Pi غير متطابقتين: تحقّق من وقت الهاتف، ثم أعد المحاولة.",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "فشل الدخول من تطبيق الهاتف: أعد المحاولة من التطبيق.",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "الهواتف المقترنة بتطبيق الهاتف تفتح لوحة التحكم دون كلمة مرور. أزل الهاتف المفقود أو الذي لم تعد تستخدمه.",
+  "Renommer": "إعادة التسمية",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "إزالة «{0}»؟ يجب اقتران هذا الهاتف من جديد لفتح لوحة التحكم دون كلمة مرور.",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "محاولات كثيرة جدًا: انتظر بضع دقائق قبل إعادة المحاولة.",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "يقرن هذا الرمز الهاتف أيضًا بحسابك: سيفتح التطبيق بعدها لوحة التحكم دون كلمة مرور. لا تعرضه إلا على هواتفك؛ يتغيّر كل بضع دقائق."
 });

@@ -198,11 +198,17 @@ type Store struct {
 	failures map[string]failure
 	reset    bool
 	shares   map[string]Share
+	devices  map[string]Device
+	pairings map[string]pairingCode
+	nonces   map[string]time.Time
 }
 
 func Open(path string) (*Store, error) {
-	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, codes: map[string]loginCode{}, failures: map[string]failure{}, shares: map[string]Share{}}
+	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, codes: map[string]loginCode{}, failures: map[string]failure{}, shares: map[string]Share{}, devices: map[string]Device{}, pairings: map[string]pairingCode{}, nonces: map[string]time.Time{}}
 	if err := s.loadShares(); err != nil {
+		return nil, err
+	}
+	if err := s.loadDevices(); err != nil {
 		return nil, err
 	}
 	data, err := os.ReadFile(path)

@@ -323,10 +323,9 @@ async function loadMobile() {
   const mobile = await api("mobile").catch(() => null);
   mobileBox.hidden = !mobile;
   if (!mobile) return;
-  if (mobileLink.value !== mobile.link) {
-    mobileLink.value = mobile.link;
-    mobileQR.src = mobile.qr;
-  }
+  // Le code QR porte en plus le code d'appairage, renouvelé toutes les 5 minutes.
+  mobileLink.value = mobile.link;
+  if (mobileQR.getAttribute("src") !== mobile.qr) mobileQR.src = mobile.qr;
   mobileShare.hidden = typeof navigator.share !== "function";
 }
 
@@ -3037,8 +3036,78 @@ async function startInvitation(token) {
   }
 }
 
+// Appareils appairés avec l'application mobile (spécification 8.1) : ils
+// ouvrent la console sans mot de passe, jusqu'à ce qu'on les retire.
+const devicesList = document.getElementById("devicesList");
+const noDevices = document.getElementById("noDevices");
+
+async function loadDevices() {
+  const { devices } = await api("account/devices").catch(() => ({ devices: [] }));
+  noDevices.hidden = devices.length > 0;
+  devicesList.replaceChildren(...devices.map((device) => {
+    const item = element("li");
+    const text = element("div");
+    text.append(
+      element("strong", device.name),
+      element("p", t("Appairé le {0}, dernière connexion le {1}.", dayText(device.paired_at), dayText(device.last_used)), "meta"),
+    );
+    const path = `account/devices/${encodeURIComponent(device.id)}`;
+    const rename = element("button", t("Renommer"), "secondary");
+    rename.type = "button";
+    rename.addEventListener("click", async () => {
+      const name = window.prompt(t("Nom de l'appareil"), device.name);
+      if (name === null || name.trim() === "" || name === device.name) return;
+      try {
+        await api(path, jsonBody("PUT", { name }));
+        await loadDevices();
+      } catch (error) {
+        showMessage([error.message], "error");
+      }
+    });
+    const remove = element("button", t("Retirer"), "secondary");
+    remove.type = "button";
+    remove.addEventListener("click", async () => {
+      if (!window.confirm(t("Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.", device.name))) return;
+      remove.disabled = true;
+      try {
+        await api(path, { method: "DELETE" });
+        showMessage([t("L'appareil « {0} » est retiré.", device.name)], "success");
+        await loadDevices();
+      } catch (error) {
+        showMessage([error.message], "error");
+        remove.disabled = false;
+      }
+    });
+    const controls = element("div", undefined, "controls");
+    controls.append(rename, remove);
+    item.append(text, controls);
+    return item;
+  }));
+}
+
+// ?appareil= : retour d'un appairage ou d'une connexion depuis l'application mobile.
+const DEVICE_MESSAGES = {
+  appaire: [t("Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe."), "success"],
+  code: [t("Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile."), "error"],
+  inconnu: [t("Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile."), "error"],
+  heure: [t("L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez."), "error"],
+  essais: [t("Trop d'essais : attendez quelques minutes avant de réessayer."), "error"],
+  refus: [t("La connexion depuis l'application mobile a échoué : réessayez depuis l'application."), "error"],
+};
+
+function showDeviceMessage() {
+  const params = new URLSearchParams(window.location.search);
+  const found = DEVICE_MESSAGES[params.get("appareil")];
+  if (!params.has("appareil")) return;
+  params.delete("appareil");
+  const rest = params.toString();
+  window.history.replaceState(null, "", window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash);
+  if (found) showMessage([found[0]], found[1]);
+}
+
 function showAccount(account) {
   accountSection.hidden = false;
+  loadDevices();
   totpSetup.hidden = true;
   totpStart.hidden = account.totp;
   totpDisable.hidden = !account.totp || account.totp_required;
@@ -3687,6 +3756,7 @@ api("health")
     status.textContent = t("Appliance en service.");
     statusDot.className = "dot ok";
     footer.textContent = `pi-appliance ${health.version}`;
+    showDeviceMessage();
     const invite = window.location.hash.match(/^#invite=([A-Za-z0-9_-]+)$/);
     if (invite && (await startInvitation(invite[1]))) {
       return;

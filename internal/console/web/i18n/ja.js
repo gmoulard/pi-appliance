@@ -595,5 +595,17 @@ piTranslations("ja", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "または、このリンクをスマートフォンで開いてください（メッセージで自分に送るなど）。パスワードは含まれていません。",
   "Lien pour l'application mobile": "モバイルアプリ用のリンク",
   "Partager": "共有",
-  "Ouvrir l'application mobile": "モバイルアプリを開く"
+  "Ouvrir l'application mobile": "モバイルアプリを開く",
+  "Appairé le {0}, dernière connexion le {1}.": "{0} にペアリング、最終ログイン {1}。",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "このコードは期限切れか、すでに使われています。「マイ Pi」でコードをもう一度表示し、モバイルアプリでスキャンしてください。",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "このスマートフォンはペアリングされました。今後モバイルアプリはパスワードなしでコンソールを開きます。",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "この端末は Pi にもう認識されていません。ログインしてから、「マイ Pi」のコードをモバイルアプリでもう一度スキャンしてください。",
+  "L'appareil « {0} » est retiré.": "デバイス「{0}」を削除しました。",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "スマートフォンの時刻と Pi の時刻が合っていません。スマートフォンの時刻を確認してから、もう一度お試しください。",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "モバイルアプリからのログインに失敗しました。アプリからもう一度お試しください。",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "モバイルアプリとペアリングしたスマートフォンは、パスワードなしでコンソールを開けます。なくしたスマートフォンや使わなくなったスマートフォンは削除してください。",
+  "Renommer": "名前を変更",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "「{0}」を削除しますか？パスワードなしでコンソールを開くには、このスマートフォンをもう一度ペアリングする必要があります。",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "試行回数が多すぎます。数分待ってからもう一度お試しください。",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "このコードはスマートフォンをあなたのアカウントにペアリングもします。その後アプリはパスワードなしでコンソールを開きます。自分のスマートフォン以外には見せないでください。コードは数分ごとに変わります。"
 });

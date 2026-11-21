@@ -595,5 +595,17 @@ piTranslations("it", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "Oppure apri questo link sul telefono, ad esempio inviandolo a te stesso in un messaggio. Non contiene alcuna password.",
   "Lien pour l'application mobile": "Link per l'app mobile",
   "Partager": "Condividi",
-  "Ouvrir l'application mobile": "Apri l'app mobile"
+  "Ouvrir l'application mobile": "Apri l'app mobile",
+  "Appairé le {0}, dernière connexion le {1}.": "Associato il {0}, ultimo accesso il {1}.",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "Questo codice è scaduto o è già stato usato: mostra di nuovo il codice in «Il mio Pi», poi scansionalo con l'app mobile.",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "Questo telefono è associato: d'ora in poi l'app mobile aprirà la console senza password.",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "Questo telefono non è più riconosciuto dal Pi: accedi, poi scansiona di nuovo il codice di «Il mio Pi» con l'app mobile.",
+  "L'appareil « {0} » est retiré.": "Il dispositivo «{0}» è stato rimosso.",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "L'ora del telefono e quella del Pi non coincidono: controlla l'ora del telefono, poi riprova.",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "L'accesso dall'app mobile non è riuscito: riprova dall'app.",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "I telefoni associati all'app mobile aprono la console senza password. Rimuovi un telefono perso o che non usi più.",
+  "Renommer": "Rinomina",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "Rimuovere «{0}»? Questo telefono dovrà essere associato di nuovo per aprire la console senza password.",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "Troppi tentativi: attendi qualche minuto prima di riprovare.",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Questo codice associa anche il telefono al tuo account: poi l'app aprirà la console senza password. Mostralo solo ai tuoi telefoni; cambia ogni pochi minuti."
 });

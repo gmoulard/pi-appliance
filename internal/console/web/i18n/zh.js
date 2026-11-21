@@ -595,5 +595,17 @@ piTranslations("zh", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "也可以在手机上打开这个链接，例如通过消息发给自己。链接中不含任何密码。",
   "Lien pour l'application mobile": "手机应用链接",
   "Partager": "分享",
-  "Ouvrir l'application mobile": "打开手机应用"
+  "Ouvrir l'application mobile": "打开手机应用",
+  "Appairé le {0}, dernière connexion le {1}.": "配对于 {0}，上次登录于 {1}。",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "此代码已过期或已被使用：请在“我的 Pi”中重新显示代码，然后用手机应用扫描。",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "此手机已配对：今后手机应用将无需密码即可打开控制台。",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "Pi 已不再识别此手机：请先登录，然后用手机应用重新扫描“我的 Pi”中的代码。",
+  "L'appareil « {0} » est retiré.": "设备“{0}”已移除。",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "手机时间与 Pi 的时间不一致：请检查手机时间，然后重试。",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "从手机应用登录失败：请在应用中重试。",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "与手机应用配对的手机无需密码即可打开控制台。请移除丢失或不再使用的手机。",
+  "Renommer": "重命名",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "移除“{0}”？此手机需要重新配对才能无需密码打开控制台。",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "尝试次数过多：请等待几分钟后再试。",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "此代码还会把手机与您的账户配对：之后应用将无需密码打开控制台。只给您自己的手机看；它每隔几分钟就会更换。"
 });

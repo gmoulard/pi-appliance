@@ -595,5 +595,17 @@ piTranslations("fa", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "یا این پیوند را روی تلفن باز کنید، مثلاً با فرستادن آن به خودتان در یک پیام. هیچ گذرواژه‌ای در آن نیست.",
   "Lien pour l'application mobile": "پیوند برای برنامهٔ موبایل",
   "Partager": "هم‌رسانی",
-  "Ouvrir l'application mobile": "باز کردن برنامهٔ موبایل"
+  "Ouvrir l'application mobile": "باز کردن برنامهٔ موبایل",
+  "Appairé le {0}, dernière connexion le {1}.": "جفت‌شده در {0}، آخرین ورود در {1}.",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "این کد منقضی شده یا قبلاً استفاده شده است: کد را دوباره در «Pi من» نمایش دهید و آن را با برنامهٔ موبایل اسکن کنید.",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "این تلفن جفت شد: از این پس برنامهٔ موبایل کنسول را بدون گذرواژه باز می‌کند.",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "Pi دیگر این تلفن را نمی‌شناسد: وارد شوید و سپس کد «Pi من» را دوباره با برنامهٔ موبایل اسکن کنید.",
+  "L'appareil « {0} » est retiré.": "دستگاه «{0}» حذف شد.",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "ساعت تلفن با ساعت Pi هماهنگ نیست: ساعت تلفن را بررسی کنید و دوباره تلاش کنید.",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "ورود از برنامهٔ موبایل ناموفق بود: از داخل برنامه دوباره تلاش کنید.",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "تلفن‌هایی که با برنامهٔ موبایل جفت شده‌اند کنسول را بدون گذرواژه باز می‌کنند. تلفن گم‌شده یا تلفنی را که دیگر استفاده نمی‌کنید حذف کنید.",
+  "Renommer": "تغییر نام",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "«{0}» حذف شود؟ برای باز کردن کنسول بدون گذرواژه، این تلفن باید دوباره جفت شود.",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "تلاش‌های بیش از حد: چند دقیقه صبر کنید و دوباره تلاش کنید.",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "این کد تلفن را با حساب شما نیز جفت می‌کند: سپس برنامه کنسول را بدون گذرواژه باز می‌کند. آن را فقط به تلفن‌های خودتان نشان دهید؛ هر چند دقیقه یک بار تغییر می‌کند."
 });

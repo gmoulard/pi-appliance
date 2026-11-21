@@ -248,6 +248,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
 	c.accountRoutes(mux)
+	c.deviceRoutes(mux)
 	if c.Backups != nil {
 		c.Backups.Routes(mux, BasePath, c.adminOnly)
 	}

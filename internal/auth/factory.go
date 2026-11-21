@@ -18,10 +18,11 @@ package auth
 import (
 	"errors"
 	"os"
+	"time"
 )
 
 // FactoryReset efface tous les comptes (invitations comprises), les sessions, les
-// liens de partage et la réinitialisation en attente : la console revient à la création du compte
+// liens de partage, les appareils appairés et la réinitialisation en attente : la console revient à la création du compte
 // administrateur (spécification 8.5, TODO-2.52).
 func (s *Store) FactoryReset() error {
 	s.mu.Lock()
@@ -39,6 +40,12 @@ func (s *Store) FactoryReset() error {
 		return err
 	}
 	s.shares = map[string]Share{}
+	if err := os.Remove(s.devicesPath()); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	s.devices = map[string]Device{}
+	s.pairings = map[string]pairingCode{}
+	s.nonces = map[string]time.Time{}
 	s.reset = false
 	s.sessions = map[string]session{}
 	s.failures = map[string]failure{}

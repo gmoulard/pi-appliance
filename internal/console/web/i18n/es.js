@@ -595,5 +595,17 @@ piTranslations("es", {
   "Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.": "O abra este enlace en el teléfono, por ejemplo enviándoselo en un mensaje. No contiene ninguna contraseña.",
   "Lien pour l'application mobile": "Enlace para la aplicación móvil",
   "Partager": "Compartir",
-  "Ouvrir l'application mobile": "Abrir la aplicación móvil"
+  "Ouvrir l'application mobile": "Abrir la aplicación móvil",
+  "Appairé le {0}, dernière connexion le {1}.": "Emparejado el {0}, última conexión el {1}.",
+  "Ce code a expiré ou a déjà servi : affichez de nouveau le code dans « Mon Pi », puis scannez-le avec l'application mobile.": "Este código ha caducado o ya se ha usado: vuelva a mostrar el código en «Mi Pi» y escanéelo con la aplicación móvil.",
+  "Ce téléphone est appairé : l'application mobile ouvrira désormais la console sans mot de passe.": "Este teléfono está emparejado: la aplicación móvil abrirá a partir de ahora la consola sin contraseña.",
+  "Ce téléphone n'est plus reconnu par le Pi : connectez-vous, puis scannez de nouveau le code de « Mon Pi » avec l'application mobile.": "La Pi ya no reconoce este teléfono: inicie sesión y vuelva a escanear el código de «Mi Pi» con la aplicación móvil.",
+  "L'appareil « {0} » est retiré.": "El dispositivo «{0}» se ha retirado.",
+  "L'heure du téléphone et celle du Pi ne concordent pas : vérifiez l'heure du téléphone, puis réessayez.": "La hora del teléfono y la de la Pi no coinciden: compruebe la hora del teléfono y vuelva a intentarlo.",
+  "La connexion depuis l'application mobile a échoué : réessayez depuis l'application.": "La conexión desde la aplicación móvil ha fallado: vuelva a intentarlo desde la aplicación.",
+  "Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.": "Los teléfonos emparejados con la aplicación móvil abren la consola sin contraseña. Retire un teléfono perdido o que ya no use.",
+  "Renommer": "Cambiar el nombre",
+  "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "¿Retirar «{0}»? Habrá que emparejar de nuevo este teléfono para abrir la consola sin contraseña.",
+  "Trop d'essais : attendez quelques minutes avant de réessayer.": "Demasiados intentos: espere unos minutos antes de volver a intentarlo.",
+  "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Este código también empareja el teléfono con su cuenta: después la aplicación abrirá la consola sin contraseña. Muéstrelo solo a sus propios teléfonos; cambia cada pocos minutos."
 });

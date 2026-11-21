@@ -194,6 +194,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <h3>Application mobile</h3>
 <p>Retrouvez ce Pi et ses services sur votre téléphone : dans l'application mobile, touchez « Scanner le code », puis visez ce code.</p>
 <img id="mobileQR" class="qr" alt="Code à scanner avec l'application mobile" width="200" height="200">
+<p class="note">Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.</p>
 <p class="meta">Ou ouvrez ce lien sur le téléphone, par exemple en vous l'envoyant par message. Il ne contient aucun mot de passe.</p>
 <input id="mobileLink" readonly dir="ltr" aria-label="Lien pour l'application mobile">
 <div class="controls">
@@ -336,6 +337,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <label>Mot de passe<input name="password" type="password" autocomplete="current-password" maxlength="256" required></label>
 <button class="secondary">Désactiver la double authentification</button>
 </form>
+</div>
+<div class="card">
+<h3>Appareils</h3>
+<p>Les téléphones appairés avec l'application mobile ouvrent la console sans mot de passe. Retirez un téléphone perdu ou que vous n'utilisez plus.</p>
+<p id="noDevices" class="meta">Aucun appareil pour l'instant.</p>
+<ul id="devicesList" class="device-list"></ul>
 </div>
 <div class="card">
 <h3>Mot de passe</h3>

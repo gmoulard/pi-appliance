@@ -191,7 +191,7 @@ func (s *Store) Delete(name string) error {
 		return err
 	}
 	s.closeSessions(name)
-	return nil
+	return s.removeDevicesOf(name)
 }
 
 // lastAdmin : ce compte est le seul administrateur ayant un mot de passe.
