@@ -608,5 +608,17 @@ piTranslations("ar", {
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "إزالة «{0}»؟ يجب اقتران هذا الهاتف من جديد لفتح لوحة التحكم دون كلمة مرور.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "محاولات كثيرة جدًا: انتظر بضع دقائق قبل إعادة المحاولة.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "يقرن هذا الرمز الهاتف أيضًا بحسابك: سيفتح التطبيق بعدها لوحة التحكم دون كلمة مرور. لا تعرضه إلا على هواتفك؛ يتغيّر كل بضع دقائق.",
-  "Ce téléphone n'est plus appairé à ce Pi.": "لم يعد هذا الهاتف مقترنًا بهذا الـ Pi."
+  "Ce téléphone n'est plus appairé à ce Pi.": "لم يعد هذا الهاتف مقترنًا بهذا الـ Pi.",
+  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "فعّل أولًا التحقق بخطوتين في «حسابي»: فهو إلزامي لفتح لوحة التحكم على الإنترنت.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "أدِر جهاز Pi من أي مكان، عبر عنوانه على الإنترنت. للأمان، لا يمكن تسجيل الدخول من الإنترنت إلا للحسابات التي فعّلت التحقق بخطوتين.",
+  "Console sur internet": "لوحة التحكم على الإنترنت",
+  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "من الإنترنت، لا يمكن تسجيل الدخول إلا للحسابات التي فعّلت التحقق بخطوتين.",
+  "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "إغلاق لوحة التحكم على الإنترنت؟ لن تُفتح إلا في المنزل.",
+  "Fermer la console sur internet": "إغلاق لوحة التحكم على الإنترنت",
+  "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "يجب أيضًا أن يحوّل جهاز التوجيه المنفذين 80 و443 إلى الـ Pi: فبذلك يحصل العنوان على شهادة الأمان.",
+  "La console est ouverte sur internet : {0}": "لوحة التحكم مفتوحة على الإنترنت: {0}",
+  "La console ne s'ouvre qu'à la maison.": "لا تُفتح لوحة التحكم إلا في المنزل.",
+  "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "ستُفتح لوحة التحكم على الإنترنت فور حصول الـ Pi على عنوان على الإنترنت (DuckDNS أو pi-appliance.com، أعلاه).",
+  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "فتح لوحة التحكم على الإنترنت؟ لن يتمكن من تسجيل الدخول من الإنترنت إلا أصحاب الحسابات التي فعّلت التحقق بخطوتين.",
+  "Ouvrir la console sur internet": "فتح لوحة التحكم على الإنترنت"
 });

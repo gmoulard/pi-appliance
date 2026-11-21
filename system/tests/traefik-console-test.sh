@@ -56,8 +56,20 @@ awk '/^tls:$/ { exit } { print }' \
 
 cat >"$TMP/traefik.yml" <<'EOF'
 entryPoints:
+  web:
+    address: ":80"
   websecure:
     address: ":443"
+# Résolveur du Pi (traefik.yml), vers une autorité injoignable : le routeur de
+# la console sur internet est chargé, avec le certificat par défaut.
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: test@example.org
+      storage: /tmp/acme.json
+      caServer: https://127.0.0.1:1/directory
+      httpChallenge:
+        entryPoint: web
 providers:
   file:
     directory: /etc/traefik/dynamic
@@ -159,4 +171,39 @@ for network in "$NET10" "$NET172" "$NET192"; do
 	request "$network" home.test 200 "service backend" >/dev/null
 done
 request "$NET_PUBLIC" home.test 403 >/dev/null
+
+# Console ouverte sur internet (spécification 8.3) : fichier écrit par la
+# console (internal/console/internet.go, traefikInternet), ici pour console.test.
+cat >"$TMP/dynamic/console-internet.yml" <<'EOF'
+http:
+  routers:
+    pi-appliance-console-internet:
+      entryPoints: [websecure]
+      rule: "(Host(`console.test`)) && PathPrefix(`/pi-appliance`) && !PathPrefix(`/pi-appliance/api/auth/forward`)"
+      priority: 1
+      service: pi-appliance-console@file
+      tls:
+        certResolver: letsencrypt
+EOF
+# wait_for <code> <hôte> : Traefik relit le dossier en quelques secondes.
+wait_for() {
+	attempt=0
+	until request "$NET_PUBLIC" "$2" "$1" >/dev/null 2>&1; do
+		attempt=$((attempt + 1))
+		if [ "$attempt" -ge 30 ]; then
+			docker logs "$PROXY" >&2 || true
+			echo "Traefik n'a pas pris la console sur internet ($2 : $1 attendu)" >&2
+			exit 1
+		fi
+		sleep 1
+	done
+}
+wait_for 502 console.test
+request "$NET_PUBLIC" console.test 404 "" /pi-appliance/api/auth/forward >/dev/null
+request "$NET_PUBLIC" autre.test 404 >/dev/null
+request "$NET_PUBLIC" service.test 200 "service backend" >/dev/null
+request "$NET10" console.test 502 >/dev/null
+# Refermée : fichier retiré, la console redevient inaccessible depuis internet.
+rm "$TMP/dynamic/console-internet.yml"
+wait_for 404 console.test
 echo "ok"

@@ -252,13 +252,13 @@ func TestSecureCookieBehindTraefik(t *testing.T) {
 	request.RemoteAddr = "172.18.0.2:4000"
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Forwarded-Proto", "https")
-	request.Header.Set("X-Forwarded-For", "203.0.113.9")
+	request.Header.Set("X-Forwarded-For", "192.168.1.50")
 	recorder := httptest.NewRecorder()
 	f.handler.ServeHTTP(recorder, request)
 	if !sessionCookie(t, recorder).Secure {
 		t.Fatal("cookie non Secure derrière Traefik en HTTPS")
 	}
-	if ip := clientIP(request); ip != "203.0.113.9" {
+	if ip := clientIP(request); ip != "192.168.1.50" {
 		t.Fatalf("adresse du client %q", ip)
 	}
 }

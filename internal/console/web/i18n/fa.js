@@ -608,5 +608,17 @@ piTranslations("fa", {
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "«{0}» حذف شود؟ برای باز کردن کنسول بدون گذرواژه، این تلفن باید دوباره جفت شود.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "تلاش‌های بیش از حد: چند دقیقه صبر کنید و دوباره تلاش کنید.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "این کد تلفن را با حساب شما نیز جفت می‌کند: سپس برنامه کنسول را بدون گذرواژه باز می‌کند. آن را فقط به تلفن‌های خودتان نشان دهید؛ هر چند دقیقه یک بار تغییر می‌کند.",
-  "Ce téléphone n'est plus appairé à ce Pi.": "این تلفن دیگر با این Pi جفت نیست."
+  "Ce téléphone n'est plus appairé à ce Pi.": "این تلفن دیگر با این Pi جفت نیست.",
+  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "ابتدا در «حساب من» تأیید دومرحله‌ای را فعال کنید: برای باز کردن کنسول روی اینترنت الزامی است.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Pi خود را از هر جایی، با نشانی اینترنتی‌اش مدیریت کنید. برای امنیت، از اینترنت فقط حساب‌هایی که تأیید دومرحله‌ای را فعال کرده‌اند می‌توانند وارد شوند.",
+  "Console sur internet": "کنسول روی اینترنت",
+  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "از اینترنت فقط حساب‌هایی که تأیید دومرحله‌ای را فعال کرده‌اند می‌توانند وارد شوند.",
+  "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "کنسول روی اینترنت بسته شود؟ فقط در خانه باز می‌شود.",
+  "Fermer la console sur internet": "بستن کنسول روی اینترنت",
+  "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "مودم شما باید درگاه‌های 80 و 443 را هم به Pi هدایت کند: این کار به نشانی امکان می‌دهد گواهی امنیتی بگیرد.",
+  "La console est ouverte sur internet : {0}": "کنسول روی اینترنت باز است: {0}",
+  "La console ne s'ouvre qu'à la maison.": "کنسول فقط در خانه باز می‌شود.",
+  "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "کنسول به‌محض اینکه Pi نشانی اینترنتی داشته باشد (DuckDNS یا pi-appliance.com، بالا) روی اینترنت باز می‌شود.",
+  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "کنسول روی اینترنت باز شود؟ از اینترنت فقط حساب‌های دارای تأیید دومرحله‌ای می‌توانند وارد شوند.",
+  "Ouvrir la console sur internet": "باز کردن کنسول روی اینترنت"
 });

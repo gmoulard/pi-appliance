@@ -136,6 +136,8 @@ type SessionState struct {
 	Reset   bool         `json:"reset"`
 	Wizard  bool         `json:"wizard"`
 	Account *auth.Public `json:"account"`
+	// Internet : la demande vient d'internet (connexion avec double authentification seulement).
+	Internet bool `json:"internet"`
 }
 
 // Config rassemble ce dont la console a besoin.
@@ -187,6 +189,12 @@ type Config struct {
 	DevicePublicKey string
 	// Hostname : nom du Pi sur le réseau ; nil : nom du système (os.Hostname).
 	Hostname func() (string, error)
+	// InternetFile : réglage de la console sur internet (spécification 8.3) ;
+	// vide : console jamais ouverte sur internet.
+	InternetFile string
+	// TraefikInternetFile : configuration dynamique de Traefik écrite quand la
+	// console est ouverte sur internet ; vide : Traefik pas réglé par la console.
+	TraefikInternetFile string
 }
 
 type console struct {
@@ -205,6 +213,8 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/hello", c.helloGet)
 	mux.HandleFunc("OPTIONS "+BasePath+"/api/hello", c.helloPreflight)
 	mux.HandleFunc("GET "+BasePath+"/api/mobile", c.adminOnly(c.mobile))
+	mux.HandleFunc("GET "+BasePath+"/api/internet-console", c.adminOnly(c.internetStatus))
+	mux.HandleFunc("PUT "+BasePath+"/api/internet-console", c.adminOnly(c.internetSave))
 	mux.HandleFunc("POST "+BasePath+"/api/setup", c.setup)
 	mux.HandleFunc("POST "+BasePath+"/api/reset", c.reset)
 	mux.HandleFunc("POST "+BasePath+"/api/factory-reset", c.factoryReset)
@@ -270,7 +280,7 @@ func Handler(config Config) http.Handler {
 	}
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
-	return mux
+	return c.internetGuard(mux)
 }
 
 func (c *console) account(r *http.Request) (auth.Account, bool) {
@@ -278,7 +288,13 @@ func (c *console) account(r *http.Request) (auth.Account, bool) {
 	if err != nil {
 		return auth.Account{}, false
 	}
-	return c.Accounts.Session(cookie.Value)
+	account, ok := c.Accounts.Session(cookie.Value)
+	// NE PAS relâcher : depuis internet, seuls les comptes avec double
+	// authentification ouvrent la console (spécification 8.3).
+	if ok && fromInternet(r) && account.TOTPSecret == "" {
+		return auth.Account{}, false
+	}
+	return account, ok
 }
 
 // NE PAS relâcher : tant que la double authentification exigée par l'administrateur
@@ -319,7 +335,7 @@ func (c *console) adminOnly(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (c *console) session(w http.ResponseWriter, r *http.Request) {
-	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending()}
+	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending(), Internet: fromInternet(r)}
 	if account, ok := c.account(r); ok {
 		public := account.Public()
 		state.Account = &public
@@ -371,6 +387,12 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 	token, account, err := c.Accounts.Login(request.Name, request.Password, request.Code, clientIP(r))
 	if err != nil {
 		writeAuthError(w, err)
+		return
+	}
+	if fromInternet(r) && account.TOTPSecret == "" {
+		// Même réponse qu'un mauvais mot de passe : rien n'est révélé sur le compte.
+		c.Accounts.Logout(token)
+		writeAuthError(w, auth.ErrCredentials)
 		return
 	}
 	if account.Role == auth.RoleAdmin {

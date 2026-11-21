@@ -608,5 +608,17 @@ piTranslations("zh", {
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "移除“{0}”？此手机需要重新配对才能无需密码打开控制台。",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "尝试次数过多：请等待几分钟后再试。",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "此代码还会把手机与您的账户配对：之后应用将无需密码打开控制台。只给您自己的手机看；它每隔几分钟就会更换。",
-  "Ce téléphone n'est plus appairé à ce Pi.": "此手机已不再与这台 Pi 配对。"
+  "Ce téléphone n'est plus appairé à ce Pi.": "此手机已不再与这台 Pi 配对。",
+  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "请先在“我的账户”中启用两步验证：在互联网上开放控制台必须启用它。",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "在任何地方通过 Pi 的互联网地址管理它。为安全起见，从互联网只能登录已启用两步验证的账户。",
+  "Console sur internet": "互联网上的控制台",
+  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "从互联网只能登录已启用两步验证的账户。",
+  "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "关闭互联网上的控制台？之后只能在家中打开。",
+  "Fermer la console sur internet": "关闭互联网上的控制台",
+  "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "您的路由器还需要把 80 和 443 端口转发到 Pi：这样该地址才能获得安全证书。",
+  "La console est ouverte sur internet : {0}": "控制台已在互联网上开放：{0}",
+  "La console ne s'ouvre qu'à la maison.": "控制台只在家中开放。",
+  "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "一旦 Pi 有了互联网地址（上方的 DuckDNS 或 pi-appliance.com），控制台就会在互联网上开放。",
+  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "在互联网上开放控制台？从互联网只有启用两步验证的账户才能登录。",
+  "Ouvrir la console sur internet": "在互联网上开放控制台"
 });

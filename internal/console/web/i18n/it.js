@@ -608,5 +608,17 @@ piTranslations("it", {
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "Rimuovere «{0}»? Questo telefono dovrà essere associato di nuovo per aprire la console senza password.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Troppi tentativi: attendi qualche minuto prima di riprovare.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Questo codice associa anche il telefono al tuo account: poi l'app aprirà la console senza password. Mostralo solo ai tuoi telefoni; cambia ogni pochi minuti.",
-  "Ce téléphone n'est plus appairé à ce Pi.": "Questo telefono non è più associato a questo Pi."
+  "Ce téléphone n'est plus appairé à ce Pi.": "Questo telefono non è più associato a questo Pi.",
+  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "Attiva prima la verifica in due passaggi in «Il mio account»: è obbligatoria per aprire la console su internet.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Gestisci il tuo Pi da qualsiasi luogo, al suo indirizzo internet. Per sicurezza, da internet possono accedere solo gli account che hanno attivato la verifica in due passaggi.",
+  "Console sur internet": "Console su internet",
+  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Da internet possono accedere solo gli account che hanno attivato la verifica in due passaggi.",
+  "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "Chiudere la console su internet? Si aprirà solo a casa.",
+  "Fermer la console sur internet": "Chiudi la console su internet",
+  "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Il tuo router deve anche inoltrare le porte 80 e 443 al Pi: è ciò che permette di ottenere il certificato di sicurezza dell'indirizzo.",
+  "La console est ouverte sur internet : {0}": "La console è aperta su internet: {0}",
+  "La console ne s'ouvre qu'à la maison.": "La console si apre solo a casa.",
+  "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "La console si aprirà su internet appena il Pi avrà un indirizzo internet (DuckDNS o pi-appliance.com, sopra).",
+  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Aprire la console su internet? Solo gli account con la verifica in due passaggi potranno accedere da internet.",
+  "Ouvrir la console sur internet": "Apri la console su internet"
 });

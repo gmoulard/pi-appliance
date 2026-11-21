@@ -608,5 +608,17 @@ piTranslations("ja", {
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "「{0}」を削除しますか？パスワードなしでコンソールを開くには、このスマートフォンをもう一度ペアリングする必要があります。",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "試行回数が多すぎます。数分待ってからもう一度お試しください。",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "このコードはスマートフォンをあなたのアカウントにペアリングもします。その後アプリはパスワードなしでコンソールを開きます。自分のスマートフォン以外には見せないでください。コードは数分ごとに変わります。",
-  "Ce téléphone n'est plus appairé à ce Pi.": "このスマートフォンはもうこの Pi とペアリングされていません。"
+  "Ce téléphone n'est plus appairé à ce Pi.": "このスマートフォンはもうこの Pi とペアリングされていません。",
+  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "まず「マイアカウント」で 2 段階認証を有効にしてください。インターネットでコンソールを開くには必須です。",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Pi のインターネットアドレスで、どこからでも Pi を管理できます。安全のため、インターネットからは 2 段階認証を有効にしたアカウントだけがログインできます。",
+  "Console sur internet": "インターネットのコンソール",
+  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "インターネットからは、2 段階認証を有効にしたアカウントだけがログインできます。",
+  "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "インターネットのコンソールを閉じますか？自宅でしか開けなくなります。",
+  "Fermer la console sur internet": "インターネットのコンソールを閉じる",
+  "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "ルーターでポート 80 と 443 を Pi に転送する必要もあります。これによりアドレスのセキュリティ証明書を取得できます。",
+  "La console est ouverte sur internet : {0}": "コンソールはインターネットで開いています：{0}",
+  "La console ne s'ouvre qu'à la maison.": "コンソールは自宅でしか開きません。",
+  "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Pi にインターネットアドレス（上の DuckDNS または pi-appliance.com）ができ次第、コンソールはインターネットで開きます。",
+  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "インターネットでコンソールを開きますか？インターネットからは 2 段階認証を有効にしたアカウントだけがログインできます。",
+  "Ouvrir la console sur internet": "インターネットでコンソールを開く"
 });

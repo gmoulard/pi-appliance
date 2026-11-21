@@ -74,6 +74,7 @@ func main() {
 	cockpitScript := flag.String("cockpit-script", cockpit.DefaultScript, "script de l'administration du système par Cockpit (vide : non installable depuis la console)")
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
+	traefikInternet := flag.String("traefik-internet", "/etc/pi-appliance/traefik/dynamic/console-internet.yml", "configuration dynamique de Traefik écrite quand la console est ouverte sur internet (vide : jamais ouverte)")
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
 	flag.Parse()
@@ -210,7 +211,7 @@ func main() {
 	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
 	go checker.Run(ctx, 5*time.Minute)
 	go reporter.Run(ctx)
-	handler := console.Handler(console.Config{
+	config := console.Config{
 		Version:          version,
 		Catalog:          market,
 		Services:         manager,
@@ -230,7 +231,13 @@ func main() {
 		Diagnostic:       diag,
 		DiagnosticWindow: window,
 		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),
-	})
+	}
+	if *traefikInternet != "" {
+		config.InternetFile = filepath.Join(*data, "internet-console.json")
+		config.TraefikInternetFile = *traefikInternet
+		go console.RunInternet(ctx, config, time.Minute)
+	}
+	handler := console.Handler(config)
 	server := &http.Server{
 		Addr:              *addr,
 		Handler:           reporter.Guard(handler),

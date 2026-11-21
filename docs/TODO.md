@@ -202,7 +202,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Écrans : choix à l'installation et dans la fiche du service, en langage courant, dans les 12 langues.
   - [x] Spécification 8.2 marquée réalisée, limites notées.
 - [ ] **TODO-3.11**: Console fermée sur internet par défaut (8.3) : Traefik limite désormais `/pi-appliance` aux plages privées IPv4, à la boucle locale et aux plages locales IPv6, avec une priorité basse ; le test Traefik vérifie le refus d'une source hors liste autorisée et laisse passer les routeurs des services. Reste à définir les plages réelles du VPN et du tunnel relais : si le pair du relais a une adresse privée, `ClientIP` l'autorise aussi. L'accès depuis un LAN IPv6 à adresse globale est également refusé. Ne pas cocher avant d'avoir défini ces réseaux et validé leur séparation.
-- [ ] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3).
+- [x] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3). Fait : carte « Console sur internet » (fermée par défaut, ouverte par un administrateur qui a la double authentification), routeur Traefik `console-internet.yml` écrit par la console pour les adresses internet du Pi avec certificat Let's Encrypt, refus depuis internet des comptes sans double authentification, actions sensibles réservées à la maison ; tests Go et Traefik.
+  - [ ] À vérifier sur un vrai Pi : ports 80 et 443 redirigés par la box, certificat Let's Encrypt obtenu pour l'adresse DuckDNS ou pi-appliance.com, connexion depuis un téléphone en 4G, fermeture.
 
 ## 4. Étape 3 — Le reste
 

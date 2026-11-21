@@ -159,6 +159,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </div>
 </form>
 </div>
+<div id="internetBox" class="card" hidden>
+<h3>Console sur internet</h3>
+<p>Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.</p>
+<p id="internetState" class="state" aria-live="polite"></p>
+<p class="meta">Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.</p>
+<div class="controls">
+<button id="internetOpen" type="button" hidden>Ouvrir la console sur internet</button>
+<button id="internetClose" class="secondary" type="button" hidden>Fermer la console sur internet</button>
+</div>
+</div>
 </section>
 <section id="statsSection" hidden>
 <h2>Statistiques anonymes</h2>

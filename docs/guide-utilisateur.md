@@ -108,6 +108,17 @@ Scanner le code depuis l'application **appaire** aussi le téléphone à votre c
 
 Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, ses adresses et celles de ses services (et, pour le code, le code d'appairage de quelques minutes). Pour lire l'état du Pi, l'application demande au Pi son nom, sa version et la liste de ses services ; n'importe qui qui connaît l'adresse du Pi peut lire ces informations, rien d'autre.
 
+## Administrer le Pi depuis internet {#console-sur-internet}
+
+La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir :
+
+1. À la maison, dans « Mon compte », activez la **double authentification** : depuis internet, seuls les comptes qui l'ont activée peuvent se connecter.
+2. Donnez une adresse internet au Pi, dans « Adresse sur internet » (DuckDNS, puis votre adresse pi-appliance.com).
+3. Dans votre box, faites suivre les ports **80** et **443** vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.
+4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`.
+
+Depuis internet, la console demande votre mot de passe puis le code de votre application d'authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
+
 ## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
 
 Si la console répond « identifiant ou mot de passe incorrect », vérifiez d'abord l'identifiant : c'est le nom choisi à la création du compte (par exemple `marie`), **pas l'adresse e-mail**. Si le mot de passe administrateur est vraiment perdu, le fichier `reset` permet d'en choisir un nouveau sans rien perdre : les services installés, leurs données et les autres comptes sont conservés.

@@ -608,5 +608,17 @@ piTranslations("tr", {
   "Retirer « {0} » ? Ce téléphone devra être appairé de nouveau pour ouvrir la console sans mot de passe.": "«{0}» kaldırılsın mı? Konsolu parolasız açmak için bu telefonun yeniden eşleştirilmesi gerekecek.",
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Çok fazla deneme: yeniden denemeden önce birkaç dakika bekleyin.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Bu kod telefonu hesabınızla da eşleştirir: uygulama ardından konsolu parolasız açar. Yalnızca kendi telefonlarınıza gösterin; birkaç dakikada bir değişir.",
-  "Ce téléphone n'est plus appairé à ce Pi.": "Bu telefon artık bu Pi ile eşleştirilmiş değil."
+  "Ce téléphone n'est plus appairé à ce Pi.": "Bu telefon artık bu Pi ile eşleştirilmiş değil.",
+  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "Önce «Hesabım» bölümünde iki adımlı doğrulamayı açın: konsolu internete açmak için zorunludur.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Pi'nizi internet adresinden, her yerden yönetin. Güvenlik için internetten yalnızca iki adımlı doğrulamayı açmış hesaplar giriş yapabilir.",
+  "Console sur internet": "İnternette konsol",
+  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "İnternetten yalnızca iki adımlı doğrulamayı açmış hesaplar giriş yapabilir.",
+  "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "Konsol internete kapatılsın mı? Yalnızca evde açılacak.",
+  "Fermer la console sur internet": "Konsolu internete kapat",
+  "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Modeminizin 80 ve 443 numaralı bağlantı noktalarını da Pi'ye yönlendirmesi gerekir: adresin güvenlik sertifikasını alması bununla olur.",
+  "La console est ouverte sur internet : {0}": "Konsol internete açık: {0}",
+  "La console ne s'ouvre qu'à la maison.": "Konsol yalnızca evde açılır.",
+  "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Pi'nin bir internet adresi olur olmaz konsol internete açılacak (DuckDNS veya pi-appliance.com, yukarıda).",
+  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Konsol internete açılsın mı? İnternetten yalnızca iki adımlı doğrulaması olan hesaplar giriş yapabilecek.",
+  "Ouvrir la console sur internet": "Konsolu internete aç"
 });
