@@ -8,7 +8,24 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 
 > **État du projet : expérimental.** L'image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Ce n'est pas encore une version stable : gardez une copie de vos données importantes ailleurs.
 
-## Ce que contient le prototype
+**Dans ce guide**
+
+1. [Ce que contient cette version](#contenu)
+2. [Ce qui n'est pas encore disponible](#pas-encore-disponible)
+3. [Télécharger et installer l'image](#telecharger-limage-experimentale)
+   - [Ce qui se passe au premier démarrage](#premier-demarrage)
+   - [Retrouver la console sur le réseau de la maison](#retrouver-la-console)
+   - [Retrouver son Pi sur son téléphone : l'application mobile](#application-mobile)
+4. [Administrer le Pi depuis internet](#console-sur-internet)
+5. [Ligne de commande du Pi (SSH)](#ligne-de-commande)
+6. [Mot de passe administrateur oublié : le fichier reset](#fichier-reset)
+7. [Remettre le Pi à zéro](#remise-a-zero)
+8. [Diagnostic du Pi sans écran](#diagnostic)
+9. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
+10. [Lancer la console depuis les sources](#depuis-les-sources)
+11. [Pour aller plus loin](#pour-aller-plus-loin)
+
+## Ce que contient cette version {#contenu}
 
 - Une console en français avec création du compte administrateur, connexion et assistant de première mise en route (réseau, test du Wi-Fi, redémarrage).
 - La configuration du réseau filaire ou du Wi-Fi depuis la console, ainsi qu'un point d'accès Wi-Fi de configuration au premier démarrage de l'image.
@@ -21,30 +38,11 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 
 Ces fonctions sont présentes dans le code, mais restent à valider sur du matériel réel. La liste des essais restants est dans la page [Avancement](TODO.html).
 
-## Ce qui n'est pas encore disponible
+## Ce qui n'est pas encore disponible {#pas-encore-disponible}
 
 - Une version stable de l'image, et des essais sur Pi 5 et Pi Zero 2 W.
 - L'accès aux services depuis internet et la réservation d'une adresse `*.pi-appliance.com`.
 - Les sauvegardes en ligne ou sur un autre pi-appliance et la restauration de l'appliance entière ou d'un seul fichier.
-
-## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
-
-> **Cette option n'est pas encore disponible pour les services.** Pour la console seule, un nom de votre domaine peut déjà servir d'adresse sur internet : voir [Administrer le Pi depuis internet](#console-sur-internet). Pour les services, la console ne permet pas encore de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
-
-Quand cette option sera disponible, la configuration se fera en deux endroits :
-
-### Chez OVH
-
-1. Choisissez un sous-domaine de votre domaine, par exemple `ma-maison.exemple.fr`. C'est préférable au domaine seul (`exemple.fr`) : un alias DNS classique ne peut pas toujours être créé à la racine d'un domaine.
-2. Dans l'espace client OVH, ouvrez la zone DNS de votre domaine et ajoutez une entrée de type **CNAME** pour ce sous-domaine. La cible sera le nom complet fourni par la console, de la forme `<nom>.pi-appliance.com`.
-3. Ne remplacez pas les serveurs DNS du domaine et ne modifiez pas ses autres entrées, notamment celles utilisées pour le site web ou les e-mails. N'utilisez pas la fonction de redirection web d'OVH à la place de l'entrée DNS.
-4. Si la console demande d'autres entrées pour les adresses des services, suivez les valeurs qu'elle affiche ; ne les devinez pas.
-
-### Dans la console pi-appliance
-
-La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible à recopier chez OVH, puis de vérifier la configuration avant d'activer le domaine. Ces réglages et cette vérification ne sont pas encore présents.
-
-**Prérequis :** l'appliance doit d'abord pouvoir obtenir et tenir à jour son adresse pi-appliance (`TODO-3.2` et `TODO-3.5`). La prise en charge du domaine dans la console, notamment pour l'utiliser avec les services et leurs certificats, reste aussi à réaliser. L'accès depuis internet n'est pas encore disponible non plus.
 
 ## Télécharger et installer l'image {#telecharger-limage-experimentale}
 
@@ -174,7 +172,26 @@ Si la console ne s'ouvre plus du tout (programme Traefik en panne), essayez `htt
 
 Si vous avez choisi un compte et activé SSH dans les réglages de Raspberry Pi Imager, ils sont gardés : une personne à l'aise avec l'informatique peut aussi se connecter au Pi par SSH. Le Wi-Fi réglé dans Imager, lui, est ignoré : le Wi-Fi de la maison se choisit dans le portail.
 
-## Lancer la console depuis les sources
+## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
+
+> **Cette option n'est pas encore disponible pour les services.** Pour la console seule, un nom de votre domaine peut déjà servir d'adresse sur internet : voir [Administrer le Pi depuis internet](#console-sur-internet). Pour les services, la console ne permet pas encore de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
+
+Quand cette option sera disponible, la configuration se fera en deux endroits :
+
+### Chez OVH
+
+1. Choisissez un sous-domaine de votre domaine, par exemple `ma-maison.exemple.fr`. C'est préférable au domaine seul (`exemple.fr`) : un alias DNS classique ne peut pas toujours être créé à la racine d'un domaine.
+2. Dans l'espace client OVH, ouvrez la zone DNS de votre domaine et ajoutez une entrée de type **CNAME** pour ce sous-domaine. La cible sera le nom complet fourni par la console, de la forme `<nom>.pi-appliance.com`.
+3. Ne remplacez pas les serveurs DNS du domaine et ne modifiez pas ses autres entrées, notamment celles utilisées pour le site web ou les e-mails. N'utilisez pas la fonction de redirection web d'OVH à la place de l'entrée DNS.
+4. Si la console demande d'autres entrées pour les adresses des services, suivez les valeurs qu'elle affiche ; ne les devinez pas.
+
+### Dans la console pi-appliance
+
+La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible à recopier chez OVH, puis de vérifier la configuration avant d'activer le domaine. Ces réglages et cette vérification ne sont pas encore présents.
+
+**Prérequis :** l'appliance doit d'abord pouvoir obtenir et tenir à jour son adresse pi-appliance (`TODO-3.2` et `TODO-3.5`). La prise en charge du domaine dans la console, notamment pour l'utiliser avec les services et leurs certificats, reste aussi à réaliser. L'accès depuis internet n'est pas encore disponible non plus.
+
+## Lancer la console depuis les sources {#depuis-les-sources}
 
 Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.24 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.
 
@@ -189,7 +206,7 @@ Ouvrir ensuite **http://localhost:8080/pi-appliance/** dans le navigateur et cr�
 
 Pour construire l'image système, utiliser le workflow [Image](https://github.com/gmoulard/pi-appliance/actions/workflows/image.yml). Il est réservé aux essais et à la contribution tant que les tests sur un vrai Pi ne sont pas terminés.
 
-## Pour aller plus loin
+## Pour aller plus loin {#pour-aller-plus-loin}
 
 - [Installer le socle sans l'image](installation.html) : Docker, Traefik, console et services systemd sur un Raspberry Pi OS existant.
 - [Essais avec plusieurs Pi](essais-plusieurs-pi.html) : procédure technique pour essayer plusieurs Pi dans une maison, et des Pi dans d'autres maisons joints depuis internet.
