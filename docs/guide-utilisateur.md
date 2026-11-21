@@ -1,4 +1,11 @@
-# Guide du prototype pi-appliance
+# Guide de pi-appliance
+
+pi-appliance, ce sont quatre parties qui portent le même nom :
+
+- **l'image pi-appliance**, à copier sur la carte SD : le système du Pi, prêt à l'emploi ;
+- **le socle pi-appliance**, toujours installé sur le Pi, et sa **console** : la page web d'où l'on règle le Pi et installe ses services ;
+- **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) : ce guide lisible sans réseau, et un raccourci vers vos Pi ;
+- **la commande `pia`**, pour les personnes à l'aise avec la ligne de commande ([voir plus bas](#ligne-de-commande)). Elle n'est pas nécessaire : tout se fait depuis la console.
 
 > **État du projet : expérimental.** L'image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Ce n'est pas encore une version stable : gardez une copie de vos données importantes ailleurs.
 
@@ -44,7 +51,7 @@ La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible
 
 L'image est publiée avec chaque version de pi-appliance, sur la page [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest) : le fichier **`pi-appliance-vX.Y.Z.img.xz`** (environ 720 Mio compressé, 3,3 Gio une fois décompressé) et son fichier de somme de contrôle **`pi-appliance-vX.Y.Z.img.xz.sha256`**, où `X.Y.Z` est le numéro de version (par exemple `0.1.6`). Elle est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4. Un Pi déjà installé n'a pas besoin d'être reflashé : il se met à jour depuis la console (« Mon Pi », « Mises à jour »).
 
-Dans cette documentation, **controlTower** désigne le service de contrôle : la console d'administration de pi-appliance. Inclus dans l'image, il n'est pas installé depuis la marketplace et son administration est réservée au compte créé par la personne qui configure l'appliance. Chaque Pi a son propre nom, `pi-appliance-XXXX`, modifiable dans la console (section « Réseau de la maison », « Nom du Pi sur le réseau ») : un Pi nommé `controltower` s'ouvre à `https://controltower.local/pi-appliance/`.
+L'image contient le socle pi-appliance et sa console : rien d'autre à installer. Seule la personne qui configure le Pi, avec le compte administrateur créé au premier démarrage, peut l'administrer. Chaque Pi a son propre nom, `pi-appliance-XXXX`, modifiable dans la console (section « Réseau de la maison », « Nom du Pi sur le réseau ») : un Pi nommé `salon` s'ouvre à `https://salon.local/pi-appliance/`.
 
 L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte micro-SD de 16 Go ou plus, un ordinateur et [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Le flashage efface entièrement la carte SD.
 
@@ -185,8 +192,8 @@ Pour construire l'image système, utiliser le workflow [Image](https://github.co
 
 ## Pour aller plus loin
 
-- [Installation du plan de contrôle](installation.html) : Docker, Traefik, console et services systemd sur un Raspberry Pi OS existant.
-- [Essais avec plusieurs Pi](essais-plusieurs-pi.html) : procédure technique pour essayer controlTower et d'autres Pi dans une maison, et des Pi dans d'autres maisons joints depuis internet.
+- [Installer le socle sans l'image](installation.html) : Docker, Traefik, console et services systemd sur un Raspberry Pi OS existant.
+- [Essais avec plusieurs Pi](essais-plusieurs-pi.html) : procédure technique pour essayer plusieurs Pi dans une maison, et des Pi dans d'autres maisons joints depuis internet.
 - [Marketplace](marketplace.html) : catalogue actuel, applications envisagées et guide de contribution.
 - [Spécification](specification.html) : fonctionnement visé par le projet.
 - [Avancement](TODO.html) : fonctions réalisées et essais restants.
