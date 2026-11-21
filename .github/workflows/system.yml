@@ -83,6 +83,8 @@ jobs:
         run: sh system/tests/updates-test.sh
       - name: Administration du système (Cockpit)
         run: sh system/tests/cockpit-test.sh
+      - name: Diagnostic du Pi
+        run: sh system/tests/diagnostic-test.sh
       - name: pi-gen (préparation, sans construction)
         run: |
           set -eu

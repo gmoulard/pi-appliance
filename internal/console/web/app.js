@@ -3416,11 +3416,189 @@ factoryForm.addEventListener("submit", async (event) => {
   }
 });
 
+// Diagnostic du Pi (spécification 8.5, TODO-2.55) : page /pi-appliance/diagnostic,
+// pour un administrateur, ou sans compte après le dépôt du fichier diagnostic
+// (ou reset) sur la carte SD ; aussi servie sur le port 8443 quand Traefik
+// ne répond plus (console de secours).
+const DIAGNOSTIC_PAGE = /\/diagnostic$/.test(window.location.pathname);
+const diagnosticSection = document.getElementById("diagnosticSection");
+const diagnosticUnits = document.getElementById("diagnosticUnits");
+const diagnosticErrors = document.getElementById("diagnosticErrors");
+const diagnosticDownload = document.getElementById("diagnosticDownload");
+const diagnosticClose = document.getElementById("diagnosticClose");
+
+const DIAGNOSTIC_UNITS = {
+  console: () => t("La console"),
+  traefik: () => t("L'accès à la console par le navigateur (Traefik)"),
+  "traefik-check": () => t("La réparation automatique de Traefik"),
+  docker: () => t("Les services installés (Docker)"),
+  network: () => t("Le réseau (Wi-Fi et câble)"),
+  ap: () => t("Le Wi-Fi de configuration"),
+  firewall: () => t("La protection du Wi-Fi de configuration"),
+  avahi: () => t("L'adresse nom.local du Pi"),
+  mdns: () => t("Les adresses des services à la maison"),
+  secrets: () => t("Le nom et les clés du Pi"),
+};
+const DIAGNOSTIC_STATES = {
+  ok: ["green", () => t("en marche")],
+  starting: ["orange", () => t("en train de démarrer")],
+  restarting: ["red", () => t("redémarre en boucle")],
+  failed: ["red", () => t("en panne")],
+  stopped: ["red", () => t("arrêté")],
+  missing: ["red", () => t("absent")],
+};
+
+function uptimeText(seconds) {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  if (days > 0) return t("{0} j {1} h", days, hours);
+  return t("{0} h {1} min", hours, Math.floor((seconds % 3600) / 60));
+}
+
+function diagnosticTiles(report) {
+  const tiles = [];
+  const status = report.status_error ? null : report;
+  if (status) {
+    const traefik = status.traefik;
+    const restarts = traefik.restarts > 0 ? ` ${t("Traefik a redémarré {0} fois.", traefik.restarts)}` : "";
+    tiles.push(traefik.https
+      ? nowTile(t("Accès par le navigateur"), t("Correct"), t("La console répond par HTTPS.") + restarts, "green")
+      : nowTile(t("Accès par le navigateur"), t("En panne"),
+        t("Traefik ne répond pas : le Pi essaie de le réparer tout seul toutes les 2 minutes. S'il reste en panne, débranchez puis rebranchez l'alimentation du Pi.") + restarts, "red"));
+  }
+  const power = report.resources && report.resources.power;
+  const counts = status && status.undervoltage;
+  let history = "";
+  if (counts && known(counts.previousBoot)) {
+    history = ` ${t("{0} baisses de tension depuis le démarrage, {1} au démarrage précédent.", counts.thisBoot, counts.previousBoot)}`;
+  } else if (counts) {
+    history = ` ${t("{0} baisses de tension depuis le démarrage.", counts.thisBoot)}`;
+  }
+  if (known(power) || counts) {
+    const before = counts && (counts.thisBoot > 0 || counts.previousBoot > 0);
+    if (known(power) && power.undervoltage_now) {
+      tiles.push(nowTile(t("Alimentation"), t("Trop faible"),
+        t("Alimentation trop faible : utilisez l'alimentation officielle du Pi. Le Pi ralentit et la carte SD peut s'abîmer.") + history, "red"));
+    } else if ((known(power) && power.undervoltage_since_boot) || before) {
+      tiles.push(nowTile(t("Alimentation"), t("Trop faible par moments"),
+        t("L'alimentation a été trop faible depuis le démarrage du Pi : utilisez l'alimentation officielle du Pi, et évitez les câbles longs ou fins.") + history, "orange"));
+    } else {
+      tiles.push(nowTile(t("Alimentation"), t("Correcte"), t("Aucune baisse de tension depuis le démarrage du Pi."), "green"));
+    }
+  }
+  const disk = report.resources && report.resources.disk;
+  if (known(disk)) {
+    const full = disk.free_mb < disk.total_mb * 0.15;
+    tiles.push(nowTile(t("Carte SD"), sizeText(disk.free_mb),
+      full ? t("La carte SD se remplit.") : t("Il reste {0} de place sur la carte SD.", sizeText(disk.free_mb)), full ? "orange" : "green"));
+  }
+  if (status && status.uptimeSeconds > 0) {
+    tiles.push(nowTile(t("Allumé depuis"), uptimeText(status.uptimeSeconds), "", "green"));
+  }
+  return tiles;
+}
+
+function showDiagnosticReport(report) {
+  document.getElementById("diagnosticTiles").replaceChildren(...diagnosticTiles(report));
+  const open = document.getElementById("diagnosticOpen");
+  open.hidden = !report.by_file;
+  open.textContent = report.open_until
+    ? t("Ouvert sans compte grâce au fichier diagnostic de la carte SD, jusqu'au {0}.", new Date(report.open_until).toLocaleString(LOCALE))
+    : t("Ouvert sans compte grâce au fichier de la carte SD.");
+  diagnosticClose.hidden = !report.open_until;
+  if (report.status_error) {
+    diagnosticUnits.replaceChildren(element("li", report.status_error, "warning"));
+    diagnosticErrors.hidden = true;
+    document.getElementById("diagnosticNoErrors").hidden = true;
+    return;
+  }
+  diagnosticUnits.replaceChildren(...report.units.map((unit) => {
+    const [color, text] = DIAGNOSTIC_STATES[unit.state] || ["red", () => unit.state];
+    const label = DIAGNOSTIC_UNITS[unit.id] ? DIAGNOSTIC_UNITS[unit.id]() : unit.unit;
+    const item = element("li");
+    const line = element("span", undefined, "state");
+    line.append(element("span", undefined, `dot ${color}`), element("span", t("{0} : {1}", label, text())));
+    item.append(line);
+    if (unit.restarts > 0) {
+      item.append(element("p", t("Redémarré {0} fois depuis le démarrage du Pi.", unit.restarts), "meta"));
+    }
+    return item;
+  }));
+  diagnosticErrors.textContent = report.errors.join("\n");
+  diagnosticErrors.hidden = report.errors.length === 0;
+  document.getElementById("diagnosticNoErrors").hidden = report.errors.length > 0;
+}
+
+// Rend false si la page demande une connexion (pas d'administrateur, pas de fichier).
+async function showDiagnostic() {
+  let report;
+  try {
+    report = await api("diagnostic");
+  } catch (error) {
+    if (error.status === 401 || error.status === 403) {
+      return false;
+    }
+    showMessage([error.message], "error");
+    return true;
+  }
+  authSection.hidden = true;
+  diagnosticSection.hidden = false;
+  document.getElementById("diagnosticRescue").textContent = window.location.port === "8443"
+    ? t("Console de secours : Traefik ne répond pas, seule cette page est ouverte.")
+    : t("Si la console ne s'ouvre plus, cette page reste joignable à {0}.", `https://${window.location.hostname}:8443${window.location.pathname}`);
+  showDiagnosticReport(report);
+  return true;
+}
+
+document.getElementById("diagnosticRefresh").addEventListener("click", () => showDiagnostic());
+
+diagnosticDownload.addEventListener("click", async () => {
+  diagnosticDownload.disabled = true;
+  showMessage([t("Préparation des journaux… Cela peut prendre une minute.")], "info");
+  try {
+    const response = await fetch("api/diagnostic/logs");
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || t("Erreur {0}", response.status));
+    }
+    const name = (response.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/);
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(await response.blob());
+    link.download = name ? name[1] : "pi-appliance-diagnostic.txt";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+    message.hidden = true;
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    diagnosticDownload.disabled = false;
+  }
+});
+
+diagnosticClose.addEventListener("click", async () => {
+  try {
+    await api("diagnostic", { method: "DELETE" });
+    diagnosticSection.hidden = true;
+    showMessage([t("L'accès sans compte est fermé.")], "success");
+    showAuth("login");
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+});
+
 async function showConsole(account, wizard) {
   if (FACTORY_PAGE && account.role === "admin") {
     currentAccount = account;
     logoutButton.hidden = false;
     showFactory(false);
+    return;
+  }
+  if (DIAGNOSTIC_PAGE && account.role === "admin" && !needsTOTP(account)) {
+    currentAccount = account;
+    logoutButton.hidden = false;
+    await showDiagnostic();
     return;
   }
   currentAccount = account;
@@ -3475,6 +3653,9 @@ api("health")
     if (invite && (await startInvitation(invite[1]))) {
       return;
     }
+    if (DIAGNOSTIC_PAGE && (await showDiagnostic())) {
+      return;
+    }
     const session = await api("session");
     if (session.reset) {
       if (FACTORY_PAGE) {
@@ -3488,6 +3669,9 @@ api("health")
       showAuth("login");
       if (FACTORY_PAGE) {
         showMessage([t("Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.")], "info");
+      }
+      if (DIAGNOSTIC_PAGE) {
+        showMessage([t("Connectez-vous avec un compte administrateur pour voir le diagnostic du Pi, ou déposez le fichier diagnostic sur la carte SD (voir le guide).")], "info");
       }
     } else {
       await showConsole(session.account, session.wizard);

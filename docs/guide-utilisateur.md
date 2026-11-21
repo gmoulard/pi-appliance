@@ -113,6 +113,16 @@ Pour repartir de la mise en route, comme au premier démarrage (par exemple avan
 
 Mot de passe perdu : déposez d'abord le fichier `reset` (ci-dessus) ; tant que le nouveau mot de passe n'est pas choisi, la page de remise à zéro s'ouvre aussi sans mot de passe.
 
+## Diagnostic du Pi sans écran {#diagnostic}
+
+Si un service ou la console se comporte mal, ouvrez `https://<adresse du Pi>/pi-appliance/diagnostic` (lien « Diagnostic du Pi » dans « Mon Pi »), connecté avec un compte administrateur. La page dit si chaque programme du Pi est en marche, si l'alimentation a été trop faible, la place sur la carte SD et les dernières erreurs. **Télécharger les journaux** crée un fichier texte à envoyer à la personne qui vous aide : les mots de passe et les adresses e-mail y sont masqués.
+
+Sans compte administrateur (mot de passe perdu, compte pas encore créé) : déposez sur la partition `bootfs` de la carte SD un fichier vide nommé exactement **`diagnostic`**, comme le fichier `reset` (voir ci-dessus), puis remettez la carte et rebranchez le Pi. La page s'ouvre alors sans compte, depuis la maison, pendant 24 heures ; le bouton « Fermer l'accès sans compte » la referme plus tôt.
+
+Si la console ne s'ouvre plus du tout (programme Traefik en panne), essayez `https://<nom du Pi>.local:8443/pi-appliance/diagnostic` : le Pi ouvre cette console de secours, qui ne montre que le diagnostic, quand Traefik ne répond plus depuis une minute et demie. Si rien ne répond, débranchez puis rebranchez l'alimentation du Pi.
+
+Si vous avez choisi un compte et activé SSH dans les réglages de Raspberry Pi Imager, ils sont gardés : une personne à l'aise avec l'informatique peut aussi se connecter au Pi par SSH. Le Wi-Fi réglé dans Imager, lui, est ignoré : le Wi-Fi de la maison se choisit dans le portail.
+
 ## Lancer la console depuis les sources
 
 Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.24 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.

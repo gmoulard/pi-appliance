@@ -55,6 +55,9 @@ done
 if ! grep -qx 'preserve_hostname: true' "${ROOTFS_DIR}/etc/cloud/cloud.cfg.d/99-pi-appliance.cfg" 2>/dev/null; then
 	fail "cloud-init remplacerait le nom du Pi (99-pi-appliance.cfg manquant)"
 fi
+if ! grep -qx '  config: disabled' "${ROOTFS_DIR}/etc/cloud/cloud.cfg.d/99-pi-appliance.cfg"; then
+	fail "cloud-init appliquerait le Wi-Fi des réglages de Raspberry Pi Imager (network: config: disabled manquant)"
+fi
 if [ ! -L "${ROOTFS_DIR}/etc/systemd/system/timers.target.wants/pi-appliance-traefik-check.timer" ]; then
 	fail "pi-appliance-traefik-check.timer n'est pas activé au démarrage"
 fi
