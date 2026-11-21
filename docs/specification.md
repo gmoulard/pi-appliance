@@ -118,7 +118,7 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 5. Test d'accès depuis internet ; guide de la box ou bascule sur le relais si besoin (section 7).
 6. Création des utilisateurs.
 7. Statistiques anonymes : proposées, désactivées par défaut (section 8.4).
-8. Test du réseau de la maison, puis redémarrage du Pi.
+8. Test du réseau de la maison, puis redémarrage du Pi. **Cible** (TODO-2.63) : entre les deux, mise à jour du Pi (système et pi-appliance), une seule fois et d'office, l'image n'étant reconstruite que de loin en loin ; ensuite les mises à jour restent proposées (section 9.2).
 
 L'assistant n'installe pas de service : une fois la mise en route terminée, l'administrateur choisit ses services dans la marketplace (section 6.2).
 
