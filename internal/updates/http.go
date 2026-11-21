@@ -30,11 +30,13 @@ import (
 //	POST prefix/system   installation des correctifs du système
 //	POST prefix/appliance installation de la dernière version de pi-appliance
 //	PUT  prefix/channel  canal de version, {"channel": "stable"|"beta"}
-//	PUT  prefix/auto     installation automatique, {"enabled": bool, "hour": 0…23}
+//	PUT  prefix/auto     installation automatique de pi-appliance, {"enabled": bool, "hour": 0…23}
+//	PUT  prefix/auto-system installation automatique du système, même corps
 func (c *Checker) Routes(mux *http.ServeMux, prefix string, wrap func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET "+prefix, wrap(c.serveStatus))
 	mux.HandleFunc("PUT "+prefix+"/channel", wrap(c.serveChannel))
-	mux.HandleFunc("PUT "+prefix+"/auto", wrap(c.serveAuto))
+	mux.HandleFunc("PUT "+prefix+"/auto", wrap(c.serveAuto(c.Auto, c.SetAuto)))
+	mux.HandleFunc("PUT "+prefix+"/auto-system", wrap(c.serveAuto(c.AutoSystem, c.SetAutoSystem)))
 	mux.HandleFunc("POST "+prefix+"/check", wrap(c.serveCheck))
 	mux.HandleFunc("POST "+prefix+"/system", wrap(c.serveApply))
 	mux.HandleFunc("POST "+prefix+"/appliance", wrap(c.serveInstall))
@@ -78,7 +80,14 @@ func (c *Checker) serveChannel(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (c *Checker) serveAuto(w http.ResponseWriter, r *http.Request) {
+// serveAuto règle une installation automatique (pi-appliance ou système).
+func (c *Checker) serveAuto(get func() Auto, set func(Auto) error) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c.putAuto(w, r, get, set)
+	}
+}
+
+func (c *Checker) putAuto(w http.ResponseWriter, r *http.Request, get func() Auto, set func(Auto) error) {
 	var body struct {
 		Enabled *bool `json:"enabled"`
 		Hour    *int  `json:"hour"`
@@ -87,16 +96,16 @@ func (c *Checker) serveAuto(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Demande illisible."})
 		return
 	}
-	auto := c.Auto()
+	auto := get()
 	auto.Enabled = *body.Enabled
 	if body.Hour != nil {
 		auto.Hour = *body.Hour
 	}
-	err := c.SetAuto(auto)
+	err := set(auto)
 	var failure Failure
 	switch {
 	case err == nil:
-		writeJSON(w, http.StatusOK, c.Auto())
+		writeJSON(w, http.StatusOK, get())
 	case errors.As(err, &failure) && failure.Code == "hour":
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": failure.Message, "code": failure.Code})
 	case errors.As(err, &failure):

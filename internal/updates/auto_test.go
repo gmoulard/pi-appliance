@@ -156,3 +156,91 @@ func TestAutoRoute(t *testing.T) {
 		t.Fatalf("arrêt : code %d, %+v", response.Code, auto)
 	}
 }
+
+// systemChecker : updates.sh avec les réponses données, réglages dans un
+// fichier, horloge du Pi à l'heure donnée.
+func systemChecker(t *testing.T, status string, hour int) (*Checker, *fakeScript) {
+	t.Helper()
+	script := &fakeScript{replies: map[string]string{"status": status, "refresh": `{"ok": true}`, "apply": `{"ok": true, "started": true}`}}
+	checker := &Checker{Runner: script, Version: "v1.0.0", SettingsFile: filepath.Join(t.TempDir(), "updates.json")}
+	checker.Now = func() time.Time { return time.Date(2026, 11, 21, hour, 15, 0, 0, time.Local) }
+	return checker, script
+}
+
+func TestAutoSystemOffByDefault(t *testing.T) {
+	checker, script := systemChecker(t, twoPackages, DefaultSystemHour)
+	if auto := checker.Status(context.Background()).AutoSystem; auto.Enabled || auto.Hour != DefaultSystemHour {
+		t.Fatalf("réglage par défaut : %+v", auto)
+	}
+	if checker.AutoApplySystem(context.Background()) || script.called("apply") {
+		t.Fatalf("installé sans l'accord de l'administrateur : %v", script.calls)
+	}
+}
+
+func TestAutoSystemAppliesAtItsHour(t *testing.T) {
+	checker, script := systemChecker(t, twoPackages, 1)
+	if err := checker.SetAutoSystem(Auto{Enabled: true, Hour: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if !checker.AutoApplySystem(context.Background()) || !script.called("refresh") || !script.called("apply") {
+		t.Fatalf("mises à jour non installées : %v", script.calls)
+	}
+	if checker.AutoApplySystem(context.Background()) {
+		t.Fatal("seconde tentative la même nuit")
+	}
+}
+
+func TestAutoSystemSkips(t *testing.T) {
+	upToDate := `{"packages": [], "apply": null, "reboot_required": false}`
+	upgrading := `{"packages": [{"name": "libssl3t64", "security": true}], "apply": null, "upgrade": {"state": "running", "version": "v1.1.0"}, "reboot_required": false}`
+	for name, c := range map[string]struct {
+		status string
+		hour   int
+	}{
+		"hors de l'heure":       {twoPackages, 14},
+		"rien à installer":      {upToDate, 5},
+		"pi-appliance installé": {upgrading, 5},
+	} {
+		t.Run(name, func(t *testing.T) {
+			checker, script := systemChecker(t, c.status, c.hour)
+			if err := checker.SetAutoSystem(Auto{Enabled: true, Hour: 5}); err != nil {
+				t.Fatal(err)
+			}
+			if checker.AutoApplySystem(context.Background()) || script.called("apply") {
+				t.Fatalf("installation lancée : %v", script.calls)
+			}
+		})
+	}
+}
+
+// Les deux réglages sont indépendants : changer l'un ne touche pas l'autre.
+func TestAutoSystemIndependent(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "updates.json")
+	checker := &Checker{SettingsFile: path, Runner: &fakeScript{}}
+	if err := checker.SetAutoSystem(Auto{Enabled: true, Hour: 2}); err != nil {
+		t.Fatal(err)
+	}
+	if auto := checker.Auto(); auto != (Auto{Hour: DefaultHour}) {
+		t.Fatalf("pi-appliance changé : %+v", auto)
+	}
+	if err := checker.SetAuto(Auto{Enabled: true, Hour: 23}); err != nil {
+		t.Fatal(err)
+	}
+	again := &Checker{SettingsFile: path, Runner: &fakeScript{}}
+	if err := again.Load(); err != nil {
+		t.Fatal(err)
+	}
+	if again.Auto() != (Auto{Enabled: true, Hour: 23}) || again.AutoSystem() != (Auto{Enabled: true, Hour: 2}) {
+		t.Fatalf("relu : %+v %+v", again.Auto(), again.AutoSystem())
+	}
+	if err := (&Checker{SettingsFile: path}).SetAutoSystem(Auto{Enabled: true}); err == nil {
+		t.Fatal("système réglé sans script des mises à jour")
+	}
+	mux := http.NewServeMux()
+	again.Routes(mux, "/api/updates", func(h http.HandlerFunc) http.HandlerFunc { return h })
+	response := httptest.NewRecorder()
+	mux.ServeHTTP(response, httptest.NewRequest(http.MethodPut, "/api/updates/auto-system", strings.NewReader(`{"enabled": false}`)))
+	if response.Code != http.StatusOK || again.AutoSystem() != (Auto{Hour: 2}) || again.Auto() != (Auto{Enabled: true, Hour: 23}) {
+		t.Fatalf("code %d : %+v %+v", response.Code, again.AutoSystem(), again.Auto())
+	}
+}

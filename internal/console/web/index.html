@@ -235,8 +235,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <option value="beta">Bêta : nouveautés en avance, moins éprouvées</option>
 </select></label>
 <label class="check"><input id="updatesAuto" type="checkbox">Installer toute seule chaque nouvelle version de pi-appliance</label>
-<label>Heure de l'installation <select id="updatesAutoHour"></select></label>
-<p class="meta">La console et l'accès aux services sont coupés une minute ou deux pendant l'installation. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule. Les mises à jour du système restent à installer avec le bouton ci-dessus.</p>
+<label>Heure de l'installation de pi-appliance <select id="updatesAutoHour"></select></label>
+<p class="meta">La console et l'accès aux services sont coupés une minute ou deux pendant l'installation. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.</p>
+<div id="updatesAutoSystemBox">
+<label class="check"><input id="updatesAutoSystem" type="checkbox">Installer toutes seules les mises à jour du système</label>
+<label>Heure des mises à jour du système <select id="updatesAutoSystemHour"></select></label>
+<p class="meta">Correctifs de sécurité compris. Vos services peuvent s'arrêter quelques instants pendant l'installation. Le Pi ne redémarre pas tout seul : la console vous dit quand le faire.</p>
+</div>
 </div>
 <div id="storageBox" class="card" hidden>
 <h3>Disque USB</h3>

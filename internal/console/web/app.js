@@ -1852,16 +1852,21 @@ const updatesAppliance = document.getElementById("updatesAppliance");
 const updatesChannel = document.getElementById("updatesChannel");
 const updatesAuto = document.getElementById("updatesAuto");
 const updatesAutoHour = document.getElementById("updatesAutoHour");
+const updatesAutoSystemBox = document.getElementById("updatesAutoSystemBox");
+const updatesAutoSystem = document.getElementById("updatesAutoSystem");
+const updatesAutoSystemHour = document.getElementById("updatesAutoSystemHour");
 let applianceTimer = null;
 let updatesStatus = null;
 let updatesTimer = null;
 let serviceUpdates = 0;
 
-updatesAutoHour.replaceChildren(...Array.from({ length: 24 }, (_, hour) => {
-  const option = element("option", t("{0} h", hour));
-  option.value = String(hour);
-  return option;
-}));
+for (const select of [updatesAutoHour, updatesAutoSystemHour]) {
+  select.replaceChildren(...Array.from({ length: 24 }, (_, hour) => {
+    const option = element("option", t("{0} h", hour));
+    option.value = String(hour);
+    return option;
+  }));
+}
 
 function applyBusy(system) {
   return Boolean(system && system.apply && ["starting", "running"].includes(system.apply.state));
@@ -1886,6 +1891,8 @@ function showUpdates() {
   const upgrading = upgradeBusy(status);
   const security = system ? system.security : 0;
   const others = system ? system.packages.length - security : 0;
+  const auto = status.auto || { enabled: false, hour: 4 };
+  const autoSystem = status.auto_system || { enabled: false, hour: 5 };
   const lines = [];
   let color = "green";
   let state;
@@ -1913,7 +1920,9 @@ function showUpdates() {
   } else if (!busy && others > 0) {
     lines.push(element("p", t("Système : {0}.", plural(others, t("mise à jour"), t("mises à jour")))));
   }
-  const auto = status.auto || { enabled: false, hour: 4 };
+  if (!busy && !upgrading && system && system.packages.length > 0 && autoSystem.enabled) {
+    lines.push(element("p", t("Les mises à jour du système s'installeront toutes seules vers {0}.", t("{0} h", autoSystem.hour))));
+  }
   if (status.appliance.available && !upgrading) {
     const line = element("p", auto.enabled && status.appliance.installable
       ? t("Une nouvelle version de pi-appliance est sortie : {0}. Elle s'installera toute seule vers {1}.", status.appliance.latest, t("{0} h", auto.hour))
@@ -1981,6 +1990,12 @@ function showUpdates() {
     updatesAutoHour.value = String(auto.hour);
   }
   updatesAutoHour.disabled = !updatesAuto.checked;
+  updatesAutoSystemBox.hidden = !system;
+  if (document.activeElement !== updatesAutoSystem && document.activeElement !== updatesAutoSystemHour) {
+    updatesAutoSystem.checked = autoSystem.enabled;
+    updatesAutoSystemHour.value = String(autoSystem.hour);
+  }
+  updatesAutoSystemHour.disabled = !updatesAutoSystem.checked;
   footer.textContent = `pi-appliance ${status.appliance.current} · ${status.appliance.channel === "beta" ? t("canal bêta") : t("canal stable")}`;
 }
 
@@ -2069,33 +2084,50 @@ updatesChannel.addEventListener("change", async () => {
   watchUpdates();
 });
 
-// Installation automatique du socle (spécification 9.2) : arrêtée par
-// défaut ; sa mise en marche est confirmée.
-async function saveUpdatesAuto(confirmFirst) {
-  const enabled = updatesAuto.checked;
-  const hour = Number(updatesAutoHour.value);
-  if (confirmFirst && enabled && !window.confirm(t("Installer toute seule chaque nouvelle version de pi-appliance ?\n\nElle s'installera la nuit vers {0} : la console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.", t("{0} h", hour)))) {
-    updatesAuto.checked = false;
-    updatesAutoHour.disabled = true;
+// Installation automatique (spécification 9.2) : pi-appliance d'un côté, le
+// système de l'autre, réglés chacun à part ; arrêtées par défaut, leur mise
+// en marche est confirmée.
+const AUTO_KINDS = {
+  appliance: {
+    box: updatesAuto, hour: updatesAutoHour, path: "updates/auto",
+    confirm: (hour) => t("Installer toute seule chaque nouvelle version de pi-appliance ?\n\nElle s'installera la nuit vers {0} : la console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.", hour),
+    on: (hour) => t("Les nouvelles versions de pi-appliance s'installeront toutes seules vers {0}.", hour),
+    off: () => t("Les nouvelles versions de pi-appliance ne s'installeront plus toutes seules."),
+  },
+  system: {
+    box: updatesAutoSystem, hour: updatesAutoSystemHour, path: "updates/auto-system",
+    confirm: (hour) => t("Installer toutes seules les mises à jour du système ?\n\nElles s'installeront la nuit vers {0}, correctifs de sécurité compris. Vos services peuvent s'arrêter quelques instants. Le Pi ne redémarre pas tout seul : la console vous dit quand le faire.", hour),
+    on: (hour) => t("Les mises à jour du système s'installeront toutes seules vers {0}.", hour),
+    off: () => t("Les mises à jour du système ne s'installeront plus toutes seules."),
+  },
+};
+
+async function saveUpdatesAuto(kind, confirmFirst) {
+  const { box, hour: select, path, confirm, on, off } = AUTO_KINDS[kind];
+  const enabled = box.checked;
+  const hour = Number(select.value);
+  if (confirmFirst && enabled && !window.confirm(confirm(t("{0} h", hour)))) {
+    box.checked = false;
+    select.disabled = true;
     return;
   }
-  updatesAuto.disabled = true;
-  updatesAutoHour.disabled = true;
+  box.disabled = true;
+  select.disabled = true;
   try {
-    const auto = await api("updates/auto", jsonBody("PUT", { enabled, hour }));
-    showMessage([auto.enabled
-      ? t("Les nouvelles versions de pi-appliance s'installeront toutes seules vers {0}.", t("{0} h", auto.hour))
-      : t("Les nouvelles versions de pi-appliance ne s'installeront plus toutes seules.")], "success");
+    const auto = await api(path, jsonBody("PUT", { enabled, hour }));
+    showMessage([auto.enabled ? on(t("{0} h", auto.hour)) : off()], "success");
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
-    updatesAuto.disabled = false;
+    box.disabled = false;
   }
   await loadUpdates();
 }
 
-updatesAuto.addEventListener("change", () => saveUpdatesAuto(true));
-updatesAutoHour.addEventListener("change", () => saveUpdatesAuto(false));
+for (const kind of Object.keys(AUTO_KINDS)) {
+  AUTO_KINDS[kind].box.addEventListener("change", () => saveUpdatesAuto(kind, true));
+  AUTO_KINDS[kind].hour.addEventListener("change", () => saveUpdatesAuto(kind, false));
+}
 
 updatesAppliance.addEventListener("click", async () => {
   const version = updatesStatus && updatesStatus.appliance.latest;

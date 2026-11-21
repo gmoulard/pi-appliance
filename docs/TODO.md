@@ -38,7 +38,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3).
 - [x] **TODO-1.15**: Statistiques anonymes sur accord explicite (8.4).
 - [x] **TODO-1.16**: Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
-- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2). Revu le 2026-11-21 : installation automatique du socle au choix de l'administrateur, arrêtée par défaut (TODO-2.62).
+- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2). Revu le 2026-11-21 : installation automatique du socle et, à part, du système, au choix de l'administrateur, arrêtées par défaut (TODO-2.62, TODO-2.63).
 - [x] **TODO-1.18**: Interface et site dans les 12 langues de Wikipedia2Book (5.3, 13).
 - [x] **TODO-1.19**: Point d'accès Wi-Fi au premier démarrage même avec un câble Ethernet (4).
 - [x] **TODO-1.20**: E-mail de l'administrateur obligatoire et vérifié (5.1).
@@ -184,6 +184,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Catalogue publié lisible par les consoles 0.1.0 à 0.1.3 : la clé `tags` refusée par elles (« field tags not found », vu sur le Pi d'essai en 0.1.1) est retirée des fichiers Compose publiés et passe par le champ `tags` de chaque application ; règle de compatibilité écrite (spécification 6.5) et vérifiée par un test.
 - [x] **TODO-2.60**: Jauge d'avancement pendant l'installation d'un service : étapes en langage courant (téléchargement des images avec la part déjà reçue, création, démarrage, vérification), mise à jour en direct dans la console, message clair en cas d'échec ; utile surtout sur les petits Pi où le téléchargement est long. Réalisé (spécification 6.2) : étapes séparées, téléchargement par l'API Docker avec les octets reçus, `GET api/services/<nom>/progress` relu chaque seconde par la console ; à vérifier sur un vrai Pi.
 - [x] **TODO-2.62**: Installation automatique du socle réglable dans la console (demande du 2026-11-21) : case « Installer toute seule chaque nouvelle version de pi-appliance » et heure de l'installation dans la carte « Mises à jour », arrêtée par défaut ; installation la nuit comme avec le bouton (vérification, retour à l'ancienne version), une tentative par nuit, version ratée non réessayée ; correctifs du système toujours à la main (spécification 9.2). À vérifier sur un vrai Pi, une nuit où une version est publiée.
+- [x] **TODO-2.63**: Installation automatique des mises à jour du système, dans la même carte, indépendante de celle du socle (demande du 2026-11-21) : case « Installer toutes seules les mises à jour du système » et son heure (5 h par défaut), arrêtée par défaut ; `updates.sh refresh` puis `apply` la nuit, une tentative par nuit, rien pendant une autre installation ; correctifs de sécurité compris ; pas de redémarrage automatique du Pi (spécification 9.2). À vérifier sur un vrai Pi, une nuit avec des mises à jour.
 
 ## 3. Étape 2 — Internet (7)
 
