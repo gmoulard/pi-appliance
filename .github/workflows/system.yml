@@ -60,7 +60,7 @@ jobs:
           done
           exit "$status"
       - name: YAML
-        run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml .github/workflows/catalog.yml system
+        run: yamllint -c .yamllint.yml .github/workflows/image.yml .github/workflows/system.yml .github/workflows/catalog.yml .github/workflows/tag.yml system
       - name: Accès à la console dans Traefik
         run: sh system/tests/traefik-console-test.sh
       - name: Règles du point d'accès
