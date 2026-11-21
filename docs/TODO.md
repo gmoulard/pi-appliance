@@ -43,7 +43,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.19**: Point d'accès Wi-Fi au premier démarrage même avec un câble Ethernet (4).
 - [x] **TODO-1.20**: E-mail de l'administrateur obligatoire et vérifié (5.1).
 - [x] **TODO-1.21**: DNS dynamique : DuckDNS ; adresse liée à l'appliance, libérée après 90 jours (7.1).
-- [x] **TODO-1.22**: Relais gratuit avec limites, payant au-delà (7.3).
+- [x] **TODO-1.22**: Relais gratuit avec limites, payant au-delà (7.3). Revu le 2026-11-21 : pas d'offre payante (TODO-1.45).
 - [x] **TODO-1.23**: Fournisseur d'identité intégré à la console (8.1).
 - [x] **TODO-1.24**: Récupération par e-mail, fichier `reset` sur la carte SD en dernier recours (8.5).
 - [x] **TODO-1.25**: Alertes par e-mail (8.6).
@@ -66,7 +66,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.42**: Point d'accès Wi-Fi ouvert, limité à 24 heures (4).
 - [x] **TODO-1.43**: E-mail de l'administrateur vérifié dès que le service d'e-mails est joignable (5.1).
 - [x] **TODO-1.44**: Certificat auto-signé avant Let's Encrypt, alerte expliquée (8.4).
-- [ ] **TODO-1.45**: Questions ouvertes de la section 15 : prix et paiement du relais, nombre maximal d'appliances relayées (à l'étape Internet).
+- [ ] **TODO-1.45**: Questions ouvertes de la section 15 : prix et paiement du relais, nombre maximal d'appliances relayées (à l'étape Internet). Tranché le 2026-11-21 : relais gratuit, nombre d'appliances limité, pas d'offre payante (spécification 7.3) ; reste le nombre maximal.
 - [x] **TODO-1.46**: Accès par défaut de Nextcloud : la spécification 8.2 dit « utilisateurs connectés », le manifeste dit `public`. Derrière l'authentification de la console, ses applications de synchronisation (ordinateur, téléphone) ne passent plus ; Nextcloud a déjà ses propres comptes. Trancher, puis aligner la spécification ou le manifeste. Tranché le 2026-11-20 : public, comme le manifeste ; spécification 8.2 alignée.
 
 ## 2. Étape 1 — Local
@@ -187,7 +187,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-3.6**: Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
 - [ ] **TODO-3.7**: Domaine personnel : guide OVH, avec étapes DNS chez OVH séparées des réglages dans la console ([guide utilisateur](guide-utilisateur.md#domaine-personnel-chez-ovh)). Tâche ouverte : le guide signale l'indisponibilité du parcours ; avant de le rendre opérationnel, il faut TODO-3.2 et TODO-3.5 pour fournir l'adresse cible, puis la prise en charge du domaine et de ses certificats dans la console.
 - [ ] **TODO-3.8**: Accès direct : UPnP, guide de la box, test depuis internet ; y compris le port UDP 51820 du VPN WireGuard quand il est installé (TODO-4.6).
-- [ ] **TODO-3.9**: Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente, offre payante.
+- [ ] **TODO-3.9**: Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente (pas d'offre payante, TODO-1.45).
 - [x] **TODO-3.10**: Accès par service : public, connectés, maison (8.2) : choix à l'installation et sur la fiche du service, middlewares Traefik `pi-appliance-auth@file` et `pi-appliance-home@file` ; à vérifier sur un vrai Pi. Hors de la maison, un service « connectés » demande d'abord une connexion faite à la maison, tant que TODO-3.12 n'est pas fait.
   - [x] Traefik : middleware `pi-appliance-home@file` (plages privées et locales, comme la console en TODO-3.11), à côté de `pi-appliance-auth@file`.
   - [x] Services : niveau d'accès gardé par service (`instance.json`), valeur par défaut du manifeste (`access`), label `middlewares` posé à l'installation et gardé à la mise à jour ; changement avec redémarrage et retour arrière s'il ne redémarre pas.
@@ -244,4 +244,4 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] **TODO-5.13**: Pied de page du site : dépôt, version et sa date, commit et sa date (section 13).
 - [x] **TODO-5.14**: Gestion des versions : fichier `VERSION`, historique `CHANGELOG.md`, contrôle de l'étiquette dans le workflow « Image », paramètres du skill `release` dans `CLAUDE.md` (9.2).
 - [x] **TODO-5.15**: Documenter dans le guide utilisateur la récupération par le fichier `reset` (8.5) : quand l'utiliser (message « identifiant ou mot de passe incorrect », identifiant et non adresse e-mail), créer un fichier vide nommé exactement `reset` sans extension `.txt` sur la partition de démarrage de la carte SD, redémarrer, choisir un nouveau mot de passe ; services et données gardés. Fait : section « Mot de passe administrateur oublié » du guide, et rappel « l'identifiant n'est pas l'adresse e-mail » dans l'aide de l'écran de connexion (12 langues).
-- [ ] **TODO-5.16**: Application mobile pi-appliance (PWA), projet à part dans un nouveau dépôt GitLab (demande du 2026-11-21) : la documentation (guide utilisateur, premier démarrage, FAQ) téléchargée sur le téléphone et lisible sans réseau, et un lien direct vers chacun de ses Pi (adresse `<nom>.local`, adresse sur internet). À préciser : nom et hébergement du dépôt, comment l'application connaît les Pi (saisie, code QR affiché par la console, découverte sur le réseau de la maison), mise à jour de la documentation hors ligne.
+- [ ] **TODO-5.16**: Application mobile pi-appliance (PWA), projet à part dans le dépôt GitHub `gmoulard/pi-appliance-pwa`, créé le 2026-11-21 (vide) : la documentation (guide utilisateur, premier démarrage, FAQ) téléchargée sur le téléphone et lisible sans réseau, et un lien direct vers chacun de ses Pi (adresse `<nom>.local`, adresse sur internet). À préciser : nom et hébergement du dépôt, comment l'application connaît les Pi (saisie, code QR affiché par la console, découverte sur le réseau de la maison), mise à jour de la documentation hors ligne.

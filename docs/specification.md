@@ -354,7 +354,7 @@ Quand l'accès direct est impossible (CGNAT, 4G, box verrouillée), l'appliance 
 Offre :
 
 - **gratuite**, limitée à **5 Mbit/s** et **20 Go par mois** par appliance ;
-- **payante** au-delà, par abonnement ; prix et moyen de paiement fixés à l'étape Internet (section 15) ;
+- **pas d'offre payante** : le relais reste gratuit, avec un nombre d'appliances limité (décision du 2026-11-21, TODO-1.45) ;
 - **nombre d'appliances relayées limité** : le relais tourne sur le Pi du projet (section 10.2), dont le débit montant est partagé ; au-delà du maximum, les nouvelles appliances attendent une place sur une liste d'attente, la console le leur dit ; le maximum est fixé à l'étape Internet ;
 - dans les deux cas **sans garantie** (*best effort*) : le relais peut être lent ou indisponible, la console le dit clairement.
 
@@ -653,7 +653,6 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 
 ## 15. Questions ouvertes
 
-- Relais : prix et moyen de paiement de l'offre payante.
 - Relais : nombre maximal d'appliances relayées (7.3).
 - Adresses (7.1) : exiger un e-mail vérifié avant une réservation, quand le service d'e-mails existera (TODO-3.6) ; l'adresse de l'administrateur serait alors la seule donnée personnelle gardée avec le nom (10.2).
 - Marketplace : un champ du manifeste pour les modèles de Pi pris en charge (MongoDB 5 et suivants ne tournent que sur un Pi 5), et l'accès « maison seulement » d'un service sans page web, dont les ports sont ouverts sans Traefik (`host_ports` : Samba, base ouverte sur le réseau de la maison) (6.3, 6.5).
