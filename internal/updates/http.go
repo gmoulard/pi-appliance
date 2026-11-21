@@ -30,9 +30,11 @@ import (
 //	POST prefix/system   installation des correctifs du système
 //	POST prefix/appliance installation de la dernière version de pi-appliance
 //	PUT  prefix/channel  canal de version, {"channel": "stable"|"beta"}
+//	PUT  prefix/auto     installation automatique, {"enabled": bool, "hour": 0…23}
 func (c *Checker) Routes(mux *http.ServeMux, prefix string, wrap func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET "+prefix, wrap(c.serveStatus))
 	mux.HandleFunc("PUT "+prefix+"/channel", wrap(c.serveChannel))
+	mux.HandleFunc("PUT "+prefix+"/auto", wrap(c.serveAuto))
 	mux.HandleFunc("POST "+prefix+"/check", wrap(c.serveCheck))
 	mux.HandleFunc("POST "+prefix+"/system", wrap(c.serveApply))
 	mux.HandleFunc("POST "+prefix+"/appliance", wrap(c.serveInstall))
@@ -73,6 +75,35 @@ func (c *Checker) serveChannel(w http.ResponseWriter, r *http.Request) {
 	default:
 		c.logf("canal de version : %v", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Le canal n'a pas pu être enregistré."})
+	}
+}
+
+func (c *Checker) serveAuto(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Enabled *bool `json:"enabled"`
+		Hour    *int  `json:"hour"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<10)).Decode(&body); err != nil || body.Enabled == nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Demande illisible."})
+		return
+	}
+	auto := c.Auto()
+	auto.Enabled = *body.Enabled
+	if body.Hour != nil {
+		auto.Hour = *body.Hour
+	}
+	err := c.SetAuto(auto)
+	var failure Failure
+	switch {
+	case err == nil:
+		writeJSON(w, http.StatusOK, c.Auto())
+	case errors.As(err, &failure) && failure.Code == "hour":
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": failure.Message, "code": failure.Code})
+	case errors.As(err, &failure):
+		writeJSON(w, http.StatusConflict, map[string]string{"error": failure.Message, "code": failure.Code})
+	default:
+		c.logf("installation automatique : %v", err)
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "Le réglage n'a pas pu être enregistré."})
 	}
 }
 

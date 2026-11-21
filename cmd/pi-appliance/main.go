@@ -165,7 +165,8 @@ func main() {
 	if *backupScript != "" {
 		backups.Disks = &backup.Disks{Runner: network.Script(*backupScript)}
 	}
-	// Mises à jour proposées, jamais installées d'office (spécification 9.2).
+	// Mises à jour proposées ; nouvelles versions de pi-appliance installées la
+	// nuit si l'administrateur l'a choisi (spécification 9.2).
 	checker := &updates.Checker{Version: version, DownloadDir: filepath.Join(*data, "system", "upgrade"), SettingsFile: filepath.Join(*data, "updates.json"), Logf: log.Printf}
 	if err := checker.Load(); err != nil {
 		log.Printf("canal de version : %v ; canal stable", err)

@@ -1850,10 +1850,18 @@ const updatesApply = document.getElementById("updatesApply");
 const updatesCheck = document.getElementById("updatesCheck");
 const updatesAppliance = document.getElementById("updatesAppliance");
 const updatesChannel = document.getElementById("updatesChannel");
+const updatesAuto = document.getElementById("updatesAuto");
+const updatesAutoHour = document.getElementById("updatesAutoHour");
 let applianceTimer = null;
 let updatesStatus = null;
 let updatesTimer = null;
 let serviceUpdates = 0;
+
+updatesAutoHour.replaceChildren(...Array.from({ length: 24 }, (_, hour) => {
+  const option = element("option", t("{0} h", hour));
+  option.value = String(hour);
+  return option;
+}));
 
 function applyBusy(system) {
   return Boolean(system && system.apply && ["starting", "running"].includes(system.apply.state));
@@ -1905,8 +1913,11 @@ function showUpdates() {
   } else if (!busy && others > 0) {
     lines.push(element("p", t("Système : {0}.", plural(others, t("mise à jour"), t("mises à jour")))));
   }
+  const auto = status.auto || { enabled: false, hour: 4 };
   if (status.appliance.available && !upgrading) {
-    const line = element("p", t("Une nouvelle version de pi-appliance est sortie : {0}. Elle ne s'installe pas toute seule.", status.appliance.latest));
+    const line = element("p", auto.enabled && status.appliance.installable
+      ? t("Une nouvelle version de pi-appliance est sortie : {0}. Elle s'installera toute seule vers {1}.", status.appliance.latest, t("{0} h", auto.hour))
+      : t("Une nouvelle version de pi-appliance est sortie : {0}. Elle ne s'installe pas toute seule.", status.appliance.latest));
     if (status.appliance.url) {
       const link = element("a", t("Voir les nouveautés"));
       link.href = status.appliance.url;
@@ -1926,6 +1937,9 @@ function showUpdates() {
     lines.push(element("p", upgrade.rolled_back
       ? t("L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.", upgrade.version)
       : t("L'installation de pi-appliance {0} a échoué. Rien n'a été changé ; réessayez plus tard.", upgrade.version), "warning"));
+    if (auto.enabled && upgrade.version === status.appliance.latest) {
+      lines.push(element("p", t("Cette version ne sera pas réessayée toute seule : installez-la quand vous voulez."), "meta"));
+    }
   }
   if (upgrade && upgrade.state === "done" && upgrade.version === status.appliance.current && Date.now() - Date.parse(upgrade.at) < 86400000) {
     lines.push(element("p", t("pi-appliance {0} est installé.", upgrade.version)));
@@ -1962,6 +1976,11 @@ function showUpdates() {
   updatesCheck.disabled = busy || upgrading || status.checking;
   updatesChannel.value = status.appliance.channel || "stable";
   updatesChannel.disabled = upgrading;
+  if (document.activeElement !== updatesAuto && document.activeElement !== updatesAutoHour) {
+    updatesAuto.checked = auto.enabled;
+    updatesAutoHour.value = String(auto.hour);
+  }
+  updatesAutoHour.disabled = !updatesAuto.checked;
   footer.textContent = `pi-appliance ${status.appliance.current} · ${status.appliance.channel === "beta" ? t("canal bêta") : t("canal stable")}`;
 }
 
@@ -2030,7 +2049,10 @@ function watchAppliance(version) {
 // demande une confirmation, et rien ne s'installe tout seul.
 updatesChannel.addEventListener("change", async () => {
   const channel = updatesChannel.value;
-  if (channel === "beta" && !window.confirm(t("Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours."))) {
+  const auto = updatesStatus && updatesStatus.auto && updatesStatus.auto.enabled;
+  if (channel === "beta" && !window.confirm(auto
+    ? t("Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Elles s'installeront toutes seules, comme vous l'avez choisi.")
+    : t("Recevoir les versions bêta ?\n\nElles apportent les nouveautés en avance, mais peuvent contenir des erreurs. Rien ne s'installe tout seul : vous choisissez toujours."))) {
     updatesChannel.value = (updatesStatus && updatesStatus.appliance.channel) || "stable";
     return;
   }
@@ -2046,6 +2068,34 @@ updatesChannel.addEventListener("change", async () => {
   await loadUpdates();
   watchUpdates();
 });
+
+// Installation automatique du socle (spécification 9.2) : arrêtée par
+// défaut ; sa mise en marche est confirmée.
+async function saveUpdatesAuto(confirmFirst) {
+  const enabled = updatesAuto.checked;
+  const hour = Number(updatesAutoHour.value);
+  if (confirmFirst && enabled && !window.confirm(t("Installer toute seule chaque nouvelle version de pi-appliance ?\n\nElle s'installera la nuit vers {0} : la console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.", t("{0} h", hour)))) {
+    updatesAuto.checked = false;
+    updatesAutoHour.disabled = true;
+    return;
+  }
+  updatesAuto.disabled = true;
+  updatesAutoHour.disabled = true;
+  try {
+    const auto = await api("updates/auto", jsonBody("PUT", { enabled, hour }));
+    showMessage([auto.enabled
+      ? t("Les nouvelles versions de pi-appliance s'installeront toutes seules vers {0}.", t("{0} h", auto.hour))
+      : t("Les nouvelles versions de pi-appliance ne s'installeront plus toutes seules.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    updatesAuto.disabled = false;
+  }
+  await loadUpdates();
+}
+
+updatesAuto.addEventListener("change", () => saveUpdatesAuto(true));
+updatesAutoHour.addEventListener("change", () => saveUpdatesAuto(false));
 
 updatesAppliance.addEventListener("click", async () => {
   const version = updatesStatus && updatesStatus.appliance.latest;

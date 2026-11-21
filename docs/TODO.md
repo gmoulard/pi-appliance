@@ -38,7 +38,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3).
 - [x] **TODO-1.15**: Statistiques anonymes sur accord explicite (8.4).
 - [x] **TODO-1.16**: Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
-- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2).
+- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2). Revu le 2026-11-21 : installation automatique du socle au choix de l'administrateur, arrêtée par défaut (TODO-2.62).
 - [x] **TODO-1.18**: Interface et site dans les 12 langues de Wikipedia2Book (5.3, 13).
 - [x] **TODO-1.19**: Point d'accès Wi-Fi au premier démarrage même avec un câble Ethernet (4).
 - [x] **TODO-1.20**: E-mail de l'administrateur obligatoire et vérifié (5.1).
@@ -183,6 +183,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [x] **TODO-2.59**: Étiquettes (tags) sur les services de la marketplace pour les filtrer (par exemple « site web », « fichiers », « base de données », « administration ») : clé dans le manifeste (6.5), reprise dans le catalogue publié `docs/static/pi-appliance-<MD5>.json`, filtre dans l'écran de la marketplace et sur le site, libellés traduits dans les 12 langues. Réalisé (spécification 6.5) : clé `tags`, liste fermée de 8 étiquettes (`marketplace/tags.go`), filtre et étiquettes dans la console et sur la page marketplace du site.
   - [x] Catalogue publié lisible par les consoles 0.1.0 à 0.1.3 : la clé `tags` refusée par elles (« field tags not found », vu sur le Pi d'essai en 0.1.1) est retirée des fichiers Compose publiés et passe par le champ `tags` de chaque application ; règle de compatibilité écrite (spécification 6.5) et vérifiée par un test.
 - [x] **TODO-2.60**: Jauge d'avancement pendant l'installation d'un service : étapes en langage courant (téléchargement des images avec la part déjà reçue, création, démarrage, vérification), mise à jour en direct dans la console, message clair en cas d'échec ; utile surtout sur les petits Pi où le téléchargement est long. Réalisé (spécification 6.2) : étapes séparées, téléchargement par l'API Docker avec les octets reçus, `GET api/services/<nom>/progress` relu chaque seconde par la console ; à vérifier sur un vrai Pi.
+- [x] **TODO-2.62**: Installation automatique du socle réglable dans la console (demande du 2026-11-21) : case « Installer toute seule chaque nouvelle version de pi-appliance » et heure de l'installation dans la carte « Mises à jour », arrêtée par défaut ; installation la nuit comme avec le bouton (vérification, retour à l'ancienne version), une tentative par nuit, version ratée non réessayée ; correctifs du système toujours à la main (spécification 9.2). À vérifier sur un vrai Pi, une nuit où une version est publiée.
 
 ## 3. Étape 2 — Internet (7)
 
