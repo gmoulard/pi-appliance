@@ -187,10 +187,9 @@ async function loadServices() {
       : service.address;
     detail.append(element("p", where, "address"), state);
     if (!service.no_web_page) {
-      // Adresse <service>.<nom>.local annoncée par mdns.sh : à deux niveaux,
-      // Windows et une partie d'Android ne la résolvent pas (TODO-2.61).
+      // Adresse <service>-<nom>.local, certificat propre à ce service (mdns.sh).
       if (service.address.endsWith(".local")) {
-        detail.append(element("p", t("Cette adresse s'ouvre depuis un iPhone, un Mac ou un ordinateur Linux de la maison. Les ordinateurs Windows et certains téléphones Android ne la trouvent pas encore : utilisez un autre appareil en attendant."), "meta"));
+        detail.append(element("p", t("La première fois, le navigateur affiche une alerte de sécurité pour cette adresse : c'est normal à la maison, vous pouvez continuer."), "meta"));
       }
       detail.append(accessChooser(service));
     }
@@ -2956,8 +2955,10 @@ const codeField = document.getElementById("codeField");
 const USER_PASSWORD_MIN = 8;
 const DAY = 24 * 3600 * 1000;
 const ROLE_NAMES = { admin: t("Administrateur"), user: t("Utilisateur"), guest: t("Invité") };
-// ?return= : adresse du service protégé qui a renvoyé vers la connexion.
+// ?return= : adresse du service protégé qui a renvoyé vers la connexion ;
+// ?state= : lie le code de retour au cookie posé par ce service sur ce navigateur.
 let returnTo = new URLSearchParams(window.location.search).get("return");
+const returnState = new URLSearchParams(window.location.search).get("state") || "";
 let inviteToken = null;
 
 function jsonBody(method, body) {
@@ -2971,7 +2972,7 @@ function needsTOTP(account) {
 // Ouvre le service demandé ; faux si l'adresse est refusée (la console s'affiche alors).
 async function goBackToService() {
   try {
-    const { url } = await api("auth/return", jsonBody("POST", { return: returnTo }));
+    const { url } = await api("auth/return", jsonBody("POST", { return: returnTo, state: returnState }));
     window.location.assign(url);
     return true;
   } catch (error) {

@@ -133,7 +133,7 @@ func TestForwardPadSession(t *testing.T) {
 	if response.Code != http.StatusFound || !strings.HasPrefix(response.Header().Get("Location"), "https://maison.example.org/pi-appliance/?return=") || response.Header().Get("Authorization") != "" {
 		t.Fatalf("sans session : %d %v", response.Code, response.Header())
 	}
-	forward := forwardCookieFor(t, f, admin)
+	forward := forwardCookieFor(t, f, admin, padForward, padHeaders("/p/notes"))
 	response = forwardTo(f, padForward, "127.0.0.1:5000", forward, padHeaders("/p/autre"))
 	if response.Code != http.StatusOK || response.Header().Get("Remote-User") != "marie" || response.Header().Get("Authorization") != authorization || authorization == "" {
 		t.Fatalf("avec session : %d %v", response.Code, response.Header())

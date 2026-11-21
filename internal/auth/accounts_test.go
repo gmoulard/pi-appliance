@@ -131,12 +131,12 @@ func TestGuestExpires(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	forward := store.StartForwardSession("invite")
+	forward := forwardSession(t, store, session, "wiki-maison.local")
 	c.now = end
 	if _, ok := store.Session(session); ok {
 		t.Fatal("invité expiré : session refusée")
 	}
-	if _, ok := store.ForwardSession(forward); ok {
+	if _, ok := store.ForwardSession(forward, "wiki-maison.local"); ok {
 		t.Fatal("invité expiré : session déléguée refusée")
 	}
 	if _, _, err := store.Login("invite", "huit car", "", "10.0.0.2"); !errors.Is(err, ErrExpired) {
@@ -195,25 +195,92 @@ func TestLastAdmin(t *testing.T) {
 	}
 }
 
+// forwardSession : session déléguée pour host, ouverte par un code de la console.
+func forwardSession(t *testing.T, store *Store, console, host string) string {
+	t.Helper()
+	code, ok := store.StartLoginCode(console, host, "etat")
+	if !ok {
+		t.Fatal("code de connexion refusé")
+	}
+	forward, ok := store.UseLoginCode(code, host, "etat")
+	if !ok {
+		t.Fatal("code de connexion non échangé")
+	}
+	return forward
+}
+
 func TestForwardSessionIsSeparate(t *testing.T) {
 	store, _ := withAdmin(t)
 	console, _, err := store.Login("marie", password, "", "10.0.0.2")
 	if err != nil {
 		t.Fatal(err)
 	}
-	forward := store.StartForwardSession("marie")
+	const host = "wiki-maison.local"
+	forward := forwardSession(t, store, console, host)
 	if _, ok := store.Session(forward); ok {
 		t.Fatal("le cookie délégué, vu par les services, ne doit pas ouvrir la console")
 	}
-	if _, ok := store.ForwardSession(console); ok {
+	if _, ok := store.ForwardSession(console, host); ok {
 		t.Fatal("une session de la console n'est pas une session déléguée")
 	}
-	if account, ok := store.ForwardSession(forward); !ok || account.Name != "marie" {
+	if account, ok := store.ForwardSession(forward, host); !ok || account.Name != "marie" {
 		t.Fatalf("session déléguée : %+v, %v", account, ok)
 	}
+	if _, ok := store.ForwardSession(forward, "pad-maison.local"); ok {
+		t.Fatal("une session déléguée ne vaut que pour son adresse")
+	}
 	store.Logout(forward)
-	if _, ok := store.ForwardSession(forward); ok {
+	if _, ok := store.ForwardSession(forward, host); ok {
 		t.Fatal("session déléguée fermée")
+	}
+	other := forwardSession(t, store, console, host)
+	store.Logout(console)
+	if _, ok := store.ForwardSession(other, host); ok {
+		t.Fatal("la déconnexion de la console ferme ses sessions déléguées")
+	}
+}
+
+func TestLoginCode(t *testing.T) {
+	store, c := withAdmin(t)
+	console, _, err := store.Login("marie", password, "", "10.0.0.2")
+	if err != nil {
+		t.Fatal(err)
+	}
+	const host = "wiki-maison.local"
+	if _, ok := store.StartLoginCode("inconnu", host, "etat"); ok {
+		t.Fatal("code sans session de la console")
+	}
+	if _, ok := store.StartLoginCode(console, host, ""); ok {
+		t.Fatal("code sans cookie du navigateur")
+	}
+	for _, test := range []struct{ name, host, state string }{
+		{"autre adresse", "pad-maison.local", "etat"},
+		{"autre navigateur", host, "autre"},
+	} {
+		code, _ := store.StartLoginCode(console, host, "etat")
+		if _, ok := store.UseLoginCode(code, test.host, test.state); ok {
+			t.Fatalf("%s : code accepté", test.name)
+		}
+		if _, ok := store.UseLoginCode(code, host, "etat"); ok {
+			t.Fatalf("%s : code refusé une fois, accepté ensuite", test.name)
+		}
+	}
+	code, _ := store.StartLoginCode(console, host, "etat")
+	if _, ok := store.UseLoginCode(code, host, "etat"); !ok {
+		t.Fatal("code refusé")
+	}
+	if _, ok := store.UseLoginCode(code, host, "etat"); ok {
+		t.Fatal("code utilisé deux fois")
+	}
+	code, _ = store.StartLoginCode(console, host, "etat")
+	c.now = c.now.Add(LoginCodeLifetime + time.Second)
+	if _, ok := store.UseLoginCode(code, host, "etat"); ok {
+		t.Fatal("code expiré accepté")
+	}
+	code, _ = store.StartLoginCode(console, host, "etat")
+	store.Logout(console)
+	if _, ok := store.UseLoginCode(code, host, "etat"); ok {
+		t.Fatal("code accepté après la déconnexion de la console")
 	}
 }
 

@@ -144,17 +144,18 @@ func (c *console) forwardPad(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusForbidden, "Réservé à Traefik.")
 		return
 	}
+	if c.loginCallback(w, r) {
+		return
+	}
 	host := requestHostOf(r.Header.Get("X-Forwarded-Host"))
 	service, authorization, ready := c.Services.EtherpadLogin(host)
-	if cookie, err := r.Cookie(forwardCookie); err == nil {
-		if account, ok := c.Accounts.ForwardSession(cookie.Value); ok {
-			remoteHeaders(w, account)
-			if ready {
-				w.Header().Set("Authorization", authorization)
-			}
-			w.WriteHeader(http.StatusOK)
-			return
+	if account, ok := c.forwardAccount(r); ok {
+		remoteHeaders(w, account)
+		if ready {
+			w.Header().Set("Authorization", authorization)
 		}
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 	if !ready {
 		c.forwardLogin(w, r, false)
@@ -261,6 +262,11 @@ func requestHostOf(host string) string {
 
 // sharePage : page lisible par une personne sans compte, avec un lien de retour au document.
 func sharePage(w http.ResponseWriter, status int, text, back string) {
+	messagePage(w, status, "Etherpad", text, back, "Revenir au document")
+}
+
+// messagePage : courte page d'explication, avec un lien (back, backText) s'il y en a un.
+func messagePage(w http.ResponseWriter, status int, title, text, back, backText string) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -268,7 +274,7 @@ func sharePage(w http.ResponseWriter, status int, text, back string) {
 	w.WriteHeader(status)
 	link := ""
 	if back != "" {
-		link = `<p><a href="` + html.EscapeString(back) + `">Revenir au document</a></p>`
+		link = `<p><a href="` + html.EscapeString(back) + `">` + html.EscapeString(backText) + `</a></p>`
 	}
-	fmt.Fprintf(w, `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Etherpad</title></head><body style="font-family: sans-serif; max-width: 36rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5"><p>%s</p>%s</body></html>`, html.EscapeString(text), link)
+	fmt.Fprintf(w, `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>%s</title></head><body style="font-family: sans-serif; max-width: 36rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5"><p>%s</p>%s</body></html>`, html.EscapeString(title), html.EscapeString(text), link)
 }

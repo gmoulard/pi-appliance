@@ -415,7 +415,7 @@ func (c *console) logout(w http.ResponseWriter, r *http.Request) {
 	if cookie, err := r.Cookie(cookieName); err == nil {
 		c.Accounts.Logout(cookie.Value)
 	}
-	c.clearForwardCookie(w, r)
+	clearForwardCookie(w, r)
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: BasePath, MaxAge: -1, HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteStrictMode})
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -1067,7 +1067,7 @@ func (c *console) country(w http.ResponseWriter, r *http.Request) {
 
 // setName change le nom du Pi (spécification 4) : la console devient
 // https://<nom>.local/pi-appliance, Traefik redémarre après la réponse, et
-// les services installés ensuite prennent <service>.<nom>.local.
+// les services passent à <service>-<nom>.local (Relocate).
 func (c *console) setName(w http.ResponseWriter, r *http.Request) {
 	var request NameRequest
 	if !decodeJSON(w, r, &request) {
@@ -1081,6 +1081,7 @@ func (c *console) setName(w http.ResponseWriter, r *http.Request) {
 			}
 			if json.Unmarshal(out, &renamed) == nil && renamed.Name != "" {
 				c.Services.Renamed(renamed.Name)
+				go c.Services.Relocate(context.WithoutCancel(ctx), log.Printf)
 			}
 		}
 		return out, err
