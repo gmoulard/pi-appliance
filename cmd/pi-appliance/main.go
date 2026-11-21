@@ -36,6 +36,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/console"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
+	"github.com/gmoulard/pi-appliance/internal/diagnostic"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
@@ -66,6 +67,10 @@ func main() {
 	storageScript := flag.String("storage-script", storage.DefaultScript, "script du disque USB des données (vide : pas de disque USB)")
 	backupScript := flag.String("backup-script", backup.DefaultScript, "script du disque USB des sauvegardes (vide : disque non réglable depuis la console)")
 	updatesScript := flag.String("updates-script", updates.DefaultScript, "script des correctifs du système (vide : système non mis à jour depuis la console)")
+	diagnosticScript := flag.String("diagnostic-script", diagnostic.DefaultScript, "script du diagnostic du Pi (vide : pas de diagnostic depuis la console)")
+	diagnosticFile := flag.String("diagnostic-file", "/boot/firmware/diagnostic", "fichier déposé sur la carte SD pour ouvrir le diagnostic sans compte pendant 24 heures (vide : désactivé)")
+	rescueAddr := flag.String("rescue-addr", ":8443", "adresse de la console de secours, ouverte seulement quand Traefik ne répond plus (vide : pas de secours)")
+	tlsDir := flag.String("tls-dir", "/var/lib/pi-appliance/system/tls", "dossier du certificat local du Pi (local.crt, local.key), pour la console de secours")
 	cockpitScript := flag.String("cockpit-script", cockpit.DefaultScript, "script de l'administration du système par Cockpit (vide : non installable depuis la console)")
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
@@ -90,6 +95,16 @@ func main() {
 		log.Printf("fichier reset : %v", err)
 	} else if found {
 		log.Printf("fichier reset trouvé : réinitialisation du mot de passe administrateur ouverte")
+	}
+	window := &diagnostic.Window{File: *diagnosticFile, State: filepath.Join(*data, "diagnostic-until")}
+	if found, err := window.Consume(); err != nil {
+		log.Printf("fichier diagnostic : %v", err)
+	} else if found {
+		log.Printf("fichier diagnostic trouvé : diagnostic ouvert sans compte pendant 24 heures")
+	}
+	var diag *diagnostic.Client
+	if *diagnosticScript != "" {
+		diag = &diagnostic.Client{Runner: network.Script(*diagnosticScript)}
 	}
 	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Measure: services.Measure, FollowName: true}
 	flag.Visit(func(f *flag.Flag) {
@@ -194,27 +209,42 @@ func main() {
 	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
 	go checker.Run(ctx, 5*time.Minute)
 	go reporter.Run(ctx)
+	handler := console.Handler(console.Config{
+		Version:          version,
+		Catalog:          market,
+		Services:         manager,
+		Accounts:         accounts,
+		Network:          net,
+		Storage:          disks,
+		Resources:        resources,
+		History:          history,
+		DuckDNS:          duckdns,
+		Address:          address,
+		Backups:          backups,
+		Updates:          checker,
+		Cockpit:          admin,
+		Stats:            reporter,
+		WizardFile:       filepath.Join(*data, "wizard-done"),
+		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
+		Diagnostic:       diag,
+		DiagnosticWindow: window,
+	})
 	server := &http.Server{
-		Addr: *addr,
-		Handler: reporter.Guard(console.Handler(console.Config{
-			Version:       version,
-			Catalog:       market,
-			Services:      manager,
-			Accounts:      accounts,
-			Network:       net,
-			Storage:       disks,
-			Resources:     resources,
-			History:       history,
-			DuckDNS:       duckdns,
-			Address:       address,
-			Backups:       backups,
-			Updates:       checker,
-			Cockpit:       admin,
-			Stats:         reporter,
-			WizardFile:    filepath.Join(*data, "wizard-done"),
-			ACMEEmailFile: filepath.Join(*data, "system", "traefik", "acme-email"),
-		})),
+		Addr:              *addr,
+		Handler:           reporter.Guard(handler),
 		ReadHeaderTimeout: 10 * time.Second,
+	}
+	// Traefik tombé : la page de diagnostic reste joignable sur le port 8443 (spécification 8.5).
+	if *rescueAddr != "" && diag != nil {
+		rescue := &diagnostic.Rescue{
+			Addr:     *rescueAddr,
+			Probe:    "127.0.0.1:443",
+			CertFile: filepath.Join(*tlsDir, "local.crt"),
+			KeyFile:  filepath.Join(*tlsDir, "local.key"),
+			Handler:  reporter.Guard(console.RescueHandler(handler)),
+			Logf:     log.Printf,
+		}
+		go rescue.Run(ctx)
 	}
 	log.Printf("console pi-appliance %s sur %s%s", version, *addr, console.BasePath)
 	go func() {

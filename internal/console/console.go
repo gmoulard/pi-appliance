@@ -38,6 +38,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/catalog"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
+	"github.com/gmoulard/pi-appliance/internal/diagnostic"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
@@ -169,6 +170,10 @@ type Config struct {
 	Cockpit *cockpit.Client
 	// Stats : statistiques anonymes (spécification 8.4) ; nil : non réglables ici.
 	Stats *stats.Reporter
+	// Diagnostic : état du système et journaux (spécification 8.5) ; nil : pas de diagnostic ici.
+	Diagnostic *diagnostic.Client
+	// DiagnosticWindow : page de diagnostic ouverte par le fichier diagnostic ; nil : pas de fichier.
+	DiagnosticWindow *diagnostic.Window
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
 	WizardFile    string
 	ACMEEmailFile string
@@ -238,9 +243,16 @@ func Handler(config Config) http.Handler {
 	if c.Cockpit != nil {
 		c.Cockpit.Routes(mux, BasePath+"/api/cockpit", c.adminOnly)
 	}
-	mux.HandleFunc("GET "+BasePath+"/reset-to-factory", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFileFS(w, r, web, "index.html")
-	})
+	if c.Diagnostic != nil {
+		mux.HandleFunc("GET "+BasePath+"/api/diagnostic", c.diagnosticStatus)
+		mux.HandleFunc("GET "+BasePath+"/api/diagnostic/logs", c.diagnosticLogs)
+		mux.HandleFunc("DELETE "+BasePath+"/api/diagnostic", c.diagnosticClose)
+	}
+	for _, page := range []string{"/reset-to-factory", "/diagnostic"} {
+		mux.HandleFunc("GET "+BasePath+page, func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFileFS(w, r, web, "index.html")
+		})
+	}
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
 	return mux

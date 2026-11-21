@@ -60,6 +60,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </form>
 <p><a href="./">Ne rien effacer et revenir à la console</a></p>
 </section>
+<section id="diagnosticSection" class="card" hidden>
+<h2>Diagnostic du Pi</h2>
+<p>L'état des programmes qui font marcher le Pi, ses dernières erreurs et son alimentation. En cas de problème, téléchargez les journaux et envoyez-les à la personne qui vous aide : les mots de passe et les adresses e-mail y sont masqués.</p>
+<p id="diagnosticOpen" class="note" hidden></p>
+<div id="diagnosticTiles" class="tiles"></div>
+<h3>Programmes du Pi</h3>
+<ul id="diagnosticUnits" class="diagnostic-units"></ul>
+<h3>Dernières erreurs</h3>
+<p id="diagnosticNoErrors" class="empty" hidden>Aucune erreur depuis le démarrage du Pi.</p>
+<pre id="diagnosticErrors" class="diagnostic-errors" hidden></pre>
+<div class="controls">
+<button id="diagnosticDownload" type="button">Télécharger les journaux</button>
+<button id="diagnosticRefresh" class="secondary" type="button">Actualiser</button>
+<button id="diagnosticClose" class="secondary" type="button" hidden>Fermer l'accès sans compte</button>
+</div>
+<p id="diagnosticRescue" class="meta"></p>
+<p><a href="./">Revenir à la console</a></p>
+</section>
 <p id="emailReminder" class="empty" hidden></p>
 <section id="wizard" class="card" hidden>
 <h2>Mise en route</h2>
@@ -229,6 +247,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <button id="cockpitRemove" class="secondary" type="button">Désinstaller</button>
 </div>
 </div>
+<p><a href="diagnostic">Diagnostic du Pi : état des programmes, erreurs et journaux</a></p>
 <div id="piHistory" class="card" hidden>
 <div class="history-head">
 <h3>Les derniers jours</h3>
