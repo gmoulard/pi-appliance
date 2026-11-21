@@ -48,13 +48,13 @@ La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible
 
 ## Télécharger et installer l'image {#telecharger-limage-experimentale}
 
-L'image est publiée avec chaque version de pi-appliance, sur la page [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest) : le fichier **`pi-appliance-vX.Y.Z.img.xz`** (environ 720 Mio compressé, 3,3 Gio une fois décompressé) et son fichier de somme de contrôle **`pi-appliance-vX.Y.Z.img.xz.sha256`**, où `X.Y.Z` est le numéro de version (par exemple `0.1.6`). Elle est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4. Un Pi déjà installé n'a pas besoin d'être reflashé : il se met à jour depuis la console (« Mon Pi », « Mises à jour »).
+L'image est publiée avec chaque version de pi-appliance, sur la page [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest) : le fichier **`pi-appliance-vX.Y.Z.img.xz`** (environ 720 Mio compressé, 3,3 Gio une fois décompressé) et son fichier de somme de contrôle **`pi-appliance-vX.Y.Z.img.xz.sha256`**, où `X.Y.Z` est le numéro de version (par exemple `0.1.6`). Elle est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4. Un Pi déjà installé n'a pas besoin d'être reflashé : il se met à jour depuis la console (« Mon Pi », « Mises à jour »). Une version qui ne change que le socle est publiée sans image : sa page le dit et donne le lien de la dernière image ; flashez celle-ci, puis mettez le Pi à jour depuis la console.
 
 L'image contient le socle pi-appliance et sa console : rien d'autre à installer. Seule la personne qui configure le Pi, avec le compte administrateur créé au premier démarrage, peut l'administrer. Chaque Pi a son propre nom, `pi-appliance-XXXX`, modifiable dans la console (section « Réseau de la maison », « Nom du Pi sur le réseau ») : un Pi nommé `salon` s'ouvre à `https://salon.local/pi-appliance/`.
 
 L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte micro-SD de 16 Go ou plus, un ordinateur et [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Le flashage efface entièrement la carte SD.
 
-1. Sur la page de la [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest), téléchargez dans le même dossier le fichier `.img.xz` et son fichier `.img.xz.sha256`. L'archive `-arm64.tar.gz` sert aux mises à jour depuis la console : inutile de la télécharger.
+1. Sur la page de la [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest), téléchargez dans le même dossier le fichier `.img.xz` et son fichier `.img.xz.sha256` (s'il n'y en a pas, suivez le lien de la dernière image donné sur cette page). L'archive `-arm64.tar.gz` sert aux mises à jour depuis la console : inutile de la télécharger.
 2. **Vérifiez le téléchargement avant de flasher.** Sous Windows PowerShell, depuis le dossier décompressé :
 
    ```powershell

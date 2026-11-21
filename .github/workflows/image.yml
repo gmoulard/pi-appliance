@@ -15,7 +15,9 @@
 
 # Image système pi-appliance (pi-gen), publiée avec sa somme de contrôle.
 # Seulement sur une étiquette de version (v…) ou à la demande : une
-# construction prend environ une heure.
+# construction prend environ une heure. À la demande, « image » décoché :
+# socle seul (archive de mise à jour des Pi déjà installés), en quelques
+# minutes ; la version publiée renvoie alors à la dernière image.
 
 ---
 name: Image
@@ -24,6 +26,11 @@ on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      image:
+        description: "Construire aussi l'image à flasher (sinon le socle seul)"
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -32,6 +39,9 @@ jobs:
   image:
     runs-on: ubuntu-latest
     timeout-minutes: 240
+    env:
+      # Image construite, sauf à la demande avec « image » décoché.
+      WITH_IMAGE: ${{ github.event_name != 'workflow_dispatch' || inputs.image }}
     permissions:
       contents: write  # publication de la version (gh release)
     steps:
@@ -61,11 +71,13 @@ jobs:
           echo "VERSION=$version" >>"$GITHUB_ENV"
           GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=$version" -o pi-appliance-arm64 ./cmd/pi-appliance
       - name: Place sur le disque
+        if: env.WITH_IMAGE == 'true'
         run: |
           set -eu
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
           df -h /
       - name: Image (pi-gen)
+        if: env.WITH_IMAGE == 'true'
         run: |
           set -eu
           IMG_VERSION=$VERSION image/build.sh pi-appliance-arm64 deploy
@@ -87,10 +99,22 @@ jobs:
           # proposée seulement sur le canal bêta (spécification 5.4).
           prerelease=
           case "${GITHUB_REF_NAME}" in *-*) prerelease=--prerelease ;; esac
-          # shellcheck disable=SC2086
-          gh release create "${GITHUB_REF_NAME}" $prerelease deploy/*.img.xz deploy/*.img.xz.sha256 \
-            deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
-            --title "pi-appliance ${GITHUB_REF_NAME}" \
-            --notes "Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).
+          if [ "$WITH_IMAGE" = true ]; then
+            # shellcheck disable=SC2086
+            gh release create "${GITHUB_REF_NAME}" $prerelease deploy/*.img.xz deploy/*.img.xz.sha256 \
+              deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
+              --title "pi-appliance ${GITHUB_REF_NAME}" \
+              --notes "Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).
           Vérifier le fichier avec sa somme de contrôle : sha256sum -c *.sha256
           Les Pi déjà installés proposent cette version dans la console (Mon Pi, Mises à jour) : archive pi-appliance-${GITHUB_REF_NAME}-arm64.tar.gz."
+          else
+            # Socle seul : la dernière version qui a une image, pour le flashage.
+            last=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=30" \
+              --jq '[.[] | select(any(.assets[]; .name | endswith(".img.xz")))][0].tag_name // empty')
+            # shellcheck disable=SC2086
+            gh release create "${GITHUB_REF_NAME}" $prerelease \
+              deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
+              --title "pi-appliance ${GITHUB_REF_NAME}" \
+              --notes "Mise à jour du socle seulement, sans nouvelle image : les Pi déjà installés proposent cette version dans la console (Mon Pi, Mises à jour) : archive pi-appliance-${GITHUB_REF_NAME}-arm64.tar.gz.
+          Pour flasher une carte SD, prenez l'image de la version ${last:-précédente} (https://github.com/${GITHUB_REPOSITORY}/releases/tag/${last}), puis mettez le Pi à jour depuis la console."
+          fi
