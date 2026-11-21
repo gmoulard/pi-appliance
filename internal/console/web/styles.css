@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   --brand-shadow: #7e0f39;
   --brand-pale: #fce4ec;
   --gold: #ffd700;
+  --gold-dark: #b8860b;
   --ink: #33141f;
   --muted: #6b3d4e;
   --paper: #fff5f7;
@@ -86,6 +87,7 @@ body {
   font-family: var(--title);
   font-size: 1.3rem;
   font-weight: 400;
+  color: var(--gold-dark);
   letter-spacing: -0.02em;
 }
 
