@@ -541,6 +541,8 @@ piTranslations("ar", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "تحتاج بعض الخدمات إلى عدة دقائق لتستجيب في المرة الأولى.",
   "Afficher": "إظهار",
   "Masquer": "إخفاء",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "مرحبًا! يجهّز هذا المساعد جهاز Pi في ثلاث خطوات: حسابك (تم)، وشبكة المنزل، ثم فحص الشبكة يليه إعادة تشغيل. يستغرق ذلك نحو خمس دقائق. يعود عند كل تسجيل دخول ما دمت لم تُنهه؛ ويمكنك تغيير كل شيء لاحقًا. ستختار بعد ذلك خدماتك من السوق.",
+  "Vérification et redémarrage": "الفحص وإعادة التشغيل",
   "Redémarrer le Pi": "إعادة تشغيل الـPi",
   "Ne pas redémarrer": "عدم إعادة التشغيل",
   "Terminer sans redémarrer": "الإنهاء دون إعادة التشغيل",
@@ -626,11 +628,5 @@ piTranslations("ar", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "فتح لوحة التحكم على الإنترنت؟ لن يتمكن من تسجيل الدخول من الإنترنت إلا أصحاب الحسابات التي فعّلت التحقق بخطوتين.",
   "Ouvrir la console sur internet": "فتح لوحة التحكم على الإنترنت",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "الأبسط: اسم مستعار (سجل CNAME) يشير إلى {0}. يتبع عنوان الراوتر، دون كلمة مرور مزوّدك على الـ Pi.",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، اجعل الاسم يشير إلى عنوان IP العام للراوتر (سجل A)؛ قد يتغيّر: الأفضل إعداد DuckDNS في الأعلى.",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "مرحبًا! يجهّز هذا المساعد جهاز Pi في ثلاث خطوات: حسابك (تم)، وشبكة المنزل، ثم فحص الشبكة وتحديث Pi وإعادة التشغيل. يستغرق ذلك من عشر إلى ثلاثين دقيقة، معظمها للتحديث. يعود عند كل تسجيل دخول ما دمت لم تُنهه؛ ويمكنك تغيير كل شيء لاحقًا. ستختار بعد ذلك خدماتك من السوق.",
-  "Vérification, mise à jour et redémarrage": "الفحص والتحديث وإعادة التشغيل",
-  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "يجري الآن تحديث Pi: نظامه أولًا، ثم pi-appliance. يستغرق ذلك من بضع دقائق إلى نصف ساعة. لا تفصل Pi عن الكهرباء وأبقِ هذه الصفحة مفتوحة.",
-  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "جهاز Pi محدَّث. أعد تشغيله الآن: يُفترض أن يجد شبكتك وحده. وبذلك ينتهي الإعداد.",
-  "La mise à jour prend trop de temps.": "يستغرق التحديث وقتًا طويلًا جدًا.",
-  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "تعذّر إجراء التحديث ({0}). يمكنك إعادته لاحقًا من «جهاز Pi الخاص بي». أعد تشغيل Pi الآن: وبذلك ينتهي الإعداد."
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، اجعل الاسم يشير إلى عنوان IP العام للراوتر (سجل A)؛ قد يتغيّر: الأفضل إعداد DuckDNS في الأعلى."
 });

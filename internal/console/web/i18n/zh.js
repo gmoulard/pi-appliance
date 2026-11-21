@@ -541,6 +541,8 @@ piTranslations("zh", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "有些服务第一次需要几分钟才能响应。",
   "Afficher": "显示",
   "Masquer": "隐藏",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "欢迎！本向导分三步设置您的 Pi：您的账户（已完成）、家庭网络，然后检查网络并重新启动。大约需要五分钟。在您完成之前，每次登录都会再次出现；以后可以随时更改。之后，您可以在应用市场中选择服务。",
+  "Vérification et redémarrage": "检查并重新启动",
   "Redémarrer le Pi": "重新启动 Pi",
   "Ne pas redémarrer": "不重新启动",
   "Terminer sans redémarrer": "完成但不重新启动",
@@ -626,11 +628,5 @@ piTranslations("zh", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "在互联网上开放控制台？从互联网只有启用两步验证的账户才能登录。",
   "Ouvrir la console sur internet": "在互联网上开放控制台",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "最简单的方法：指向 {0} 的别名（CNAME 记录）。它会跟随您路由器的地址，Pi 上不需要您服务商的密码。",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "没有 DuckDNS 时，请将该名称指向您路由器的公网 IP 地址（A 记录）；该地址可能会变：最好在上方设置 DuckDNS。",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "欢迎！本向导分三步设置您的 Pi：您的账户（已完成）、家庭网络，然后检查网络、更新 Pi 并重新启动。需要十到三十分钟，主要用于更新。在您完成之前，每次登录都会再次出现；以后可以随时更改。之后，您可以在应用市场中选择服务。",
-  "Vérification, mise à jour et redémarrage": "检查、更新并重新启动",
-  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi 正在更新：先更新系统，再更新 pi-appliance。需要几分钟到半小时。请不要拔掉 Pi 的电源，并保持此页面打开。",
-  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "Pi 已是最新。现在重新启动它：它应能自行找到您的网络。设置随即完成。",
-  "La mise à jour prend trop de temps.": "更新耗时过长。",
-  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "无法完成更新（{0}）。您可以稍后在“我的 Pi”中重新进行。现在请重新启动 Pi：设置随即完成。"
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "没有 DuckDNS 时，请将该名称指向您路由器的公网 IP 地址（A 记录）；该地址可能会变：最好在上方设置 DuckDNS。"
 });

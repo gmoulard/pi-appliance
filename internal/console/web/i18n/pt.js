@@ -541,6 +541,8 @@ piTranslations("pt", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "Alguns serviços demoram vários minutos a responder da primeira vez.",
   "Afficher": "Mostrar",
   "Masquer": "Ocultar",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Bem-vindo! Este assistente prepara o seu Pi em três passos: a sua conta (já está), a rede de casa e, por fim, uma verificação da rede seguida de um reinício. Conte com cerca de cinco minutos. Volta a cada ligação enquanto não o terminar; poderá mudar tudo mais tarde. Depois escolherá os seus serviços na marketplace.",
+  "Vérification et redémarrage": "Verificação e reinício",
   "Redémarrer le Pi": "Reiniciar o Pi",
   "Ne pas redémarrer": "Não reiniciar",
   "Terminer sans redémarrer": "Terminar sem reiniciar",
@@ -626,11 +628,5 @@ piTranslations("pt", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Abrir a consola na internet? Só as contas com verificação em dois passos poderão iniciar sessão a partir da internet.",
   "Ouvrir la console sur internet": "Abrir a consola na internet",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "O mais simples: um alias (entrada CNAME) para {0}. Segue o endereço do seu router, sem palavra-passe do seu fornecedor no Pi.",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Sem DuckDNS, aponte o nome para o endereço IP público do seu router (entrada A); pode mudar: configure antes o DuckDNS, mais acima.",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Bem-vindo! Este assistente prepara o seu Pi em três passos: a sua conta (já está), a rede de casa e, por fim, uma verificação da rede, a atualização do Pi e um reinício. Conte com dez a trinta minutos, sobretudo para a atualização. Volta a cada ligação enquanto não o terminar; poderá mudar tudo mais tarde. Depois escolherá os seus serviços na marketplace.",
-  "Vérification, mise à jour et redémarrage": "Verificação, atualização e reinício",
-  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "O Pi está a atualizar-se: primeiro o sistema, depois o pi-appliance. Demora de alguns minutos a meia hora. Não desligue o Pi e mantenha esta página aberta.",
-  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "O Pi está atualizado. Reinicie-o agora: deve encontrar a sua rede sozinho. A configuração ficará então concluída.",
-  "La mise à jour prend trop de temps.": "A atualização está a demorar demasiado.",
-  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "Não foi possível fazer a atualização ({0}). Poderá repeti-la mais tarde em «O meu Pi». Reinicie agora o Pi: a configuração ficará então concluída."
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Sem DuckDNS, aponte o nome para o endereço IP público do seu router (entrada A); pode mudar: configure antes o DuckDNS, mais acima."
 });

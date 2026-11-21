@@ -541,6 +541,8 @@ piTranslations("ja", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "初回は応答するまで数分かかるサービスもあります。",
   "Afficher": "表示",
   "Masquer": "隠す",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "ようこそ！このアシスタントは 3 つの手順で Pi を準備します：アカウント（完了）、家のネットワーク、そしてネットワークの確認と再起動です。所要時間は約 5 分です。完了するまでログインのたびに表示されます。あとから何でも変更できます。その後、マーケットプレイスでサービスを選びます。",
+  "Vérification et redémarrage": "確認と再起動",
   "Redémarrer le Pi": "Pi を再起動",
   "Ne pas redémarrer": "再起動しない",
   "Terminer sans redémarrer": "再起動せずに完了",
@@ -626,11 +628,5 @@ piTranslations("ja", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "インターネットでコンソールを開きますか？インターネットからは 2 段階認証を有効にしたアカウントだけがログインできます。",
   "Ouvrir la console sur internet": "インターネットでコンソールを開く",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "いちばん簡単なのは {0} へのエイリアス（CNAME レコード）です。ルーターのアドレスに追従し、Pi に業者のパスワードは不要です。",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "DuckDNS がない場合は、名前をルーターのグローバル IP アドレスに向けてください（A レコード）。このアドレスは変わることがあります。上の DuckDNS を設定するほうがおすすめです。",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "ようこそ！このアシスタントは 3 つの手順で Pi を準備します：アカウント（完了）、家のネットワーク、そしてネットワークの確認、Pi の更新、再起動です。主に更新のために 10〜30 分かかります。完了するまでログインのたびに表示されます。あとから何でも変更できます。その後、マーケットプレイスでサービスを選びます。",
-  "Vérification, mise à jour et redémarrage": "確認、更新、再起動",
-  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi を更新しています：まずシステム、次に pi-appliance です。数分から 30 分ほどかかります。Pi の電源を抜かず、このページを開いたままにしてください。",
-  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "Pi は最新です。今すぐ再起動してください：自動的にネットワークに再接続するはずです。これでセットアップは完了です。",
-  "La mise à jour prend trop de temps.": "更新に時間がかかりすぎています。",
-  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "更新できませんでした（{0}）。あとで「私の Pi」からやり直せます。今すぐ Pi を再起動してください：これでセットアップは完了です。"
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "DuckDNS がない場合は、名前をルーターのグローバル IP アドレスに向けてください（A レコード）。このアドレスは変わることがあります。上の DuckDNS を設定するほうがおすすめです。"
 });

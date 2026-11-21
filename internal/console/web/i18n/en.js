@@ -541,6 +541,8 @@ piTranslations("en", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "Some services take several minutes to respond the first time.",
   "Afficher": "Show",
   "Masquer": "Hide",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Welcome! This assistant prepares your Pi in three steps: your account (done), your home network, then a network check followed by a restart. It takes about five minutes. It comes back each time you sign in until you finish it; you can change everything later. You will then choose your services in the marketplace.",
+  "Vérification et redémarrage": "Check and restart",
   "Redémarrer le Pi": "Restart the Pi",
   "Ne pas redémarrer": "Don't restart",
   "Terminer sans redémarrer": "Finish without restarting",
@@ -626,11 +628,5 @@ piTranslations("en", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Open the console on the internet? Only accounts with two-step verification will be able to sign in from the internet.",
   "Ouvrir la console sur internet": "Open the console on the internet",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "The simplest: an alias (CNAME entry) to {0}. It follows your router's address, with no password from your provider on the Pi.",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Without DuckDNS, point the name to your router's public IP address (A entry); it can change: set up DuckDNS instead, above.",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Welcome! This assistant prepares your Pi in three steps: your account (done), your home network, then a network check, the Pi update and a restart. It takes ten to thirty minutes, mostly for the update. It comes back each time you sign in until you finish it; you can change everything later. You will then choose your services in the marketplace.",
-  "Vérification, mise à jour et redémarrage": "Check, update and restart",
-  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "The Pi is now updating: its system, then pi-appliance. This takes from a few minutes to half an hour. Do not unplug the Pi and keep this page open.",
-  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "The Pi is up to date. Restart it now: it should find your network on its own. Setup will then be finished.",
-  "La mise à jour prend trop de temps.": "The update is taking too long.",
-  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "The update could not be done ({0}). You can do it again later in “My Pi”. Restart the Pi now: setup will then be finished."
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Without DuckDNS, point the name to your router's public IP address (A entry); it can change: set up DuckDNS instead, above."
 });

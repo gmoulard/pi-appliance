@@ -133,12 +133,10 @@ type StorageFormatRequest struct {
 // réinitialisation par le fichier reset, connexion, assistant de premier démarrage
 // (administrateur seulement) ou console.
 type SessionState struct {
-	Setup  bool `json:"setup"`
-	Reset  bool `json:"reset"`
-	Wizard bool `json:"wizard"`
-	// WizardUpdated : la mise à jour du premier démarrage est faite (assistant).
-	WizardUpdated bool         `json:"wizard_updated"`
-	Account       *auth.Public `json:"account"`
+	Setup   bool         `json:"setup"`
+	Reset   bool         `json:"reset"`
+	Wizard  bool         `json:"wizard"`
+	Account *auth.Public `json:"account"`
 	// Internet : la demande vient d'internet (connexion avec double authentification seulement).
 	Internet bool `json:"internet"`
 }
@@ -183,11 +181,8 @@ type Config struct {
 	// DiagnosticWindow : page de diagnostic ouverte par le fichier diagnostic ; nil : pas de fichier.
 	DiagnosticWindow *diagnostic.Window
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
-	WizardFile string
-	// WizardUpdateFile marque la mise à jour du système et de pi-appliance faite
-	// par l'assistant (une seule fois, spécification 5.1) ; vide : pas de marque.
-	WizardUpdateFile string
-	ACMEEmailFile    string
+	WizardFile    string
+	ACMEEmailFile string
 	// Mailer envoie les invitations ; nil : le lien est montré à l'administrateur.
 	Mailer auth.Mailer
 	// DevicePublicKey : clé publique du Pi (device.pub), d'où vient son
@@ -265,7 +260,6 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/stats", c.adminOnly(c.statsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/stats", c.adminOnly(c.statsSave))
 	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
-	mux.HandleFunc("POST "+BasePath+"/api/wizard/update", c.adminOnly(c.wizardUpdated))
 	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
@@ -377,10 +371,6 @@ func (c *console) session(w http.ResponseWriter, r *http.Request) {
 		public := account.Public()
 		state.Account = &public
 		state.Wizard = account.Role == auth.RoleAdmin && c.wizardPending()
-		if state.Wizard && c.WizardUpdateFile != "" {
-			_, err := os.Stat(c.WizardUpdateFile)
-			state.WizardUpdated = err == nil
-		}
 	}
 	writeJSON(w, http.StatusOK, state)
 }
@@ -603,20 +593,6 @@ func (c *console) wizardDone(w http.ResponseWriter, _ *http.Request) {
 		if err := os.WriteFile(c.WizardFile, []byte(time.Now().UTC().Format(time.RFC3339)+"\n"), 0o600); err != nil {
 			log.Printf("assistant : %v", err)
 			writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer la fin de l'assistant.")
-			return
-		}
-	}
-	w.WriteHeader(http.StatusNoContent)
-}
-
-// wizardUpdated note que l'assistant a fait la mise à jour du premier
-// démarrage : après le redémarrage de la console (nouvelle version), il passe
-// directement au redémarrage du Pi.
-func (c *console) wizardUpdated(w http.ResponseWriter, _ *http.Request) {
-	if c.WizardUpdateFile != "" {
-		if err := os.WriteFile(c.WizardUpdateFile, []byte(time.Now().UTC().Format(time.RFC3339)+"\n"), 0o600); err != nil {
-			log.Printf("assistant, mise à jour : %v", err)
-			writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer la mise à jour du Pi.")
 			return
 		}
 	}
