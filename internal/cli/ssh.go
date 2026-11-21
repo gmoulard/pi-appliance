@@ -102,7 +102,7 @@ func sshState(env Env, args []string) error {
 	case active == "active":
 		fmt.Fprintln(env.Out, "SSH : en marche.")
 	default:
-		fmt.Fprintln(env.Out, "SSH : arrêté. Pour l'allumer : sudo pi-appliance ssh activer")
+		fmt.Fprintln(env.Out, "SSH : arrêté. Pour l'allumer : sudo pia ssh activer")
 	}
 	if enabled == "enabled" {
 		fmt.Fprintln(env.Out, "Au démarrage du Pi : allumé.")
@@ -158,7 +158,7 @@ func sshService(env Env, args []string, on bool) error {
 	if output, err := run(env, "systemctl", "disable", "--now", "ssh"); err != nil {
 		return fmt.Errorf("SSH n'a pas pu être éteint : %s", output)
 	}
-	fmt.Fprintln(env.Out, "SSH est éteint, et le restera aux prochains démarrages. Pour le rallumer : sudo pi-appliance ssh activer (avec un écran et un clavier, ou depuis la console d'administration du système).")
+	fmt.Fprintln(env.Out, "SSH est éteint, et le restera aux prochains démarrages. Pour le rallumer : sudo pia ssh activer (avec un écran et un clavier, ou depuis la console d'administration du système).")
 	return nil
 }
 
@@ -314,7 +314,7 @@ func writeKeys(env Env, user account, file keyFile) error {
 
 func sshKeys(env Env, args []string) error {
 	if len(args) == 0 {
-		return usageError{"pi-appliance ssh cle liste | ajouter | retirer"}
+		return usageError{"pia ssh cle liste | ajouter | retirer"}
 	}
 	f, err := parseFlags(args[1:], []string{"utilisateur", "fichier"}, nil)
 	if err != nil {
@@ -335,7 +335,7 @@ func sshKeys(env Env, args []string) error {
 		}
 		keys := file.valid()
 		if len(keys) == 0 {
-			fmt.Fprintf(env.Out, "Aucune clé SSH pour %s. Pour en ajouter une : sudo pi-appliance ssh cle ajouter \"<clé publique>\"\n", user.name)
+			fmt.Fprintf(env.Out, "Aucune clé SSH pour %s. Pour en ajouter une : sudo pia ssh cle ajouter \"<clé publique>\"\n", user.name)
 			return nil
 		}
 		for i, key := range keys {
@@ -379,7 +379,7 @@ func sshKeys(env Env, args []string) error {
 			return errNeedRoot("ssh cle retirer …")
 		}
 		if len(f.positional) != 1 {
-			return usageError{"Indiquez le numéro de la clé (voir pi-appliance ssh cle liste)."}
+			return usageError{"Indiquez le numéro de la clé (voir pia ssh cle liste)."}
 		}
 		number, err := strconv.Atoi(f.positional[0])
 		file, readErr := readKeys(user)
@@ -388,11 +388,11 @@ func sshKeys(env Env, args []string) error {
 		}
 		keys := file.valid()
 		if err != nil || number < 1 || number > len(keys) {
-			return fmt.Errorf("Numéro inconnu : %s (voir pi-appliance ssh cle liste).", f.positional[0])
+			return fmt.Errorf("Numéro inconnu : %s (voir pia ssh cle liste).", f.positional[0])
 		}
 		removed := keys[number-1]
 		if len(keys) == 1 && passwordLogin(env) == "no" {
-			return errors.New("C'est la dernière clé et les mots de passe sont refusés : vous ne pourriez plus vous connecter. Activez d'abord les mots de passe : sudo pi-appliance ssh mot-de-passe activer")
+			return errors.New("C'est la dernière clé et les mots de passe sont refusés : vous ne pourriez plus vous connecter. Activez d'abord les mots de passe : sudo pia ssh mot-de-passe activer")
 		}
 		var kept keyFile
 		for _, line := range file {
@@ -416,7 +416,7 @@ func sshPassword(env Env, args []string) error {
 		return err
 	}
 	if len(f.positional) != 1 {
-		return usageError{"pi-appliance ssh mot-de-passe activer | desactiver"}
+		return usageError{"pia ssh mot-de-passe activer | desactiver"}
 	}
 	var on bool
 	switch strings.ToLower(f.positional[0]) {
@@ -424,7 +424,7 @@ func sshPassword(env Env, args []string) error {
 		on = true
 	case "desactiver", "désactiver", "off":
 	default:
-		return usageError{"pi-appliance ssh mot-de-passe activer | desactiver"}
+		return usageError{"pia ssh mot-de-passe activer | desactiver"}
 	}
 	if env.Euid != 0 {
 		return errNeedRoot("ssh mot-de-passe " + f.positional[0])
@@ -439,14 +439,14 @@ func sshPassword(env Env, args []string) error {
 			return err
 		}
 		if len(file.valid()) == 0 {
-			return fmt.Errorf("%s n'a aucune clé SSH : sans mot de passe, plus personne ne pourrait se connecter. Ajoutez d'abord une clé : sudo pi-appliance ssh cle ajouter \"<clé publique>\"", user.name)
+			return fmt.Errorf("%s n'a aucune clé SSH : sans mot de passe, plus personne ne pourrait se connecter. Ajoutez d'abord une clé : sudo pia ssh cle ajouter \"<clé publique>\"", user.name)
 		}
 	}
 	value := "no"
 	if on {
 		value = "yes"
 	}
-	content := "# Écrit par pi-appliance (pi-appliance ssh mot-de-passe) : ne pas modifier à la main.\n" +
+	content := "# Écrit par pi-appliance (pia ssh mot-de-passe) : ne pas modifier à la main.\n" +
 		"PasswordAuthentication " + value + "\nKbdInteractiveAuthentication " + value + "\n"
 	path := env.Root + SSHDropIn
 	previous, readErr := os.ReadFile(path)

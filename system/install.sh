@@ -119,6 +119,8 @@ if [ -n "$data_root" ]; then
 	mv /etc/docker/daemon.json.tmp /etc/docker/daemon.json
 fi
 install -m 0755 "$binary" /usr/local/bin/pi-appliance
+# Ligne de commande du Pi : « pia <commande> » (même programme).
+ln -sfn pi-appliance /usr/local/bin/pia
 if [ -n "$archive" ]; then
 	install -D -m 0644 "$archive" /usr/local/share/pi-appliance/traefik-image.tar
 fi

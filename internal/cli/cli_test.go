@@ -171,8 +171,15 @@ func TestUnknownCommand(t *testing.T) {
 		t.Fatalf("code %d : %s", code, pi.err.String())
 	}
 	pi.err.Reset()
-	if code := pi.run("help"); code != 0 || !strings.Contains(pi.out.String(), "pi-appliance installer") {
+	if code := pi.run("help"); code != 0 || !strings.Contains(pi.out.String(), "pia installer") {
 		t.Fatalf("aide : code %d", code)
+	}
+	// « pia » seul, ou avec --help : l'aide.
+	for _, args := range [][]string{nil, {"--help"}, {"-h"}} {
+		pi.out.Reset()
+		if code := Run(args, pi.env); code != 0 || !strings.HasPrefix(pi.out.String(), "pia : ligne de commande du Pi") {
+			t.Fatalf("%v : code %d :\n%s", args, code, pi.out.String())
+		}
 	}
 }
 

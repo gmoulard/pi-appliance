@@ -59,9 +59,10 @@ func defaultDomain() string {
 }
 
 func main() {
-	// pi-appliance <commande> : ligne de commande du Pi (internal/cli) ; sans
+	// pia ou pi-appliance <commande> : ligne de commande du Pi (internal/cli) ; sans
 	// commande, ou avec des options seulement, le programme est la console.
-	if len(os.Args) > 1 && !strings.HasPrefix(os.Args[1], "-") {
+	// « pia » (lien posé par install.sh) est toujours la ligne de commande.
+	if filepath.Base(os.Args[0]) == cli.ShortName || (len(os.Args) > 1 && !strings.HasPrefix(os.Args[1], "-")) {
 		os.Exit(cli.Run(os.Args[1:], cli.Defaults(version)))
 	}
 	addr := flag.String("addr", ":8080", "adresse d'écoute de la console")

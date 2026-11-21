@@ -13,7 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Package cli : ligne de commande du Pi, « pi-appliance <commande> »
+// Package cli : ligne de commande du Pi, « pia <commande> » (lien vers le
+// binaire de la console) ou « pi-appliance <commande> »
 // (spécification 5.2). Pour les personnes à l'aise avec SSH : la console reste
 // le moyen prévu pour tout le monde. Les services passent par la console en
 // marche (son API sur 127.0.0.1:8080, avec un jeton lisible par root seul) ;
@@ -44,6 +45,8 @@ import (
 const (
 	// DefaultTokenFile : jeton écrit par la console à chaque démarrage (droits 600).
 	DefaultTokenFile = "/var/lib/pi-appliance/system/cli-token"
+	// ShortName : nom court de la commande, lien /usr/local/bin/pia vers pi-appliance.
+	ShortName = "pia"
 	// DefaultConsoleURL : la console, en direct sur le Pi (pas à travers Traefik).
 	DefaultConsoleURL = "http://127.0.0.1:8080/pi-appliance"
 )
@@ -103,6 +106,9 @@ func (e usageError) Error() string { return e.message }
 
 // Run exécute la commande args et rend le code de sortie du programme.
 func Run(args []string, env Env) int {
+	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
+		args = []string{"aide"}
+	}
 	command := strings.ToLower(args[0])
 	if alias, ok := aliases[command]; ok {
 		command = alias
@@ -137,24 +143,25 @@ func Run(args []string, env Env) int {
 	return 0
 }
 
-const help = `pi-appliance : ligne de commande du Pi (la console reste le moyen le plus simple).
+const help = `pia : ligne de commande du Pi (la console reste le moyen le plus simple) ;
+« pi-appliance <commande> » marche aussi.
 
-  pi-appliance version                      version du socle : pi-appliance, système, Docker, Traefik
-  pi-appliance etat                         la console répond-elle, état des services
-  pi-appliance catalogue [application]      applications installables (détail d'une application)
-  pi-appliance services                     services installés et leur état
-  pi-appliance installer <application> [--nom NOM] [--acces public|users|home]
-                         [--param nom=valeur]... [--confirmer]
-  pi-appliance desinstaller <service> [--effacer-donnees] [--oui]
-                                            données gardées sauf --effacer-donnees
-  pi-appliance demarrer|arreter|redemarrer <service>
+  pia version                     version du socle : pi-appliance, système, Docker, Traefik
+  pia etat                        la console répond-elle, état des services
+  pia catalogue [application]     applications installables (détail d'une application)
+  pia services                    services installés et leur état
+  pia installer <application> [--nom NOM] [--acces public|users|home]
+                  [--param nom=valeur]... [--confirmer]
+  pia desinstaller <service> [--effacer-donnees] [--oui]
+                                  données gardées sauf --effacer-donnees
+  pia demarrer|arreter|redemarrer <service>
 
-  pi-appliance ssh [etat]                   SSH en marche ? mots de passe ? clés ?
-  pi-appliance ssh activer|desactiver [--oui]
-  pi-appliance ssh cle liste [--utilisateur NOM]
-  pi-appliance ssh cle ajouter "<clé publique>" | --fichier FICHIER [--utilisateur NOM]
-  pi-appliance ssh cle retirer <numéro> [--utilisateur NOM]
-  pi-appliance ssh mot-de-passe activer|desactiver
+  pia ssh [etat]                  SSH en marche ? mots de passe ? clés ?
+  pia ssh activer|desactiver [--oui]
+  pia ssh cle liste [--utilisateur NOM]
+  pia ssh cle ajouter "<clé publique>" | --fichier FICHIER [--utilisateur NOM]
+  pia ssh cle retirer <numéro> [--utilisateur NOM]
+  pia ssh mot-de-passe activer|desactiver
 
 Seules version, aide et ssh (pour regarder) se lancent sans sudo.
 `
@@ -212,7 +219,7 @@ func (f flags) value(name string) string {
 
 // errNeedRoot : commande qui change le système ou lit le jeton de la console.
 func errNeedRoot(args ...string) error {
-	return fmt.Errorf("Lancez la commande avec sudo : sudo pi-appliance %s", strings.Join(args, " "))
+	return fmt.Errorf("Lancez la commande avec sudo : sudo pia %s", strings.Join(args, " "))
 }
 
 // confirm pose une question oui/non ; « o », « oui », « y », « yes » valent oui.
@@ -365,7 +372,7 @@ func commandOutput(ctx context.Context, env Env, name string, args ...string) st
 // version : version du socle.
 func version(env Env, args []string) error {
 	if len(args) > 0 {
-		return usageError{"pi-appliance version ne prend pas d'argument."}
+		return usageError{"pia version ne prend pas d'argument."}
 	}
 	ctx := context.Background()
 	running := health(ctx, env)
@@ -408,7 +415,7 @@ func services(ctx context.Context, env Env) ([]service, error) {
 // state : la console répond-elle, et l'état des services en une phrase.
 func state(env Env, args []string) error {
 	if len(args) > 0 {
-		return usageError{"pi-appliance etat ne prend pas d'argument."}
+		return usageError{"pia etat ne prend pas d'argument."}
 	}
 	ctx := context.Background()
 	running := health(ctx, env)
@@ -430,14 +437,14 @@ func state(env Env, args []string) error {
 
 func list(env Env, args []string) error {
 	if len(args) > 0 {
-		return usageError{"pi-appliance services ne prend pas d'argument."}
+		return usageError{"pia services ne prend pas d'argument."}
 	}
 	items, err := services(context.Background(), env)
 	if err != nil {
 		return err
 	}
 	if len(items) == 0 {
-		fmt.Fprintln(env.Out, "Aucun service installé. Voir : pi-appliance catalogue")
+		fmt.Fprintln(env.Out, "Aucun service installé. Voir : pia catalogue")
 		return nil
 	}
 	for _, item := range items {
@@ -484,7 +491,7 @@ func apps(ctx context.Context, env Env) ([]app, error) {
 
 func catalogue(env Env, args []string) error {
 	if len(args) > 1 {
-		return usageError{"pi-appliance catalogue prend au plus le nom d'une application."}
+		return usageError{"pia catalogue prend au plus le nom d'une application."}
 	}
 	items, err := apps(context.Background(), env)
 	if err != nil {
@@ -494,7 +501,7 @@ func catalogue(env Env, args []string) error {
 		for _, item := range items {
 			fmt.Fprintf(env.Out, "%-12s %-22s %s\n", item.ID, item.Name, firstSentence(item.Description))
 		}
-		fmt.Fprintln(env.Out, "\nDétail : pi-appliance catalogue <application> ; installation : sudo pi-appliance installer <application>")
+		fmt.Fprintln(env.Out, "\nDétail : pia catalogue <application> ; installation : sudo pia installer <application>")
 		return nil
 	}
 	for _, item := range items {
@@ -515,7 +522,7 @@ func catalogue(env Env, args []string) error {
 		}
 		return nil
 	}
-	return fmt.Errorf("Application inconnue : %s. Voir : pi-appliance catalogue", args[0])
+	return fmt.Errorf("Application inconnue : %s. Voir : pia catalogue", args[0])
 }
 
 func firstSentence(text string) string {
@@ -541,7 +548,7 @@ func install(env Env, args []string) error {
 		return err
 	}
 	if len(f.positional) != 1 {
-		return usageError{"Indiquez une application : sudo pi-appliance installer <application> (voir pi-appliance catalogue)."}
+		return usageError{"Indiquez une application : sudo pia installer <application> (voir pia catalogue)."}
 	}
 	ctx := context.Background()
 	items, err := apps(ctx, env)
@@ -555,7 +562,7 @@ func install(env Env, args []string) error {
 		}
 	}
 	if chosen == nil {
-		return fmt.Errorf("Application inconnue : %s. Voir : pi-appliance catalogue", f.positional[0])
+		return fmt.Errorf("Application inconnue : %s. Voir : pia catalogue", f.positional[0])
 	}
 	name := f.value("nom")
 	if name == "" {
@@ -652,7 +659,7 @@ func uninstall(env Env, args []string) error {
 		return err
 	}
 	if len(f.positional) != 1 {
-		return usageError{"Indiquez un service : sudo pi-appliance desinstaller <service> (voir pi-appliance services)."}
+		return usageError{"Indiquez un service : sudo pia desinstaller <service> (voir pia services)."}
 	}
 	name := f.positional[0]
 	data := "keep"
@@ -677,7 +684,7 @@ var actionWords = map[string]string{"start": "démarré", "stop": "arrêté", "r
 
 func control(env Env, args []string, action string) error {
 	if len(args) != 1 {
-		return usageError{"Indiquez un service (voir pi-appliance services)."}
+		return usageError{"Indiquez un service (voir pia services)."}
 	}
 	var status struct {
 		Message string `json:"message"`

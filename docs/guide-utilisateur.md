@@ -121,21 +121,21 @@ Depuis internet, la console demande votre mot de passe puis le code de votre app
 
 ## Ligne de commande du Pi (SSH) {#ligne-de-commande}
 
-Pour les personnes à l'aise avec SSH, le Pi a une commande `pi-appliance`. Tout ce qu'elle fait se fait aussi dans la console. Connectez-vous au Pi (`ssh <compte>@<nom-du-pi>.local`), puis :
+Pour les personnes à l'aise avec SSH, le Pi a une commande `pia` (nom long : `pi-appliance`). Tout ce qu'elle fait se fait aussi dans la console. Connectez-vous au Pi (`ssh <compte>@<nom-du-pi>.local`), puis :
 
 ```sh
-pi-appliance aide                             # toutes les commandes
-pi-appliance version                          # version du socle : pi-appliance, système, Docker, Traefik
-sudo pi-appliance etat                        # la console répond-elle, état des services
-sudo pi-appliance catalogue                   # applications installables
-sudo pi-appliance catalogue nextcloud         # détail et paramètres d'une application
-sudo pi-appliance installer nextcloud         # installer (--nom, --acces, --param nom=valeur)
-sudo pi-appliance services                    # services installés
-sudo pi-appliance redemarrer cloud            # demarrer, arreter, redemarrer
-sudo pi-appliance desinstaller cloud          # données gardées ; --effacer-donnees pour les effacer
-pi-appliance ssh                              # SSH : en marche ? mots de passe ? clés ?
-sudo pi-appliance ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
-sudo pi-appliance ssh mot-de-passe desactiver # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
+pia aide                             # toutes les commandes
+pia version                          # version du socle : pi-appliance, système, Docker, Traefik
+sudo pia etat                        # la console répond-elle, état des services
+sudo pia catalogue                   # applications installables
+sudo pia catalogue nextcloud         # détail et paramètres d'une application
+sudo pia installer nextcloud         # installer (--nom, --acces, --param nom=valeur)
+sudo pia services                    # services installés
+sudo pia redemarrer cloud            # demarrer, arreter, redemarrer
+sudo pia desinstaller cloud          # données gardées ; --effacer-donnees pour les effacer
+pia ssh                              # SSH : en marche ? mots de passe ? clés ?
+sudo pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
+sudo pia ssh mot-de-passe desactiver # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
 ```
 
 Seules `version`, `aide` et `ssh` (pour regarder) se lancent sans `sudo` : les autres passent par la console ou changent le système. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
