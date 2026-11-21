@@ -130,19 +130,19 @@ Pour les personnes à l'aise avec SSH, le Pi a une commande `pia` (nom long : `p
 ```sh
 pia aide                             # toutes les commandes
 pia version                          # version du socle : pi-appliance, système, Docker, Traefik
-sudo pia etat                        # la console répond-elle, état des services
-sudo pia catalogue                   # applications installables
-sudo pia catalogue nextcloud         # détail et paramètres d'une application
-sudo pia installer nextcloud         # installer (--nom, --acces, --param nom=valeur)
-sudo pia services                    # services installés
-sudo pia redemarrer cloud            # demarrer, arreter, redemarrer
-sudo pia desinstaller cloud          # données gardées ; --effacer-donnees pour les effacer
+pia etat                             # la console répond-elle, état des services
+pia catalogue                        # applications installables
+pia catalogue nextcloud              # détail et paramètres d'une application
+pia installer nextcloud              # installer (--nom, --acces, --param nom=valeur)
+pia services                         # services installés
+pia redemarrer cloud                 # demarrer, arreter, redemarrer
+pia desinstaller cloud               # données gardées ; --effacer-donnees pour les effacer
 pia ssh                              # SSH : en marche ? mots de passe ? clés ?
-sudo pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
-sudo pia ssh mot-de-passe desactiver # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
+pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
+pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
 ```
 
-Seules `version`, `aide` et `ssh` (pour regarder) se lancent sans `sudo` : les autres passent par la console ou changent le système. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
+Inutile de taper `sudo` : quand une commande a besoin des droits d'administrateur du Pi (toutes sauf `aide` et `version`), `pia` les demande lui-même, avec le mot de passe de votre compte si le Pi le réclame. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
 
 ## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
 

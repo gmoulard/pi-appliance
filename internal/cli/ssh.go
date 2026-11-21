@@ -102,7 +102,7 @@ func sshState(env Env, args []string) error {
 	case active == "active":
 		fmt.Fprintln(env.Out, "SSH : en marche.")
 	default:
-		fmt.Fprintln(env.Out, "SSH : arrêté. Pour l'allumer : sudo pia ssh activer")
+		fmt.Fprintln(env.Out, "SSH : arrêté. Pour l'allumer : pia ssh activer")
 	}
 	if enabled == "enabled" {
 		fmt.Fprintln(env.Out, "Au démarrage du Pi : allumé.")
@@ -115,7 +115,7 @@ func sshState(env Env, args []string) error {
 	case "no":
 		fmt.Fprintln(env.Out, "Connexion par mot de passe : refusée (clé SSH seulement).")
 	default:
-		fmt.Fprintln(env.Out, "Connexion par mot de passe : inconnue (lancez avec sudo pour le savoir).")
+		fmt.Fprintln(env.Out, "Connexion par mot de passe : inconnue.")
 	}
 	if user, err := resolveUser(env, f.value("utilisateur")); err == nil {
 		keys, _ := readKeys(user)
@@ -158,7 +158,7 @@ func sshService(env Env, args []string, on bool) error {
 	if output, err := run(env, "systemctl", "disable", "--now", "ssh"); err != nil {
 		return fmt.Errorf("SSH n'a pas pu être éteint : %s", output)
 	}
-	fmt.Fprintln(env.Out, "SSH est éteint, et le restera aux prochains démarrages. Pour le rallumer : sudo pia ssh activer (avec un écran et un clavier, ou depuis la console d'administration du système).")
+	fmt.Fprintln(env.Out, "SSH est éteint, et le restera aux prochains démarrages. Pour le rallumer : pia ssh activer (avec un écran et un clavier, ou depuis la console d'administration du système).")
 	return nil
 }
 
@@ -335,7 +335,7 @@ func sshKeys(env Env, args []string) error {
 		}
 		keys := file.valid()
 		if len(keys) == 0 {
-			fmt.Fprintf(env.Out, "Aucune clé SSH pour %s. Pour en ajouter une : sudo pia ssh cle ajouter \"<clé publique>\"\n", user.name)
+			fmt.Fprintf(env.Out, "Aucune clé SSH pour %s. Pour en ajouter une : pia ssh cle ajouter \"<clé publique>\"\n", user.name)
 			return nil
 		}
 		for i, key := range keys {
@@ -392,7 +392,7 @@ func sshKeys(env Env, args []string) error {
 		}
 		removed := keys[number-1]
 		if len(keys) == 1 && passwordLogin(env) == "no" {
-			return errors.New("C'est la dernière clé et les mots de passe sont refusés : vous ne pourriez plus vous connecter. Activez d'abord les mots de passe : sudo pia ssh mot-de-passe activer")
+			return errors.New("C'est la dernière clé et les mots de passe sont refusés : vous ne pourriez plus vous connecter. Activez d'abord les mots de passe : pia ssh mot-de-passe activer")
 		}
 		var kept keyFile
 		for _, line := range file {
@@ -439,7 +439,7 @@ func sshPassword(env Env, args []string) error {
 			return err
 		}
 		if len(file.valid()) == 0 {
-			return fmt.Errorf("%s n'a aucune clé SSH : sans mot de passe, plus personne ne pourrait se connecter. Ajoutez d'abord une clé : sudo pia ssh cle ajouter \"<clé publique>\"", user.name)
+			return fmt.Errorf("%s n'a aucune clé SSH : sans mot de passe, plus personne ne pourrait se connecter. Ajoutez d'abord une clé : pia ssh cle ajouter \"<clé publique>\"", user.name)
 		}
 	}
 	value := "no"
