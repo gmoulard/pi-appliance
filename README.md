@@ -6,7 +6,7 @@
 
 On flashe une image système prête à l'emploi sur la carte SD, et le Pi fonctionne aussitôt, sans installation manuelle.
 
-> **État du projet** : en conception. Le dépôt contient pour l'instant des prototypes (scripts et services Docker utilisés sur de vrais Pi). Le produit visé est décrit dans la [spécification](docs/specification.md), l'avancement dans le [TODO](docs/TODO.md). Pour essayer la première version de la console : [guide utilisateur](docs/guide-utilisateur.md).
+> **État du projet** : expérimental. L'image système, publiée avec chaque [version](https://github.com/gmoulard/pi-appliance/releases/latest), est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Le produit visé est décrit dans la [spécification](docs/specification.md), l'avancement dans le [TODO](docs/TODO.md). Pour essayer la première version de la console : [guide utilisateur](docs/guide-utilisateur.md).
 
 > **Logo et charte** : la maison au π, en framboise, voir la [charte graphique](docs/charte-graphique.md).
 

@@ -1,6 +1,6 @@
 # Guide du prototype pi-appliance
 
-> **État du projet : expérimental.** Une première image système est disponible comme artefact temporaire de GitHub Actions, mais elle n'a pas encore été testée sur un vrai Raspberry Pi. Elle n'est pas une version stable : utilisez-la uniquement pour des essais et n'y confiez pas de données importantes.
+> **État du projet : expérimental.** L'image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Ce n'est pas encore une version stable : gardez une copie de vos données importantes ailleurs.
 
 ## Ce que contient le prototype
 
@@ -17,9 +17,9 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 
 ## Ce qui n'est pas encore disponible
 
-- Une version stable de l'image, testée sur un vrai Raspberry Pi.
+- Une version stable de l'image, et des essais sur Pi 5 et Pi Zero 2 W.
 - L'accès aux services depuis internet et la réservation d'une adresse `*.pi-appliance.com`.
-- Les sauvegardes en ligne ou sur un autre pi-appliance, la restauration de l'appliance entière ou d'un seul fichier, le VPN et les mises à jour de l'appliance depuis la console.
+- Les sauvegardes en ligne ou sur un autre pi-appliance et la restauration de l'appliance entière ou d'un seul fichier.
 
 ## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
 
@@ -40,19 +40,19 @@ La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible
 
 **Prérequis :** l'appliance doit d'abord pouvoir obtenir et tenir à jour son adresse pi-appliance (`TODO-3.2` et `TODO-3.5`). La prise en charge du domaine dans la console, notamment pour l'utiliser avec les services et leurs certificats, reste aussi à réaliser. L'accès depuis internet n'est pas encore disponible non plus.
 
-## Télécharger et installer l'image expérimentale {#telecharger-limage-experimentale}
+## Télécharger et installer l'image {#telecharger-limage-experimentale}
 
-Le workflow GitHub Actions a construit l'image avec succès le 19 novembre 2026. L'artefact **`pi-appliance-image`** comprend l'image et son fichier de somme SHA-256 ; il expire le **3 décembre 2026**. [Télécharger directement l'image et sa somme de contrôle](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083/artifacts/14559608001). Il s'agit d'un artefact temporaire, pas d'une version stable. Le fichier image est `pi-appliance-2026-11-19-48c047d.img.xz` (environ 720 Mio compressé, 3,3 Gio une fois décompressé).
+L'image est publiée avec chaque version de pi-appliance, sur la page [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest) : le fichier **`pi-appliance-vX.Y.Z.img.xz`** (environ 720 Mio compressé, 3,3 Gio une fois décompressé) et son fichier de somme de contrôle **`pi-appliance-vX.Y.Z.img.xz.sha256`**, où `X.Y.Z` est le numéro de version (par exemple `0.1.6`). Elle est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4. Un Pi déjà installé n'a pas besoin d'être reflashé : il se met à jour depuis la console (« Mon Pi », « Mises à jour »).
 
-Dans cette documentation, **controlTower** désigne le service de contrôle : la console d'administration de pi-appliance. Inclus dans l'image, il n'est pas installé depuis la marketplace et son administration est réservée au compte créé par la personne qui configure l'appliance. Avec l'image expérimentale du 19 novembre 2026, le Raspberry Pi garde le nom réseau `pi-appliance` ; l'adresse de la console est donc `https://pi-appliance.local/pi-appliance/`. Avec les images suivantes, chaque Pi a son propre nom, `pi-appliance-XXXX`, modifiable dans la console (section « Réseau de la maison », « Nom du Pi sur le réseau ») : un Pi nommé `controltower` s'ouvre à `https://controltower.local/pi-appliance/`.
+Dans cette documentation, **controlTower** désigne le service de contrôle : la console d'administration de pi-appliance. Inclus dans l'image, il n'est pas installé depuis la marketplace et son administration est réservée au compte créé par la personne qui configure l'appliance. Chaque Pi a son propre nom, `pi-appliance-XXXX`, modifiable dans la console (section « Réseau de la maison », « Nom du Pi sur le réseau ») : un Pi nommé `controltower` s'ouvre à `https://controltower.local/pi-appliance/`.
 
 L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte micro-SD de 16 Go ou plus, un ordinateur et [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Le flashage efface entièrement la carte SD.
 
-1. Sur la page de l'exécution GitHub, téléchargez l'artefact `pi-appliance-image` (un fichier ZIP), puis décompressez-le. Vous devez obtenir le fichier `.img.xz` et son fichier `.img.xz.sha256`.
+1. Sur la page de la [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest), téléchargez dans le même dossier le fichier `.img.xz` et son fichier `.img.xz.sha256`. L'archive `-arm64.tar.gz` sert aux mises à jour depuis la console : inutile de la télécharger.
 2. **Vérifiez le téléchargement avant de flasher.** Sous Windows PowerShell, depuis le dossier décompressé :
 
    ```powershell
-   $image = ".\pi-appliance-2026-11-19-48c047d.img.xz"
+   $image = ".\pi-appliance-v0.1.6.img.xz"   # remplacez par le nom de votre fichier
    $expected = (Get-Content "$image.sha256").Split()[0]
    $actual = (Get-FileHash $image -Algorithm SHA256).Hash
    if ($actual -ne $expected) { throw "Somme SHA-256 invalide : ne flashez pas cette image." }
@@ -61,14 +61,14 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
    Sous Linux ou macOS, dans ce même dossier :
 
    ```shell
-   sha256sum -c pi-appliance-2026-11-19-48c047d.img.xz.sha256
+   sha256sum -c pi-appliance-v*.img.xz.sha256
    ```
 
    Ne flashez pas l'image si la vérification échoue.
 3. Décompressez le fichier `.img.xz` avec 7-Zip pour obtenir le fichier `.img`.
 4. Téléchargez et ouvrez [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
-5. Insérez la carte dans le Raspberry Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement. Avec les images construites à partir du 20 novembre 2026, ce Wi-Fi porte le nom propre du Pi, `pi-appliance-XXXX` (quatre caractères qui changent d'un Pi à l'autre), et ne donne plus accès à internet ni à votre réseau : seulement au portail.
-6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, le Wi-Fi de configuration se ferme : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison, puis ouvrez `https://pi-appliance-XXXX.local/pi-appliance/` (`https://pi-appliance.local/pi-appliance/` avec l'image du 19 novembre 2026). Voir [Retrouver la console](#retrouver-la-console) si cette adresse ne s'ouvre pas.
+5. Insérez la carte dans le Raspberry Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance-XXXX`** (quatre caractères qui changent d'un Pi à l'autre), sans mot de passe, pour une durée maximale de 24 heures. Il ne donne accès ni à internet ni à votre réseau : seulement au portail. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement.
+6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, le Wi-Fi de configuration se ferme : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison, puis ouvrez `https://pi-appliance-XXXX.local/pi-appliance/`. Voir [Retrouver la console](#retrouver-la-console) si cette adresse ne s'ouvre pas.
 
 7. De retour dans l'assistant, sur le réseau de la maison, cliquez sur **Tester le Wi-Fi** (ou **Tester le câble réseau**) : la console vérifie que le Pi est bien relié, que la box répond et qu'il se reconnectera tout seul. Si tout est en ordre, cliquez sur **Redémarrer le Pi** : la console affiche l'adresse où le retrouver et redémarre le Pi au bout de 10 secondes (bouton **Ne pas redémarrer** pour annuler). Une à deux minutes plus tard, la page revient d'elle-même sur l'écran de connexion.
 
@@ -94,7 +94,7 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 - Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en `.local`), utilisez l'adresse IP du Pi : la console la donne avant la bascule si le Pi est relié par câble ; sinon, cherchez l'appareil `pi-appliance-XXXX` dans la liste des appareils connectés de votre box (son interface d'administration, souvent `http://192.168.1.1`). Ouvrez alors `https://<adresse du Pi>/pi-appliance/`, par exemple `https://192.168.1.127/pi-appliance/`. **N'oubliez pas `/pi-appliance/` à la fin.**
 - Le navigateur affiche une alerte (« La connexion n'est pas privée », « Avertissement : risque probable de sécurité ») : le Pi protège la connexion avec son propre certificat, que le navigateur ne connaît pas encore. Choisissez « Paramètres avancés », puis « Continuer ».
 
-La partition, le démarrage et le portail de cette image restent à valider sur du matériel réel. L'accès aux applications depuis internet n'est pas encore disponible.
+La partition, le premier démarrage, le Wi-Fi de configuration et la mise à jour depuis la console sont validés sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; l'ouverture automatique du portail sur téléphone reste à essayer. L'accès aux applications depuis internet n'est pas encore disponible.
 
 ### Retrouver son Pi sur son téléphone : l'application mobile {#application-mobile}
 
