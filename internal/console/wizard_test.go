@@ -39,11 +39,12 @@ func newWizardFixture(t *testing.T) fixture {
 		t.Fatal(err)
 	}
 	return fixture{handler: Handler(Config{
-		Version:    "1.2.3",
-		Catalog:    catalog,
-		Services:   &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}},
-		Accounts:   accounts,
-		WizardFile: filepath.Join(dir, "wizard-done"),
+		Version:          "1.2.3",
+		Catalog:          catalog,
+		Services:         &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}},
+		Accounts:         accounts,
+		WizardFile:       filepath.Join(dir, "wizard-done"),
+		WizardUpdateFile: filepath.Join(dir, "wizard-update-done"),
 		Resources: func() system.Resources {
 			return system.Resources{Memory: &system.Gauge{TotalMB: 1024, UsedMB: 300, FreeMB: 724}}
 		},
@@ -58,6 +59,19 @@ func TestWizard(t *testing.T) {
 	cookie := f.admin(t)
 	if state := decode[SessionState](t, f.do(http.MethodGet, "/pi-appliance/api/session", "", "", cookie)); !state.Wizard {
 		t.Fatalf("assistant attendu : %+v", state)
+	}
+	// Mise à jour du premier démarrage : notée une fois, rappelée par la session.
+	if state := decode[SessionState](t, f.do(http.MethodGet, "/pi-appliance/api/session", "", "", cookie)); state.WizardUpdated {
+		t.Fatalf("mise à jour déjà notée : %+v", state)
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/wizard/update", "", "", nil); response.Code != http.StatusUnauthorized {
+		t.Fatalf("mise à jour sans session : code %d", response.Code)
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/wizard/update", "", "", cookie); response.Code != http.StatusNoContent {
+		t.Fatalf("mise à jour : code %d", response.Code)
+	}
+	if state := decode[SessionState](t, f.do(http.MethodGet, "/pi-appliance/api/session", "", "", cookie)); !state.Wizard || !state.WizardUpdated {
+		t.Fatalf("mise à jour notée attendue : %+v", state)
 	}
 	if response := f.do(http.MethodPost, "/pi-appliance/api/wizard", "", "", cookie); response.Code != http.StatusNoContent {
 		t.Fatalf("fin de l'assistant : code %d", response.Code)

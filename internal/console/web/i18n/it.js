@@ -541,8 +541,6 @@ piTranslations("it", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "Alcuni servizi impiegano diversi minuti a rispondere la prima volta.",
   "Afficher": "Mostra",
   "Masquer": "Nascondi",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Benvenuto! Questa procedura guidata prepara il tuo Pi in tre passaggi: il tuo account (fatto), la rete di casa, poi una verifica della rete seguita da un riavvio. Ci vogliono circa cinque minuti. Ricompare a ogni accesso finché non l'hai terminata; potrai cambiare tutto più tardi. Poi sceglierai i tuoi servizi nel marketplace.",
-  "Vérification et redémarrage": "Verifica e riavvio",
   "Redémarrer le Pi": "Riavvia il Pi",
   "Ne pas redémarrer": "Non riavviare",
   "Terminer sans redémarrer": "Termina senza riavviare",
@@ -628,5 +626,11 @@ piTranslations("it", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Aprire la console su internet? Solo gli account con la verifica in due passaggi potranno accedere da internet.",
   "Ouvrir la console sur internet": "Apri la console su internet",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "La cosa più semplice: un alias (voce CNAME) verso {0}. Segue l'indirizzo del tuo router, senza password del tuo fornitore sul Pi.",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Senza DuckDNS, fai puntare il nome all'indirizzo IP pubblico del tuo router (voce A); può cambiare: configura piuttosto DuckDNS, più in alto."
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Senza DuckDNS, fai puntare il nome all'indirizzo IP pubblico del tuo router (voce A); può cambiare: configura piuttosto DuckDNS, più in alto.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Benvenuto! Questa procedura guidata prepara il tuo Pi in tre passaggi: il tuo account (fatto), la rete di casa, poi una verifica della rete, l'aggiornamento del Pi e un riavvio. Ci vogliono da dieci a trenta minuti, soprattutto per l'aggiornamento. Ricompare a ogni accesso finché non l'hai terminata; potrai cambiare tutto più tardi. Poi sceglierai i tuoi servizi nel marketplace.",
+  "Vérification, mise à jour et redémarrage": "Verifica, aggiornamento e riavvio",
+  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Il Pi si sta aggiornando: prima il sistema, poi pi-appliance. Ci vogliono da pochi minuti a mezz'ora. Non scollegare il Pi e tieni aperta questa pagina.",
+  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "Il Pi è aggiornato. Riavvialo ora: dovrebbe ritrovare la tua rete da solo. La configurazione sarà così terminata.",
+  "La mise à jour prend trop de temps.": "L'aggiornamento richiede troppo tempo.",
+  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "Non è stato possibile eseguire l'aggiornamento ({0}). Potrai rifarlo più tardi in «Il mio Pi». Riavvia ora il Pi: la configurazione sarà così terminata."
 });

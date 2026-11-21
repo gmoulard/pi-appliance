@@ -541,8 +541,6 @@ piTranslations("tr", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "Bazı hizmetlerin ilk seferde yanıt vermesi birkaç dakika sürer.",
   "Afficher": "Göster",
   "Masquer": "Gizle",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Hoş geldiniz! Bu yardımcı Pi'nizi üç adımda hazırlar: hesabınız (tamam), ev ağı, ardından ağın denetlenmesi ve yeniden başlatma. Yaklaşık beş dakika sürer. Bitirene kadar her girişte yeniden açılır; her şeyi daha sonra değiştirebilirsiniz. Ardından hizmetlerinizi marketplace'ten seçersiniz.",
-  "Vérification et redémarrage": "Denetim ve yeniden başlatma",
   "Redémarrer le Pi": "Pi'yi yeniden başlat",
   "Ne pas redémarrer": "Yeniden başlatma",
   "Terminer sans redémarrer": "Yeniden başlatmadan bitir",
@@ -628,5 +626,11 @@ piTranslations("tr", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Konsol internete açılsın mı? İnternetten yalnızca iki adımlı doğrulaması olan hesaplar giriş yapabilecek.",
   "Ouvrir la console sur internet": "Konsolu internete aç",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "En kolayı: {0} adresine bir takma ad (CNAME kaydı). Modeminizin adresini izler, Pi üzerinde sağlayıcınızın parolası olmadan.",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "DuckDNS olmadan, adı modeminizin genel IP adresine yönlendirin (A kaydı); bu adres değişebilir: bunun yerine yukarıdan DuckDNS'i ayarlayın."
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "DuckDNS olmadan, adı modeminizin genel IP adresine yönlendirin (A kaydı); bu adres değişebilir: bunun yerine yukarıdan DuckDNS'i ayarlayın.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Hoş geldiniz! Bu yardımcı Pi'nizi üç adımda hazırlar: hesabınız (tamam), ev ağı, ardından ağın denetlenmesi, Pi'nin güncellenmesi ve yeniden başlatma. Çoğunlukla güncelleme nedeniyle on ile otuz dakika sürer. Bitirene kadar her girişte yeniden açılır; her şeyi daha sonra değiştirebilirsiniz. Ardından hizmetlerinizi marketplace'ten seçersiniz.",
+  "Vérification, mise à jour et redémarrage": "Denetim, güncelleme ve yeniden başlatma",
+  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi şimdi güncelleniyor: önce sistemi, sonra pi-appliance. Bu birkaç dakika ile yarım saat arasında sürer. Pi'nin fişini çekmeyin ve bu sayfayı açık tutun.",
+  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "Pi güncel. Şimdi yeniden başlatın: ağınızı kendiliğinden bulmalıdır. Kurulum böylece tamamlanmış olur.",
+  "La mise à jour prend trop de temps.": "Güncelleme çok uzun sürüyor.",
+  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "Güncelleme yapılamadı ({0}). Daha sonra «Pi'm» bölümünden yeniden yapabilirsiniz. Şimdi Pi'yi yeniden başlatın: kurulum böylece tamamlanmış olur."
 });

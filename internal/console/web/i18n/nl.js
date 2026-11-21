@@ -541,8 +541,6 @@ piTranslations("nl", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "Sommige diensten hebben de eerste keer enkele minuten nodig om te antwoorden.",
   "Afficher": "Tonen",
   "Masquer": "Verbergen",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Welkom! Deze assistent stelt je Pi in drie stappen in: je account (klaar), het netwerk thuis, en daarna een controle van het netwerk gevolgd door een herstart. Reken op ongeveer vijf minuten. Hij komt bij elke aanmelding terug zolang je hem niet hebt afgerond; je kunt later alles wijzigen. Daarna kies je je diensten in de marketplace.",
-  "Vérification et redémarrage": "Controle en herstart",
   "Redémarrer le Pi": "Pi herstarten",
   "Ne pas redémarrer": "Niet herstarten",
   "Terminer sans redémarrer": "Afronden zonder herstart",
@@ -628,5 +626,11 @@ piTranslations("nl", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "De console op internet openen? Alleen accounts met tweestapsverificatie kunnen zich dan vanaf internet aanmelden.",
   "Ouvrir la console sur internet": "Console op internet openen",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "Het eenvoudigst: een alias (CNAME-vermelding) naar {0}. Die volgt het adres van uw router, zonder wachtwoord van uw aanbieder op de Pi.",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Zonder DuckDNS laat u de naam naar het openbare IP-adres van uw router wijzen (A-vermelding); dat kan veranderen: stel liever DuckDNS in, hierboven."
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Zonder DuckDNS laat u de naam naar het openbare IP-adres van uw router wijzen (A-vermelding); dat kan veranderen: stel liever DuckDNS in, hierboven.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "Welkom! Deze assistent stelt je Pi in drie stappen in: je account (klaar), het netwerk thuis, en daarna een controle van het netwerk, de update van de Pi en een herstart. Reken op tien tot dertig minuten, vooral voor de update. Hij komt bij elke aanmelding terug zolang je hem niet hebt afgerond; je kunt later alles wijzigen. Daarna kies je je diensten in de marketplace.",
+  "Vérification, mise à jour et redémarrage": "Controle, update en herstart",
+  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "De Pi wordt nu bijgewerkt: eerst het systeem, daarna pi-appliance. Dat duurt enkele minuten tot een half uur. Haal de stekker van de Pi er niet uit en laat deze pagina open.",
+  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "De Pi is bijgewerkt. Herstart hem nu: hij zou je netwerk vanzelf moeten terugvinden. De installatie is dan klaar.",
+  "La mise à jour prend trop de temps.": "De update duurt te lang.",
+  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "De update kon niet worden uitgevoerd ({0}). Je kunt hem later opnieuw doen in ‘Mijn Pi’. Herstart de Pi nu: de installatie is dan klaar."
 });

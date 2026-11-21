@@ -235,6 +235,7 @@ func main() {
 		Cockpit:          admin,
 		Stats:            reporter,
 		WizardFile:       filepath.Join(*data, "wizard-done"),
+		WizardUpdateFile: filepath.Join(*data, "wizard-update-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
 		Diagnostic:       diag,
 		DiagnosticWindow: window,

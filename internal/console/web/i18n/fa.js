@@ -541,8 +541,6 @@ piTranslations("fa", {
   "Certains services mettent plusieurs minutes à répondre la première fois.": "برخی سرویس‌ها بار اول چند دقیقه طول می‌کشد تا پاسخ دهند.",
   "Afficher": "نمایش",
   "Masquer": "پنهان کردن",
-  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "خوش آمدید! این دستیار Pi شما را در سه مرحله آماده می‌کند: حساب شما (انجام شد)، شبکهٔ خانه، سپس بررسی شبکه و راه‌اندازی دوباره. حدود پنج دقیقه طول می‌کشد. تا وقتی آن را تمام نکرده‌اید، در هر ورود دوباره نمایش داده می‌شود؛ بعداً می‌توانید همه‌چیز را تغییر دهید. سپس سرویس‌های خود را از بازارچه انتخاب می‌کنید.",
-  "Vérification et redémarrage": "بررسی و راه‌اندازی دوباره",
   "Redémarrer le Pi": "راه‌اندازی دوبارهٔ Pi",
   "Ne pas redémarrer": "راه‌اندازی دوباره نکن",
   "Terminer sans redémarrer": "پایان بدون راه‌اندازی دوباره",
@@ -628,5 +626,11 @@ piTranslations("fa", {
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "کنسول روی اینترنت باز شود؟ از اینترنت فقط حساب‌های دارای تأیید دومرحله‌ای می‌توانند وارد شوند.",
   "Ouvrir la console sur internet": "باز کردن کنسول روی اینترنت",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "ساده‌ترین راه: یک نام مستعار (رکورد CNAME) به {0}. این نشانی مودم شما را دنبال می‌کند، بدون گذرواژهٔ ارائه‌دهنده روی Pi.",
-  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، نام را به نشانی IP عمومی مودم خود اشاره دهید (رکورد A)؛ ممکن است عوض شود: بهتر است DuckDNS را در بالا تنظیم کنید."
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، نام را به نشانی IP عمومی مودم خود اشاره دهید (رکورد A)؛ ممکن است عوض شود: بهتر است DuckDNS را در بالا تنظیم کنید.",
+  "Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau, la mise à jour du Pi et un redémarrage. Comptez de dix à trente minutes, surtout pour la mise à jour. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.": "خوش آمدید! این دستیار Pi شما را در سه مرحله آماده می‌کند: حساب شما (انجام شد)، شبکهٔ خانه، سپس بررسی شبکه، به‌روزرسانی Pi و راه‌اندازی دوباره. ده تا سی دقیقه طول می‌کشد، بیشتر برای به‌روزرسانی. تا وقتی آن را تمام نکرده‌اید، در هر ورود دوباره نمایش داده می‌شود؛ بعداً می‌توانید همه‌چیز را تغییر دهید. سپس سرویس‌های خود را از بازارچه انتخاب می‌کنید.",
+  "Vérification, mise à jour et redémarrage": "بررسی، به‌روزرسانی و راه‌اندازی دوباره",
+  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi اکنون در حال به‌روزرسانی است: ابتدا سیستم آن، سپس pi-appliance. این کار از چند دقیقه تا نیم ساعت طول می‌کشد. Pi را از برق نکشید و این صفحه را باز نگه دارید.",
+  "Le Pi est à jour. Redémarrez-le maintenant : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.": "Pi به‌روز است. اکنون آن را دوباره راه‌اندازی کنید: باید خودش شبکهٔ شما را پیدا کند. با این کار راه‌اندازی اولیه تمام می‌شود.",
+  "La mise à jour prend trop de temps.": "به‌روزرسانی بیش از حد طول می‌کشد.",
+  "La mise à jour n'a pas pu se faire ({0}). Vous pourrez la refaire plus tard dans « Mon Pi ». Redémarrez maintenant le Pi : la mise en route sera alors terminée.": "به‌روزرسانی انجام نشد ({0}). بعداً می‌توانید آن را در «Pi من» دوباره انجام دهید. اکنون Pi را دوباره راه‌اندازی کنید: با این کار راه‌اندازی اولیه تمام می‌شود."
 });

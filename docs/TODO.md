@@ -38,7 +38,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3).
 - [x] **TODO-1.15**: Statistiques anonymes sur accord explicite (8.4).
 - [x] **TODO-1.16**: Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
-- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2).
+- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2), sauf une fois au premier démarrage, dans l'assistant (5.1, choix du 2026-11-21).
 - [x] **TODO-1.18**: Interface et site dans les 12 langues de Wikipedia2Book (5.3, 13).
 - [x] **TODO-1.19**: Point d'accès Wi-Fi au premier démarrage même avec un câble Ethernet (4).
 - [x] **TODO-1.20**: E-mail de l'administrateur obligatoire et vérifié (5.1).
@@ -105,6 +105,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
     - [x] **TODO-2.10**: ne pas proposer l'intallation directe des service. Réalisé (spécification 5.1) : l'étape « Vos premiers services » est retirée de l'assistant, remplacée par « Vérification et redémarrage » ; les services se choisissent ensuite dans la marketplace.
     - [x] **TODO-2.11**: quand tout est bien setup, bouton Test WIFI. Réalisé (spécification 5.1) : « Tester le Wi-Fi » (ou le câble), `POST api/network/test` → `network.sh test`, sans couper le point d'accès (même puce, TODO-2.14) : relié, adresse, box, internet, nom en `.local`, réglage gardé après un redémarrage ; test sans Pi `system/tests/network-test.sh`. À vérifier sur un vrai Pi.
     - [x] **TODO-2.12**: Quand le teste est OK alors bouton Rebbot. avec un message de confirmation qui indique a quelle URL on va pouvoir trouver la machine sur le reseau local. Info sur la suite de la procedure avec un timer a 10s. Réalisé (spécification 5.1) : « Redémarrer le Pi », message avec `https://<nom>.local/pi-appliance` et l'adresse IP, la suite (se connecter, choisir ses services dans la marketplace), compte à rebours de 10 secondes annulable ; `POST api/system/reboot` (administrateur) → `network.sh reboot` (`systemd-run --on-active=5 systemctl reboot`), fin de la mise en route enregistrée, page rechargée quand le Pi répond de nouveau. À vérifier sur un vrai Pi.
+    - [x] **TODO-2.63**: Mise à jour du premier démarrage dans l'assistant (5.1) : après le test du réseau, système puis pi-appliance, d'office et une seule fois, avec jauge ; reprise après le redémarrage de la console (`api/wizard/update`, `wizard_updated`). À vérifier sur un vrai Pi avec une image plus ancienne que la dernière version.
     - [x] **TODO-2.13**: Dans la DOC guide-utilisateur apres 6. explique ce qui se passer.
 - [x] **TODO-2.14**: API réseau de la console (`internal/network`, branchée sur `/usr/local/lib/pi-appliance/network.sh`, option `-network-script`), réservée à l'administrateur connecté ; essayée contre un faux `network.sh`, reste l'essai sur un vrai Pi (ligne ci-dessus) :
   - `GET api/network` → `network.sh status` : `{"accessPoint": {"open", "ssid", "reason", "closesInSeconds"}, "configured": "" | "wifi" | "wired", "wired": {"connected"}, "wifi": {"connected", "ssid"}, "addresses": ["192.168.1.20"], "lastError": ""}` ;
