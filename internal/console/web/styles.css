@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   --brand-dark: #a8174e;
   --brand-shadow: #7e0f39;
   --brand-pale: #fce4ec;
+  --gold: #ffd700;
   --ink: #33141f;
   --muted: #6b3d4e;
   --paper: #fff5f7;
@@ -28,7 +29,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   --success: #e2f4ea;
   --success-ink: #17663c;
   --info: #fff1cc;
-  --error: #fce4ec;
   --title: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --tint-0: #2f6fd6;
@@ -113,7 +113,7 @@ h2 {
 .hero {
   border-radius: 1.75rem;
   background: var(--brand);
-  color: #ffffff;
+  color: var(--gold);
   padding: 1.375rem;
   box-shadow: 0 4px 0 var(--brand-shadow);
 }
@@ -134,7 +134,7 @@ h2 {
   height: 0.875rem;
   flex: none;
   border-radius: 50%;
-  background: #ffffff;
+  background: var(--gold);
   opacity: 0.6;
 }
 
@@ -342,7 +342,7 @@ button {
   border: 0;
   border-radius: 999px;
   background: var(--brand);
-  color: #ffffff;
+  color: var(--gold);
   font: inherit;
   font-weight: 700;
   box-shadow: 0 4px 0 var(--brand-shadow);
@@ -356,7 +356,7 @@ button:active {
 
 button.secondary {
   min-height: 2.75rem;
-  background: var(--brand-pale);
+  background: var(--gold);
   color: var(--brand-dark);
   box-shadow: none;
 }
@@ -382,7 +382,7 @@ button:disabled {
 }
 
 #message.error {
-  background: var(--error);
+  background: var(--gold);
   color: var(--brand-dark);
 }
 
@@ -716,7 +716,7 @@ label.check input {
 
 .tag-filters button[aria-pressed="true"] {
   background: var(--brand);
-  color: #ffffff;
+  color: var(--gold);
 }
 
 .app-tags {
@@ -731,7 +731,7 @@ label.check input {
 .app-tags li {
   padding: 0.125rem 0.625rem;
   border-radius: 999px;
-  background: var(--brand-pale);
+  background: var(--gold);
   color: var(--brand-dark);
   font-size: 0.875rem;
 }

@@ -34,10 +34,13 @@ Le logo photo (une main tenant des framboises, [`docs/logo/photo/`](logo/photo/)
 | Framboise | `#C71F5D` | Couleur de marque : boutons, bandeau d'état, logo |
 | Framboise foncée | `#A8174E` | Liens, texte coloré |
 | Ombre framboise | `#7E0F39` | Ombre pleine sous les boutons framboise |
-| Rose clair | `#FCE4EC` | Boutons secondaires, fonds d'alerte |
+| Or | `#FFD700` | Texte sur fond framboise ; fond sous un texte framboise (boutons secondaires, pastilles, alertes) |
+| Rose clair | `#FCE4EC` | Fonds de citation, survol des menus |
 | Aubergine | `#33141F` | Texte, logo, bandeaux sombres |
 | Rose pâle | `#FFF5F7` | Fond des pages |
 | Rose ligne | `#F0D3DC` | Ombres des cartes, séparateurs |
+
+**Framboise et or vont ensemble** (choix du 2026-11-21) : sur un fond framboise, le texte est or, jamais blanc ; un texte framboise posé sur un fond à lui (bouton secondaire, pastille, étiquette, message d'erreur, code dans le texte) a un fond or. Le texte framboise posé directement sur la page (liens, titres, mots colorés) garde le fond de la page. Contraste : or sur framboise 3,96:1, réservé aux textes en gras (boutons, bandeaux) ; sur fond or, le texte est en framboise foncée (5,2:1).
 
 Une couleur vive par application, avec sa teinte pâle pour le fond de la carte :
 
@@ -65,8 +68,8 @@ Polices du système seulement, aucune police téléchargée (ni Google Fonts ni 
 ## Formes et composants
 
 - Coins arrondis : 14 px (champs) à 28 px (bandeaux) ; boutons en pilule.
-- Bouton principal : framboise, texte blanc, ombre pleine `#7E0F39` de 4 px dessous, qui s'enfonce au clic.
-- Bouton secondaire : rose clair, texte framboise foncée, sans ombre.
+- Bouton principal : framboise, texte or, ombre pleine `#7E0F39` de 4 px dessous, qui s'enfonce au clic.
+- Bouton secondaire : or, texte framboise foncée, sans ombre.
 - Champs : bordure aubergine de 2 px, 48 px de haut.
 - Cartes : blanches sur le rose pâle, ombre pleine rose ligne ; cartes d'application sur la teinte pâle de l'application, avec une tuile de couleur et l'icône de l'application en trait blanc (clé `icon` du manifeste dans la console).
 - Zones tactiles de 44 px au moins ; contour de focus framboise de 3 px.
