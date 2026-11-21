@@ -29,7 +29,7 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 
 ## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
 
-> **Cette option n'est pas encore disponible.** La console ne permet pas de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
+> **Cette option n'est pas encore disponible pour les services.** Pour la console seule, un nom de votre domaine peut déjà servir d'adresse sur internet : voir [Administrer le Pi depuis internet](#console-sur-internet). Pour les services, la console ne permet pas encore de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
 
 Quand cette option sera disponible, la configuration se fera en deux endroits :
 
@@ -119,9 +119,9 @@ Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, s
 La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir :
 
 1. À la maison, dans « Mon compte », activez la **double authentification** : depuis internet, seuls les comptes qui l'ont activée peuvent se connecter.
-2. Donnez une adresse internet au Pi, dans « Adresse sur internet » (DuckDNS, puis votre adresse pi-appliance.com).
+2. Donnez une adresse internet au Pi, dans « Adresse sur internet » : DuckDNS, puis votre adresse pi-appliance.com. Si vous avez votre propre nom de domaine, vous pouvez aussi, chez votre fournisseur, faire pointer un de ses noms vers votre box (par exemple `maison.exemple.fr`), puis le taper dans la carte « Console sur internet », champ « Votre adresse personnelle », et toucher **Enregistrer l'adresse**. La console refuse un nom qui n'existe pas encore sur internet : attendez quelques minutes après le changement chez le fournisseur.
 3. Dans votre box, faites suivre les ports **80** et **443** vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.
-4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`.
+4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`, ou `https://maison.exemple.fr/pi-appliance/` avec votre adresse personnelle.
 
 Depuis internet, la console demande votre mot de passe puis le code de votre application d'authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 

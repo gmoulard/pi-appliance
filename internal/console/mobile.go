@@ -107,9 +107,13 @@ func (c *console) piName() string {
 	return name
 }
 
-// internetHost : adresse du Pi sur internet, s'il en a une : <nom>.pi-appliance.com
-// réservée, sinon le nom DuckDNS, sinon le domaine personnel des services.
+// internetHost : adresse du Pi sur internet, s'il en a une : l'adresse
+// personnelle de la console, sinon <nom>.pi-appliance.com réservée, sinon le
+// nom DuckDNS, sinon le domaine personnel des services.
 func (c *console) internetHost() string {
+	if domain := c.internetSettings().Domain; domain != "" {
+		return domain
+	}
 	if c.Address != nil {
 		if host := c.Address.Status().Hostname; host != "" {
 			return host

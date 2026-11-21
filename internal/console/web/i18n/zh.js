@@ -618,6 +618,12 @@ piTranslations("zh", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "您的路由器还需要把 80 和 443 端口转发到 Pi：这样该地址才能获得安全证书。",
   "La console est ouverte sur internet : {0}": "控制台已在互联网上开放：{0}",
   "La console ne s'ouvre qu'à la maison.": "控制台只在家中开放。",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "您有自己的域名吗？请在域名服务商处让其中一个名称指向您的路由器，然后在这里输入，例如 home.example.com。",
+  "Votre adresse personnelle (facultatif)": "您的个人地址（可选）",
+  "maison.exemple.fr": "home.example.com",
+  "Enregistrer l'adresse": "保存地址",
+  "Retirer l'adresse": "移除地址",
+  "Retirer l'adresse personnelle {0} ?": "移除个人地址 {0}？",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "一旦 Pi 有了互联网地址（上方的 DuckDNS 或 pi-appliance.com），控制台就会在互联网上开放。",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "在互联网上开放控制台？从互联网只有启用两步验证的账户才能登录。",
   "Ouvrir la console sur internet": "在互联网上开放控制台"

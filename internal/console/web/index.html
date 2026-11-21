@@ -164,6 +164,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p>Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.</p>
 <p id="internetState" class="state" aria-live="polite"></p>
 <p class="meta">Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.</p>
+<form id="internetDomainForm" hidden>
+<p class="meta">Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.</p>
+<label>Votre adresse personnelle (facultatif)<input name="domain" maxlength="253" autocapitalize="none" autocomplete="off" inputmode="url" placeholder="maison.exemple.fr"></label>
+<div class="controls">
+<button id="internetDomainSave">Enregistrer l'adresse</button>
+<button id="internetDomainRemove" class="secondary" type="button" hidden>Retirer l'adresse</button>
+</div>
+</form>
 <div class="controls">
 <button id="internetOpen" type="button" hidden>Ouvrir la console sur internet</button>
 <button id="internetClose" class="secondary" type="button" hidden>Fermer la console sur internet</button>

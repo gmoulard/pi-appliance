@@ -618,6 +618,12 @@ piTranslations("ja", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "ルーターでポート 80 と 443 を Pi に転送する必要もあります。これによりアドレスのセキュリティ証明書を取得できます。",
   "La console est ouverte sur internet : {0}": "コンソールはインターネットで開いています：{0}",
   "La console ne s'ouvre qu'à la maison.": "コンソールは自宅でしか開きません。",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "独自のドメイン名をお持ちですか？ドメインの事業者で名前の一つをルーターに向け、ここに入力してください（例：home.example.jp）。",
+  "Votre adresse personnelle (facultatif)": "独自のアドレス（任意）",
+  "maison.exemple.fr": "home.example.jp",
+  "Enregistrer l'adresse": "アドレスを保存",
+  "Retirer l'adresse": "アドレスを削除",
+  "Retirer l'adresse personnelle {0} ?": "独自のアドレス {0} を削除しますか？",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Pi にインターネットアドレス（上の DuckDNS または pi-appliance.com）ができ次第、コンソールはインターネットで開きます。",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "インターネットでコンソールを開きますか？インターネットからは 2 段階認証を有効にしたアカウントだけがログインできます。",
   "Ouvrir la console sur internet": "インターネットでコンソールを開く"

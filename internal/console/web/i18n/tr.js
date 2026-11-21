@@ -618,6 +618,12 @@ piTranslations("tr", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Modeminizin 80 ve 443 numaralı bağlantı noktalarını da Pi'ye yönlendirmesi gerekir: adresin güvenlik sertifikasını alması bununla olur.",
   "La console est ouverte sur internet : {0}": "Konsol internete açık: {0}",
   "La console ne s'ouvre qu'à la maison.": "Konsol yalnızca evde açılır.",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "Kendi alan adınız var mı? Sağlayıcınızda adlarından birini modeminize yönlendirin, sonra buraya yazın, örneğin ev.ornek.com.tr.",
+  "Votre adresse personnelle (facultatif)": "Kişisel adresiniz (isteğe bağlı)",
+  "maison.exemple.fr": "ev.ornek.com.tr",
+  "Enregistrer l'adresse": "Adresi kaydet",
+  "Retirer l'adresse": "Adresi kaldır",
+  "Retirer l'adresse personnelle {0} ?": "{0} kişisel adresi kaldırılsın mı?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Pi'nin bir internet adresi olur olmaz konsol internete açılacak (DuckDNS veya pi-appliance.com, yukarıda).",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Konsol internete açılsın mı? İnternetten yalnızca iki adımlı doğrulaması olan hesaplar giriş yapabilecek.",
   "Ouvrir la console sur internet": "Konsolu internete aç"

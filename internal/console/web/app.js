@@ -2574,9 +2574,16 @@ const internetBox = document.getElementById("internetBox");
 const internetState = document.getElementById("internetState");
 const internetOpen = document.getElementById("internetOpen");
 const internetClose = document.getElementById("internetClose");
+const internetDomainForm = document.getElementById("internetDomainForm");
+const internetDomainSave = document.getElementById("internetDomainSave");
+const internetDomainRemove = document.getElementById("internetDomainRemove");
 
 function showInternet(status) {
   internetBox.hidden = false;
+  // L'adresse personnelle se règle à la maison seulement.
+  internetDomainForm.hidden = status.internet;
+  internetDomainForm.elements.domain.value = status.domain || "";
+  internetDomainRemove.hidden = !status.domain;
   internetOpen.hidden = status.enabled || !status.totp || status.internet;
   internetClose.hidden = !status.enabled;
   const dot = element("span", undefined, `dot ${status.enabled ? "ok" : ""}`);
@@ -2620,6 +2627,29 @@ async function setInternet(enabled) {
   }
 }
 
+async function setInternetDomain(domain) {
+  const button = domain ? internetDomainSave : internetDomainRemove;
+  button.disabled = true;
+  try {
+    showInternet(await api("internet-console/domain", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain }),
+    }));
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+internetDomainForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  setInternetDomain(internetDomainForm.elements.domain.value.trim());
+});
+internetDomainRemove.addEventListener("click", () => {
+  if (window.confirm(t("Retirer l'adresse personnelle {0} ?", internetDomainForm.elements.domain.value))) setInternetDomain("");
+});
 internetOpen.addEventListener("click", () => setInternet(true));
 internetClose.addEventListener("click", () => setInternet(false));
 

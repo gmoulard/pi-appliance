@@ -618,6 +618,12 @@ piTranslations("pt", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "O seu router também tem de encaminhar as portas 80 e 443 para o Pi: é isso que permite obter o certificado de segurança do endereço.",
   "La console est ouverte sur internet : {0}": "A consola está aberta na internet: {0}",
   "La console ne s'ouvre qu'à la maison.": "A consola só abre em casa.",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "Tem o seu próprio nome de domínio? No seu fornecedor, faça um dos seus nomes apontar para o seu router e escreva-o aqui, por exemplo casa.exemplo.pt.",
+  "Votre adresse personnelle (facultatif)": "O seu endereço pessoal (opcional)",
+  "maison.exemple.fr": "casa.exemplo.pt",
+  "Enregistrer l'adresse": "Guardar o endereço",
+  "Retirer l'adresse": "Retirar o endereço",
+  "Retirer l'adresse personnelle {0} ?": "Retirar o endereço pessoal {0}?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "A consola abrirá na internet assim que o Pi tiver um endereço de internet (DuckDNS ou pi-appliance.com, acima).",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Abrir a consola na internet? Só as contas com verificação em dois passos poderão iniciar sessão a partir da internet.",
   "Ouvrir la console sur internet": "Abrir a consola na internet"

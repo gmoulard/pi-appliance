@@ -618,6 +618,12 @@ piTranslations("ar", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "يجب أيضًا أن يحوّل جهاز التوجيه المنفذين 80 و443 إلى الـ Pi: فبذلك يحصل العنوان على شهادة الأمان.",
   "La console est ouverte sur internet : {0}": "لوحة التحكم مفتوحة على الإنترنت: {0}",
   "La console ne s'ouvre qu'à la maison.": "لا تُفتح لوحة التحكم إلا في المنزل.",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "هل لديك اسم نطاق خاص بك؟ لدى مزوّدك، اجعل أحد أسمائه يشير إلى جهاز الراوتر، ثم اكتبه هنا، مثلاً home.example.com.",
+  "Votre adresse personnelle (facultatif)": "عنوانك الخاص (اختياري)",
+  "maison.exemple.fr": "home.example.com",
+  "Enregistrer l'adresse": "حفظ العنوان",
+  "Retirer l'adresse": "إزالة العنوان",
+  "Retirer l'adresse personnelle {0} ?": "إزالة العنوان الخاص {0}؟",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "ستُفتح لوحة التحكم على الإنترنت فور حصول الـ Pi على عنوان على الإنترنت (DuckDNS أو pi-appliance.com، أعلاه).",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "فتح لوحة التحكم على الإنترنت؟ لن يتمكن من تسجيل الدخول من الإنترنت إلا أصحاب الحسابات التي فعّلت التحقق بخطوتين.",
   "Ouvrir la console sur internet": "فتح لوحة التحكم على الإنترنت"
