@@ -11,10 +11,12 @@ Piste 5, « La maison » : une maison avec un π à l'intérieur, en framboise. 
 | `logo.svg` | Logo complet, fond clair |
 | `logo-sombre.svg` | Logo complet sur fond aubergine ou sombre |
 | `symbole.svg`, `symbole-sombre.svg` | Maison seule |
-| `favicon.svg` | Icône de l'onglet : le symbole lui-même, recadré (toit framboise, maison aubergine, π blanc) ; aussi en `apple-touch-icon.png` (180 px), `docs/favicon.ico` et `favicon.ico` (16, 32 et 48 px), `docs/pi-appliance-logo.png` (512 px, image du README) |
+| `favicon.svg` | Icône de l'onglet : le symbole lui-même, recadré (toit framboise, maison aubergine, π or) ; aussi en `apple-touch-icon.png` (180 px), `docs/favicon.ico` et `favicon.ico` (16, 32 et 48 px), `docs/pi-appliance-logo.png` (512 px, image du README) |
 | `icone-app.svg` | Ancienne icône d'application (maison blanche sur carré framboise), plus utilisée |
 
-**Le même symbole partout** : en-tête et onglet de la console, en-tête, onglet et icône d'écran d'accueil du site, README. Pas d'autre variante (photo, maison blanche sur carré framboise).
+**Le même symbole partout** : en-tête et onglet de la console, en-tête, onglet et icône d'écran d'accueil du site, README. Pas d'autre variante (photo, maison blanche sur carré framboise), sauf l'icône de l'application mobile : maison or sur carré framboise.
+
+**L'or dans le logo** (choix du 2026-11-21) : le π est or (`#FFD700`) sur la maison aubergine ; sur fond sombre (`-sombre`), la maison est or et le π aubergine.
 
 Le nom « pi-appliance » est converti en tracés (dessiné avec Inter, licence OFL) : le logo ne dépend d'aucune police installée. « pi » en framboise et en gras, « -appliance » en aubergine.
 
