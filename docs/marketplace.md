@@ -29,6 +29,8 @@ Ces applications ne sont pas encore installables depuis la marketplace. La liste
 
 <ul id="marketplace-planned" hidden></ul>
 
+**Intégrée à la console, hors catalogue** : l'administration du système par [Cockpit](https://cockpit-project.org/) (journaux, programmes, réseau, disques et terminal du Pi dans le navigateur, pour les utilisateurs avertis). Ce n'est pas un conteneur mais un logiciel du système : la Marketplace de la console la propose aux administrateurs, à la maison seulement (voir la [spécification](specification.html), section 6.4).
+
 Bases de données : PostgreSQL est disponible, avec l'interface web Adminer. MongoDB (Pi 5 seulement), Redis, MSSQL (pas d'image pour le Pi) et SQLite (un simple fichier) ne sont pas proposés seuls : voir la [spécification](specification.html), section 6.3.
 
 Les liens publics de partage Etherpad sont aussi une amélioration prévue. Consultez la [feuille de route](TODO.html) pour connaître leur avancement.

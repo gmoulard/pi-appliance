@@ -615,7 +615,9 @@ function applyTagFilter() {
     button.setAttribute("aria-pressed", String(button.dataset.tag === tagFilter));
   }
   for (const card of catalogList.children) {
-    card.hidden = tagFilter !== "" && !(card.dataset.tags || "").split(" ").includes(tagFilter);
+    // La carte de Cockpit reste cachée à qui ne peut pas l'installer.
+    card.hidden = (card === cockpitBox && !cockpitAvailable)
+      || (tagFilter !== "" && !(card.dataset.tags || "").split(" ").includes(tagFilter));
   }
 }
 
@@ -677,10 +679,13 @@ async function loadCatalog() {
     card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"), tagList(app.tags || []));
     return card;
   }));
+  // Cockpit, installé sur le système et non dans un conteneur, a sa carte à
+  // part, gardée d'un chargement à l'autre (spécification 6.4).
+  catalogList.append(cockpitBox);
   if (currentAccount && currentAccount.role === "admin") {
     catalogList.append(customComposeCard());
   }
-  showTagFilters(apps);
+  showTagFilters(cockpitAvailable ? [...apps, { tags: ["administration"] }] : apps);
 }
 
 // Avancement d'une installation (spécification 6.2) : la console relit
@@ -1705,6 +1710,10 @@ const cockpitPassword = document.getElementById("cockpitPassword");
 const cockpitRemove = document.getElementById("cockpitRemove");
 let cockpitStatus = null;
 let cockpitTimer = null;
+// Carte de la marketplace montrée seulement si api/cockpit répond (administrateur).
+let cockpitAvailable = false;
+tint(cockpitBox, "cockpit");
+cockpitBox.append(element("p", t("{0} · licence {1}", t("Administration"), "LGPL-2.1"), "meta"), tagList(["administration"]));
 // Changement du mot de passe demandé (formulaire ouvert sur Cockpit installé).
 let cockpitNewPassword = false;
 
@@ -1749,10 +1758,12 @@ async function loadCockpit() {
   try {
     cockpitStatus = await api("cockpit");
   } catch {
-    cockpitBox.hidden = true;
+    cockpitAvailable = false;
+    applyTagFilter();
     return true;
   }
-  cockpitBox.hidden = false;
+  cockpitAvailable = true;
+  applyTagFilter();
   showCockpit();
   return !cockpitBusy(cockpitStatus);
 }
