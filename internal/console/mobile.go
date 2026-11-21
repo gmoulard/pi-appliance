@@ -158,21 +158,28 @@ func (c *console) hello() Hello {
 // NE PAS élargir : api/hello est ouverte à tous, sans connexion, et sur
 // internet (Traefik, console.yml) ; elle ne dit que le nom, la version,
 // l'empreinte de la clé publique et les adresses des services. CORS pour
-// l'application mobile seulement, sans cookie.
-func helloHeaders(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", MobileApp)
+// l'application mobile seulement (mobileOrigins : adresse définitive et
+// adresse provisoire de GitHub Pages), sans cookie ; une autre origine reçoit
+// l'adresse définitive, que le navigateur refuse.
+func helloHeaders(w http.ResponseWriter, r *http.Request) {
+	origin := MobileApp
+	if o := r.Header.Get("Origin"); slices.Contains(mobileOrigins, o) {
+		origin = o
+	}
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Vary", "Origin")
 	w.Header().Set("Cache-Control", "no-store")
 }
 
-func (c *console) helloGet(w http.ResponseWriter, _ *http.Request) {
-	helloHeaders(w)
+func (c *console) helloGet(w http.ResponseWriter, r *http.Request) {
+	helloHeaders(w, r)
 	writeJSON(w, http.StatusOK, c.hello())
 }
 
 // helloPreflight : demande préalable du navigateur ; Access-Control-Allow-Private-Network
 // pour Chrome, qui la demande avant qu'une page d'internet joigne le réseau de la maison.
-func (c *console) helloPreflight(w http.ResponseWriter, _ *http.Request) {
-	helloHeaders(w)
+func (c *console) helloPreflight(w http.ResponseWriter, r *http.Request) {
+	helloHeaders(w, r)
 	w.Header().Set("Access-Control-Allow-Methods", "GET")
 	w.Header().Set("Access-Control-Allow-Private-Network", "true")
 	w.Header().Set("Access-Control-Max-Age", "600")

@@ -131,6 +131,28 @@ func TestHello(t *testing.T) {
 	}
 }
 
+// L'adresse provisoire de l'application (GitHub Pages) lit aussi api/hello ;
+// une autre origine reçoit l'adresse définitive, que son navigateur refuse.
+func TestHelloOrigins(t *testing.T) {
+	f, _ := mobileFixture(t, "controltower.local")
+	for origin, want := range map[string]string{
+		"https://gmoulard.github.io": "https://gmoulard.github.io",
+		MobileApp:                    MobileApp,
+		"https://exemple.com":        MobileApp,
+		"":                           MobileApp,
+	} {
+		for _, method := range []string{http.MethodGet, http.MethodOptions} {
+			response := f.do(method, "/pi-appliance/api/hello", "", "", nil, "Origin", origin)
+			if got := response.Header().Get("Access-Control-Allow-Origin"); got != want {
+				t.Errorf("%s depuis %q : Access-Control-Allow-Origin %q, attendu %q", method, origin, got, want)
+			}
+			if got := response.Header().Get("Vary"); got != "Origin" {
+				t.Errorf("%s depuis %q : Vary %q", method, origin, got)
+			}
+		}
+	}
+}
+
 func TestHelloWithoutKeyOrServices(t *testing.T) {
 	f := newFixture(t)
 	hello := decode[Hello](t, f.do(http.MethodGet, "/pi-appliance/api/hello", "", "", nil))
