@@ -618,7 +618,15 @@ piTranslations("de", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Ihr Router muss außerdem die Ports 80 und 443 an den Pi weiterleiten: Nur so erhält die Adresse ihr Sicherheitszertifikat.",
   "La console est ouverte sur internet : {0}": "Die Konsole ist im Internet geöffnet: {0}",
   "La console ne s'ouvre qu'à la maison.": "Die Konsole öffnet sich nur zu Hause.",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "Sie haben einen eigenen Domainnamen? Lassen Sie bei Ihrem Anbieter einen seiner Namen auf Ihren Router zeigen und geben Sie ihn hier ein, zum Beispiel haus.beispiel.de.",
+  "Votre adresse personnelle (facultatif)": "Ihre eigene Adresse (optional)",
+  "maison.exemple.fr": "haus.beispiel.de",
+  "Enregistrer l'adresse": "Adresse speichern",
+  "Retirer l'adresse": "Adresse entfernen",
+  "Retirer l'adresse personnelle {0} ?": "Die eigene Adresse {0} entfernen?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Die Konsole öffnet sich im Internet, sobald der Pi eine Internetadresse hat (DuckDNS oder pi-appliance.com, oben).",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Konsole im Internet öffnen? Nur Konten mit Zwei-Schritt-Bestätigung können sich dann aus dem Internet anmelden.",
-  "Ouvrir la console sur internet": "Konsole im Internet öffnen"
+  "Ouvrir la console sur internet": "Konsole im Internet öffnen",
+  "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "Am einfachsten: ein Alias (CNAME-Eintrag) auf {0}. Er folgt der Adresse Ihres Routers, ohne Passwort Ihres Anbieters auf dem Pi.",
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Ohne DuckDNS lassen Sie den Namen auf die öffentliche IP-Adresse Ihres Routers zeigen (A-Eintrag); sie kann sich ändern: richten Sie besser DuckDNS ein, weiter oben."
 });

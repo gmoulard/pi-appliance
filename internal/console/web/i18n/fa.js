@@ -618,7 +618,15 @@ piTranslations("fa", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "مودم شما باید درگاه‌های 80 و 443 را هم به Pi هدایت کند: این کار به نشانی امکان می‌دهد گواهی امنیتی بگیرد.",
   "La console est ouverte sur internet : {0}": "کنسول روی اینترنت باز است: {0}",
   "La console ne s'ouvre qu'à la maison.": "کنسول فقط در خانه باز می‌شود.",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "نام دامنهٔ خودتان را دارید؟ نزد ارائه‌دهنده، یکی از نام‌های آن را به مودم خود هدایت کنید و سپس آن را اینجا بنویسید، مثلاً home.example.com.",
+  "Votre adresse personnelle (facultatif)": "نشانی شخصی شما (اختیاری)",
+  "maison.exemple.fr": "home.example.com",
+  "Enregistrer l'adresse": "ذخیرهٔ نشانی",
+  "Retirer l'adresse": "حذف نشانی",
+  "Retirer l'adresse personnelle {0} ?": "نشانی شخصی {0} حذف شود؟",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "کنسول به‌محض اینکه Pi نشانی اینترنتی داشته باشد (DuckDNS یا pi-appliance.com، بالا) روی اینترنت باز می‌شود.",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "کنسول روی اینترنت باز شود؟ از اینترنت فقط حساب‌های دارای تأیید دومرحله‌ای می‌توانند وارد شوند.",
-  "Ouvrir la console sur internet": "باز کردن کنسول روی اینترنت"
+  "Ouvrir la console sur internet": "باز کردن کنسول روی اینترنت",
+  "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "ساده‌ترین راه: یک نام مستعار (رکورد CNAME) به {0}. این نشانی مودم شما را دنبال می‌کند، بدون گذرواژهٔ ارائه‌دهنده روی Pi.",
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، نام را به نشانی IP عمومی مودم خود اشاره دهید (رکورد A)؛ ممکن است عوض شود: بهتر است DuckDNS را در بالا تنظیم کنید."
 });

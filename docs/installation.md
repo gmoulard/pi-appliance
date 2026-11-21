@@ -1,6 +1,6 @@
-# Installation du plan de contrôle
+# Installer le socle pi-appliance sans l'image
 
-Le plan de contrôle, appelé **controlTower** dans cette documentation, est composé de Docker, Docker Compose, de la console pi-appliance, de Traefik et des services systemd qui les démarrent. controlTower est inclus dans l'image pi-appliance ; ce n'est pas une application à installer depuis la marketplace. Il est réservé au concepteur ou à la personne responsable de l'appliance, qui crée son compte administrateur au premier démarrage. Cette procédure installe le même plan de contrôle sur un Raspberry Pi OS Lite 64 bits déjà installé.
+Le **socle pi-appliance** est composé de Docker, Docker Compose, de la console pi-appliance, de Traefik, des outils du système, de la commande `pia` et des services systemd qui les démarrent. Il est inclus dans l'image pi-appliance ; ce n'est pas une application à installer depuis la marketplace. La personne qui configure le Pi crée son compte administrateur au premier démarrage. Cette procédure, pour les personnes à l'aise avec la ligne de commande, installe le même socle sur un Raspberry Pi OS Lite 64 bits déjà installé.
 
 > Cette procédure installe le prototype local. L’accès public et les certificats Let's Encrypt ne sont pas encore activés : Traefik utilise le certificat auto-signé propre au Pi. Ne publiez pas les ports 80 et 443 tant que l’étape Internet décrite dans [l’avancement](TODO.md) n’est pas terminée.
 
@@ -106,7 +106,7 @@ cd pi-appliance
 sudo sh system/install.sh "$PWD/pi-appliance-arm64"
 ```
 
-Le script conserve la clé du Pi, les données de `/var/lib/pi-appliance/` et le réglage `data-root` de Docker. Il ne faut pas supprimer ces dossiers pour mettre à jour le plan de contrôle.
+Le script conserve la clé du Pi, les données de `/var/lib/pi-appliance/` et le réglage `data-root` de Docker. Il ne faut pas supprimer ces dossiers pour mettre à jour le socle.
 
 Vérifiez ensuite les fichiers d’état :
 
@@ -121,7 +121,7 @@ sudo docker compose -f /etc/pi-appliance/traefik/compose.yaml ps
 
 ## Dépanner
 
-Afficher les journaux du plan de contrôle :
+Afficher les journaux du socle :
 
 ```shell
 sudo journalctl -u pi-appliance-secrets.service \
@@ -129,7 +129,7 @@ sudo journalctl -u pi-appliance-secrets.service \
   --since "1 hour ago"
 ```
 
-Redémarrer les composants du plan de contrôle :
+Redémarrer les composants du socle :
 
 ```shell
 sudo systemctl restart pi-appliance-secrets.service

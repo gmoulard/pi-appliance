@@ -6,9 +6,17 @@
 
 On flashe une image système prête à l'emploi sur la carte SD, et le Pi fonctionne aussitôt, sans installation manuelle.
 
-> **État du projet** : en conception. Le dépôt contient pour l'instant des prototypes (scripts et services Docker utilisés sur de vrais Pi). Le produit visé est décrit dans la [spécification](docs/specification.md), l'avancement dans le [TODO](docs/TODO.md). Pour essayer la première version de la console : [guide utilisateur](docs/guide-utilisateur.md).
+> **État du projet** : expérimental. L'image système, publiée avec chaque [version](https://github.com/gmoulard/pi-appliance/releases/latest), est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Le produit visé est décrit dans la [spécification](docs/specification.md), l'avancement dans le [TODO](docs/TODO.md). Pour essayer la première version de la console : [guide utilisateur](docs/guide-utilisateur.md).
 
 > **Logo et charte** : la maison au π, en framboise, voir la [charte graphique](docs/charte-graphique.md).
+
+## Trois parties, un seul nom
+
+Tout s'appelle pi-appliance :
+
+1. **l'image pi-appliance**, à flasher sur la carte SD : Raspberry Pi OS Lite 64 bits et le socle, publiée avec chaque [version](https://github.com/gmoulard/pi-appliance/releases/latest) ;
+2. **le socle pi-appliance**, toujours installé sur le Pi : Docker, Traefik, les services et les outils du système, la **console** web (`/pi-appliance`), d'où tout se fait, et la **commande `pia`**, ligne de commande du Pi ; il se met à jour depuis la console ;
+3. **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) (adresse provisoire : [gmoulard.github.io/pi-appliance-pwa](https://gmoulard.github.io/pi-appliance-pwa/)) (dépôt [pi-appliance-pwa](https://github.com/gmoulard/pi-appliance-pwa)) : la documentation sans réseau et un lien direct vers ses Pi.
 
 ## Comment ça marche
 
@@ -29,7 +37,7 @@ L'image pi-appliance empile trois couches :
 7. Je coche dans la marketplace les services que je veux : Nextcloud, site web, wiki, Etherpad, VPN…
 8. pi-appliance télécharge les images Docker, configure Traefik et ouvre chaque service, à la maison comme sur internet, à l'adresse `https://<service>.<nom>.pi-appliance.com`, avec un seul identifiant pour tous les services.
 
-Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur internet, sans aucune connaissance technique.
+Objectif : moins de 15 minutes entre la carte SD et un service prêt à l'emploi, à la maison et sur internet, sans aucune connaissance technique. Toutes vos données restent chez vous, en sécurité. Cette version est encore expérimentale.
 
 ## Contenu du dépôt
 
@@ -39,7 +47,7 @@ Objectif : moins de 15 minutes entre le flashage et Nextcloud ouvert sur interne
 | `marketplace/` | Catalogue des applications : un manifeste Docker Compose par application (Nextcloud, site web, DokuWiki, Etherpad, PostgreSQL, VPN WireGuard, Portainer, sites statiques Hugo, MkDocs, Jekyll, Astro et Next.js) et `planned.yaml`, les applications prévues |
 | `image/` | Construction de l'image système avec pi-gen (`image/build.sh`) et de l'archive de mise à jour publiée avec chaque version (`image/update-archive.sh`) |
 | `system/` | Couche système installée sur le Pi : services systemd, Traefik, point d'accès Wi-Fi, secrets du premier démarrage (`system/install.sh`) |
-| [`docs/`](docs/) | [Guide utilisateur](docs/guide-utilisateur.md), [installation du plan de contrôle](docs/installation.md), [essais avec plusieurs Pi](docs/essais-plusieurs-pi.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [environnement (DNS Route 53, GitHub Pages, AWS CLI)](docs/environnement.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |
+| [`docs/`](docs/) | [Guide utilisateur](docs/guide-utilisateur.md), [installation du socle sans l'image](docs/installation.md), [essais avec plusieurs Pi](docs/essais-plusieurs-pi.md), [Spécification](docs/specification.md), [TODO](docs/TODO.md), [notes d'installation du prototype](docs/prototype.md), [mémo Git](docs/manGit.md), [environnement (DNS Route 53, GitHub Pages, AWS CLI)](docs/environnement.md), [charte graphique](docs/charte-graphique.md), [logos](docs/logo/), site www.pi-appliance.com (`index.html`, `site.css`, `CNAME`, `_config.yml`, `_layouts/`) |
 | `.claude/skills/` | Sous-module : [skills Claude Code](https://github.com/gmoulard/claude_skills) partagés |
 
 Les anciens prototypes (configuration des Pi, tunnel autossh, DNS dynamique OVH, sauvegarde, services Docker, caméra, GPIO) ont été retirés du dépôt ; ils restent consultables dans l'historique git, [au commit `4ee13f9`](https://github.com/gmoulard/pi-appliance/tree/4ee13f9f0ef665e21388101aa5e06e20d3548c79).

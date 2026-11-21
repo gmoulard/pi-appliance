@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>pi-appliance — votre serveur, à la maison</title>
-<meta name="description" content="pi-appliance est un prototype de serveur personnel pour Raspberry Pi. Découvrez son état d'avancement, ses applications et les prochaines étapes.">
+<meta name="description" content="pi-appliance transforme un Raspberry Pi en serveur personnel, à la maison et sur internet : une image, une console, une application mobile. Version expérimentale.">
 <link rel="icon" href="logo/framboise/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="logo/framboise/apple-touch-icon.png">
 <link rel="stylesheet" href="site.css">
@@ -40,18 +40,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </header>
 <main>
 <section class="hero">
-<p class="pill">Prototype pour Raspberry Pi 5, 4, 3 B+ et Zero 2 W</p>
+<p class="pill">Version expérimentale pour Raspberry Pi 5, 4, 3 B+ et Zero 2 W</p>
 <h1>Votre serveur, <span>à la maison.</span></h1>
-<p class="lead">Une console en français pour installer et gérer vos services chez vous. Le projet avance : la première image système est construite, les essais sur un vrai Pi restent à faire.</p>
+<p class="lead">Une console en français pour installer et gérer vos services chez vous. L’image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4.</p>
 <div class="hero-card">
 <ul class="hero-tiles" aria-hidden="true">
 <li class="tint-0"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z"/></svg></li><li class="tint-1"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></li><li class="tint-2"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></li><li class="tint-3"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5M8 7h6"/></svg></li><li class="tint-4"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M15 4l5 5L9 20H4v-5zM13 6l5 5"/></svg></li><li class="tint-5"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4"/></svg></li>
 </ul>
-<p>Objectif du projet : moins de 15 minutes entre la carte SD et Nextcloud prêt à l’emploi. Cette version est encore expérimentale.</p>
+<p>Objectif du projet : moins de 15 minutes entre la carte SD et un service prêt à l’emploi, à la maison et sur internet. Toutes vos données restent chez vous, en sécurité. Cette version est encore expérimentale.</p>
 </div>
 <div class="actions">
 <a class="button dark" href="TODO.html">Voir l’avancement</a>
-<a class="link" href="guide-utilisateur.html">Découvrir le prototype</a>
+<a class="link" href="guide-utilisateur.html">Lire le guide</a>
 </div>
 </section>
 
@@ -62,7 +62,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <li class="tint-1"><span class="num" aria-hidden="true">2</span><div><h3>Branchez</h3><p>Le Pi démarre. Sans réseau, il crée un Wi-Fi « pi-appliance » : choisissez celui de la maison depuis votre téléphone.</p></div></li>
 <li class="tint-2"><span class="num" aria-hidden="true">3</span><div><h3>Choisissez</h3><p>Installez vos applications depuis la console. L’accès depuis internet fait partie des prochaines étapes.</p></div></li>
 </ol>
-<p>Ce parcours décrit la cible du projet ; l’image construite n’a pas encore été validée sur un Raspberry Pi.</p>
+<p>Ce parcours est validé sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer.</p>
+<h2>Trois parties, un seul nom</h2>
+<ul class="steps">
+<li class="tint-brand"><div><h3>L’image</h3><p>Le système du Pi, prêt à l’emploi, à copier sur la carte SD.</p></div></li>
+<li class="tint-1"><div><h3>Le socle et sa console</h3><p>Toujours installé sur le Pi : une page web pour régler le Pi et installer vos services, et ses outils, dont la commande pia.</p></div></li>
+<li class="tint-2"><div><h3>L’application mobile</h3><p>Le guide lisible sans réseau, et un raccourci vers vos Pi sur le téléphone.</p></div></li>
+</ul>
 </section>
 
 <section id="applications" class="apps-band" data-catalog-index="{{ '/static/pi-appliance-catalog.json' | relative_url }}">
@@ -84,11 +90,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </section>
 
 <section id="telecharger" class="download">
-<h2>Télécharger l’image expérimentale</h2>
+<h2>Télécharger l’image</h2>
 <div class="panel">
-<p><b>Une image a été construite avec succès par GitHub Actions.</b></p>
-<p>Elle n’a pas encore été testée sur un vrai Raspberry Pi : c’est une version expérimentale, sans garantie. L’artefact temporaire est disponible jusqu’au 3 décembre 2026. La page indique aussi comment vérifier la somme SHA-256 et flasher l’image.</p>
-<a class="button" href="https://github.com/gmoulard/pi-appliance/actions/runs/44578711083">Télécharger depuis GitHub Actions</a>
+<p><b>L’image est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4.</b></p>
+<p>C’est encore une version expérimentale, sans garantie : gardez une copie de vos fichiers importants. La page d’installation indique comment vérifier le fichier et flasher l’image. Un Pi déjà installé se met à jour depuis la console (« Mon Pi », « Mises à jour »). Si la dernière version n’a pas d’image (mise à jour du socle seul), sa page donne le lien de la dernière image.</p>
+<a class="button" href="https://github.com/gmoulard/pi-appliance/releases/latest">Télécharger la dernière version</a>
 <a href="guide-utilisateur.html#telecharger-limage-experimentale">Lire les instructions d’installation</a>
 </div>
 </section>

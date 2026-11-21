@@ -47,7 +47,10 @@ import (
 
 // InternetSettings : réglage gardé sur le Pi (<données>/internet-console.json).
 type InternetSettings struct {
-	Enabled   bool      `json:"enabled"`
+	Enabled bool `json:"enabled"`
+	// Domain : adresse personnelle de la console sur internet (par exemple
+	// vdl.moulard.org), choisie par l'administrateur ; vide sinon.
+	Domain    string    `json:"domain,omitempty"`
 	ChangedBy string    `json:"changed_by,omitempty"`
 	ChangedAt time.Time `json:"changed_at,omitzero"`
 }
@@ -55,6 +58,12 @@ type InternetSettings struct {
 // InternetStatus : état montré à l'administrateur (GET api/internet-console).
 type InternetStatus struct {
 	Enabled bool `json:"enabled"`
+	// Domain : adresse personnelle choisie, vide sinon.
+	Domain string `json:"domain"`
+	// DomainTarget : cible conseillée de l'alias (CNAME) de l'adresse
+	// personnelle : <nom>.pi-appliance.com réservée, sinon le nom DuckDNS ;
+	// vide sans l'un ni l'autre (entrée A vers l'adresse publique de la box).
+	DomainTarget string `json:"domain_target"`
 	// Hosts : adresses internet du Pi ; vide tant qu'il n'en a pas.
 	Hosts []string `json:"hosts"`
 	// URL : adresse de la console sur internet, vide sans adresse.
@@ -105,7 +114,8 @@ func (c *console) internetEnabled() bool {
 	return c.internetSettings().Enabled
 }
 
-// internetHosts : adresses internet du Pi, sans doublon : <nom>.pi-appliance.com
+// internetHosts : adresses internet du Pi, sans doublon : adresse personnelle
+// de la console (choisie exprès, donc la première), <nom>.pi-appliance.com
 // réservée, nom DuckDNS, domaine personnel des services.
 func (c *console) internetHosts() []string {
 	var hosts []string
@@ -115,6 +125,7 @@ func (c *console) internetHosts() []string {
 			hosts = append(hosts, host)
 		}
 	}
+	add(c.internetSettings().Domain)
 	if c.Address != nil {
 		add(c.Address.Status().Hostname)
 	}
@@ -208,6 +219,7 @@ var homeOnlyPaths = []string{
 	"POST " + BasePath + "/appareil/connexion",
 	"POST " + BasePath + "/appareil/retirer",
 	"PUT " + BasePath + "/api/internet-console",
+	"PUT " + BasePath + "/api/internet-console/domain",
 }
 
 // NE PAS relâcher : console fermée sur internet par défaut (spécification 8.3).
@@ -241,7 +253,8 @@ func (c *console) internetStatus(w http.ResponseWriter, r *http.Request) {
 
 func (c *console) internetState(r *http.Request, totp bool) InternetStatus {
 	hosts := c.internetHosts()
-	status := InternetStatus{Enabled: c.internetEnabled(), Hosts: hosts, TOTP: totp, Internet: fromInternet(r)}
+	settings := c.internetSettings()
+	status := InternetStatus{Enabled: settings.Enabled, Domain: settings.Domain, DomainTarget: c.domainTarget(), Hosts: hosts, TOTP: totp, Internet: fromInternet(r)}
 	if status.Hosts == nil {
 		status.Hosts = []string{}
 	}
@@ -249,6 +262,21 @@ func (c *console) internetState(r *http.Request, totp bool) InternetStatus {
 		status.URL = "https://" + hosts[0] + BasePath + "/"
 	}
 	return status
+}
+
+// domainTarget : nom vers lequel faire pointer l'adresse personnelle (alias
+// CNAME), qui suit l'adresse de la box sans identifiant du fournisseur de
+// domaine sur le Pi.
+func (c *console) domainTarget() string {
+	if c.Address != nil {
+		if host := c.Address.Status().Hostname; host != "" {
+			return host
+		}
+	}
+	if c.DuckDNS != nil {
+		return c.DuckDNS.Status().Hostname
+	}
+	return ""
 }
 
 // internetSave : PUT api/internet-console?enabled=true|false. Ouvrir demande
@@ -269,7 +297,24 @@ func (c *console) internetSave(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotImplemented, "La console ne s'ouvre pas sur internet ici.")
 		return
 	}
-	settings := InternetSettings{Enabled: enabled, ChangedBy: account.Name, ChangedAt: time.Now().UTC()}
+	settings := c.internetSettings()
+	settings.Enabled, settings.ChangedBy, settings.ChangedAt = enabled, account.Name, time.Now().UTC()
+	if err := c.saveInternetSettings(settings); err != nil {
+		log.Printf("console sur internet : %v", err)
+		writeError(w, http.StatusInternalServerError, "Le réglage n'a pas pu être enregistré.")
+		return
+	}
+	log.Printf("console sur internet : %s par %s", map[bool]string{true: "ouverte", false: "fermée"}[enabled], account.Name)
+	if err := c.syncTraefik(); err != nil {
+		log.Printf("console sur internet, Traefik : %v", err)
+		writeError(w, http.StatusInternalServerError, "Le réglage est enregistré, mais Traefik n'a pas pu être mis à jour.")
+		return
+	}
+	writeJSON(w, http.StatusOK, c.internetState(r, account.TOTPSecret != ""))
+}
+
+// saveInternetSettings écrit le réglage (droits 600), en remplaçant le fichier d'un coup.
+func (c *console) saveInternetSettings(settings InternetSettings) error {
 	data, err := json.MarshalIndent(settings, "", "  ")
 	if err == nil {
 		err = os.MkdirAll(filepath.Dir(c.InternetFile), 0o700)
@@ -280,12 +325,65 @@ func (c *console) internetSave(w http.ResponseWriter, r *http.Request) {
 			err = os.Rename(temporary, c.InternetFile)
 		}
 	}
-	if err != nil {
+	return err
+}
+
+// lookupHost : résolution DNS, remplacée dans les tests.
+var lookupHost = net.DefaultResolver.LookupHost
+
+// cleanDomain : nom tapé par l'administrateur, ramené à un nom d'hôte
+// (« https://vdl.moulard.org/pi-appliance/ » donne « vdl.moulard.org »).
+func cleanDomain(value string) string {
+	value = strings.ToLower(strings.TrimSpace(value))
+	value = strings.TrimPrefix(strings.TrimPrefix(value, "https://"), "http://")
+	if i := strings.IndexAny(value, "/?#"); i >= 0 {
+		value = value[:i]
+	}
+	return strings.TrimSuffix(value, ".")
+}
+
+// internetDomainSave : PUT api/internet-console/domain {"domain"}, à la
+// maison seulement. Un nom vide retire l'adresse personnelle. Le nom doit
+// déjà exister dans le DNS (alias ou adresse vers la box), sinon Let's
+// Encrypt ne pourrait pas donner de certificat.
+func (c *console) internetDomainSave(w http.ResponseWriter, r *http.Request) {
+	account, _ := c.account(r)
+	var body struct {
+		Domain string `json:"domain"`
+	}
+	if !decodeJSON(w, r, &body) {
+		return
+	}
+	domain := cleanDomain(body.Domain)
+	if domain != "" {
+		if !hostPattern.MatchString(domain) || len(domain) > 253 || net.ParseIP(domain) != nil || strings.HasSuffix(domain, ".local") {
+			writeError(w, http.StatusBadRequest, "Cette adresse n'est pas valable : tapez un nom comme maison.exemple.fr, sans espace.")
+			return
+		}
+		if domain == "pi-appliance.com" || strings.HasSuffix(domain, ".pi-appliance.com") || strings.HasSuffix(domain, ".duckdns.org") {
+			writeError(w, http.StatusBadRequest, "Cette adresse se règle plus haut, avec DuckDNS ou votre adresse pi-appliance.com.")
+			return
+		}
+		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+		addresses, err := lookupHost(ctx, domain)
+		cancel()
+		if err != nil || len(addresses) == 0 {
+			writeError(w, http.StatusConflict, fmt.Sprintf("L'adresse %s n'existe pas encore sur internet : chez votre fournisseur de nom de domaine, faites-la pointer vers votre box, puis réessayez (cela peut prendre quelques minutes).", domain))
+			return
+		}
+	}
+	if c.InternetFile == "" {
+		writeError(w, http.StatusNotImplemented, "La console ne s'ouvre pas sur internet ici.")
+		return
+	}
+	settings := c.internetSettings()
+	settings.Domain, settings.ChangedBy, settings.ChangedAt = domain, account.Name, time.Now().UTC()
+	if err := c.saveInternetSettings(settings); err != nil {
 		log.Printf("console sur internet : %v", err)
 		writeError(w, http.StatusInternalServerError, "Le réglage n'a pas pu être enregistré.")
 		return
 	}
-	log.Printf("console sur internet : %s par %s", map[bool]string{true: "ouverte", false: "fermée"}[enabled], account.Name)
+	log.Printf("console sur internet : adresse personnelle %q choisie par %s", domain, account.Name)
 	if err := c.syncTraefik(); err != nil {
 		log.Printf("console sur internet, Traefik : %v", err)
 		writeError(w, http.StatusInternalServerError, "Le réglage est enregistré, mais Traefik n'a pas pu être mis à jour.")

@@ -1,8 +1,31 @@
-# Guide du prototype pi-appliance
+# Guide de pi-appliance
 
-> **État du projet : expérimental.** Une première image système est disponible comme artefact temporaire de GitHub Actions, mais elle n'a pas encore été testée sur un vrai Raspberry Pi. Elle n'est pas une version stable : utilisez-la uniquement pour des essais et n'y confiez pas de données importantes.
+pi-appliance, ce sont trois parties qui portent le même nom :
 
-## Ce que contient le prototype
+- **l'image pi-appliance**, à copier sur la carte SD : le système du Pi, prêt à l'emploi ;
+- **le socle pi-appliance**, toujours installé sur le Pi : sa **console**, la page web d'où l'on règle le Pi et installe ses services, et ses outils, dont la commande **`pia`** pour ceux qui passent par la ligne de commande ([voir plus bas](#ligne-de-commande)) ;
+- **l'application mobile**, [app.pi-appliance.com](https://app.pi-appliance.com) (ou son adresse provisoire, [gmoulard.github.io/pi-appliance-pwa](https://gmoulard.github.io/pi-appliance-pwa/)) : ce guide lisible sans réseau, et un raccourci vers vos Pi.
+
+> **État du projet : expérimental.** L'image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer. Ce n'est pas encore une version stable : gardez une copie de vos données importantes ailleurs.
+
+**Dans ce guide**
+
+1. [Ce que contient cette version](#contenu)
+2. [Ce qui n'est pas encore disponible](#pas-encore-disponible)
+3. [Télécharger et installer l'image](#telecharger-limage-experimentale)
+   - [Ce qui se passe au premier démarrage](#premier-demarrage)
+   - [Retrouver la console sur le réseau de la maison](#retrouver-la-console)
+   - [Retrouver son Pi sur son téléphone : l'application mobile](#application-mobile)
+4. [Administrer le Pi depuis internet](#console-sur-internet)
+5. [Ligne de commande du Pi (SSH)](#ligne-de-commande)
+6. [Mot de passe administrateur oublié : le fichier reset](#fichier-reset)
+7. [Remettre le Pi à zéro](#remise-a-zero)
+8. [Diagnostic du Pi sans écran](#diagnostic)
+9. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
+10. [Lancer la console depuis les sources](#depuis-les-sources)
+11. [Pour aller plus loin](#pour-aller-plus-loin)
+
+## Ce que contient cette version {#contenu}
 
 - Une console en français avec création du compte administrateur, connexion et assistant de première mise en route (réseau, test du Wi-Fi, redémarrage).
 - La configuration du réseau filaire ou du Wi-Fi depuis la console, ainsi qu'un point d'accès Wi-Fi de configuration au premier démarrage de l'image.
@@ -15,44 +38,25 @@
 
 Ces fonctions sont présentes dans le code, mais restent à valider sur du matériel réel. La liste des essais restants est dans la page [Avancement](TODO.html).
 
-## Ce qui n'est pas encore disponible
+## Ce qui n'est pas encore disponible {#pas-encore-disponible}
 
-- Une version stable de l'image, testée sur un vrai Raspberry Pi.
+- Une version stable de l'image, et des essais sur Pi 5 et Pi Zero 2 W.
 - L'accès aux services depuis internet et la réservation d'une adresse `*.pi-appliance.com`.
-- Les sauvegardes en ligne ou sur un autre pi-appliance, la restauration de l'appliance entière ou d'un seul fichier, le VPN et les mises à jour de l'appliance depuis la console.
+- Les sauvegardes en ligne ou sur un autre pi-appliance et la restauration de l'appliance entière ou d'un seul fichier.
 
-## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
+## Télécharger et installer l'image {#telecharger-limage-experimentale}
 
-> **Cette option n'est pas encore disponible.** La console ne permet pas de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
+L'image est publiée avec chaque version de pi-appliance, sur la page [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest) : le fichier **`pi-appliance-vX.Y.Z.img.xz`** (environ 720 Mio compressé, 3,3 Gio une fois décompressé) et son fichier de somme de contrôle **`pi-appliance-vX.Y.Z.img.xz.sha256`**, où `X.Y.Z` est le numéro de version (par exemple `0.1.6`). Elle est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4. Un Pi déjà installé n'a pas besoin d'être reflashé : il se met à jour depuis la console (« Mon Pi », « Mises à jour »). Une version qui ne change que le socle est publiée sans image : sa page le dit et donne le lien de la dernière image ; flashez celle-ci, puis mettez le Pi à jour depuis la console.
 
-Quand cette option sera disponible, la configuration se fera en deux endroits :
-
-### Chez OVH
-
-1. Choisissez un sous-domaine de votre domaine, par exemple `ma-maison.exemple.fr`. C'est préférable au domaine seul (`exemple.fr`) : un alias DNS classique ne peut pas toujours être créé à la racine d'un domaine.
-2. Dans l'espace client OVH, ouvrez la zone DNS de votre domaine et ajoutez une entrée de type **CNAME** pour ce sous-domaine. La cible sera le nom complet fourni par la console, de la forme `<nom>.pi-appliance.com`.
-3. Ne remplacez pas les serveurs DNS du domaine et ne modifiez pas ses autres entrées, notamment celles utilisées pour le site web ou les e-mails. N'utilisez pas la fonction de redirection web d'OVH à la place de l'entrée DNS.
-4. Si la console demande d'autres entrées pour les adresses des services, suivez les valeurs qu'elle affiche ; ne les devinez pas.
-
-### Dans la console pi-appliance
-
-La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible à recopier chez OVH, puis de vérifier la configuration avant d'activer le domaine. Ces réglages et cette vérification ne sont pas encore présents.
-
-**Prérequis :** l'appliance doit d'abord pouvoir obtenir et tenir à jour son adresse pi-appliance (`TODO-3.2` et `TODO-3.5`). La prise en charge du domaine dans la console, notamment pour l'utiliser avec les services et leurs certificats, reste aussi à réaliser. L'accès depuis internet n'est pas encore disponible non plus.
-
-## Télécharger et installer l'image expérimentale {#telecharger-limage-experimentale}
-
-Le workflow GitHub Actions a construit l'image avec succès le 19 novembre 2026. L'artefact **`pi-appliance-image`** comprend l'image et son fichier de somme SHA-256 ; il expire le **3 décembre 2026**. [Télécharger directement l'image et sa somme de contrôle](https://github.com/gmoulard/pi-appliance/actions/runs/44578711083/artifacts/14559608001). Il s'agit d'un artefact temporaire, pas d'une version stable. Le fichier image est `pi-appliance-2026-11-19-48c047d.img.xz` (environ 720 Mio compressé, 3,3 Gio une fois décompressé).
-
-Dans cette documentation, **controlTower** désigne le service de contrôle : la console d'administration de pi-appliance. Inclus dans l'image, il n'est pas installé depuis la marketplace et son administration est réservée au compte créé par la personne qui configure l'appliance. Avec l'image expérimentale du 19 novembre 2026, le Raspberry Pi garde le nom réseau `pi-appliance` ; l'adresse de la console est donc `https://pi-appliance.local/pi-appliance/`. Avec les images suivantes, chaque Pi a son propre nom, `pi-appliance-XXXX`, modifiable dans la console (section « Réseau de la maison », « Nom du Pi sur le réseau ») : un Pi nommé `controltower` s'ouvre à `https://controltower.local/pi-appliance/`.
+L'image contient le socle pi-appliance et sa console : rien d'autre à installer. Seule la personne qui configure le Pi, avec le compte administrateur créé au premier démarrage, peut l'administrer. Chaque Pi a son propre nom, `pi-appliance-XXXX`, modifiable dans la console (section « Réseau de la maison », « Nom du Pi sur le réseau ») : un Pi nommé `salon` s'ouvre à `https://salon.local/pi-appliance/`.
 
 L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte micro-SD de 16 Go ou plus, un ordinateur et [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Le flashage efface entièrement la carte SD.
 
-1. Sur la page de l'exécution GitHub, téléchargez l'artefact `pi-appliance-image` (un fichier ZIP), puis décompressez-le. Vous devez obtenir le fichier `.img.xz` et son fichier `.img.xz.sha256`.
+1. Sur la page de la [dernière version](https://github.com/gmoulard/pi-appliance/releases/latest), téléchargez dans le même dossier le fichier `.img.xz` et son fichier `.img.xz.sha256` (s'il n'y en a pas, suivez le lien de la dernière image donné sur cette page). L'archive `-arm64.tar.gz` sert aux mises à jour depuis la console : inutile de la télécharger.
 2. **Vérifiez le téléchargement avant de flasher.** Sous Windows PowerShell, depuis le dossier décompressé :
 
    ```powershell
-   $image = ".\pi-appliance-2026-11-19-48c047d.img.xz"
+   $image = ".\pi-appliance-v0.1.6.img.xz"   # remplacez par le nom de votre fichier
    $expected = (Get-Content "$image.sha256").Split()[0]
    $actual = (Get-FileHash $image -Algorithm SHA256).Hash
    if ($actual -ne $expected) { throw "Somme SHA-256 invalide : ne flashez pas cette image." }
@@ -61,14 +65,14 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
    Sous Linux ou macOS, dans ce même dossier :
 
    ```shell
-   sha256sum -c pi-appliance-2026-11-19-48c047d.img.xz.sha256
+   sha256sum -c pi-appliance-v*.img.xz.sha256
    ```
 
    Ne flashez pas l'image si la vérification échoue.
 3. Décompressez le fichier `.img.xz` avec 7-Zip pour obtenir le fichier `.img`.
 4. Téléchargez et ouvrez [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choisissez le modèle de Pi, puis **Choisir l'OS > Utiliser une image personnalisée** et sélectionnez le `.img`. Choisissez la carte SD, puis lancez l'écriture. Confirmez l'effacement demandé par Imager.
-5. Insérez la carte dans le Raspberry Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance`**, sans mot de passe, pour une durée maximale de 24 heures. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement. Avec les images construites à partir du 20 novembre 2026, ce Wi-Fi porte le nom propre du Pi, `pi-appliance-XXXX` (quatre caractères qui changent d'un Pi à l'autre), et ne donne plus accès à internet ni à votre réseau : seulement au portail.
-6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, le Wi-Fi de configuration se ferme : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison, puis ouvrez `https://pi-appliance-XXXX.local/pi-appliance/` (`https://pi-appliance.local/pi-appliance/` avec l'image du 19 novembre 2026). Voir [Retrouver la console](#retrouver-la-console) si cette adresse ne s'ouvre pas.
+5. Insérez la carte dans le Raspberry Pi et démarrez-le. Au premier démarrage, le Pi ouvre un réseau Wi-Fi de configuration **`pi-appliance-XXXX`** (quatre caractères qui changent d'un Pi à l'autre), sans mot de passe, pour une durée maximale de 24 heures. Il ne donne accès ni à internet ni à votre réseau : seulement au portail. Connectez-y votre téléphone ou ordinateur, puis ouvrez `https://10.42.0.1/pi-appliance/` si le portail ne s'affiche pas automatiquement.
+6. Dans l'assistant, créez le mot de passe administrateur et choisissez le Wi-Fi de la maison ou le réseau filaire. Le navigateur peut signaler le certificat local auto-signé : ne continuez que si vous êtes bien connecté au point d'accès de votre propre Pi. Une fois le réseau configuré, le Wi-Fi de configuration se ferme : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison, puis ouvrez `https://pi-appliance-XXXX.local/pi-appliance/`. Voir [Retrouver la console](#retrouver-la-console) si cette adresse ne s'ouvre pas.
 
 7. De retour dans l'assistant, sur le réseau de la maison, cliquez sur **Tester le Wi-Fi** (ou **Tester le câble réseau**) : la console vérifie que le Pi est bien relié, que la box répond et qu'il se reconnectera tout seul. Si tout est en ordre, cliquez sur **Redémarrer le Pi** : la console affiche l'adresse où le retrouver et redémarre le Pi au bout de 10 secondes (bouton **Ne pas redémarrer** pour annuler). Une à deux minutes plus tard, la page revient d'elle-même sur l'écran de connexion.
 
@@ -94,15 +98,15 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 - Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en `.local`), utilisez l'adresse IP du Pi : la console la donne avant la bascule si le Pi est relié par câble ; sinon, cherchez l'appareil `pi-appliance-XXXX` dans la liste des appareils connectés de votre box (son interface d'administration, souvent `http://192.168.1.1`). Ouvrez alors `https://<adresse du Pi>/pi-appliance/`, par exemple `https://192.168.1.127/pi-appliance/`. **N'oubliez pas `/pi-appliance/` à la fin.**
 - Le navigateur affiche une alerte (« La connexion n'est pas privée », « Avertissement : risque probable de sécurité ») : le Pi protège la connexion avec son propre certificat, que le navigateur ne connaît pas encore. Choisissez « Paramètres avancés », puis « Continuer ».
 
-La partition, le démarrage et le portail de cette image restent à valider sur du matériel réel. L'accès aux applications depuis internet n'est pas encore disponible.
+La partition, le premier démarrage, le Wi-Fi de configuration et la mise à jour depuis la console sont validés sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; l'ouverture automatique du portail sur téléphone reste à essayer. L'accès aux applications depuis internet n'est pas encore disponible.
 
 ### Retrouver son Pi sur son téléphone : l'application mobile {#application-mobile}
 
 L'[application mobile](https://app.pi-appliance.com) garde la liste de vos Pi et de leurs services sur le téléphone, avec ce guide lisible sans réseau.
 
-1. Sur le téléphone, ouvrez `https://app.pi-appliance.com` et ajoutez l'application à l'écran d'accueil.
+1. Sur le téléphone, ouvrez `https://app.pi-appliance.com` et ajoutez l'application à l'écran d'accueil. Tant que cette adresse ne répond pas, utilisez l'adresse provisoire `https://gmoulard.github.io/pi-appliance-pwa/`. Les deux adresses ne partagent pas leurs données : une liste de Pi faite sur l'une n'apparaît pas sur l'autre.
 2. Dans la console, ouvrez « Mon Pi » : la carte « Application mobile » montre un code à scanner (seulement pour l'administrateur).
-3. Dans l'application, touchez « Scanner le code » et visez ce code. Vous pouvez aussi copier le lien de la carte et l'ouvrir sur le téléphone, par exemple en vous l'envoyant par message.
+3. Dans l'application, touchez « Scanner le code » et visez ce code. Vous pouvez aussi copier le lien de la carte et l'ouvrir sur le téléphone, par exemple en vous l'envoyant par message. Sans la console sous la main, « Ajouter un Pi » accepte aussi la seule adresse du Pi sur internet (par exemple `salon.pi-appliance.com`) : l'application demande au Pi son nom et ses services (pi-appliance v0.1.10 ou plus récent depuis l'adresse provisoire).
 
 Scanner le code depuis l'application **appaire** aussi le téléphone à votre compte : ensuite, l'application ouvre la console sans mot de passe, à la maison. Le code change toutes les quelques minutes et ne sert qu'une fois : ne le montrez qu'à vos propres téléphones. Le lien à copier, lui, n'appaire pas le téléphone. Les téléphones appairés sont listés dans « Mon compte », rubrique « Appareils » : retirez-y un téléphone perdu ou que vous n'utilisez plus. Depuis le téléphone lui-même, « Désappairer » dans l'application fait la même chose.
 
@@ -113,9 +117,9 @@ Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, s
 La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir :
 
 1. À la maison, dans « Mon compte », activez la **double authentification** : depuis internet, seuls les comptes qui l'ont activée peuvent se connecter.
-2. Donnez une adresse internet au Pi, dans « Adresse sur internet » (DuckDNS, puis votre adresse pi-appliance.com).
+2. Donnez une adresse internet au Pi, dans « Adresse sur internet » : DuckDNS, puis votre adresse pi-appliance.com. Si vous avez votre propre nom de domaine, vous pouvez aussi, chez votre fournisseur, faire pointer un de ses noms vers votre box (par exemple `maison.exemple.fr`), puis le taper dans la carte « Console sur internet », champ « Votre adresse personnelle », et toucher **Enregistrer l'adresse**. La carte affiche l'entrée à créer chez votre fournisseur : de préférence un alias (**CNAME**) vers votre nom DuckDNS ou votre adresse pi-appliance.com, par exemple `maison.exemple.fr. CNAME monpi.duckdns.org.`, qui suit l'adresse de votre box sans mot de passe de votre fournisseur sur le Pi. Choisissez un sous-domaine (`maison.exemple.fr`) plutôt que le domaine seul (`exemple.fr`), où un alias ne peut pas être créé. La console refuse un nom qui n'existe pas encore sur internet : attendez quelques minutes après le changement chez le fournisseur.
 3. Dans votre box, faites suivre les ports **80** et **443** vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.
-4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`.
+4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`, ou `https://maison.exemple.fr/pi-appliance/` avec votre adresse personnelle.
 
 Depuis internet, la console demande votre mot de passe puis le code de votre application d'authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 
@@ -126,19 +130,19 @@ Pour les personnes à l'aise avec SSH, le Pi a une commande `pia` (nom long : `p
 ```sh
 pia aide                             # toutes les commandes
 pia version                          # version du socle : pi-appliance, système, Docker, Traefik
-sudo pia etat                        # la console répond-elle, état des services
-sudo pia catalogue                   # applications installables
-sudo pia catalogue nextcloud         # détail et paramètres d'une application
-sudo pia installer nextcloud         # installer (--nom, --acces, --param nom=valeur)
-sudo pia services                    # services installés
-sudo pia redemarrer cloud            # demarrer, arreter, redemarrer
-sudo pia desinstaller cloud          # données gardées ; --effacer-donnees pour les effacer
+pia etat                             # la console répond-elle, état des services
+pia catalogue                        # applications installables
+pia catalogue nextcloud              # détail et paramètres d'une application
+pia installer nextcloud              # installer (--nom, --acces, --param nom=valeur)
+pia services                         # services installés
+pia redemarrer cloud                 # demarrer, arreter, redemarrer
+pia desinstaller cloud               # données gardées ; --effacer-donnees pour les effacer
 pia ssh                              # SSH : en marche ? mots de passe ? clés ?
-sudo pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
-sudo pia ssh mot-de-passe desactiver # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
+pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
+pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
 ```
 
-Seules `version`, `aide` et `ssh` (pour regarder) se lancent sans `sudo` : les autres passent par la console ou changent le système. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
+Inutile de taper `sudo` : quand une commande a besoin des droits d'administrateur du Pi (toutes sauf `aide` et `version`), `pia` les demande lui-même, avec le mot de passe de votre compte si le Pi le réclame. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
 
 ## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
 
@@ -168,7 +172,26 @@ Si la console ne s'ouvre plus du tout (programme Traefik en panne), essayez `htt
 
 Si vous avez choisi un compte et activé SSH dans les réglages de Raspberry Pi Imager, ils sont gardés : une personne à l'aise avec l'informatique peut aussi se connecter au Pi par SSH. Le Wi-Fi réglé dans Imager, lui, est ignoré : le Wi-Fi de la maison se choisit dans le portail.
 
-## Lancer la console depuis les sources
+## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
+
+> **Cette option n'est pas encore disponible pour les services.** Pour la console seule, un nom de votre domaine peut déjà servir d'adresse sur internet : voir [Administrer le Pi depuis internet](#console-sur-internet). Pour les services, la console ne permet pas encore de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
+
+Quand cette option sera disponible, la configuration se fera en deux endroits :
+
+### Chez OVH
+
+1. Choisissez un sous-domaine de votre domaine, par exemple `ma-maison.exemple.fr`. C'est préférable au domaine seul (`exemple.fr`) : un alias DNS classique ne peut pas toujours être créé à la racine d'un domaine.
+2. Dans l'espace client OVH, ouvrez la zone DNS de votre domaine et ajoutez une entrée de type **CNAME** pour ce sous-domaine. La cible sera le nom complet fourni par la console, de la forme `<nom>.pi-appliance.com`.
+3. Ne remplacez pas les serveurs DNS du domaine et ne modifiez pas ses autres entrées, notamment celles utilisées pour le site web ou les e-mails. N'utilisez pas la fonction de redirection web d'OVH à la place de l'entrée DNS.
+4. Si la console demande d'autres entrées pour les adresses des services, suivez les valeurs qu'elle affiche ; ne les devinez pas.
+
+### Dans la console pi-appliance
+
+La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible à recopier chez OVH, puis de vérifier la configuration avant d'activer le domaine. Ces réglages et cette vérification ne sont pas encore présents.
+
+**Prérequis :** l'appliance doit d'abord pouvoir obtenir et tenir à jour son adresse pi-appliance (`TODO-3.2` et `TODO-3.5`). La prise en charge du domaine dans la console, notamment pour l'utiliser avec les services et leurs certificats, reste aussi à réaliser. L'accès depuis internet n'est pas encore disponible non plus.
+
+## Lancer la console depuis les sources {#depuis-les-sources}
 
 Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.24 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.
 
@@ -183,10 +206,10 @@ Ouvrir ensuite **http://localhost:8080/pi-appliance/** dans le navigateur et cr�
 
 Pour construire l'image système, utiliser le workflow [Image](https://github.com/gmoulard/pi-appliance/actions/workflows/image.yml). Il est réservé aux essais et à la contribution tant que les tests sur un vrai Pi ne sont pas terminés.
 
-## Pour aller plus loin
+## Pour aller plus loin {#pour-aller-plus-loin}
 
-- [Installation du plan de contrôle](installation.html) : Docker, Traefik, console et services systemd sur un Raspberry Pi OS existant.
-- [Essais avec plusieurs Pi](essais-plusieurs-pi.html) : procédure technique pour essayer controlTower et d'autres Pi dans une maison, et des Pi dans d'autres maisons joints depuis internet.
+- [Installer le socle sans l'image](installation.html) : Docker, Traefik, console et services systemd sur un Raspberry Pi OS existant.
+- [Essais avec plusieurs Pi](essais-plusieurs-pi.html) : procédure technique pour essayer plusieurs Pi dans une maison, et des Pi dans d'autres maisons joints depuis internet.
 - [Marketplace](marketplace.html) : catalogue actuel, applications envisagées et guide de contribution.
 - [Spécification](specification.html) : fonctionnement visé par le projet.
 - [Avancement](TODO.html) : fonctions réalisées et essais restants.

@@ -2,11 +2,11 @@
 
 La marketplace regroupe les applications que l'on peut installer et gérer depuis la console pi-appliance. Le catalogue est encore intégré au programme : proposer une application ne la rendra disponible qu'après validation de la contribution et publication d'une nouvelle version de la console.
 
-> **Prototype expérimental.** Les manifestes ci-dessous sont présents dans le code, mais l'image n'a pas encore été validée sur un vrai Raspberry Pi. L'accès aux services depuis internet n'est pas encore disponible.
+> **Version expérimentale.** L'image est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; chaque application reste à essayer une à une sur un vrai Pi. L'accès aux services depuis internet n'est pas encore disponible.
 
-## Le service de contrôle controlTower
+## Le socle pi-appliance
 
-**controlTower** désigne la console d'administration pi-appliance et les composants qui la font fonctionner. Ce service système est fourni avec l'image, pas proposé dans le catalogue : il est réservé au concepteur ou à la personne responsable de l'appliance, au moyen du compte administrateur créé au premier démarrage. Les opérations de gestion nécessitent cette session administrateur.
+Le **socle pi-appliance** (Docker, Traefik, les services et les outils du système, la console et la commande `pia`) est fourni avec l'image : il n'est pas dans le catalogue et ne se désinstalle pas. Seul un administrateur, avec le compte créé au premier démarrage ou un autre compte administrateur, installe et gère les applications ci-dessous depuis la console.
 
 ## Applications déjà dans le catalogue
 

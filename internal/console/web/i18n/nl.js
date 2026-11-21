@@ -618,7 +618,15 @@ piTranslations("nl", {
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Je router moet ook de poorten 80 en 443 doorsturen naar de Pi: zo krijgt het adres zijn beveiligingscertificaat.",
   "La console est ouverte sur internet : {0}": "De console is open op internet: {0}",
   "La console ne s'ouvre qu'à la maison.": "De console opent alleen thuis.",
+  "Vous avez votre propre nom de domaine ? Chez votre fournisseur, faites pointer un de ses noms vers votre box, puis tapez-le ici, par exemple maison.exemple.fr.": "Heeft u een eigen domeinnaam? Laat bij uw provider een van de namen naar uw modem wijzen en typ hem hier, bijvoorbeeld huis.voorbeeld.nl.",
+  "Votre adresse personnelle (facultatif)": "Uw eigen adres (optioneel)",
+  "maison.exemple.fr": "huis.voorbeeld.nl",
+  "Enregistrer l'adresse": "Adres opslaan",
+  "Retirer l'adresse": "Adres verwijderen",
+  "Retirer l'adresse personnelle {0} ?": "Het eigen adres {0} verwijderen?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "De console opent op internet zodra de Pi een internetadres heeft (DuckDNS of pi-appliance.com, hierboven).",
   "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "De console op internet openen? Alleen accounts met tweestapsverificatie kunnen zich dan vanaf internet aanmelden.",
-  "Ouvrir la console sur internet": "Console op internet openen"
+  "Ouvrir la console sur internet": "Console op internet openen",
+  "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "Het eenvoudigst: een alias (CNAME-vermelding) naar {0}. Die volgt het adres van uw router, zonder wachtwoord van uw aanbieder op de Pi.",
+  "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Zonder DuckDNS laat u de naam naar het openbare IP-adres van uw router wijzen (A-vermelding); dat kan veranderen: stel liever DuckDNS in, hierboven."
 });

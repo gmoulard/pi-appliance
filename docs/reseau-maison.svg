@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" role="img" aria-labelledby="title description">
-  <title id="title">Réseau de la maison avec plusieurs Pi et controlTower</title>
-  <desc id="description">Internet rejoint la box. La box relie le réseau local de la maison, où se trouvent controlTower et plusieurs Raspberry Pi pi-appliance indépendants. controlTower ne pilote pas les autres Pi.</desc>
+  <title id="title">Réseau de la maison avec plusieurs Pi pi-appliance</title>
+  <desc id="description">Internet rejoint la box. La box relie le réseau local de la maison, où se trouvent plusieurs Raspberry Pi pi-appliance indépendants. Aucun Pi ne pilote les autres.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
       <path d="M0 0L10 5L0 10z" fill="#6b3d4e"/>
@@ -33,8 +33,8 @@
   <text x="565" y="132" text-anchor="middle" class="detail">LAN</text>
 
   <rect x="620" y="140" width="265" height="105" rx="16" class="node"/>
-  <text x="752" y="176" text-anchor="middle" class="label">Raspberry Pi controlTower</text>
-  <text x="752" y="202" text-anchor="middle" class="detail">Console réservée au concepteur</text>
+  <text x="752" y="176" text-anchor="middle" class="label">Raspberry Pi « salon »</text>
+  <text x="752" y="202" text-anchor="middle" class="detail">Sa propre console</text>
   <text x="752" y="224" text-anchor="middle" class="detail">ne pilote pas les autres Pi</text>
 
   <rect x="620" y="270" width="265" height="70" rx="16" class="node"/>

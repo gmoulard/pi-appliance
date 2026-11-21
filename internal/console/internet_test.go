@@ -16,6 +16,8 @@
 package console
 
 import (
+	"context"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -26,6 +28,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/marketplace"
 	"github.com/pquerna/otp/totp"
@@ -277,5 +280,86 @@ func TestCLIToken(t *testing.T) {
 		if code != http.StatusUnauthorized {
 			t.Errorf("%s : code %d", name, code)
 		}
+	}
+}
+
+func TestConsolePersonalDomain(t *testing.T) {
+	f, traefik := internetFixture(t)
+	known := map[string]bool{"vdl.moulard.org": true}
+	saved := lookupHost
+	lookupHost = func(_ context.Context, host string) ([]string, error) {
+		if known[host] {
+			return []string{"82.66.246.212"}, nil
+		}
+		return nil, errors.New("pas de réponse")
+	}
+	t.Cleanup(func() { lookupHost = saved })
+	cookie := f.admin(t)
+	enableTOTP(t, f, cookie)
+
+	put := func(body string) *httptest.ResponseRecorder {
+		return f.do(http.MethodPut, "/pi-appliance/api/internet-console/domain", "application/json", body, cookie)
+	}
+	for body, code := range map[string]int{
+		`{"domain": "maison.local"}`:           http.StatusBadRequest,
+		`{"domain": "82.66.246.212"}`:          http.StatusBadRequest,
+		`{"domain": "x.pi-appliance.com"}`:     http.StatusBadRequest,
+		"{\"domain\": \"a`) || Host(`b.org\"}": http.StatusBadRequest,
+		`{"domain": "inconnu.moulard.org"}`:    http.StatusConflict,
+		`pas du json`:                          http.StatusBadRequest,
+	} {
+		if response := put(body); response.Code != code {
+			t.Errorf("%s : code %d, attendu %d", body, response.Code, code)
+		}
+	}
+	// Adresse tapée avec https:// et le chemin : ramenée au nom.
+	status := decode[InternetStatus](t, put(`{"domain": " HTTPS://VDL.moulard.org/pi-appliance/ "}`))
+	if status.Domain != "vdl.moulard.org" || status.Enabled {
+		t.Fatalf("état %+v", status)
+	}
+	if _, err := os.Stat(traefik); !os.IsNotExist(err) {
+		t.Fatalf("fichier de Traefik écrit console fermée : %v", err)
+	}
+	// Ouvrir garde l'adresse, qui passe en premier.
+	status = decode[InternetStatus](t, f.do(http.MethodPut, "/pi-appliance/api/internet-console?enabled=true", "", "", cookie))
+	if !status.Enabled || status.URL != "https://vdl.moulard.org/pi-appliance/" || status.Domain != "vdl.moulard.org" {
+		t.Fatalf("état %+v", status)
+	}
+	data, err := os.ReadFile(traefik)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(data), "(Host(`vdl.moulard.org`) || Host(`maison.example.org`))") {
+		t.Fatalf("configuration de Traefik :\n%s", data)
+	}
+	// Depuis internet : changer l'adresse est refusé.
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/internet-console/domain", `{"domain": ""}`, cookie); response.Code != http.StatusForbidden && response.Code != http.StatusUnauthorized {
+		t.Fatalf("changement depuis internet : code %d", response.Code)
+	}
+	// Retirer l'adresse : la console reste ouverte à ses autres adresses.
+	status = decode[InternetStatus](t, put(`{"domain": ""}`))
+	if status.Domain != "" || !status.Enabled || status.URL != "https://maison.example.org/pi-appliance/" {
+		t.Fatalf("après retrait : %+v", status)
+	}
+}
+
+func TestDomainTarget(t *testing.T) {
+	c := &console{}
+	if got := c.domainTarget(); got != "" {
+		t.Fatalf("sans DuckDNS : %q", got)
+	}
+	updater, err := ddns.Open(filepath.Join(t.TempDir(), "duckdns.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	c.DuckDNS = updater
+	if got := c.domainTarget(); got != "" {
+		t.Fatalf("DuckDNS pas réglé : %q", got)
+	}
+	if err := updater.Save(ddns.Settings{Domain: "monpi", Token: "12345678-1234-1234-1234-123456789abc"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := c.domainTarget(); got != "monpi.duckdns.org" {
+		t.Fatalf("cible : %q", got)
 	}
 }

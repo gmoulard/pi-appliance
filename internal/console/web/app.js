@@ -2574,9 +2574,24 @@ const internetBox = document.getElementById("internetBox");
 const internetState = document.getElementById("internetState");
 const internetOpen = document.getElementById("internetOpen");
 const internetClose = document.getElementById("internetClose");
+const internetDomainForm = document.getElementById("internetDomainForm");
+const internetDomainSave = document.getElementById("internetDomainSave");
+const internetDomainRemove = document.getElementById("internetDomainRemove");
 
 function showInternet(status) {
   internetBox.hidden = false;
+  // L'adresse personnelle se règle à la maison seulement.
+  internetDomainForm.hidden = status.internet;
+  internetDomainForm.elements.domain.value = status.domain || "";
+  const help = document.getElementById("internetDomainHelp");
+  help.replaceChildren();
+  if (status.domain_target) {
+    help.append(element("p", t("Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.", status.domain_target), "meta"));
+    help.append(element("pre", `${status.domain || "maison.exemple.fr"}. CNAME ${status.domain_target}.`, "stats-preview"));
+  } else {
+    help.append(element("p", t("Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut."), "meta"));
+  }
+  internetDomainRemove.hidden = !status.domain;
   internetOpen.hidden = status.enabled || !status.totp || status.internet;
   internetClose.hidden = !status.enabled;
   const dot = element("span", undefined, `dot ${status.enabled ? "ok" : ""}`);
@@ -2620,6 +2635,29 @@ async function setInternet(enabled) {
   }
 }
 
+async function setInternetDomain(domain) {
+  const button = domain ? internetDomainSave : internetDomainRemove;
+  button.disabled = true;
+  try {
+    showInternet(await api("internet-console/domain", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ domain }),
+    }));
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+}
+
+internetDomainForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  setInternetDomain(internetDomainForm.elements.domain.value.trim());
+});
+internetDomainRemove.addEventListener("click", () => {
+  if (window.confirm(t("Retirer l'adresse personnelle {0} ?", internetDomainForm.elements.domain.value))) setInternetDomain("");
+});
 internetOpen.addEventListener("click", () => setInternet(true));
 internetClose.addEventListener("click", () => setInternet(false));
 

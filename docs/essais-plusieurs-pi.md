@@ -1,8 +1,8 @@
-# Essais : controlTower et plusieurs Pi, dans une maison et dans plusieurs
+# Essais avec plusieurs Pi, dans une maison et dans plusieurs
 
 Ce guide décrit, commande par commande, les essais sur du vrai matériel des points TODO-2.7, TODO-2.48, TODO-3.2, TODO-3.8 et TODO-4.6 :
 
-- **une maison** : controlTower et d'autres Pi pi-appliance sur le même réseau ;
+- **une maison** : plusieurs Pi pi-appliance sur le même réseau ;
 - **plusieurs maisons** : des Pi chez d'autres personnes, joints depuis internet.
 
 Il s'adresse à la personne qui fait les essais, pas au grand public : il utilise la ligne de commande du Pi. Les résultats sont à reporter dans [l'avancement](TODO.md), point par point.
@@ -12,7 +12,7 @@ Il s'adresse à la personne qui fait les essais, pas au grand public : il utilis
 | Sujet | État du code | Essai possible |
 |-------|--------------|----------------|
 | Nom propre à chaque Pi (`pi-appliance-XXXX`, Wi-Fi, `<nom>.local`) | Écrit | Oui |
-| Renommer un Pi en `controltower` depuis la console | Écrit | Oui |
+| Renommer un Pi (par exemple en `salon`) depuis la console | Écrit | Oui |
 | Wi-Fi de configuration sans accès à internet ni à la maison | Écrit (pare-feu `ap-firewall.nft`) | Oui |
 | Plusieurs Pi allumés en même temps dans la maison | Écrit | Oui |
 | Console fermée depuis internet (réseaux privés seulement) | Écrit (`console.yml`) | Oui |
@@ -24,13 +24,13 @@ Il s'adresse à la personne qui fait les essais, pas au grand public : il utilis
 | UPnP, guide de la box dans la console | Pas écrit (TODO-3.8) | Non : la redirection se fait à la main |
 | Services du projet (e-mails, statistiques) | Pas installés (TODO-4.4) | Non |
 
-controlTower est un Pi pi-appliance comme les autres, dédié au concepteur du projet (spécification, section 2) : il a sa propre console et **ne pilote pas** les autres Pi, ni dans sa maison ni ailleurs. Rien n'est donc à essayer « entre » controlTower et un autre Pi, sauf qu'ils ne se gênent pas.
+Chaque Pi pi-appliance est indépendant (spécification, section 4) : il a sa propre console et **ne pilote pas** les autres Pi, ni dans sa maison ni ailleurs. Rien n'est donc à essayer « entre » deux Pi, sauf qu'ils ne se gênent pas.
 
 ## 2. Matériel et préparation
 
 ### 2.1 Matériel
 
-- Au moins **deux Pi** pour la maison du concepteur : l'un deviendra `controltower`, l'autre garde son nom `pi-appliance-XXXX`. Un troisième Pi permet de tester un modèle de plus (Pi 3 B+ ou Zero 2 W).
+- Au moins **deux Pi** pour la maison du concepteur : l'un sera renommé `salon`, l'autre garde son nom `pi-appliance-XXXX`. Un troisième Pi permet de tester un modèle de plus (Pi 3 B+ ou Zero 2 W).
 - **Un Pi par autre maison**, avec une personne sur place qui peut le brancher et accéder à sa box.
 - Une carte micro-SD d'au moins 16 Go par Pi.
 - Pour les essais : un écran HDMI et un clavier USB (pour ouvrir un terminal sur le Pi, section 2.4), un ordinateur et un téléphone.
@@ -158,14 +158,14 @@ But : vérifier que le Wi-Fi de configuration n'ouvre que le portail, sans accè
 
 **Si un `ping` de l'étape 3 réussit**, arrêter tout de suite : le Wi-Fi de configuration donne accès au réseau. Débrancher le Pi et relever `sudo nft list ruleset` et `journalctl -u pi-appliance-firewall -b`.
 
-## 4. Essai B : controlTower et d'autres Pi dans la même maison
+## 4. Essai B : plusieurs Pi dans la même maison
 
 But : plusieurs Pi allumés ensemble, chacun joignable à son nom, sans conflit (TODO-2.48).
 
-### 4.1 Nommer controlTower
+### 4.1 Renommer un Pi
 
-1. Sur le Pi 1 configuré à l'essai A, ouvrir la console, section « Mon Pi », « Nom du Pi sur le réseau », saisir `controltower`, puis « Changer le nom ».
-2. Attendre une dizaine de secondes, puis ouvrir `https://controltower.local/pi-appliance/`. Le navigateur affiche une nouvelle alerte : le certificat a été refait pour le nouveau nom.
+1. Sur le Pi 1 configuré à l'essai A, ouvrir la console, section « Mon Pi », « Nom du Pi sur le réseau », saisir `salon`, puis « Changer le nom ».
+2. Attendre une dizaine de secondes, puis ouvrir `https://salon.local/pi-appliance/`. Le navigateur affiche une nouvelle alerte : le certificat a été refait pour le nouveau nom.
 3. Sur le Pi :
 
    ```shell
@@ -176,10 +176,10 @@ But : plusieurs Pi allumés ensemble, chacun joignable à son nom, sans conflit 
    openssl x509 -in /var/lib/pi-appliance/system/tls/local.crt -noout -ext subjectAltName
    ```
 
-   **Attendu** : `controltower` partout ; le certificat contient `DNS:controltower.local`.
+   **Attendu** : `salon` partout ; le certificat contient `DNS:salon.local`.
 
-4. Redémarrer le Pi (`sudo reboot`) : il doit garder le nom `controltower`.
-5. Essayer un nom refusé dans la console (`Controltower`, `-abc`, un nom de 33 caractères) : message d'erreur, nom inchangé.
+4. Redémarrer le Pi (`sudo reboot`) : il doit garder le nom `salon`.
+5. Essayer un nom refusé dans la console (`Salon`, `-abc`, un nom de 33 caractères) : message d'erreur, nom inchangé.
 
 **Point connu à vérifier** : l'adresse des nouveaux services est calculée au démarrage de la console (`<nom>.local`), et le changement de nom ne relance que avahi et Traefik. Après le renommage, installer un service et regarder son adresse dans « Mes services ». Si elle porte encore l'ancien nom, relancer la console (`sudo systemctl restart pi-appliance`) et le noter dans les résultats.
 
@@ -195,7 +195,7 @@ But : plusieurs Pi allumés ensemble, chacun joignable à son nom, sans conflit 
 Depuis l'ordinateur, sur le réseau de la maison :
 
 ```powershell
-foreach ($n in "controltower", "pi-appliance-XXXX", "pi-appliance-YYYY") {
+foreach ($n in "salon", "pi-appliance-XXXX", "pi-appliance-YYYY") {
   "$n : " + (curl.exe -sk "https://$n.local/pi-appliance/api/health")
   ping -n 1 "$n.local" | Select-String "Réponse|Reply"
 }
@@ -205,7 +205,7 @@ Sur l'un des Pi, voir ce qu'avahi annonce :
 
 ```shell
 sudo apt-get install -y avahi-utils   # une fois, pour l'essai
-avahi-browse -art | grep -E 'controltower|pi-appliance-'
+avahi-browse -art | grep -E 'salon|pi-appliance-'
 ```
 
 **Attendu** :
@@ -216,8 +216,8 @@ avahi-browse -art | grep -E 'controltower|pi-appliance-'
 
 ### 4.4 Les services de chaque Pi
 
-1. Installer un « Site web » sur controlTower et un autre sur le Pi 2, chacun sous le nom `www`.
-2. Les adresses des services sont `www-controltower.local` et `www-pi-appliance-XXXX.local` (un seul niveau, TODO-2.61), annoncées par `mdns.sh` : elles doivent s'ouvrir sans toucher au fichier `hosts`, depuis Windows comme depuis un téléphone. Si l'une ne s'ouvre pas, noter l'appareil et le système dans les résultats.
+1. Installer un « Site web » sur le Pi `salon` et un autre sur le Pi 2, chacun sous le nom `www`.
+2. Les adresses des services sont `www-salon.local` et `www-pi-appliance-XXXX.local` (un seul niveau, TODO-2.61), annoncées par `mdns.sh` : elles doivent s'ouvrir sans toucher au fichier `hosts`, depuis Windows comme depuis un téléphone. Si l'une ne s'ouvre pas, noter l'appareil et le système dans les résultats.
 3. Ouvrir les deux sites : chacun affiche son propre contenu, et non celui de l'autre Pi ; le certificat présenté (cadenas du navigateur) porte l'adresse du service.
 
 ### 4.5 Après un redémarrage de la box
@@ -325,12 +325,12 @@ curl -s https://api.ipify.org; echo
 
 ## 7. Plusieurs maisons en même temps
 
-Avec un Pi chez le concepteur (controlTower) et un Pi dans chaque autre maison :
+Avec un Pi chez le concepteur (`salon`) et un Pi dans chaque autre maison :
 
-- Les noms en `.local` ne valent que dans leur maison : deux Pi de deux maisons peuvent porter le même nom sans gêne. **À vérifier** : un Pi d'une autre maison nommé lui aussi `controltower`, joint par son adresse DuckDNS, n'a aucun effet sur le controlTower du concepteur.
+- Les noms en `.local` ne valent que dans leur maison : deux Pi de deux maisons peuvent porter le même nom sans gêne. **À vérifier** : un Pi d'une autre maison nommé lui aussi `salon`, joint par son adresse DuckDNS, n'a aucun effet sur celui du concepteur.
 - Chaque Pi a son propre nom DuckDNS : jamais deux Pi sur le même sous-domaine.
 - Depuis la maison du concepteur, ouvrir `https://www.<sous-domaine de chaque autre maison>.duckdns.org/` : chaque site affiche son propre contenu.
-- controlTower n'a aucun accès aux autres Pi : aucune console d'une autre maison n'est joignable depuis la maison du concepteur (essai C sur chaque nom DuckDNS).
+- Le Pi du concepteur n'a aucun accès aux autres Pi : aucune console d'une autre maison n'est joignable depuis la maison du concepteur (essai C sur chaque nom DuckDNS).
 
 ## 8. Résultats à reporter
 
@@ -339,7 +339,7 @@ Pour chaque essai : date, commit de l'image, modèle de Pi, maison, résultat (r
 | Essai | Point du TODO |
 |-------|---------------|
 | A : Wi-Fi de configuration, portail, secrets différents | TODO-2.7 |
-| B : noms uniques, controlTower, plusieurs Pi allumés, consoles et services séparés | TODO-2.48 |
+| B : noms uniques, Pi renommé, plusieurs Pi allumés, consoles et services séparés | TODO-2.48 |
 | C : console fermée depuis internet | TODO-3.11 |
 | D 6.1 à 6.5 : DuckDNS, accès direct, Let's Encrypt | TODO-3.2, TODO-3.8 |
 | D 6.6 : VPN | TODO-4.6 |

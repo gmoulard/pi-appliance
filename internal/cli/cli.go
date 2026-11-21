@@ -39,6 +39,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -65,6 +66,9 @@ type Env struct {
 	Euid   int
 	// Command lance un programme du système et rend sa sortie.
 	Command func(ctx context.Context, name string, args ...string) (string, error)
+	// Elevate relance la commande args avec les droits d'administrateur (sudo) et
+	// ne revient qu'en cas d'échec ; nil : pas de relance (tests).
+	Elevate func(args []string) error
 	// Chown donne un fichier à un compte (clés SSH) ; os.Lchown sur le Pi.
 	Chown func(path string, uid, gid int) error
 	HTTP  *http.Client
@@ -85,10 +89,36 @@ func Defaults(version string) Env {
 			output, err := exec.CommandContext(ctx, name, args...).CombinedOutput()
 			return string(output), err
 		},
-		Chown: os.Lchown,
-		HTTP:  &http.Client{},
+		Chown:   os.Lchown,
+		HTTP:    &http.Client{},
+		Elevate: elevate,
 	}
 }
+
+// elevate remplace le programme par « sudo <ce binaire> <args> » : on tape
+// toujours « pia … », sudo demande le mot de passe s'il le faut.
+func elevate(args []string) error {
+	sudo, err := exec.LookPath("sudo")
+	if err != nil {
+		return err
+	}
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	command := []string{"sudo", "--", self}
+	// sudo efface l'environnement : SSH_CONNECTION est gardé pour que
+	// « pia ssh desactiver » sache encore qu'il est lancé par SSH.
+	if connection := os.Getenv("SSH_CONNECTION"); connection != "" {
+		if envPath, err := exec.LookPath("env"); err == nil {
+			command = []string{"sudo", "--", envPath, "SSH_CONNECTION=" + connection, self}
+		}
+	}
+	return syscall.Exec(sudo, append(command, args...), os.Environ())
+}
+
+// asUser : commandes qui ne demandent jamais les droits d'administrateur.
+var asUser = map[string]bool{"aide": true, "version": true}
 
 // aliases : quelques équivalents anglais des commandes.
 var aliases = map[string]string{
@@ -131,6 +161,13 @@ func Run(args []string, env Env) int {
 		fmt.Fprintf(env.Err, "Commande inconnue : %s\n\n%s", args[0], help)
 		return 2
 	}
+	// Toutes les autres commandes lisent le jeton de la console ou le système :
+	// pia se relance lui-même avec sudo, jamais besoin de le taper.
+	if env.Euid != 0 && !asUser[command] && env.Elevate != nil {
+		err := env.Elevate(args)
+		fmt.Fprintf(env.Err, "Impossible de demander les droits d'administrateur du Pi (%v) : connectez-vous avec un compte qui peut utiliser sudo.\n", err)
+		return 1
+	}
 	if err := run(env, args[1:]); err != nil {
 		fmt.Fprintln(env.Err, err)
 		var usage usageError
@@ -163,7 +200,8 @@ const help = `pia : ligne de commande du Pi (la console reste le moyen le plus s
   pia ssh cle retirer <numéro> [--utilisateur NOM]
   pia ssh mot-de-passe activer|desactiver
 
-Seules version, aide et ssh (pour regarder) se lancent sans sudo.
+Inutile de taper sudo : pia demande lui-même les droits d'administrateur du Pi
+quand une commande en a besoin.
 `
 
 // flags : options --nom valeur (ou --nom=valeur) et options sans valeur.
@@ -219,7 +257,7 @@ func (f flags) value(name string) string {
 
 // errNeedRoot : commande qui change le système ou lit le jeton de la console.
 func errNeedRoot(args ...string) error {
-	return fmt.Errorf("Lancez la commande avec sudo : sudo pia %s", strings.Join(args, " "))
+	return fmt.Errorf("Cette commande a besoin des droits d'administrateur du Pi (pia %s) : connectez-vous avec un compte qui peut utiliser sudo.", strings.Join(args, " "))
 }
 
 // confirm pose une question oui/non ; « o », « oui », « y », « yes » valent oui.
@@ -501,7 +539,7 @@ func catalogue(env Env, args []string) error {
 		for _, item := range items {
 			fmt.Fprintf(env.Out, "%-12s %-22s %s\n", item.ID, item.Name, firstSentence(item.Description))
 		}
-		fmt.Fprintln(env.Out, "\nDétail : pia catalogue <application> ; installation : sudo pia installer <application>")
+		fmt.Fprintln(env.Out, "\nDétail : pia catalogue <application> ; installation : pia installer <application>")
 		return nil
 	}
 	for _, item := range items {
@@ -548,7 +586,7 @@ func install(env Env, args []string) error {
 		return err
 	}
 	if len(f.positional) != 1 {
-		return usageError{"Indiquez une application : sudo pia installer <application> (voir pia catalogue)."}
+		return usageError{"Indiquez une application : pia installer <application> (voir pia catalogue)."}
 	}
 	ctx := context.Background()
 	items, err := apps(ctx, env)
@@ -659,7 +697,7 @@ func uninstall(env Env, args []string) error {
 		return err
 	}
 	if len(f.positional) != 1 {
-		return usageError{"Indiquez un service : sudo pia desinstaller <service> (voir pia services)."}
+		return usageError{"Indiquez un service : pia desinstaller <service> (voir pia services)."}
 	}
 	name := f.positional[0]
 	data := "keep"

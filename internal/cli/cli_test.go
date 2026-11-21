@@ -23,6 +23,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -455,5 +456,39 @@ func TestSSHServiceAndState(t *testing.T) {
 	}
 	if code := pi.run("ssh", "activer"); code != 0 || !strings.Contains(strings.Join(pi.commands, "\n"), "systemctl enable --now ssh") {
 		t.Fatalf("activer : code %d", code)
+	}
+}
+
+// Sans root, pia se relance lui-même avec sudo, sauf pour aide et version.
+func TestElevate(t *testing.T) {
+	pi := newFakePi(t, "")
+	pi.env.Euid = 1000
+	var relaunched [][]string
+	pi.env.Elevate = func(args []string) error {
+		relaunched = append(relaunched, args)
+		return errors.New("sudo absent")
+	}
+	for _, args := range [][]string{{"aide"}, {"version"}, {"help"}} {
+		if code := pi.run(args...); code != 0 {
+			t.Fatalf("%v sans root : code %d : %s", args, code, pi.err.String())
+		}
+	}
+	if len(relaunched) != 0 {
+		t.Fatalf("aide et version relancées : %v", relaunched)
+	}
+	if code := pi.run("ssh", "cle", "ajouter", "x"); code != 1 || !strings.Contains(pi.err.String(), "droits d'administrateur") {
+		t.Fatalf("échec de sudo : code %d : %s", code, pi.err.String())
+	}
+	pi.run("etat")
+	pi.run("services")
+	want := [][]string{{"ssh", "cle", "ajouter", "x"}, {"etat"}, {"services"}}
+	if fmt.Sprint(relaunched) != fmt.Sprint(want) {
+		t.Fatalf("relances : %v, attendu %v", relaunched, want)
+	}
+	// Déjà root : pas de relance.
+	pi.env.Euid = 0
+	pi.run("services")
+	if len(relaunched) != 3 {
+		t.Fatalf("relancé alors que root : %v", relaunched)
 	}
 }

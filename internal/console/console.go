@@ -220,6 +220,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/mobile", c.adminOnly(c.mobile))
 	mux.HandleFunc("GET "+BasePath+"/api/internet-console", c.adminOnly(c.internetStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/internet-console", c.adminOnly(c.internetSave))
+	mux.HandleFunc("PUT "+BasePath+"/api/internet-console/domain", c.adminOnly(c.internetDomainSave))
 	mux.HandleFunc("POST "+BasePath+"/api/setup", c.setup)
 	mux.HandleFunc("POST "+BasePath+"/api/reset", c.reset)
 	mux.HandleFunc("POST "+BasePath+"/api/factory-reset", c.factoryReset)
