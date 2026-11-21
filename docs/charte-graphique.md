@@ -18,7 +18,7 @@ Piste 5, « La maison » : une maison avec un π à l'intérieur, en framboise. 
 
 **L'or dans le logo** (choix du 2026-11-21) : le π est or (`#FFD700`) sur la maison aubergine ; sur fond sombre (`-sombre`), la maison est or et le π aubergine.
 
-Le nom « pi-appliance » est converti en tracés (dessiné avec Inter, licence OFL) : le logo ne dépend d'aucune police installée. « pi » en framboise et en gras, « -appliance » en or : or foncé `#B8860B` sur fond clair, or vif `#FFD700` sur fond sombre (2026-11-21 ; aubergine auparavant).
+Le nom « pi-appliance » est converti en tracés (dessiné avec Inter, licence OFL) : le logo ne dépend d'aucune police installée. « pi » en framboise et en gras, « -appliance » en aubergine.
 
 **Console** : la console `/pi-appliance` affiche le même logo framboise « La maison » que le site, copié dans `internal/console/web/` :
 
@@ -36,8 +36,7 @@ Le logo photo (une main tenant des framboises, [`docs/logo/photo/`](logo/photo/)
 | Framboise | `#C71F5D` | Couleur de marque : boutons, bandeau d'état, logo |
 | Framboise foncée | `#A8174E` | Liens, texte coloré |
 | Ombre framboise | `#7E0F39` | Ombre pleine sous les boutons framboise |
-| Or | `#FFD700` | Texte sur fond framboise, logo |
-| Or foncé | `#B8860B` | « -appliance » du logo sur fond clair |
+| Or | `#FFD700` | Texte sur fond framboise |
 | Rose clair | `#FCE4EC` | Boutons secondaires, fonds d'alerte |
 | Aubergine | `#33141F` | Texte, logo, bandeaux sombres |
 | Rose pâle | `#FFF5F7` | Fond des pages |
