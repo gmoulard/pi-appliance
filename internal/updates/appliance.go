@@ -25,6 +25,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 )
@@ -67,19 +68,118 @@ func (c *Checker) installable(release *Release) bool {
 	return archive && checksum
 }
 
+// Version : une version publiée, telle que pia update list la montre.
+type Version struct {
+	Version string `json:"version"`
+	// Preview : préversion (canal bêta seulement).
+	Preview bool `json:"preview"`
+	// Installable : l'archive de mise à jour est publiée et la console sait
+	// l'installer ici ; sinon, il faut flasher l'image de cette version.
+	Installable bool `json:"installable"`
+	// Current : la version en service.
+	Current bool `json:"current"`
+	// Newer : plus récente que la version en service.
+	Newer bool `json:"newer"`
+}
+
+// Versions rend les versions publiées récemment sur le canal choisi, la plus
+// récente en premier.
+func (c *Checker) Versions(ctx context.Context) ([]Version, error) {
+	releases, err := c.list(ctx)
+	if err != nil {
+		return nil, err
+	}
+	versions := []Version{}
+	for i := range releases {
+		release := &releases[i]
+		versions = append(versions, Version{
+			Version:     release.Tag,
+			Preview:     release.Preview(),
+			Installable: c.installable(release),
+			Current:     strings.TrimPrefix(release.Tag, "v") == strings.TrimPrefix(c.Version, "v"),
+			Newer:       Newer(c.Version, release.Tag),
+		})
+	}
+	return versions, nil
+}
+
+// list : versions publiées permises sur le canal, numérotées, la plus récente
+// en premier.
+func (c *Checker) list(ctx context.Context) ([]Release, error) {
+	lister, ok := c.Releases.(ReleaseLister)
+	if !ok {
+		return nil, Failure{Code: "unavailable", Message: "La liste des versions n'est pas disponible sur cette console."}
+	}
+	all, err := lister.List(ctx)
+	if err != nil {
+		c.logf("versions de pi-appliance : %v", err)
+		return nil, Failure{Code: "offline", Message: "Impossible de lire la liste des versions : le site de publication ne répond pas."}
+	}
+	channel := c.Channel()
+	var releases []Release
+	for _, release := range all {
+		if _, numbered := parseVersion(strings.TrimPrefix(release.Tag, "v")); numbered && release.Allowed(channel) {
+			releases = append(releases, release)
+		}
+	}
+	sort.SliceStable(releases, func(i, j int) bool { return Newer(releases[j].Tag, releases[i].Tag) })
+	return releases, nil
+}
+
 // InstallAppliance lance l'installation de la dernière version publiée : le
 // téléchargement se poursuit après la réponse et se suit dans Status
 // (appliance.download, puis system.upgrade).
 func (c *Checker) InstallAppliance(ctx context.Context) (string, error) {
 	c.mu.Lock()
 	release := c.release
-	busy := c.download != nil && c.download.State == "downloading"
 	c.mu.Unlock()
-	if busy {
-		return "", Failure{Code: "busy", Message: "La nouvelle version est déjà en cours de téléchargement."}
-	}
 	if release == nil || !release.Allowed(c.Channel()) || !Newer(c.Version, release.Tag) {
+		if c.downloading() {
+			return "", Failure{Code: "busy", Message: "La nouvelle version est déjà en cours de téléchargement."}
+		}
 		return "", Failure{Code: "nothing", Message: "pi-appliance est à jour."}
+	}
+	return c.start(ctx, release)
+}
+
+// InstallVersion lance l'installation d'une version publiée choisie
+// (« v0.1.6 » ou « 0.1.6 »), plus récente ou plus ancienne que la version en
+// service ; vide : la dernière version (InstallAppliance).
+func (c *Checker) InstallVersion(ctx context.Context, tag string) (string, error) {
+	if tag == "" {
+		return c.InstallAppliance(ctx)
+	}
+	if !strings.HasPrefix(tag, "v") {
+		tag = "v" + tag
+	}
+	if !versionPattern.MatchString(tag) {
+		return "", Failure{Code: "version", Message: "Numéro de version illisible : " + tag + "."}
+	}
+	if strings.TrimPrefix(tag, "v") == strings.TrimPrefix(c.Version, "v") {
+		return "", Failure{Code: "nothing", Message: "Cette version est déjà celle du Pi."}
+	}
+	releases, err := c.list(ctx)
+	if err != nil {
+		return "", err
+	}
+	for i := range releases {
+		if releases[i].Tag == tag {
+			return c.start(ctx, &releases[i])
+		}
+	}
+	return "", Failure{Code: "unknown", Message: "La version " + tag + " n'est pas publiée sur le canal " + c.Channel() + " (voir la liste des versions)."}
+}
+
+func (c *Checker) downloading() bool {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.download != nil && c.download.State == "downloading"
+}
+
+// start télécharge puis installe release, après la réponse.
+func (c *Checker) start(ctx context.Context, release *Release) (string, error) {
+	if c.downloading() {
+		return "", Failure{Code: "busy", Message: "La nouvelle version est déjà en cours de téléchargement."}
 	}
 	if !c.installable(release) {
 		return "", Failure{Code: "unavailable", Message: "Cette version ne s'installe pas depuis la console : il faut flasher la nouvelle image."}

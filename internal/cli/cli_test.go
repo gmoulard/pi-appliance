@@ -47,8 +47,10 @@ type fakePi struct {
 	answers  map[string]string
 	failures map[string]bool
 	requests []string
-	server   *httptest.Server
-	env      Env
+	// routes : réponses en plus de la fausse console (« GET updates »…).
+	routes map[string]func(w http.ResponseWriter, body []byte)
+	server *httptest.Server
+	env    Env
 }
 
 func newFakePi(t *testing.T, input string) *fakePi {
@@ -117,7 +119,12 @@ func (pi *fakePi) console(w http.ResponseWriter, r *http.Request) {
 	body, _ := io.ReadAll(r.Body)
 	pi.mu.Lock()
 	pi.requests = append(pi.requests, r.Method+" "+r.URL.RequestURI()+" "+string(body))
+	route := pi.routes[r.Method+" "+path]
 	pi.mu.Unlock()
+	if route != nil {
+		route(w, body)
+		return
+	}
 	switch r.Method + " " + path {
 	case "GET catalog":
 		io.WriteString(w, `{"apps": [{"id": "portainer", "name": "Portainer", "description": "Gère Docker. Pour les personnes à l'aise.", "subdomain": "portainer", "access": "admins"},

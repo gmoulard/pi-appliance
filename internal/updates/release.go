@@ -81,6 +81,12 @@ type Releases interface {
 	Latest(ctx context.Context, channel string) (*Release, error)
 }
 
+// ReleaseLister donne aussi les versions publiées récemment, la plus récente
+// en premier (pia update list, installation d'une version choisie).
+type ReleaseLister interface {
+	List(ctx context.Context) ([]Release, error)
+}
+
 // GitHub lit la dernière version publiée d'un dépôt GitHub, sans jeton : 60
 // demandes par heure suffisent largement à une recherche par jour. Canal
 // stable : releases/latest (ni brouillon ni préversion). Canal bêta : la plus
@@ -130,6 +136,16 @@ func (g GitHub) Latest(ctx context.Context, channel string) (*Release, error) {
 		return nil, nil
 	}
 	return &release, nil
+}
+
+// List rend les 30 dernières versions publiées (brouillons compris : l'appelant
+// les écarte avec Allowed), telles que GitHub les donne.
+func (g GitHub) List(ctx context.Context) ([]Release, error) {
+	var releases []Release
+	if _, err := g.get(ctx, "/releases?per_page=30", &releases); err != nil {
+		return nil, err
+	}
+	return releases, nil
 }
 
 // get lit une réponse JSON de l'API GitHub du dépôt ; faux sans erreur pour

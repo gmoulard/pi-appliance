@@ -126,7 +126,8 @@ var aliases = map[string]string{
 	"list": "services", "install": "installer", "uninstall": "desinstaller",
 	"désinstaller": "desinstaller", "remove": "desinstaller", "start": "demarrer",
 	"démarrer": "demarrer", "stop": "arreter", "arrêter": "arreter", "restart": "redemarrer",
-	"redémarrer": "redemarrer",
+	"redémarrer": "redemarrer", "mise-a-jour": "update", "mise-à-jour": "update",
+	"mettre-a-jour": "update", "mettre-à-jour": "update", "upgrade": "update",
 }
 
 // usageError : mauvaise utilisation ; l'aide de la commande suit le message.
@@ -155,6 +156,7 @@ func Run(args []string, env Env) int {
 		"arreter":      func(env Env, args []string) error { return control(env, args, "stop") },
 		"redemarrer":   func(env Env, args []string) error { return control(env, args, "restart") },
 		"ssh":          sshCommand,
+		"update":       updateCommand,
 	}
 	run, ok := commands[command]
 	if !ok {
@@ -192,6 +194,10 @@ const help = `pia : ligne de commande du Pi (la console reste le moyen le plus s
   pia desinstaller <service> [--effacer-donnees] [--oui]
                                   données gardées sauf --effacer-donnees
   pia demarrer|arreter|redemarrer <service>
+
+  pia update [--oui]              installer la dernière version de pi-appliance
+  pia update list                 versions publiées, celle du Pi signalée
+  pia update <version> [--oui]    installer cette version (plus récente ou plus ancienne)
 
   pia ssh [etat]                  SSH en marche ? mots de passe ? clés ?
   pia ssh activer|desactiver [--oui]

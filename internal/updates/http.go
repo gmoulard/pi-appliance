@@ -18,6 +18,7 @@ package updates
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 )
@@ -28,7 +29,9 @@ import (
 //	GET  prefix          état des mises à jour (Status)
 //	POST prefix/check    nouvelle recherche, sans l'attendre
 //	POST prefix/system   installation des correctifs du système
-//	POST prefix/appliance installation de la dernière version de pi-appliance
+//	POST prefix/appliance installation de la dernière version de pi-appliance,
+//	                      ou de {"version": "v0.1.6"} (plus récente ou plus ancienne)
+//	GET  prefix/versions versions publiées sur le canal (Version), la plus récente en premier
 //	PUT  prefix/channel  canal de version, {"channel": "stable"|"beta"}
 func (c *Checker) Routes(mux *http.ServeMux, prefix string, wrap func(http.HandlerFunc) http.HandlerFunc) {
 	mux.HandleFunc("GET "+prefix, wrap(c.serveStatus))
@@ -36,14 +39,38 @@ func (c *Checker) Routes(mux *http.ServeMux, prefix string, wrap func(http.Handl
 	mux.HandleFunc("POST "+prefix+"/check", wrap(c.serveCheck))
 	mux.HandleFunc("POST "+prefix+"/system", wrap(c.serveApply))
 	mux.HandleFunc("POST "+prefix+"/appliance", wrap(c.serveInstall))
+	mux.HandleFunc("GET "+prefix+"/versions", wrap(c.serveVersions))
+}
+
+func (c *Checker) serveVersions(w http.ResponseWriter, r *http.Request) {
+	versions, err := c.Versions(r.Context())
+	var failure Failure
+	switch {
+	case err == nil:
+		writeJSON(w, http.StatusOK, map[string]any{"current": c.Version, "channel": c.Channel(), "versions": versions})
+	case errors.As(err, &failure):
+		writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": failure.Message, "code": failure.Code})
+	default:
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "La liste des versions n'a pas pu être lue."})
+	}
 }
 
 func (c *Checker) serveInstall(w http.ResponseWriter, r *http.Request) {
-	version, err := c.InstallAppliance(r.Context())
+	// Sans corps (écran de la console) : la dernière version.
+	var body struct {
+		Version string `json:"version"`
+	}
+	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 1<<10)).Decode(&body); err != nil && !errors.Is(err, io.EOF) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Demande illisible."})
+		return
+	}
+	version, err := c.InstallVersion(r.Context(), body.Version)
 	var failure Failure
 	switch {
 	case err == nil:
 		writeJSON(w, http.StatusAccepted, map[string]string{"version": version})
+	case errors.As(err, &failure) && (failure.Code == "version" || failure.Code == "unknown"):
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": failure.Message, "code": failure.Code})
 	case errors.As(err, &failure):
 		writeJSON(w, http.StatusConflict, map[string]string{"error": failure.Message, "code": failure.Code})
 	default:

@@ -130,6 +130,9 @@ Pour les personnes à l'aise avec SSH, le Pi a une commande `pia` (nom long : `p
 ```sh
 pia aide                             # toutes les commandes
 pia version                          # version du socle : pi-appliance, système, Docker, Traefik
+pia update                           # installer la dernière version de pi-appliance
+pia update list                      # versions publiées, celle du Pi signalée
+pia update v0.1.6                    # installer cette version (plus récente ou plus ancienne)
 pia etat                             # la console répond-elle, état des services
 pia catalogue                        # applications installables
 pia catalogue nextcloud              # détail et paramètres d'une application

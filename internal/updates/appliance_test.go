@@ -24,6 +24,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 )
@@ -171,4 +172,102 @@ func TestGitHubAssets(t *testing.T) {
 	if asset, ok := release.Asset(ArchiveName("v1.1.0")); !ok || asset.Size != 42 || asset.URL != "https://github.com/x" {
 		t.Fatalf("fichier joint : %+v", release.Assets)
 	}
+}
+
+// fakeLister : faux GitHub qui donne aussi la liste des versions.
+type fakeLister struct {
+	fakeReleases
+	releases []Release
+	err      error
+}
+
+func (f fakeLister) List(context.Context) ([]Release, error) { return f.releases, f.err }
+
+func TestVersions(t *testing.T) {
+	release, client := publishedRelease(t, "")
+	checker, _ := applianceChecker(t, release, client, twoPackages)
+	checker.Releases = fakeLister{fakeReleases: fakeReleases{release: release}, releases: []Release{
+		{Tag: "v1.0.0"},
+		*release,
+		{Tag: "v1.2.0-beta.1", Assets: release.Assets},
+		{Tag: "v1.3.0", Draft: true},
+		{Tag: "nuit-1234"},
+		{Tag: "v0.9.0", Assets: release.Assets},
+	}}
+	versions, err := checker.Versions(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := ""
+	for _, v := range versions {
+		got += fmt.Sprintf("%s:%t:%t:%t ", v.Version, v.Installable, v.Current, v.Newer)
+	}
+	// Canal stable : ni préversion, ni brouillon, ni étiquette sans numéro.
+	// v0.9.0 n'est pas installable : son archive porte un autre nom.
+	if want := "v1.1.0:true:false:true v1.0.0:false:true:false v0.9.0:false:false:false "; got != want {
+		t.Fatalf("versions %q, attendu %q", got, want)
+	}
+	checker.Releases = fakeLister{err: errors.New("hors ligne")}
+	var failure Failure
+	if _, err := checker.Versions(context.Background()); !errors.As(err, &failure) || failure.Code != "offline" {
+		t.Fatalf("erreur %v", err)
+	}
+	checker.Releases = fakeReleases{}
+	if _, err := checker.Versions(context.Background()); !errors.As(err, &failure) || failure.Code != "unavailable" {
+		t.Fatalf("erreur %v", err)
+	}
+}
+
+func TestInstallVersion(t *testing.T) {
+	release, client := publishedRelease(t, "")
+	checker, script := applianceChecker(t, release, client, twoPackages)
+	// Version plus ancienne que la version en service : permise.
+	checker.Version = "v1.2.0"
+	checker.Releases = fakeLister{fakeReleases: fakeReleases{release: release}, releases: []Release{*release}}
+	cases := map[string]string{"v1.2.0": "nothing", "1.2.0": "nothing", "v9.9.9": "unknown", "v1;reboot": "version"}
+	for tag, code := range cases {
+		var failure Failure
+		if _, err := checker.InstallVersion(context.Background(), tag); !errors.As(err, &failure) || failure.Code != code {
+			t.Fatalf("%s : erreur %v, attendu %s", tag, err, code)
+		}
+	}
+	version, err := checker.InstallVersion(context.Background(), "1.1.0")
+	if err != nil || version != "v1.1.0" {
+		t.Fatalf("%q, %v", version, err)
+	}
+	if appliance := waitDownload(t, checker); appliance.Download != nil {
+		t.Fatalf("téléchargement : %+v", appliance.Download)
+	}
+	if !script.called("appliance " + filepath.Join(checker.DownloadDir, ArchiveName("v1.1.0")) + " v1.1.0") {
+		t.Fatalf("updates.sh non lancé : %v", script.calls)
+	}
+}
+
+func TestInstallHTTP(t *testing.T) {
+	release, client := publishedRelease(t, "")
+	checker, _ := applianceChecker(t, release, client, twoPackages)
+	checker.Releases = fakeLister{fakeReleases: fakeReleases{release: release}, releases: []Release{*release}}
+	mux := http.NewServeMux()
+	checker.Routes(mux, "/api/updates", func(h http.HandlerFunc) http.HandlerFunc { return h })
+	server := httptest.NewServer(mux)
+	defer server.Close()
+	response, err := http.Get(server.URL + "/api/updates/versions")
+	if err != nil || response.StatusCode != http.StatusOK {
+		t.Fatalf("versions : %v %v", response, err)
+	}
+	response.Body.Close()
+	for body, status := range map[string]int{`{"version": "v9.9.9"}`: http.StatusBadRequest, `{`: http.StatusBadRequest} {
+		response, err := http.Post(server.URL+"/api/updates/appliance", "application/json", strings.NewReader(body))
+		if err != nil || response.StatusCode != status {
+			t.Fatalf("%s : %v %v", body, response, err)
+		}
+		response.Body.Close()
+	}
+	// Sans corps, comme l'écran de la console : la dernière version.
+	response, err = http.Post(server.URL+"/api/updates/appliance", "", nil)
+	if err != nil || response.StatusCode != http.StatusAccepted {
+		t.Fatalf("installation : %v %v", response, err)
+	}
+	response.Body.Close()
+	waitDownload(t, checker)
 }
