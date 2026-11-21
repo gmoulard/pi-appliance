@@ -103,7 +103,7 @@ p { margin: 0; }
 .pill {
   justify-self: start;
   border-radius: 999px;
-  background: var(--gold);
+  background: #ffffff;
   padding: 0.375rem 0.75rem;
   font-size: 0.875rem;
   font-weight: 700;
@@ -274,7 +274,7 @@ footer { border-top: 2px solid var(--line); padding-top: 1.5rem; padding-bottom:
 .prose code {
   font-family: var(--mono);
   font-size: 0.875em;
-  background: var(--gold);
+  background: var(--brand-pale);
   color: var(--brand-dark);
   border-radius: 0.375rem;
   padding: 0.1em 0.35em;
