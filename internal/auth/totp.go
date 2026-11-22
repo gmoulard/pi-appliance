@@ -33,7 +33,8 @@ import (
 
 // Double authentification (spécification 8.1, 8.3) : codes TOTP à 6 chiffres
 // toutes les 30 secondes (RFC 6238, bibliothèque github.com/pquerna/otp, lue par
-// toutes les applications d'authentification), et 10 codes de secours à usage unique.
+// toutes les applications d'authentification), et 10 codes de secours à usage
+// unique, communs avec le code par e-mail (emailcode.go).
 
 const (
 	totpIssuer    = "pi-appliance"
@@ -114,14 +115,16 @@ func (s *Store) ConfirmTOTP(name, code string) ([]string, error) {
 	}
 	codes, hashes := recoveryCodes()
 	account.TOTPSecret, account.TOTPPending, account.TOTPLastStep, account.RecoveryHashes = account.TOTPPending, "", step, hashes
+	account.TwoFactorOffered = true
 	if err := s.put(account); err != nil {
 		return nil, err
 	}
 	return codes, nil
 }
 
-// DisableTOTP désactive la double authentification de son propre compte, après
-// vérification du mot de passe ; refusé si l'administrateur l'exige.
+// DisableTOTP désactive l'application d'authentification de son propre compte,
+// après vérification du mot de passe ; refusé si l'administrateur exige la
+// double authentification et que le code par e-mail n'est pas actif.
 func (s *Store) DisableTOTP(name, password string) error {
 	key := []string{"account:" + name}
 	s.mu.Lock()
@@ -146,14 +149,19 @@ func (s *Store) DisableTOTP(name, password string) error {
 	if !ok {
 		return ErrNotFound
 	}
-	if account.TOTPRequired {
+	if account.TOTPRequired && !account.emailFactor() {
 		return ErrTOTPRequired
 	}
-	return s.put(withoutTOTP(account))
+	account = withoutTOTP(account)
+	if !account.HasTwoFactor() {
+		account.RecoveryHashes = nil
+	}
+	return s.put(account)
 }
 
 // ResetTOTP : un administrateur retire la double authentification d'un compte
-// (téléphone perdu et codes de secours égarés) ; elle sera à réactiver.
+// (téléphone perdu ou boîte e-mail perdue, et codes de secours égarés) : les
+// deux méthodes et les codes de secours ; elle sera à réactiver.
 func (s *Store) ResetTOTP(name string) (Account, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -162,21 +170,27 @@ func (s *Store) ResetTOTP(name string) (Account, error) {
 		return Account{}, ErrNotFound
 	}
 	account = withoutTOTP(account)
+	account.EmailCode, account.RecoveryHashes = false, nil
+	delete(s.emailCodes, codeKeyOf(CodeLogin, name))
 	return account, s.put(account)
 }
 
 func withoutTOTP(account Account) Account {
-	account.TOTPSecret, account.TOTPPending, account.TOTPLastStep, account.RecoveryHashes = "", "", 0, nil
+	account.TOTPSecret, account.TOTPPending, account.TOTPLastStep = "", "", 0
 	return account
 }
 
-// checkSecondFactor vérifie un code TOTP (6 chiffres) ou un code de secours, et
-// l'use : un code TOTP ne resert pas, un code de secours est effacé. Verrou tenu.
+// checkSecondFactor vérifie un code TOTP (6 chiffres), un code reçu par e-mail
+// ou un code de secours, et l'use : un code TOTP ne resert pas, un code par
+// e-mail ou de secours est effacé. Verrou tenu.
 func (s *Store) checkSecondFactor(name, code string, now time.Time) (bool, error) {
 	account := s.accounts[name]
 	if step, ok := totpStep(account.TOTPSecret, code, now, account.TOTPLastStep); ok {
 		account.TOTPLastStep = step
 		return true, s.put(account)
+	}
+	if account.emailFactor() && s.useCode(CodeLogin, name, code, now) {
+		return true, nil
 	}
 	hash := recoveryHash(code)
 	if hash == "" {

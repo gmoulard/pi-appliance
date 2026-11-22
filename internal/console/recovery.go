@@ -57,7 +57,8 @@ func (c *console) forgotPassword(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	if c.Mailer == nil {
+	mailer := c.mailer()
+	if mailer == nil {
 		writeError(w, http.StatusServiceUnavailable, "La récupération par e-mail n'est pas disponible sur ce Pi. Administrateur : le guide explique comment changer le mot de passe avec le fichier reset. Autre compte : demandez un nouveau lien à l'administrateur.")
 		return
 	}
@@ -76,7 +77,7 @@ func (c *console) forgotPassword(w http.ResponseWriter, r *http.Request) {
 		account, url := link.Account.Public(), base+BasePath+"/#reset="+link.Token
 		sendAsync(func() {
 			// NE PAS journaliser le lien ni l'adresse e-mail.
-			if err := c.Mailer.PasswordReset(account, url, lang); err != nil {
+			if err := mailer.PasswordReset(account, url, lang); err != nil {
 				log.Printf("mot de passe oublié, compte %s : e-mail non envoyé : %v", account.Name, err)
 			}
 		})
@@ -113,7 +114,7 @@ func (c *console) useResetLink(w http.ResponseWriter, r *http.Request) {
 	}
 	// Double authentification activée : connexion normale ensuite, avec le
 	// code ; pas de session ouverte ici.
-	if account.TOTPSecret != "" {
+	if account.HasTwoFactor() {
 		writeJSON(w, http.StatusOK, account.Public())
 		return
 	}

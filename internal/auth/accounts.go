@@ -32,8 +32,9 @@ import (
 // InvitationLifetime : durée de validité d'un lien d'invitation.
 const InvitationLifetime = 7 * 24 * time.Hour
 
-// Mailer envoie par e-mail, par le service d'envoi du projet (internal/mail,
-// spécification 10.2), le lien d'invitation et le lien « mot de passe oublié ».
+// Mailer envoie par e-mail le lien d'invitation et le lien « mot de passe
+// oublié » : par le serveur SMTP réglé sur le Pi (mail.SMTP), sinon par le
+// service d'envoi du projet (mail.Client, spécification 10.2).
 // Si l'invitation ne part pas, la console montre le lien à l'administrateur,
 // qui le transmet lui-même. lang : langue de la console de qui fait la demande.
 type Mailer interface {
@@ -66,6 +67,12 @@ func (s *Store) Get(name string) (Account, error) {
 
 // Create crée un compte sans mot de passe et renvoie le jeton de son invitation.
 func (s *Store) Create(name, email string, role Role, expires *time.Time) (Account, string, error) {
+	return s.CreateAccount(name, email, role, expires, false)
+}
+
+// CreateAccount : comme Create ; totpRequired exige la double authentification
+// dès la première connexion, enregistré avec le compte (pas en deux temps).
+func (s *Store) CreateAccount(name, email string, role Role, expires *time.Time, totpRequired bool) (Account, string, error) {
 	name = strings.ToLower(strings.TrimSpace(name))
 	if !namePattern.MatchString(name) {
 		return Account{}, "", fmt.Errorf("%w : l'identifiant doit faire 1 à 32 caractères : lettres minuscules, chiffres, point, tiret ou trait bas", ErrInvalid)
@@ -88,6 +95,7 @@ func (s *Store) Create(name, email string, role Role, expires *time.Time) (Accou
 	account := Account{
 		Name: name, Email: email, Role: role, CreatedAt: now, ExpiresAt: expires,
 		InviteHash: tokenHash(token), InviteExpires: now.Add(InvitationLifetime),
+		TOTPRequired: totpRequired,
 	}
 	if err := s.put(account); err != nil {
 		return Account{}, "", err

@@ -16,14 +16,17 @@ pi-appliance, ce sont trois parties qui portent le même nom :
    - [Ce qui se passe au premier démarrage](#premier-demarrage)
    - [Retrouver la console sur le réseau de la maison](#retrouver-la-console)
    - [Retrouver son Pi sur son téléphone : l'application mobile](#application-mobile)
-4. [Administrer le Pi depuis internet](#console-sur-internet)
-5. [Ligne de commande du Pi (SSH)](#ligne-de-commande)
-6. [Mot de passe oublié : le lien par e-mail](#mot-de-passe-oublie), ou [le fichier reset](#fichier-reset)
-7. [Remettre le Pi à zéro](#remise-a-zero)
-8. [Diagnostic du Pi sans écran](#diagnostic)
-9. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
-10. [Lancer la console depuis les sources](#depuis-les-sources)
-11. [Pour aller plus loin](#pour-aller-plus-loin)
+4. [Envoi des e-mails et double authentification](#envoi-des-e-mails)
+   - [Régler l'envoi des e-mails](#envoi-des-e-mails)
+   - [Protéger son compte : la double authentification](#double-authentification)
+5. [Administrer le Pi depuis internet](#console-sur-internet)
+6. [Ligne de commande du Pi (SSH)](#ligne-de-commande)
+7. [Mot de passe oublié : le lien par e-mail](#mot-de-passe-oublie), ou [le fichier reset](#fichier-reset)
+8. [Remettre le Pi à zéro](#remise-a-zero)
+9. [Diagnostic du Pi sans écran](#diagnostic)
+10. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
+11. [Lancer la console depuis les sources](#depuis-les-sources)
+12. [Pour aller plus loin](#pour-aller-plus-loin)
 
 ## Ce que contient cette version {#contenu}
 
@@ -35,6 +38,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 - La gestion d'un disque USB pour les données des services.
 - Les sauvegardes chiffrées sur un second disque USB, chaque nuit et à la demande, et la restauration d'un service à une date choisie (écran « Sauvegardes » dans « Mon Pi »), pas encore essayées sur un vrai Pi.
 - Un code à scanner avec l'[application mobile](#application-mobile), dans « Mon Pi », pour retrouver le Pi et ses services sur le téléphone.
+- L'[envoi des e-mails](#envoi-des-e-mails) par votre propre boîte e-mail (Gmail, OVH, Free, Orange…), et la [double authentification](#double-authentification) par un code reçu par e-mail ou par une application du téléphone, proposée à chaque nouveau compte ; pas encore essayés sur un vrai Pi.
 
 Ces fonctions sont présentes dans le code, mais restent à valider sur du matériel réel. La liste des essais restants est dans la page [Avancement](TODO.html).
 
@@ -86,7 +90,7 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 2. **Démarrage** : au premier démarrage, le Pi agrandit sa partition, se donne son nom `pi-appliance-XXXX` et crée ses clés ; comptez quelques minutes.
 3. **Wi-Fi de configuration** : le Pi ouvre le Wi-Fi `pi-appliance-XXXX`, sans mot de passe, pendant 24 heures au plus. Il ne sert qu'à configurer le Pi : il ne donne accès ni à internet ni à votre réseau.
 4. **Portail** : une fois connecté à ce Wi-Fi, le téléphone ouvre souvent le portail tout seul ; sinon, ouvrez `https://10.42.0.1/pi-appliance/`. Le navigateur affiche une alerte sur le certificat : vous pouvez continuer.
-5. **Compte** : choisissez un identifiant (un nom court, par exemple `marie` : ce n'est pas l'adresse e-mail), votre adresse e-mail et un mot de passe d'au moins 12 caractères. L'assistant « Mise en route » s'ouvre ensuite ; il revient à chaque connexion tant qu'il n'est pas terminé.
+5. **Compte** : choisissez un identifiant (un nom court, par exemple `marie` : ce n'est pas l'adresse e-mail), votre adresse e-mail et un mot de passe d'au moins 12 caractères. L'assistant « Mise en route » s'ouvre ensuite ; il revient à chaque connexion tant qu'il n'est pas terminé. Au-dessus, la carte « Protégez votre compte » propose la [double authentification](#double-authentification) : sans internet, choisissez l'application du téléphone ou **Plus tard** ; le code par e-mail viendra une fois l'[envoi des e-mails](#envoi-des-e-mails) réglé.
 6. **Wi-Fi de la maison** : choisissez le pays, puis votre Wi-Fi et son mot de passe (le bouton **Afficher** montre ce que vous tapez), ou le câble réseau s'il est branché sur la box. Avant de couper le Wi-Fi de configuration, la console affiche l'adresse où la retrouver ; avec le câble, elle donne aussi l'adresse IP du Pi.
 7. **Retrouver la console** : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison et ouvrez l'adresse indiquée (ci-dessous), puis reconnectez-vous : l'assistant reprend.
 8. **Vérification et redémarrage** : **Tester le Wi-Fi** vérifie la connexion sans rien couper ; si tout est en ordre, **Redémarrer le Pi** rappelle l'adresse du Pi, compte 10 secondes et redémarre le Pi, qui doit retrouver votre réseau tout seul. La mise en route est alors terminée ; vos services se choisissent ensuite dans la marketplace.
@@ -114,16 +118,40 @@ Scanner le code depuis l'application **appaire** aussi le téléphone à votre c
 
 Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, ses adresses et celles de ses services (et, pour le code, le code d'appairage de quelques minutes). Pour lire l'état du Pi, l'application demande au Pi son nom, sa version et la liste de ses services ; n'importe qui qui connaît l'adresse du Pi peut lire ces informations, rien d'autre.
 
+## Régler l'envoi des e-mails {#envoi-des-e-mails}
+
+Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « mot de passe oublié », codes de connexion), avec une boîte e-mail que vous avez déjà. Administrateur : dans la console, carte **Envoi des e-mails**, entrez les réglages d'envoi de votre boîte, touchez **Enregistrer**, puis **Envoyer un e-mail d'essai** : il arrive à votre adresse. S'il n'arrive pas, la console dit quoi vérifier ; regardez aussi dans les courriers indésirables.
+
+| Boîte e-mail | Serveur d'envoi | Sécurité et port | Identifiant et mot de passe |
+| --- | --- | --- | --- |
+| Gmail | `smtp.gmail.com` | STARTTLS, 587 | votre adresse Gmail et un **mot de passe d'application** (voir ci-dessous) |
+| OVH (adresse de votre domaine) | `ssl0.ovh.net` | TLS, 465 | l'adresse e-mail complète et son mot de passe |
+| Free | `smtp.free.fr` | TLS, 465 | votre adresse Free (sans `@free.fr` si elle est refusée) et le mot de passe de la boîte |
+| Orange | `smtp.orange.fr` | TLS, 465 | votre adresse Orange complète et le mot de passe de la boîte |
+
+**Gmail** refuse votre mot de passe habituel : dans votre compte Google, activez la validation en deux étapes, puis ouvrez **Sécurité**, **Mots de passe des applications**, créez-en un (par exemple « pi-appliance ») et collez dans la console les 16 lettres affichées. Vous pourrez le retirer à tout moment, sans changer votre mot de passe Google.
+
+Le mot de passe reste sur le Pi : la console ne le réaffiche jamais (laissez le champ vide pour le garder) et il n'est écrit dans aucun journal. Le mieux est une boîte e-mail réservée au Pi, ou un mot de passe d'application. Ce réglage se change seulement depuis la maison. **Ne plus envoyer d'e-mails** efface le réglage ; les comptes qui recevaient leur code de connexion par e-mail devront alors utiliser leur application ou un code de secours.
+
+## Protéger son compte : la double authentification {#double-authentification}
+
+Avec la double authentification, quelqu'un qui apprend votre mot de passe ne peut pas se connecter : à chaque connexion, la console demande en plus un code à 6 chiffres. Elle est facultative, mais proposée à chaque nouveau compte (carte « Protégez votre compte ») ; l'administrateur peut l'exiger pour un compte, qui ne peut alors rien ouvrir d'autre que « Mon compte » avant de l'avoir activée. Deux façons de recevoir le code, dans « Mon compte », seules ou ensemble :
+
+- **Code par e-mail** (le plus simple, quand l'envoi des e-mails est réglé) : **Vérifier mon adresse e-mail**, puis tapez le code reçu. Votre adresse est alors vérifiée, et à chaque connexion la console vous envoie un code, valable 10 minutes et une seule fois. Pas reçu ? **Renvoyer le code** après une minute.
+- **Application d'authentification** (Aegis, Google Authenticator, Microsoft Authenticator…) : **Activer la double authentification**, photographiez le QR code, puis tapez le code affiché. Elle marche même sans e-mail, et protège aussi si quelqu'un prend votre boîte e-mail.
+
+Si les deux sont actives, la console demande le code de l'application et propose **Recevoir un code par e-mail**. À la première activation, la console affiche **10 codes de secours** : notez-les et gardez-les en lieu sûr ; chacun permet une connexion sans téléphone ni e-mail. Téléphone ou boîte e-mail perdus, et codes de secours égarés : un administrateur touche **Retirer la double authentification** sur votre compte (ou `pia user 2fa-off <compte>`), puis vous la réactivez.
+
 ## Administrer le Pi depuis internet {#console-sur-internet}
 
 La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir :
 
-1. Conseillé : à la maison, dans « Mon compte », activez la **double authentification**. Ce n'est pas obligatoire, mais depuis internet n'importe qui peut essayer de deviner votre mot de passe ; avec elle, il faut aussi le code de votre téléphone.
+1. Conseillé : à la maison, dans « Mon compte », activez la [double authentification](#double-authentification) (code par e-mail ou application). Ce n'est pas obligatoire, mais depuis internet n'importe qui peut essayer de deviner votre mot de passe ; avec elle, il faut aussi un code.
 2. Donnez une adresse internet au Pi, dans « Adresse sur internet » : DuckDNS, puis votre adresse pi-appliance.com. Si vous avez votre propre nom de domaine, vous pouvez aussi, chez votre fournisseur, faire pointer un de ses noms vers votre box (par exemple `maison.exemple.fr`), puis le taper dans la carte « Console sur internet », champ « Votre adresse personnelle », et toucher **Enregistrer l'adresse**. La carte affiche l'entrée à créer chez votre fournisseur : de préférence un alias (**CNAME**) vers votre nom DuckDNS ou votre adresse pi-appliance.com, par exemple `maison.exemple.fr. CNAME monpi.duckdns.org.`, qui suit l'adresse de votre box sans mot de passe de votre fournisseur sur le Pi. Choisissez un sous-domaine (`maison.exemple.fr`) plutôt que le domaine seul (`exemple.fr`), où un alias ne peut pas être créé. La console refuse un nom qui n'existe pas encore sur internet : attendez quelques minutes après le changement chez le fournisseur.
 3. Dans votre box, faites suivre les ports **80** et **443** vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.
 4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`, ou `https://maison.exemple.fr/pi-appliance/` avec votre adresse personnelle.
 
-Depuis internet, la console demande votre mot de passe, puis le code de votre application d'authentification si vous avez activé la double authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
+Depuis internet, la console demande votre mot de passe, puis le code reçu par e-mail ou celui de votre application si vous avez activé la double authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 
 ## Ligne de commande du Pi (SSH) {#ligne-de-commande}
 
@@ -148,7 +176,7 @@ pia user add paul paul@exemple.fr    # nouveau compte : un lien pour choisir son
 pia user add ines ines@exemple.fr --role guest --until 2026-12-31
 pia user edit paul --role admin      # aussi --until, --require-2fa yes|no
 pia user reset paul                  # nouveau lien de mot de passe (oublié, invitation expirée)
-pia user 2fa-off paul                # retirer la double authentification (téléphone perdu)
+pia user 2fa-off paul                # retirer la double authentification (téléphone ou boîte e-mail perdus)
 pia user delete paul
 pia ssh                              # SSH : en marche ? mots de passe ? clés ?
 pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
@@ -159,7 +187,7 @@ Inutile de taper `sudo` : quand une commande a besoin des droits d'administrateu
 
 ## Mot de passe oublié : le lien par e-mail {#mot-de-passe-oublie}
 
-Sur l'écran de connexion, touchez **Mot de passe oublié ?**, tapez votre identifiant ou l'adresse e-mail de votre compte, puis **Recevoir le lien par e-mail**. Ouvrez le lien reçu dans l'heure et choisissez un nouveau mot de passe ; le lien ne sert qu'une fois. Votre ancien mot de passe reste valable tant que vous n'en avez pas choisi un nouveau, et si la double authentification est activée, le code vous est toujours demandé. Rien reçu après quelques minutes ? Regardez dans les courriers indésirables. Sans e-mail (Pi sans internet, adresse perdue), utilisez le fichier `reset` ci-dessous pour le compte administrateur ; pour un autre compte, l'administrateur donne un nouveau lien.
+Sur l'écran de connexion, touchez **Mot de passe oublié ?**, tapez votre identifiant ou l'adresse e-mail de votre compte, puis **Recevoir le lien par e-mail**. Ouvrez le lien reçu dans l'heure et choisissez un nouveau mot de passe ; le lien ne sert qu'une fois. Votre ancien mot de passe reste valable tant que vous n'en avez pas choisi un nouveau, et si la double authentification est activée, le code (par e-mail ou de l'application) vous est toujours demandé. Rien reçu après quelques minutes ? Regardez dans les courriers indésirables. Sans e-mail (Pi sans internet, adresse perdue), utilisez le fichier `reset` ci-dessous pour le compte administrateur ; pour un autre compte, l'administrateur donne un nouveau lien.
 
 ## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
 

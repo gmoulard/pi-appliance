@@ -196,7 +196,7 @@ func TestRequiredTOTP(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !account.NeedsTOTPSetup() {
+	if !account.NeedsTwoFactorSetup() {
 		t.Fatal("double authentification exigée et pas activée")
 	}
 	if _, ok := store.Session(session); !ok {

@@ -41,7 +41,7 @@ func userPi(t *testing.T, input string) *fakePi {
 			var request map[string]any
 			json.Unmarshal(body, &request)
 			w.WriteHeader(http.StatusCreated)
-			json.NewEncoder(w).Encode(map[string]any{"account": map[string]any{"name": request["name"], "email": request["email"], "role": request["role"], "invited": true},
+			json.NewEncoder(w).Encode(map[string]any{"account": map[string]any{"name": request["name"], "email": request["email"], "role": request["role"], "invited": true, "totp_required": request["totp_required"]},
 				"link": "https://monpi.local/pi-appliance/#invite=abc"})
 		},
 		"PUT accounts/paul": func(w http.ResponseWriter, body []byte) {
@@ -105,12 +105,18 @@ func TestUserAdd(t *testing.T) {
 	if last := pi.lastRequest(); !strings.Contains(last, `"role":"user"`) || !strings.Contains(last, `"expires":null`) {
 		t.Fatalf("demande %q", last)
 	}
+	if !strings.Contains(pi.out.String(), "lui sera proposée à sa première connexion") {
+		t.Fatalf("proposition de la double authentification : %s", pi.out.String())
+	}
 	if code := pi.run("user", "add", "ines", "ines@example.org", "--role", "guest", "--until", "2026-12-31", "--require-2fa"); code != 0 {
 		t.Fatalf("invité : code %d : %s", code, pi.err.String())
 	}
 	want, _ := json.Marshal(time.Date(2027, 1, 1, 0, 0, 0, 0, time.Local))
 	if last := pi.lastRequest(); !strings.Contains(last, `"role":"guest"`) || !strings.Contains(last, `"expires":`+string(want)) || !strings.Contains(last, `"totp_required":true`) {
 		t.Fatalf("demande %q", last)
+	}
+	if !strings.Contains(pi.out.String(), "dès sa première connexion, la personne devra l'activer") {
+		t.Fatalf("exigence annoncée : %s", pi.out.String())
 	}
 	count := len(pi.requests)
 	for _, args := range [][]string{

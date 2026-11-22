@@ -44,6 +44,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <label id="passwordField">Mot de passe<input name="password" type="password" maxlength="256" required></label>
 <label id="confirmField">Mot de passe, encore une fois<input name="confirm" type="password" autocomplete="new-password" maxlength="256"></label>
 <label id="codeField" hidden>Code de vérification<input name="code" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" maxlength="16"></label>
+<button id="emailCodeButton" class="secondary" type="button" hidden>Recevoir un code par e-mail</button>
 <button id="authButton"></button>
 <button id="forgotButton" class="secondary" type="button" hidden>Mot de passe oublié ?</button>
 <button id="loginButton" class="secondary" type="button" hidden>Retour à la connexion</button>
@@ -52,12 +53,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <section id="factorySection" class="card" hidden>
 <h2>Remettre le Pi à zéro</h2>
 <p>Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.</p>
-<p><strong>Sera effacé :</strong> tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage DuckDNS.</p>
+<p><strong>Sera effacé :</strong> tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes, le réglage DuckDNS et celui de l'envoi des e-mails.</p>
 <p><strong>Sera gardé :</strong> le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.</p>
 <form id="factoryForm">
 <label class="check"><input name="delete_services" type="checkbox">Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré</label>
 <label id="factoryPassword">Votre mot de passe<input name="password" type="password" autocomplete="current-password" maxlength="256"></label>
 <label id="factoryCode">Code de vérification, si la double authentification est activée<input name="code" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" maxlength="16"></label>
+<button id="factoryEmailCode" class="secondary" type="button" hidden>Recevoir un code par e-mail</button>
 <label class="check"><input name="confirm" type="checkbox" required>J'ai compris ce qui sera effacé</label>
 <button>Remettre le Pi à zéro</button>
 </form>
@@ -82,6 +84,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p><a href="./">Revenir à la console</a></p>
 </section>
 <p id="emailReminder" class="empty" hidden></p>
+<section id="twoFactorOffer" class="card" hidden>
+<h2>Protégez votre compte</h2>
+<p id="twoFactorOfferHelp"></p>
+<div class="controls">
+<button id="offerEmail" type="button" hidden>Recevoir un code par e-mail à chaque connexion</button>
+<button id="offerApp" class="secondary" type="button">Utiliser une application d'authentification</button>
+<button id="offerLater" class="secondary" type="button">Plus tard</button>
+</div>
+</section>
 <section id="wizard" class="card" hidden>
 <h2>Mise en route</h2>
 <p>Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.</p>
@@ -290,6 +301,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </div>
 </div>
 </section>
+<section id="mailSection" data-kind="pi" data-theme="entretien" hidden>
+<h2>Envoi des e-mails</h2>
+<div class="card">
+<p>Le Pi envoie lui-même ses e-mails (invitations, mot de passe oublié, codes de connexion) avec une boîte e-mail que vous avez déjà : Gmail, OVH, Free, Orange… Entrez ses réglages d'envoi, puis envoyez-vous un e-mail d'essai.</p>
+<p id="mailState" class="state" aria-live="polite"></p>
+<form id="mailForm">
+<label>Serveur d'envoi<input name="host" required autocapitalize="none" autocomplete="off" maxlength="253"></label>
+<label>Sécurité<select name="security">
+<option value="starttls">STARTTLS (port 587, le plus courant)</option>
+<option value="tls">TLS (port 465)</option>
+</select></label>
+<label>Port<input name="port" type="number" min="1" max="65535"></label>
+<label>Identifiant (souvent votre adresse e-mail)<input name="username" autocapitalize="none" autocomplete="off" maxlength="254"></label>
+<label>Mot de passe<input name="password" type="password" autocomplete="new-password" maxlength="256"></label>
+<label>Adresse d'expédition<input name="from" type="email" autocomplete="off" maxlength="254"></label>
+<div class="controls">
+<button>Enregistrer</button>
+<button id="mailTest" class="secondary" type="button" hidden>Envoyer un e-mail d'essai</button>
+<button id="mailForget" class="secondary" type="button" hidden>Ne plus envoyer d'e-mails</button>
+</div>
+</form>
+<details>
+<summary>Aide : quels réglages pour ma boîte e-mail ?</summary>
+<p>Gmail : serveur smtp.gmail.com, STARTTLS, port 587, identifiant votre adresse Gmail. Le mot de passe habituel ne marche pas : activez la validation en deux étapes de votre compte Google, puis créez un « mot de passe d'application » (Compte Google, Sécurité, Mots de passe des applications) et collez-le ici.</p>
+<p>OVH (adresse de votre domaine) : serveur ssl0.ovh.net, TLS, port 465, identifiant votre adresse e-mail complète et son mot de passe.</p>
+<p>Free : serveur smtp.free.fr, TLS, port 465, identifiant votre adresse Free (sans @free.fr si elle est refusée) et le mot de passe de la boîte. Activez d'abord l'envoi depuis un autre logiciel dans votre espace abonné Free si on vous le demande.</p>
+<p>Orange : serveur smtp.orange.fr, TLS, port 465, identifiant votre adresse Orange complète et le mot de passe de la boîte.</p>
+<p>Le mot de passe reste sur le Pi : il n'est jamais réaffiché ni écrit dans les journaux. Conseillé : une boîte e-mail réservée au Pi, ou un mot de passe d'application que vous pourrez retirer.</p>
+</details>
+</div>
+</section>
 <section id="statsSection" data-kind="pi" data-theme="etat" hidden>
 <h2>Statistiques anonymes</h2>
 <div class="card">
@@ -333,7 +375,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </section>
 <section id="accountSection" data-kind="pi" data-theme="comptes" hidden>
 <h2>Mon compte</h2>
-<div class="card">
+<div id="emailCodeCard" class="card">
+<h3>Code par e-mail</h3>
+<p id="emailCodeState" class="state"></p>
+<div class="controls"><button id="emailCodeStart" type="button" hidden>Recevoir un code par e-mail</button></div>
+<form id="emailCodeConfirm" hidden>
+<label>Code reçu par e-mail<input name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" required></label>
+<button>Valider</button>
+</form>
+<form id="emailCodeDisable" hidden>
+<label>Mot de passe<input name="password" type="password" autocomplete="current-password" maxlength="256" required></label>
+<button class="secondary">Ne plus demander de code par e-mail</button>
+</form>
+</div>
+<div id="totpCard" class="card">
+<h3>Application d'authentification</h3>
 <p id="totpState" class="state"></p>
 <div id="totpSetup" hidden>
 <p>Ouvrez votre application d'authentification (par exemple Aegis, Google Authenticator ou Microsoft Authenticator) et photographiez ce QR code.</p>

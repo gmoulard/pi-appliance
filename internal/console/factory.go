@@ -62,6 +62,10 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusForbidden, "Seul un administrateur peut remettre le Pi à zéro.")
 			return
 		}
+		if account.NeedsTwoFactorSetup() {
+			writeError(w, http.StatusForbidden, "Activez d'abord la double authentification, exigée pour ce compte.")
+			return
+		}
 		token, _, err := c.Accounts.Login(account.Name, request.Password, request.Code, clientIP(r))
 		if err != nil {
 			writeAuthError(w, err)
@@ -90,6 +94,11 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 	if c.DuckDNS != nil {
 		if err := c.DuckDNS.Forget(); err != nil {
 			result.Problems = append(result.Problems, "Le réglage DuckDNS n'a pas pu être effacé.")
+		}
+	}
+	if c.SMTP != nil {
+		if err := c.SMTP.Forget(); err != nil {
+			result.Problems = append(result.Problems, "Le réglage de l'envoi des e-mails n'a pas pu être effacé.")
 		}
 	}
 	for _, file := range []string{c.WizardFile, c.ACMEEmailFile} {

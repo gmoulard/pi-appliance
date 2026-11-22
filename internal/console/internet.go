@@ -68,7 +68,8 @@ type InternetStatus struct {
 	Hosts []string `json:"hosts"`
 	// URL : adresse de la console sur internet, vide sans adresse.
 	URL string `json:"url"`
-	// TOTP : le compte connecté a activé la double authentification.
+	// TOTP : le compte connecté a activé la double authentification (code par
+	// e-mail ou application).
 	TOTP bool `json:"totp"`
 	// Internet : cette demande vient d'internet.
 	Internet bool `json:"internet"`
@@ -220,6 +221,9 @@ var homeOnlyPaths = []string{
 	"POST " + BasePath + "/appareil/retirer",
 	"PUT " + BasePath + "/api/internet-console",
 	"PUT " + BasePath + "/api/internet-console/domain",
+	// Le serveur d'envoi reçoit tous les codes de connexion par e-mail.
+	"PUT " + BasePath + "/api/mail",
+	"DELETE " + BasePath + "/api/mail",
 }
 
 // NE PAS relâcher : console fermée sur internet par défaut (spécification 8.3).
@@ -248,7 +252,7 @@ func (c *console) closingFromInternet(r *http.Request) bool {
 
 func (c *console) internetStatus(w http.ResponseWriter, r *http.Request) {
 	account, _ := c.account(r)
-	writeJSON(w, http.StatusOK, c.internetState(r, account.TOTPSecret != ""))
+	writeJSON(w, http.StatusOK, c.internetState(r, account.HasTwoFactor()))
 }
 
 func (c *console) internetState(r *http.Request, totp bool) InternetStatus {
@@ -306,7 +310,7 @@ func (c *console) internetSave(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "Le réglage est enregistré, mais Traefik n'a pas pu être mis à jour.")
 		return
 	}
-	writeJSON(w, http.StatusOK, c.internetState(r, account.TOTPSecret != ""))
+	writeJSON(w, http.StatusOK, c.internetState(r, account.HasTwoFactor()))
 }
 
 // saveInternetSettings écrit le réglage (droits 600), en remplaçant le fichier d'un coup.
@@ -385,5 +389,5 @@ func (c *console) internetDomainSave(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "Le réglage est enregistré, mais Traefik n'a pas pu être mis à jour.")
 		return
 	}
-	writeJSON(w, http.StatusOK, c.internetState(r, account.TOTPSecret != ""))
+	writeJSON(w, http.StatusOK, c.internetState(r, account.HasTwoFactor()))
 }
