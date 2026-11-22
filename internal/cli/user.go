@@ -39,7 +39,12 @@ type userAccount struct {
 	TOTP          bool       `json:"totp"`
 	TOTPRequired  bool       `json:"totp_required"`
 	RecoveryCodes int        `json:"recovery_codes"`
+	// EmailCode : code de connexion envoyé par e-mail (double authentification).
+	EmailCode bool `json:"email_code"`
 }
+
+// twoFactor : au moins une méthode de double authentification active.
+func (a userAccount) twoFactor() bool { return a.TOTP || a.EmailCode }
 
 type userDevice struct {
 	Name     string    `json:"name"`
@@ -79,7 +84,8 @@ const userHelp = `pia user : comptes de la console.
                   [--require-2fa yes|no]
   pia user reset <compte>         nouveau lien pour choisir un mot de passe (oublié ou invitation expirée)
   pia user 2fa-off <compte> [--yes]
-                                  retirer la double authentification (téléphone et codes perdus)
+                                  retirer la double authentification (code par e-mail et
+                                  application ; téléphone ou boîte e-mail et codes perdus)
   pia user delete <compte> [--yes]
 
 Rôles : admin (administrateur), user (utilisateur), guest (invité, avec --until :
@@ -155,7 +161,7 @@ func userShow(env Env, args []string) error {
 	fmt.Fprintf(table, "Rôle\t%s\n", roleName(account.Role))
 	fmt.Fprintf(table, "État\t%s\n", accountState(account))
 	fmt.Fprintf(table, "Double authentification\t%s\n", totpState(account))
-	if account.TOTP {
+	if account.twoFactor() {
 		fmt.Fprintf(table, "Codes de secours restants\t%d\n", account.RecoveryCodes)
 	}
 	if err := table.Flush(); err != nil {
@@ -214,6 +220,11 @@ func userAdd(env Env, args []string) error {
 	}
 	fmt.Fprintf(env.Out, "Compte %s créé (%s).\n", reply.Account.Name, roleName(reply.Account.Role))
 	printLink(env, reply, "choisir son mot de passe", "7 jours")
+	if reply.Account.TOTPRequired {
+		fmt.Fprintln(env.Out, "La double authentification est exigée : dès sa première connexion, la personne devra l'activer (code par e-mail ou application) avant d'ouvrir quoi que ce soit.")
+	} else {
+		fmt.Fprintln(env.Out, "La double authentification lui sera proposée à sa première connexion (facultative ; --require-2fa pour l'exiger).")
+	}
 	return nil
 }
 
@@ -298,11 +309,11 @@ func userTOTPOff(env Env, args []string) error {
 	if err != nil {
 		return err
 	}
-	if !current.TOTP {
+	if !current.twoFactor() {
 		fmt.Fprintf(env.Out, "%s n'a pas activé la double authentification : rien à retirer.\n", current.Name)
 		return nil
 	}
-	if !f.set["yes"] && !f.set["oui"] && !confirm(env, fmt.Sprintf("Retirer la double authentification de %s ? À faire seulement si son téléphone et ses codes de secours sont perdus.", name)) {
+	if !f.set["yes"] && !f.set["oui"] && !confirm(env, fmt.Sprintf("Retirer la double authentification de %s (code par e-mail et application) ? À faire seulement si son téléphone ou sa boîte e-mail, et ses codes de secours, sont perdus.", name)) {
 		return errors.New("Rien n'a été fait.")
 	}
 	var account userAccount
@@ -408,11 +419,18 @@ func accountState(account userAccount) string {
 }
 
 func totpState(account userAccount) string {
+	var methods []string
+	if account.EmailCode {
+		methods = append(methods, "code par e-mail")
+	}
+	if account.TOTP {
+		methods = append(methods, "application")
+	}
 	switch {
-	case account.TOTP && account.TOTPRequired:
-		return "activée (exigée)"
-	case account.TOTP:
-		return "activée"
+	case len(methods) > 0 && account.TOTPRequired:
+		return "activée (" + strings.Join(methods, " et ") + ", exigée)"
+	case len(methods) > 0:
+		return "activée (" + strings.Join(methods, " et ") + ")"
 	case account.TOTPRequired:
 		return "exigée, pas encore activée"
 	}

@@ -56,7 +56,7 @@ func (c *console) diagnosticAllowed(w http.ResponseWriter, r *http.Request) (byF
 		writeError(w, http.StatusUnauthorized, "Connectez-vous avec un compte administrateur, ou déposez le fichier diagnostic sur la carte SD, pour voir le diagnostic du Pi.")
 	case account.Role != auth.RoleAdmin:
 		writeError(w, http.StatusForbidden, "Seul un administrateur peut voir le diagnostic du Pi.")
-	case account.NeedsTOTPSetup():
+	case account.NeedsTwoFactorSetup():
 		writeError(w, http.StatusForbidden, "Activez d'abord la double authentification, exigée pour ce compte.")
 	default:
 		return false, true
@@ -135,7 +135,9 @@ func RescueHandler(console http.Handler) http.Handler {
 		"GET " + BasePath + "/api/health":          true,
 		"GET " + BasePath + "/api/session":         true,
 		"POST " + BasePath + "/api/login":          true,
-		"POST " + BasePath + "/api/logout":         true,
+		// Code de connexion par e-mail (double authentification, spécification 8.1).
+		"POST " + BasePath + "/api/login/email-code": true,
+		"POST " + BasePath + "/api/logout":           true,
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		host, _, err := net.SplitHostPort(r.RemoteAddr)

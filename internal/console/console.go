@@ -40,6 +40,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/diagnostic"
+	"github.com/gmoulard/pi-appliance/internal/mail"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
@@ -79,6 +80,7 @@ type SetupRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Lang     string `json:"lang"`
 }
 
 // LoginRequest : Code, code de vérification ou code de secours quand la double
@@ -87,6 +89,8 @@ type LoginRequest struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 	Code     string `json:"code"`
+	// Lang : langue de la console, gardée pour les e-mails du compte.
+	Lang string `json:"lang"`
 }
 
 type ResetRequest struct {
@@ -141,6 +145,9 @@ type SessionState struct {
 	Internet bool `json:"internet"`
 	// RecoveryEmail : « mot de passe oublié » par e-mail possible sur ce Pi.
 	RecoveryEmail bool `json:"recovery_email"`
+	// EmailCodes : le Pi sait envoyer des codes par e-mail (SMTP réglé) :
+	// vérification de l'adresse et double authentification par e-mail.
+	EmailCodes bool `json:"email_codes"`
 }
 
 // Config rassemble ce dont la console a besoin.
@@ -187,8 +194,12 @@ type Config struct {
 	ACMEEmailFile string
 	// Mailer envoie les invitations et les liens « mot de passe oublié » ;
 	// nil : le lien d'invitation est montré à l'administrateur, et pas de
-	// récupération par e-mail (fichier reset seulement).
+	// récupération par e-mail (fichier reset seulement). Remplacé par SMTP
+	// quand l'envoi des e-mails est réglé sur le Pi.
 	Mailer auth.Mailer
+	// SMTP : envoi des e-mails par le serveur SMTP réglé dans la console
+	// (spécification 10.2) ; nil : réglage absent de la console.
+	SMTP *mail.SMTP
 	// DevicePublicKey : clé publique du Pi (device.pub), d'où vient son
 	// identifiant pour l'application mobile ; vide : pas d'identifiant.
 	DevicePublicKey string
@@ -268,6 +279,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
 	c.accountRoutes(mux)
+	c.mailRoutes(mux)
 	c.deviceRoutes(mux)
 	if c.Backups != nil {
 		c.Backups.Routes(mux, BasePath, c.adminOnly)
@@ -338,7 +350,7 @@ func (c *console) signedIn(next http.HandlerFunc) http.HandlerFunc {
 			writeError(w, http.StatusUnauthorized, "Connectez-vous pour continuer.")
 			return
 		}
-		if account.NeedsTOTPSetup() {
+		if account.NeedsTwoFactorSetup() {
 			writeError(w, http.StatusForbidden, "Activez d'abord la double authentification, exigée pour ce compte.")
 			return
 		}
@@ -358,7 +370,7 @@ func (c *console) adminOnly(next http.HandlerFunc) http.HandlerFunc {
 			writeError(w, http.StatusForbidden, "Seul un administrateur peut faire cela.")
 			return
 		}
-		if account.NeedsTOTPSetup() {
+		if account.NeedsTwoFactorSetup() {
 			writeError(w, http.StatusForbidden, "Activez d'abord la double authentification, exigée pour ce compte.")
 			return
 		}
@@ -367,7 +379,7 @@ func (c *console) adminOnly(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (c *console) session(w http.ResponseWriter, r *http.Request) {
-	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending(), Internet: fromInternet(r), RecoveryEmail: c.Mailer != nil}
+	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending(), Internet: fromInternet(r), RecoveryEmail: c.mailer() != nil, EmailCodes: c.codeMailer() != nil}
 	if account, ok := c.account(r); ok {
 		public := account.Public()
 		state.Account = &public
@@ -386,6 +398,7 @@ func (c *console) setup(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	c.Accounts.SetLanguage(account.Name, request.Lang)
 	if err := c.saveACMEEmail(account.Email); err != nil {
 		log.Printf("adresse de contact Let's Encrypt : %v", err)
 		writeError(w, http.StatusInternalServerError, "Le compte est créé, mais l'adresse de contact ACME n'a pas pu être enregistrée. Corrigez le problème puis reconnectez-vous.")
@@ -421,6 +434,7 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	c.Accounts.SetLanguage(account.Name, request.Lang)
 	if account.Role == auth.RoleAdmin {
 		if err := c.saveACMEEmail(account.Email); err != nil {
 			log.Printf("adresse de contact Let's Encrypt : %v", err)

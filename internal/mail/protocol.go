@@ -47,6 +47,12 @@ const (
 	KindReset Kind = "reset"
 	// KindInvite : lien d'invitation d'un nouveau compte (spécification 8.1), valable 7 jours.
 	KindInvite Kind = "invite"
+	// Messages envoyés seulement par le SMTP du Pi (smtp.go), pas par le service
+	// du projet : code de connexion (double authentification par e-mail),
+	// code de vérification de l'adresse, e-mail d'essai.
+	KindLoginCode  Kind = "login-code"
+	KindVerifyCode Kind = "verify-code"
+	KindTest       Kind = "test"
 )
 
 // Request : corps de POST /api/send.

@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -164,16 +165,12 @@ func (c *console) createAccount(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	account, token, err := c.Accounts.Create(request.Name, request.Email, request.Role, request.Expires)
+	// L'exigence de double authentification est enregistrée avec le compte : un
+	// compte créé ne peut jamais exister sans elle si elle est demandée.
+	account, token, err := c.Accounts.CreateAccount(request.Name, request.Email, request.Role, request.Expires, request.TOTPRequired)
 	if err != nil {
 		writeAuthError(w, err)
 		return
-	}
-	if request.TOTPRequired {
-		if account, err = c.Accounts.Update(account.Name, account.Role, account.ExpiresAt, true); err != nil {
-			writeAuthError(w, err)
-			return
-		}
 	}
 	writeJSON(w, http.StatusCreated, c.invitationReply(r, account, token))
 }
@@ -206,8 +203,8 @@ func (c *console) invitationReply(r *http.Request, account auth.Account, token s
 	}
 	link := base + BasePath + "/#invite=" + token
 	reply := InvitationReply{Account: account.Public()}
-	if c.Mailer != nil {
-		if err := c.Mailer.Invite(account.Public(), link, requestLanguage(r, "")); err == nil {
+	if mailer := c.mailer(); mailer != nil {
+		if err := mailer.Invite(account.Public(), link, requestLanguage(r, "")); err == nil {
 			reply.Sent = true
 			return reply
 		} else {
@@ -275,7 +272,7 @@ func (c *console) acceptInvitation(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
-	if account.TOTPSecret != "" {
+	if account.HasTwoFactor() {
 		// Nouveau mot de passe d'un compte déjà protégé : connexion normale, avec le code.
 		writeJSON(w, http.StatusOK, account.Public())
 		return
@@ -649,9 +646,20 @@ func clearForwardCookie(w http.ResponseWriter, r *http.Request) {
 func accountError(w http.ResponseWriter, err error) bool {
 	switch {
 	case errors.Is(err, auth.ErrCodeNeeded):
-		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": "Entrez le code de vérification affiché par votre application d'authentification.", "code_needed": true})
+		var needed auth.CodeNeededError
+		methods := []string{auth.MethodTOTP}
+		if errors.As(err, &needed) {
+			methods = needed.Methods
+		}
+		text := "Entrez le code de vérification affiché par votre application d'authentification."
+		if !slices.Contains(methods, auth.MethodTOTP) {
+			text = "Entrez le code de vérification envoyé à votre adresse e-mail."
+		} else if slices.Contains(methods, auth.MethodEmail) {
+			text = "Entrez le code de votre application d'authentification, ou recevez un code par e-mail."
+		}
+		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": text, "code_needed": true, "methods": methods})
 	case errors.Is(err, auth.ErrCode):
-		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": "Code de vérification incorrect : entrez le code affiché en ce moment, ou un code de secours.", "code_needed": true})
+		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": "Code de vérification incorrect : entrez le dernier code reçu ou affiché, ou un code de secours.", "code_needed": true})
 	case errors.Is(err, auth.ErrExpired):
 		writeError(w, http.StatusForbidden, "Ce compte invité a expiré : demandez à l'administrateur de le prolonger.")
 	case errors.Is(err, auth.ErrNotFound):

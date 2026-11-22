@@ -49,5 +49,7 @@ func (s *Store) FactoryReset() error {
 	s.reset = false
 	s.sessions = map[string]session{}
 	s.failures = map[string]failure{}
+	s.requests = map[string]failure{}
+	s.emailCodes = map[string]emailCode{}
 	return nil
 }

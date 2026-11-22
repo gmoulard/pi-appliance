@@ -159,6 +159,12 @@ func main() {
 	if *mailURL != "" {
 		mailer = &mail.Client{URL: *mailURL, Key: key}
 	}
+	// Envoi des e-mails par le serveur SMTP réglé dans la console (spécification
+	// 10.2) : préféré au service du projet dès qu'il est réglé.
+	smtpSender, err := mail.OpenSMTP(filepath.Join(*data, "smtp.json"))
+	if err != nil {
+		log.Fatal(err)
+	}
 	var address *addresses.Client
 	if *addressesURL != "" {
 		address, err = addresses.OpenClient(filepath.Join(*data, "address.json"), key)
@@ -247,6 +253,7 @@ func main() {
 		WizardFile:       filepath.Join(*data, "wizard-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
 		Mailer:           mailer,
+		SMTP:             smtpSender,
 		Diagnostic:       diag,
 		DiagnosticWindow: window,
 		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),

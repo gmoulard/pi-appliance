@@ -15,7 +15,8 @@
 
 // Package auth est le fournisseur d'identité intégré à la console : création du
 // compte administrateur au premier démarrage, comptes utilisateur et invité,
-// invitations, connexion, double authentification (TOTP, codes de secours),
+// invitations, connexion, double authentification (code par e-mail, TOTP,
+// codes de secours),
 // sessions de la console et sessions déléguées (*forward auth* de Traefik),
 // limitation des tentatives et réinitialisation par le fichier reset
 // (spécification 8.1, 8.3, 8.4, 8.5).
@@ -105,8 +106,18 @@ type Account struct {
 	TOTPPending    string   `json:"totp_pending,omitempty"`
 	TOTPLastStep   int64    `json:"totp_last_step,omitempty"`
 	RecoveryHashes []string `json:"recovery_hashes,omitempty"`
-	// TOTPRequired : l'administrateur exige la double authentification pour ce compte.
+	// TOTPRequired : l'administrateur exige la double authentification pour ce
+	// compte, par l'une ou l'autre méthode (code par e-mail ou application).
 	TOTPRequired bool `json:"totp_required,omitempty"`
+	// EmailCode : double authentification par un code envoyé à l'adresse e-mail,
+	// active seulement si l'adresse est vérifiée (emailcode.go).
+	EmailCode bool `json:"email_code,omitempty"`
+	// TwoFactorOffered : la double authentification a été proposée à la personne
+	// (elle l'a activée ou a choisi « Plus tard ») ; tant que ce n'est pas le
+	// cas, la console la propose (spécification 8.1).
+	TwoFactorOffered bool `json:"two_factor_offered,omitempty"`
+	// Lang : langue de la console à la dernière connexion, celle des e-mails.
+	Lang string `json:"lang,omitempty"`
 	// Mot de passe oublié : SHA-256 du lien envoyé par e-mail et sa fin (recovery.go).
 	ResetHash    string    `json:"reset_hash,omitempty"`
 	ResetExpires time.Time `json:"reset_expires,omitzero"`
@@ -123,6 +134,12 @@ type Public struct {
 	TOTP          bool       `json:"totp"`
 	TOTPRequired  bool       `json:"totp_required"`
 	RecoveryCodes int        `json:"recovery_codes"`
+	// EmailCode : double authentification par code envoyé par e-mail active.
+	EmailCode bool `json:"email_code"`
+	// TwoFactor : au moins une méthode de double authentification est active.
+	TwoFactor bool `json:"two_factor"`
+	// TwoFactorOffer : la console doit proposer la double authentification.
+	TwoFactorOffer bool `json:"two_factor_offer"`
 }
 
 func (a Account) Public() Public {
@@ -130,6 +147,8 @@ func (a Account) Public() Public {
 		Name: a.Name, Email: a.Email, EmailVerified: a.EmailVerified, Role: a.Role,
 		ExpiresAt: a.ExpiresAt, Invited: a.Hash == "", TOTP: a.TOTPSecret != "",
 		TOTPRequired: a.TOTPRequired, RecoveryCodes: len(a.RecoveryHashes),
+		EmailCode: a.emailFactor(), TwoFactor: a.HasTwoFactor(),
+		TwoFactorOffer: a.Hash != "" && !a.HasTwoFactor() && !a.TwoFactorOffered,
 	}
 }
 
@@ -138,10 +157,32 @@ func (a Account) Expired(now time.Time) bool {
 	return a.ExpiresAt != nil && !now.Before(*a.ExpiresAt)
 }
 
-// NeedsTOTPSetup : l'administrateur exige la double authentification et elle
-// n'est pas encore activée ; le compte ne peut alors que l'activer.
-func (a Account) NeedsTOTPSetup() bool {
-	return a.TOTPRequired && a.TOTPSecret == ""
+// NeedsTwoFactorSetup : l'administrateur exige la double authentification et
+// aucune méthode n'est encore active ; le compte ne peut alors que l'activer.
+func (a Account) NeedsTwoFactorSetup() bool {
+	return a.TOTPRequired && !a.HasTwoFactor()
+}
+
+// HasTwoFactor : code par e-mail (adresse vérifiée) ou application d'authentification.
+func (a Account) HasTwoFactor() bool {
+	return a.TOTPSecret != "" || a.emailFactor()
+}
+
+func (a Account) emailFactor() bool {
+	return a.EmailCode && a.EmailVerified && a.Email != ""
+}
+
+// Methods : méthodes de double authentification actives, dans l'ordre proposé
+// à la connexion : "email" (code envoyé par e-mail), "totp" (application).
+func (a Account) Methods() []string {
+	var methods []string
+	if a.emailFactor() {
+		methods = append(methods, MethodEmail)
+	}
+	if a.TOTPSecret != "" {
+		methods = append(methods, MethodTOTP)
+	}
+	return methods
 }
 
 func (a Account) active(now time.Time) bool {
@@ -175,6 +216,15 @@ type failure struct {
 	last  time.Time
 }
 
+// CodeNeededError : mot de passe juste, il faut encore un code ; Methods dit
+// lesquels sont possibles (MethodEmail, MethodTOTP ; un code de secours toujours).
+type CodeNeededError struct {
+	Methods []string
+}
+
+func (e CodeNeededError) Error() string { return ErrCodeNeeded.Error() }
+func (e CodeNeededError) Unwrap() error { return ErrCodeNeeded }
+
 // TooManyError dit combien de temps attendre avant une nouvelle tentative.
 type TooManyError struct {
 	Wait time.Duration
@@ -205,12 +255,16 @@ type Store struct {
 	devices  map[string]Device
 	pairings map[string]pairingCode
 	nonces   map[string]time.Time
-	// requests : demandes de lien « mot de passe oublié », par client et par compte.
+	// requests : demandes de lien « mot de passe oublié » et envois de codes par
+	// e-mail, par client et par compte.
 	requests map[string]failure
+	// emailCodes : codes envoyés par e-mail, par but et par compte (emailcode.go).
+	emailCodes map[string]emailCode
+	codeKey    []byte
 }
 
 func Open(path string) (*Store, error) {
-	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, codes: map[string]loginCode{}, failures: map[string]failure{}, shares: map[string]Share{}, devices: map[string]Device{}, pairings: map[string]pairingCode{}, nonces: map[string]time.Time{}, requests: map[string]failure{}}
+	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, codes: map[string]loginCode{}, failures: map[string]failure{}, shares: map[string]Share{}, devices: map[string]Device{}, pairings: map[string]pairingCode{}, nonces: map[string]time.Time{}, requests: map[string]failure{}, emailCodes: map[string]emailCode{}, codeKey: randomKey()}
 	if err := s.loadShares(); err != nil {
 		return nil, err
 	}
@@ -379,11 +433,48 @@ func (s *Store) firstAdmin() (Account, bool) {
 }
 
 // Login vérifie l'identifiant, le mot de passe et, si la double authentification
-// est activée, le code de vérification ou un code de secours, puis ouvre une
-// session. Sans code, ErrCodeNeeded dit que le mot de passe est juste et qu'il
-// faut le code. Après 5 échecs pour un même client ou un même compte, chaque
-// nouvel essai attend de plus en plus longtemps (15 minutes au plus).
+// est activée, le code (application, code reçu par e-mail ou code de secours),
+// puis ouvre une session. Sans code, CodeNeededError dit que le mot de passe
+// est juste et quelles méthodes sont possibles. Après 5 échecs pour un même
+// client ou un même compte, chaque nouvel essai attend de plus en plus
+// longtemps (15 minutes au plus).
 func (s *Store) Login(name, password, code, client string) (string, Account, error) {
+	account, keys, now, err := s.credentials(name, password, client)
+	if err != nil {
+		return "", Account{}, err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if current, still := s.accounts[account.Name]; !still || current.Hash != account.Hash {
+		return "", Account{}, ErrCredentials
+	}
+	account = s.accounts[account.Name]
+	if account.HasTwoFactor() {
+		if strings.TrimSpace(code) == "" {
+			return "", Account{}, CodeNeededError{Methods: account.Methods()}
+		}
+		ok, err := s.checkSecondFactor(account.Name, code, now)
+		if err != nil {
+			return "", Account{}, err
+		}
+		if !ok {
+			s.fail(keys, now)
+			return "", Account{}, ErrCode
+		}
+		account = s.accounts[account.Name]
+	}
+	for _, key := range keys {
+		delete(s.failures, key)
+	}
+	token := randomToken()
+	s.sessions[token] = session{name: account.Name, expires: now.Add(SessionLifetime)}
+	s.cleanup(now)
+	return token, account, nil
+}
+
+// credentials vérifie l'identifiant et le mot de passe (compte actif), avec la
+// limitation des tentatives ; le verrou n'est pas tenu au retour.
+func (s *Store) credentials(name, password, client string) (Account, []string, time.Time, error) {
 	name = strings.ToLower(strings.TrimSpace(name))
 	keys := []string{"client:" + client, "account:" + name}
 	s.mu.Lock()
@@ -391,7 +482,7 @@ func (s *Store) Login(name, password, code, client string) (string, Account, err
 	for _, key := range keys {
 		if wait := s.blocked(key, now); wait > 0 {
 			s.mu.Unlock()
-			return "", Account{}, TooManyError{Wait: wait}
+			return Account{}, nil, now, TooManyError{Wait: wait}
 		}
 	}
 	account, ok := s.accounts[name]
@@ -408,33 +499,13 @@ func (s *Store) Login(name, password, code, client string) (string, Account, err
 	}
 	if !valid {
 		s.fail(keys, now)
-		return "", Account{}, ErrCredentials
+		return Account{}, nil, now, ErrCredentials
 	}
 	account = s.accounts[name]
 	if account.Expired(now) {
-		return "", Account{}, ErrExpired
+		return Account{}, nil, now, ErrExpired
 	}
-	if account.TOTPSecret != "" {
-		if strings.TrimSpace(code) == "" {
-			return "", Account{}, ErrCodeNeeded
-		}
-		ok, err := s.checkSecondFactor(name, code, now)
-		if err != nil {
-			return "", Account{}, err
-		}
-		if !ok {
-			s.fail(keys, now)
-			return "", Account{}, ErrCode
-		}
-		account = s.accounts[name]
-	}
-	for _, key := range keys {
-		delete(s.failures, key)
-	}
-	token := randomToken()
-	s.sessions[token] = session{name: name, expires: now.Add(SessionLifetime)}
-	s.cleanup(now)
-	return token, account, nil
+	return account, keys, now, nil
 }
 
 func (s *Store) fail(keys []string, now time.Time) {
@@ -518,7 +589,7 @@ func (s *Store) UseLoginCode(code, host, state string) (string, bool) {
 // exigée n'est pas activée.
 func (s *Store) ForwardSession(token, host string) (Account, bool) {
 	account, ok := s.lookup(token, true, host)
-	if !ok || account.NeedsTOTPSetup() {
+	if !ok || account.NeedsTwoFactorSetup() {
 		return Account{}, false
 	}
 	return account, true

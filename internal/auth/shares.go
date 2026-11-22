@@ -93,7 +93,7 @@ func (s *Store) shareValid(share Share, now time.Time) bool {
 		return false
 	}
 	owner, ok := s.accounts[share.Owner]
-	return ok && owner.active(now) && !owner.NeedsTOTPSetup()
+	return ok && owner.active(now) && !owner.NeedsTwoFactorSetup()
 }
 
 // saveShares garde les liens encore valables ; les autres sont oubliés.

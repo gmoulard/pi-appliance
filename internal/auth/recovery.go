@@ -26,7 +26,8 @@ import (
 // correspond reçoit par e-mail un lien à usage unique, valable une heure, pour
 // choisir un nouveau mot de passe. Le mot de passe actuel reste valable tant
 // que le nouveau n'est pas choisi : une demande faite par quelqu'un d'autre ne
-// bloque personne. La double authentification n'est pas retirée.
+// bloque personne. La double authentification (code par e-mail ou
+// application) n'est pas retirée : elle est demandée à la connexion suivante.
 
 const (
 	// ResetLinkLifetime : durée de validité d'un lien « mot de passe oublié ».
@@ -59,32 +60,8 @@ func (s *Store) RequestReset(identifier, client string) ([]ResetLink, error) {
 	defer s.mu.Unlock()
 	now := s.Now()
 	keys := []string{"client:" + client, "who:" + identifier}
-	limits := []int{resetRequestsPerClient, resetRequestsPerAccount}
-	for i, key := range keys {
-		r := s.requests[key]
-		if now.Sub(r.last) >= resetRequestWindow {
-			r = failure{}
-		}
-		if r.count >= limits[i] {
-			return nil, TooManyError{Wait: r.last.Add(resetRequestWindow).Sub(now)}
-		}
-	}
-	for _, key := range keys {
-		r := s.requests[key]
-		if now.Sub(r.last) >= resetRequestWindow {
-			r = failure{}
-		}
-		// last : début de la fenêtre d'une heure.
-		if r.count == 0 {
-			r.last = now
-		}
-		r.count++
-		s.requests[key] = r
-	}
-	for key, r := range s.requests {
-		if now.Sub(r.last) >= resetRequestWindow {
-			delete(s.requests, key)
-		}
+	if err := s.takeRequests(keys, []int{resetRequestsPerClient, resetRequestsPerAccount}, resetRequestWindow, now); err != nil {
+		return nil, err
 	}
 	var links []ResetLink
 	for name, account := range s.accounts {

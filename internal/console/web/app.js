@@ -3094,8 +3094,9 @@ function jsonBody(method, body) {
   return { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
 }
 
+// Double authentification exigée par l'administrateur et aucune méthode active.
 function needsTOTP(account) {
-  return account.totp_required && !account.totp;
+  return account.totp_required && !account.two_factor;
 }
 
 // Ouvre le service demandé ; faux si l'adresse est refusée (la console s'affiche alors).
@@ -3221,15 +3222,16 @@ function showDeviceMessage() {
 function showAccount(account) {
   accountSection.hidden = false;
   loadDevices();
+  showEmailCode(account);
   totpSetup.hidden = true;
   totpStart.hidden = account.totp;
-  totpDisable.hidden = !account.totp || account.totp_required;
+  totpDisable.hidden = !account.totp || (account.totp_required && !account.email_code);
   totpDisable.reset();
   passwordForm.reset();
   passwordForm.elements.password.minLength = account.role === "admin" ? ADMIN_PASSWORD_MIN : USER_PASSWORD_MIN;
   if (account.totp) {
     totpState.textContent = t("La double authentification est activée : à chaque connexion, la console demande aussi le code affiché par votre application. Codes de secours restants : {0}.", account.recovery_codes);
-  } else if (account.totp_required) {
+  } else if (needsTOTP(account)) {
     totpState.textContent = t("L'administrateur demande la double authentification pour votre compte : activez-la pour continuer.");
   } else {
     totpState.textContent = t("La double authentification protège votre compte même si quelqu'un apprend votre mot de passe : la console demande en plus un code affiché par une application de votre téléphone.");
@@ -3265,9 +3267,7 @@ totpConfirm.addEventListener("submit", async (event) => {
     returnTo = null;
     const session = await api("session");
     await showConsole(session.account, session.wizard);
-    recoveryList.replaceChildren(...codes.map((code) => element("li", code)));
-    recoveryBox.hidden = false;
-    recoveryBox.scrollIntoView({ block: "nearest" });
+    showRecoveryCodes(codes);
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -3317,6 +3317,258 @@ passwordForm.addEventListener("submit", async (event) => {
   }
 });
 
+// Code par e-mail (spécification 8.1, TODO-3.15) : vérifier l'adresse par un
+// code active la double authentification par e-mail, méthode par défaut quand
+// le Pi sait envoyer des e-mails ; l'application reste possible en plus.
+const emailCodeCard = document.getElementById("emailCodeCard");
+const emailCodeState = document.getElementById("emailCodeState");
+const emailCodeStart = document.getElementById("emailCodeStart");
+const emailCodeConfirm = document.getElementById("emailCodeConfirm");
+const emailCodeDisable = document.getElementById("emailCodeDisable");
+// emailCodes : le Pi sait envoyer des codes par e-mail (api/session).
+let emailCodes = false;
+
+function showEmailCode(account) {
+  emailCodeConfirm.hidden = true;
+  emailCodeConfirm.reset();
+  emailCodeDisable.reset();
+  emailCodeDisable.hidden = !account.email_code || (account.totp_required && !account.totp);
+  emailCodeStart.hidden = account.email_code || !emailCodes;
+  emailCodeStart.textContent = account.email_verified ? t("Recevoir un code par e-mail") : t("Vérifier mon adresse e-mail");
+  if (account.email_code) {
+    emailCodeState.textContent = t("Activé : à chaque connexion, la console envoie un code à {0}. Codes de secours restants : {1}.", account.email, account.recovery_codes);
+  } else if (!emailCodes) {
+    emailCodeState.textContent = t("Le Pi ne sait pas encore envoyer d'e-mail : un administrateur peut le régler dans « Envoi des e-mails ». En attendant, utilisez une application d'authentification.");
+  } else {
+    emailCodeState.textContent = t("Le plus simple : à chaque connexion, la console envoie un code à {0}, à recopier en plus du mot de passe. Un code confirme d'abord que l'adresse est la bonne.", account.email);
+  }
+}
+
+async function sendEmailCode() {
+  emailCodeStart.disabled = true;
+  try {
+    const reply = await api("account/email/send", jsonBody("POST", { lang: LANGUAGE }));
+    emailCodeConfirm.hidden = false;
+    emailCodeStart.textContent = t("Renvoyer le code");
+    showMessage([t("Un code vient de partir à {0} : il est valable 10 minutes. Regardez aussi dans les courriers indésirables.", reply.email)], "success");
+    emailCodeConfirm.elements.code.focus();
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    emailCodeStart.disabled = false;
+  }
+}
+
+emailCodeStart.addEventListener("click", sendEmailCode);
+
+emailCodeConfirm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = emailCodeConfirm.querySelector("button");
+  button.disabled = true;
+  try {
+    const reply = await api("account/email/confirm", jsonBody("POST", { code: new FormData(emailCodeConfirm).get("code") }));
+    showMessage([t("Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.")], "success");
+    returnTo = null;
+    const session = await api("session");
+    await showConsole(session.account, session.wizard);
+    showRecoveryCodes(reply.recovery_codes);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+emailCodeDisable.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const button = emailCodeDisable.querySelector("button");
+  button.disabled = true;
+  try {
+    await api("account/email/disable", jsonBody("POST", { password: new FormData(emailCodeDisable).get("password") }));
+    showMessage([t("La console ne vous enverra plus de code par e-mail.")], "success");
+    const session = await api("session");
+    currentAccount = session.account;
+    recoveryBox.hidden = true;
+    showAccount(session.account);
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+// Codes de secours, montrés une seule fois après l'activation d'une première méthode.
+function showRecoveryCodes(codes) {
+  if (!codes || codes.length === 0) return;
+  // Pendant l'assistant, « Mon compte » est caché : les codes doivent rester visibles.
+  accountSection.hidden = false;
+  recoveryList.replaceChildren(...codes.map((code) => element("li", code)));
+  recoveryBox.hidden = false;
+  recoveryBox.scrollIntoView({ block: "nearest" });
+}
+
+// Proposition de la double authentification à chaque nouveau compte
+// (spécification 8.1, TODO-3.14) : premier administrateur, invitation
+// acceptée, compte créé par pia user add. Exigée par l'administrateur : pas de
+// « Plus tard ».
+const twoFactorOffer = document.getElementById("twoFactorOffer");
+const twoFactorOfferHelp = document.getElementById("twoFactorOfferHelp");
+const offerEmail = document.getElementById("offerEmail");
+const offerApp = document.getElementById("offerApp");
+const offerLater = document.getElementById("offerLater");
+
+function showOffer(account) {
+  const required = needsTOTP(account);
+  twoFactorOffer.hidden = !(account.two_factor_offer || required);
+  if (twoFactorOffer.hidden) return;
+  offerEmail.hidden = !emailCodes;
+  offerLater.hidden = required;
+  offerApp.className = emailCodes ? "secondary" : "";
+  const lines = [];
+  lines.push(required
+    ? t("L'administrateur demande la double authentification pour votre compte : choisissez comment recevoir vos codes pour continuer.")
+    : t("Conseillé : avec la double authentification, quelqu'un qui apprend votre mot de passe ne peut pas se connecter. À chaque connexion, la console demande en plus un code à 6 chiffres."));
+  lines.push(emailCodes
+    ? t("Le plus simple : le code arrive par e-mail à {0}. Vous pouvez aussi utiliser une application du téléphone, ou les deux.", account.email)
+    : t("Le code est affiché par une application du téléphone (Aegis, Google Authenticator, Microsoft Authenticator…)."));
+  twoFactorOfferHelp.textContent = lines.join(" ");
+}
+
+function openAccountCard(card) {
+  accountSection.hidden = false;
+  card.scrollIntoView({ block: "start" });
+}
+
+offerEmail.addEventListener("click", async () => {
+  openAccountCard(emailCodeCard);
+  await sendEmailCode();
+});
+
+offerApp.addEventListener("click", () => {
+  openAccountCard(document.getElementById("totpCard"));
+  if (!totpStart.hidden) totpStart.click();
+});
+
+offerLater.addEventListener("click", async () => {
+  offerLater.disabled = true;
+  try {
+    currentAccount = await api("account/two-factor/later", { method: "POST" });
+    twoFactorOffer.hidden = true;
+    showMessage([t("D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».")], "info");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    offerLater.disabled = false;
+  }
+});
+
+// Envoi des e-mails par le SMTP du Pi (spécification 10.2, TODO-3.16), pour
+// l'administrateur : le mot de passe n'est jamais renvoyé par le Pi.
+const mailSection = document.getElementById("mailSection");
+const mailState = document.getElementById("mailState");
+const mailForm = document.getElementById("mailForm");
+const mailTest = document.getElementById("mailTest");
+const mailForget = document.getElementById("mailForget");
+let mailStatus = null;
+
+function showMail(status) {
+  mailStatus = status;
+  const fields = mailForm.elements;
+  fields.host.value = status.host || "";
+  fields.port.value = status.configured ? status.port : "";
+  fields.security.value = status.security || "starttls";
+  fields.username.value = status.username || "";
+  fields.password.value = "";
+  fields.password.placeholder = status.password_set ? t("Enregistré : laissez vide pour le garder") : "";
+  fields.from.value = status.from || "";
+  mailTest.hidden = !status.configured;
+  mailForget.hidden = !status.configured;
+  const dot = element("span", undefined, `dot ${status.configured ? "ok" : ""}`);
+  let text;
+  if (status.configured) {
+    text = t("Le Pi envoie ses e-mails par {0}, au nom de {1}. Envoyez-vous un e-mail d'essai pour vérifier.", status.host, status.from);
+  } else if (status.project_service) {
+    text = t("Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.");
+  } else {
+    text = t("Pas encore réglé : le Pi n'envoie aucun e-mail. Les invitations sont à transmettre vous-même.");
+  }
+  mailState.replaceChildren(dot, element("span", text));
+}
+
+async function loadMail() {
+  try {
+    showMail(await api("mail"));
+    mailSection.hidden = false;
+  } catch {
+    mailSection.hidden = true;
+  }
+}
+
+mailForm.elements.host.placeholder = "smtp.gmail.com";
+mailForm.elements.port.placeholder = "587";
+mailForm.elements.security.addEventListener("change", () => {
+  mailForm.elements.port.placeholder = mailForm.elements.security.value === "tls" ? "465" : "587";
+});
+
+mailForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const fields = mailForm.elements;
+  const button = mailForm.querySelector("button");
+  button.disabled = true;
+  try {
+    const status = await api("mail", jsonBody("PUT", {
+      host: fields.host.value,
+      port: Number(fields.port.value) || 0,
+      security: fields.security.value,
+      username: fields.username.value,
+      password: fields.password.value,
+      from: fields.from.value,
+    }));
+    showMail(status);
+    emailCodes = true;
+    recoveryEmail = true;
+    showEmailCode(currentAccount);
+    showMessage([t("Réglage enregistré. Envoyez-vous un e-mail d'essai pour vérifier qu'il marche.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+mailTest.addEventListener("click", async () => {
+  mailTest.disabled = true;
+  try {
+    const reply = await api("mail/test", jsonBody("POST", { lang: LANGUAGE }));
+    showMessage([t("E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).", reply.email)], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    mailTest.disabled = false;
+  }
+});
+
+mailForget.addEventListener("click", async () => {
+  const count = mailStatus ? mailStatus.email_code_accounts : 0;
+  const question = count > 0
+    ? t("Ne plus envoyer d'e-mails ? {0} compte(s) reçoivent leur code de connexion par e-mail : ils devront utiliser leur application d'authentification ou un code de secours.", count)
+    : t("Ne plus envoyer d'e-mails depuis le Pi ?");
+  if (!window.confirm(question)) return;
+  mailForget.disabled = true;
+  try {
+    showMail(await api("mail", { method: "DELETE" }));
+    const session = await api("session");
+    emailCodes = Boolean(session.email_codes);
+    recoveryEmail = Boolean(session.recovery_email);
+    showEmailCode(session.account);
+    showMessage([t("Le Pi n'envoie plus d'e-mails par ce serveur.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    mailForget.disabled = false;
+  }
+});
+
 function dayText(time) {
   return new Date(time).toLocaleDateString(LOCALE, { dateStyle: "long" });
 }
@@ -3359,7 +3611,11 @@ function accountCard(account) {
     const ended = new Date(account.expires_at) <= new Date();
     facts.push(ended ? t("Accès terminé depuis le {0}.", dayText(account.expires_at)) : t("Accès jusqu'au {0} inclus.", dayText(new Date(account.expires_at).getTime() - 1)));
   }
-  if (account.totp) {
+  if (account.totp && account.email_code) {
+    facts.push(t("Double authentification activée : code par e-mail et application."));
+  } else if (account.email_code) {
+    facts.push(t("Double authentification activée : code par e-mail."));
+  } else if (account.totp) {
     facts.push(t("Double authentification activée."));
   } else if (account.totp_required) {
     facts.push(t("Double authentification exigée, pas encore activée."));
@@ -3397,9 +3653,9 @@ function accountCard(account) {
     });
   }
   add(account.totp_required ? t("Ne plus exiger la double authentification") : t("Exiger la double authentification"), () => updateAccount(account, { totp_required: !account.totp_required }));
-  if (account.totp) {
+  if (account.two_factor) {
     add(t("Retirer la double authentification"), async () => {
-      if (!window.confirm(t("Retirer la double authentification de {0} ? À faire seulement si son téléphone et ses codes de secours sont perdus.", account.name))) return;
+      if (!window.confirm(t("Retirer la double authentification de {0} (code par e-mail et application) ? À faire seulement si son téléphone ou sa boîte e-mail, et ses codes de secours, sont perdus.", account.name))) return;
       await api(`${path}/totp`, { method: "DELETE" });
       await loadAccounts();
     });
@@ -3502,6 +3758,9 @@ const AUTH_MODES = {
 };
 
 let authMode = "login";
+// loginMethods : méthodes de double authentification du compte qui se connecte.
+let loginMethods = [];
+const emailCodeButton = document.getElementById("emailCodeButton");
 // recoveryEmail : le Pi sait envoyer le lien « mot de passe oublié » (api/session).
 let recoveryEmail = false;
 const forgotButton = document.getElementById("forgotButton");
@@ -3539,6 +3798,10 @@ function showAuth(mode) {
   piSection.hidden = true;
   accountSection.hidden = true;
   accountsSection.hidden = true;
+  twoFactorOffer.hidden = true;
+  mailSection.hidden = true;
+  emailCodeButton.hidden = true;
+  loginMethods = [];
   inviteBox.hidden = true;
   recoveryBox.hidden = true;
   wizardSection.hidden = true;
@@ -3579,6 +3842,9 @@ authForm.addEventListener("submit", async (event) => {
   if (authMode === "login" && !codeField.hidden) {
     body.code = data.get("code");
   }
+  if (authMode === "login" || authMode === "setup") {
+    body.lang = LANGUAGE;
+  }
   if (authMode === "invite") {
     body.token = inviteToken;
   }
@@ -3607,6 +3873,7 @@ authForm.addEventListener("submit", async (event) => {
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
       const session = await api("session");
       recoveryEmail = Boolean(session.recovery_email);
+      emailCodes = Boolean(session.email_codes);
       if (!session.account) {
         showAuth("login");
         authForm.elements.name.value = account.name;
@@ -3627,19 +3894,47 @@ authForm.addEventListener("submit", async (event) => {
       }
     }
     const session = await api("session");
+    // Arrivée par un lien d'invitation : l'état du Pi n'a pas encore été lu.
+    emailCodes = Boolean(session.email_codes);
+    recoveryEmail = Boolean(session.recovery_email);
     await showConsole(session.account || account, session.wizard);
   } catch (error) {
     if (authMode === "login" && error.body && error.body.code_needed) {
+      const first = codeField.hidden;
       codeField.hidden = false;
       authForm.elements.code.required = true;
       authForm.elements.code.value = "";
       authForm.elements.code.focus();
+      if (error.body.methods) loginMethods = error.body.methods;
+      emailCodeButton.hidden = !loginMethods.includes("email");
+      // Code par e-mail seul : il part tout de suite.
+      if (first && loginMethods.includes("email") && !loginMethods.includes("totp")) {
+        await requestLoginCode();
+        return;
+      }
     }
     showMessage([error.message], "error");
   } finally {
     authButton.disabled = false;
   }
 });
+
+// Code de connexion par e-mail, après un mot de passe juste.
+async function requestLoginCode() {
+  emailCodeButton.disabled = true;
+  try {
+    const reply = await api("login/email-code", jsonBody("POST", { name: authForm.elements.name.value, password: authForm.elements.password.value, lang: LANGUAGE }));
+    emailCodeButton.textContent = t("Renvoyer le code");
+    showMessage([t("Un code vient de partir à {0} : il est valable 10 minutes. Regardez aussi dans les courriers indésirables.", reply.email)], "success");
+    authForm.elements.code.focus();
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    emailCodeButton.disabled = false;
+  }
+}
+
+emailCodeButton.addEventListener("click", requestLoginCode);
 
 forgotButton.addEventListener("click", () => {
   const name = authForm.elements.name.value;
@@ -3666,6 +3961,19 @@ logoutButton.addEventListener("click", async () => {
 const FACTORY_PAGE = /\/reset-to-factory$/.test(window.location.pathname);
 const factorySection = document.getElementById("factorySection");
 const factoryForm = document.getElementById("factoryForm");
+const factoryEmailCode = document.getElementById("factoryEmailCode");
+
+factoryEmailCode.addEventListener("click", async () => {
+  factoryEmailCode.disabled = true;
+  try {
+    const reply = await api("login/email-code", jsonBody("POST", { name: currentAccount.name, password: factoryForm.elements.password.value, lang: LANGUAGE }));
+    showMessage([t("Un code vient de partir à {0} : il est valable 10 minutes. Regardez aussi dans les courriers indésirables.", reply.email)], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    factoryEmailCode.disabled = false;
+  }
+});
 
 function showFactory(byResetFile) {
   authSection.hidden = true;
@@ -3673,6 +3981,7 @@ function showFactory(byResetFile) {
   for (const id of ["factoryPassword", "factoryCode"]) {
     document.getElementById(id).hidden = byResetFile;
   }
+  factoryEmailCode.hidden = byResetFile || !currentAccount || !currentAccount.email_code;
   factoryForm.elements.password.required = !byResetFile;
 }
 
@@ -3900,9 +4209,13 @@ async function showConsole(account, wizard) {
   clearInterval(duckDNSTimer);
   duckDNSTimer = null;
   emailReminder.hidden = account.email_verified;
-  emailReminder.textContent = t("Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.", account.email);
+  emailReminder.textContent = emailCodes
+    ? t("Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.", account.email)
+    : t("Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.", account.email);
   showAccount(account);
+  showOffer(account);
   accountsSection.hidden = true;
+  mailSection.hidden = true;
   if (needsTOTP(account)) {
     // Double authentification exigée : rien d'autre tant qu'elle n'est pas activée.
     servicesSection.hidden = true;
@@ -3929,6 +4242,7 @@ async function showConsole(account, wizard) {
     startDashboard();
     accountsSection.hidden = false;
     await loadAccounts();
+    await loadMail();
   }
   await loadCatalog();
   await loadServices();
@@ -3953,6 +4267,7 @@ api("health")
     }
     const session = await api("session");
     recoveryEmail = Boolean(session.recovery_email);
+    emailCodes = Boolean(session.email_codes);
     if (session.reset) {
       if (FACTORY_PAGE) {
         showFactory(true);
