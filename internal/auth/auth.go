@@ -80,6 +80,7 @@ var (
 	ErrLastAdmin    = errors.New("dernier administrateur")
 	ErrNoInvitation = errors.New("invitation inconnue ou expirée")
 	ErrTOTPRequired = errors.New("double authentification exigée")
+	ErrNoResetLink  = errors.New("lien de réinitialisation inconnu ou expiré")
 )
 
 var namePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]{0,31}$`)
@@ -106,6 +107,9 @@ type Account struct {
 	RecoveryHashes []string `json:"recovery_hashes,omitempty"`
 	// TOTPRequired : l'administrateur exige la double authentification pour ce compte.
 	TOTPRequired bool `json:"totp_required,omitempty"`
+	// Mot de passe oublié : SHA-256 du lien envoyé par e-mail et sa fin (recovery.go).
+	ResetHash    string    `json:"reset_hash,omitempty"`
+	ResetExpires time.Time `json:"reset_expires,omitzero"`
 }
 
 // Public est la vue d'un compte renvoyée à l'interface, sans hachage ni secret.
@@ -201,10 +205,12 @@ type Store struct {
 	devices  map[string]Device
 	pairings map[string]pairingCode
 	nonces   map[string]time.Time
+	// requests : demandes de lien « mot de passe oublié », par client et par compte.
+	requests map[string]failure
 }
 
 func Open(path string) (*Store, error) {
-	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, codes: map[string]loginCode{}, failures: map[string]failure{}, shares: map[string]Share{}, devices: map[string]Device{}, pairings: map[string]pairingCode{}, nonces: map[string]time.Time{}}
+	s := &Store{path: path, Now: time.Now, accounts: map[string]Account{}, sessions: map[string]session{}, codes: map[string]loginCode{}, failures: map[string]failure{}, shares: map[string]Share{}, devices: map[string]Device{}, pairings: map[string]pairingCode{}, nonces: map[string]time.Time{}, requests: map[string]failure{}}
 	if err := s.loadShares(); err != nil {
 		return nil, err
 	}
@@ -341,11 +347,11 @@ func (s *Store) ResetAdmin(password string) (Account, error) {
 	if !ok {
 		return Account{}, ErrNoReset
 	}
-	previous := admin.Hash
-	admin.Hash = hash
+	previous := admin
+	admin.Hash, admin.ResetHash, admin.ResetExpires = hash, "", time.Time{}
 	s.accounts[admin.Name] = admin
 	if err := s.save(); err != nil {
-		admin.Hash = previous
+		admin = previous
 		s.accounts[admin.Name] = admin
 		return Account{}, err
 	}

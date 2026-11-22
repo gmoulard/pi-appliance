@@ -39,7 +39,7 @@ var ErrInvalid = errors.New("nom refusé")
 // machines (dont les sous-domaines déjà présents dans la zone, docs/environnement.md).
 var reserved = []string{
 	"www", "mail", "smtp", "imap", "pop", "mx", "webmail", "autoconfig", "autodiscover",
-	"relais", "relay", "adresses", "addresses", "address", "stats", "statistiques",
+	"relais", "relay", "envoi", "adresses", "addresses", "address", "stats", "statistiques",
 	"api", "admin", "console", "pi-appliance", "piappliance", "appliance",
 	"support", "aide", "help", "docs", "doc", "status", "blog", "shop", "boutique",
 	"download", "telechargement", "update", "updates", "marketplace", "catalogue",

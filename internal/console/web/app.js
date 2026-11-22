@@ -3112,6 +3112,25 @@ async function goBackToService() {
   }
 }
 
+// Lien « mot de passe oublié » reçu par e-mail (#reset=…, spécification 8.5).
+let resetToken = null;
+
+async function startRecovery(token) {
+  try {
+    const account = await api("password/check", jsonBody("POST", { token }));
+    resetToken = token;
+    showAuth("recover");
+    const minimum = account.role === "admin" ? ADMIN_PASSWORD_MIN : USER_PASSWORD_MIN;
+    authHelp.textContent = t("Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.", account.name, minimum);
+    authForm.elements.password.minLength = minimum;
+    return true;
+  } catch (error) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    showMessage([error.message], "error");
+    return false;
+  }
+}
+
 async function startInvitation(token) {
   try {
     const account = await api("invitation/check", jsonBody("POST", { token }));
@@ -3439,42 +3458,67 @@ const AUTH_MODES = {
     title: t("Bienvenue ! Créez votre compte administrateur"),
     help: t("C'est le compte qui gère l'appliance. Choisissez un mot de passe d'au moins {0} caractères : une phrase de plusieurs mots est plus facile à retenir. L'adresse e-mail servira à retrouver l'accès et à recevoir les alertes.", ADMIN_PASSWORD_MIN),
     button: t("Créer le compte"),
-    fields: ["name", "email", "confirm"],
+    fields: ["name", "email", "password", "confirm"],
     path: "setup",
   },
   reset: {
     title: t("Nouveau mot de passe administrateur"),
     help: t("Le fichier reset a été trouvé sur la carte SD. Choisissez un nouveau mot de passe d'au moins {0} caractères : vos services et vos données ne changent pas.", ADMIN_PASSWORD_MIN),
     button: t("Changer le mot de passe"),
-    fields: ["confirm"],
+    fields: ["password", "confirm"],
     path: "reset",
   },
   login: {
     title: t("Connexion"),
     help: t("Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail. Mot de passe administrateur oublié : le guide explique comment le changer avec le fichier reset."),
     button: t("Se connecter"),
-    fields: ["name"],
+    fields: ["name", "password"],
     path: "login",
+  },
+  // Mot de passe oublié : un lien est envoyé par e-mail (spécification 8.5).
+  forgot: {
+    title: t("Mot de passe oublié"),
+    help: t("Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure."),
+    button: t("Recevoir le lien par e-mail"),
+    fields: ["who"],
+    path: "password/forgot",
+  },
+  // Lien reçu par e-mail (#reset=…) : l'aide est complétée par startRecovery.
+  recover: {
+    title: t("Nouveau mot de passe"),
+    help: "",
+    button: t("Changer le mot de passe"),
+    fields: ["password", "confirm"],
+    path: "password/reset",
   },
   // Lien d'invitation (#invite=…) : le titre et l'aide sont complétés par startInvitation.
   invite: {
     title: "",
     help: "",
     button: t("Choisir mon mot de passe"),
-    fields: ["confirm"],
+    fields: ["password", "confirm"],
     path: "invitation",
   },
 };
 
 let authMode = "login";
+// recoveryEmail : le Pi sait envoyer le lien « mot de passe oublié » (api/session).
+let recoveryEmail = false;
+const forgotButton = document.getElementById("forgotButton");
+const loginButton = document.getElementById("loginButton");
 
 function showAuth(mode) {
   authMode = mode;
   const config = AUTH_MODES[mode];
   authTitle.textContent = config.title;
   authHelp.textContent = config.help;
+  if (mode === "login" && recoveryEmail) {
+    authHelp.textContent = t("Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.");
+  }
   authButton.textContent = config.button;
-  for (const field of ["name", "email", "confirm", "code"]) {
+  forgotButton.hidden = !(mode === "login" && recoveryEmail);
+  loginButton.hidden = mode !== "forgot";
+  for (const field of ["name", "who", "email", "password", "confirm", "code"]) {
     const shown = config.fields.includes(field);
     document.getElementById(`${field}Field`).hidden = !shown;
     authForm.elements[field].required = shown;
@@ -3538,10 +3582,40 @@ authForm.addEventListener("submit", async (event) => {
   if (authMode === "invite") {
     body.token = inviteToken;
   }
+  if (authMode === "recover") {
+    body.token = resetToken;
+  }
+  if (authMode === "forgot") {
+    delete body.password;
+    body.name = data.get("who");
+    body.lang = LANGUAGE;
+  }
   authButton.disabled = true;
   try {
     const account = await api(config.path, jsonBody("POST", body));
     message.hidden = true;
+    if (authMode === "forgot") {
+      showAuth("login");
+      showMessage([
+        t("Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure."),
+        t("Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien."),
+      ], "success");
+      return;
+    }
+    if (authMode === "recover") {
+      resetToken = null;
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      const session = await api("session");
+      recoveryEmail = Boolean(session.recovery_email);
+      if (!session.account) {
+        showAuth("login");
+        authForm.elements.name.value = account.name;
+        showMessage([t("Mot de passe enregistré : connectez-vous.")], "success");
+        return;
+      }
+      await showConsole(session.account, session.wizard);
+      return;
+    }
     if (authMode === "invite") {
       inviteToken = null;
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -3565,6 +3639,19 @@ authForm.addEventListener("submit", async (event) => {
   } finally {
     authButton.disabled = false;
   }
+});
+
+forgotButton.addEventListener("click", () => {
+  const name = authForm.elements.name.value;
+  message.hidden = true;
+  showAuth("forgot");
+  authForm.elements.who.value = name;
+  authForm.elements.who.focus();
+});
+
+loginButton.addEventListener("click", () => {
+  message.hidden = true;
+  showAuth("login");
 });
 
 logoutButton.addEventListener("click", async () => {
@@ -3857,10 +3944,15 @@ api("health")
     if (invite && (await startInvitation(invite[1]))) {
       return;
     }
+    const recovery = window.location.hash.match(/^#reset=([A-Za-z0-9_-]+)$/);
+    if (recovery && (await startRecovery(recovery[1]))) {
+      return;
+    }
     if (DIAGNOSTIC_PAGE && (await showDiagnostic())) {
       return;
     }
     const session = await api("session");
+    recoveryEmail = Boolean(session.recovery_email);
     if (session.reset) {
       if (FACTORY_PAGE) {
         showFactory(true);

@@ -16,6 +16,16 @@
 // Traduction de la console : anglais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("en", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Account {0}: choose a new password of at least {1} characters. A phrase of several words is easier to remember.",
+  "Mot de passe oublié": "Forgot password",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Enter your username or your account's email address: you will receive by email a link to choose a new password. The link is valid for one hour.",
+  "Recevoir le lien par e-mail": "Get the link by email",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Enter your username and password. The username is the name chosen when the account was created, not the email address.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "If this account exists, an email has just been sent to it with a link valid for one hour.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Nothing received after a few minutes? Check your spam folder, and check the username or email address. The administrator can also give you a new link.",
+  "Identifiant ou adresse e-mail": "Username or email address",
+  "Mot de passe oublié ?": "Forgot your password?",
+  "Retour à la connexion": "Back to sign-in",
   "Versions proposées": "Versions offered",
   "Stables (conseillé)": "Stable (recommended)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: new features early, less tested",

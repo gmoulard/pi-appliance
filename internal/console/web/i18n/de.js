@@ -16,6 +16,16 @@
 // Traduction de la console : allemand. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("de", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Konto {0}: Wählen Sie ein neues Passwort mit mindestens {1} Zeichen. Ein Satz aus mehreren Wörtern ist leichter zu merken.",
+  "Mot de passe oublié": "Passwort vergessen",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Geben Sie Ihren Benutzernamen oder die E-Mail-Adresse Ihres Kontos ein: Sie erhalten per E-Mail einen Link, um ein neues Passwort zu wählen. Der Link ist eine Stunde gültig.",
+  "Recevoir le lien par e-mail": "Link per E-Mail erhalten",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Geben Sie Ihren Benutzernamen und Ihr Passwort ein. Der Benutzername ist der beim Anlegen des Kontos gewählte Name, nicht die E-Mail-Adresse.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "Wenn dieses Konto existiert, wurde ihm soeben eine E-Mail mit einem eine Stunde gültigen Link gesendet.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Nach einigen Minuten nichts erhalten? Sehen Sie im Spam-Ordner nach und prüfen Sie den Benutzernamen oder die E-Mail-Adresse. Der Administrator kann Ihnen auch einen neuen Link geben.",
+  "Identifiant ou adresse e-mail": "Benutzername oder E-Mail-Adresse",
+  "Mot de passe oublié ?": "Passwort vergessen?",
+  "Retour à la connexion": "Zurück zur Anmeldung",
   "Versions proposées": "Angebotene Versionen",
   "Stables (conseillé)": "Stabil (empfohlen)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: Neuerungen früher, weniger erprobt",

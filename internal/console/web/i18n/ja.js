@@ -16,6 +16,16 @@
 // Traduction de la console : japonais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ja", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "アカウント {0}：{1} 文字以上の新しいパスワードを選んでください。複数の単語からなる文のほうが覚えやすくなります。",
+  "Mot de passe oublié": "パスワードを忘れた場合",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "ユーザー名またはアカウントのメールアドレスを入力してください。新しいパスワードを選ぶためのリンクがメールで届きます。リンクの有効期限は 1 時間です。",
+  "Recevoir le lien par e-mail": "リンクをメールで受け取る",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "ユーザー名とパスワードを入力してください。ユーザー名はアカウント作成時に選んだ名前で、メールアドレスではありません。",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "このアカウントが存在する場合、1 時間有効なリンクを記載したメールを送信しました。",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "数分たっても届かない場合は、迷惑メールフォルダーを確認し、ユーザー名またはメールアドレスを確かめてください。管理者に新しいリンクをもらうこともできます。",
+  "Identifiant ou adresse e-mail": "ユーザー名またはメールアドレス",
+  "Mot de passe oublié ?": "パスワードをお忘れですか？",
+  "Retour à la connexion": "ログインに戻る",
   "Versions proposées": "提供するバージョン",
   "Stables (conseillé)": "安定版（おすすめ）",
   "Bêta : nouveautés en avance, moins éprouvées": "ベータ版：新機能を先取り、検証は少なめ",

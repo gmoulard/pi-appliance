@@ -16,6 +16,16 @@
 // Traduction de la console : chinois. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("zh", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "账户 {0}：请选择一个至少 {1} 个字符的新密码。由几个词组成的句子更容易记住。",
+  "Mot de passe oublié": "忘记密码",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "请输入您的用户名或账户的电子邮件地址：您将通过电子邮件收到一个用于设置新密码的链接。该链接一小时内有效。",
+  "Recevoir le lien par e-mail": "通过电子邮件接收链接",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "请输入您的用户名和密码。用户名是创建账户时选择的名称，而不是电子邮件地址。",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "如果该账户存在，一封包含一小时内有效链接的电子邮件刚刚已发送给它。",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "几分钟后仍未收到？请查看垃圾邮件，并检查用户名或电子邮件地址。管理员也可以给您一个新链接。",
+  "Identifiant ou adresse e-mail": "用户名或电子邮件地址",
+  "Mot de passe oublié ?": "忘记密码？",
+  "Retour à la connexion": "返回登录",
   "Versions proposées": "提供的版本",
   "Stables (conseillé)": "稳定版（推荐）",
   "Bêta : nouveautés en avance, moins éprouvées": "测试版：抢先体验新功能，测试较少",

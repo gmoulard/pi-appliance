@@ -16,6 +16,16 @@
 // Traduction de la console : turc. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("tr", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "{0} hesabı: en az {1} karakterlik yeni bir parola seçin. Birkaç kelimeden oluşan bir cümleyi hatırlamak daha kolaydır.",
+  "Mot de passe oublié": "Parolamı unuttum",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Kullanıcı adınızı veya hesabınızın e-posta adresini girin: yeni bir parola seçmeniz için e-postayla bir bağlantı alacaksınız. Bağlantı bir saat geçerlidir.",
+  "Recevoir le lien par e-mail": "Bağlantıyı e-postayla al",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Kullanıcı adınızı ve parolanızı girin. Kullanıcı adı, hesap oluşturulurken seçilen addır, e-posta adresi değil.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "Bu hesap varsa, ona bir saat geçerli bir bağlantı içeren bir e-posta az önce gönderildi.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Birkaç dakika sonra hiçbir şey gelmedi mi? İstenmeyen e-postalar klasörüne bakın ve kullanıcı adını veya e-posta adresini kontrol edin. Yönetici de size yeni bir bağlantı verebilir.",
+  "Identifiant ou adresse e-mail": "Kullanıcı adı veya e-posta adresi",
+  "Mot de passe oublié ?": "Parolanızı mı unuttunuz?",
+  "Retour à la connexion": "Oturum açmaya dön",
   "Versions proposées": "Önerilen sürümler",
   "Stables (conseillé)": "Kararlı (önerilir)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: yenilikler erken, daha az denenmiş",

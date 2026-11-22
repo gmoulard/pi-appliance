@@ -16,6 +16,16 @@
 // Traduction de la console : persan. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("fa", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "حساب {0}: یک گذرواژهٔ جدید با دست‌کم {1} نویسه انتخاب کنید. جمله‌ای چندکلمه‌ای راحت‌تر به خاطر می‌ماند.",
+  "Mot de passe oublié": "فراموشی گذرواژه",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "نام کاربری یا نشانی ایمیل حساب خود را وارد کنید: پیوندی برای انتخاب گذرواژهٔ جدید از راه ایمیل دریافت خواهید کرد. این پیوند یک ساعت معتبر است.",
+  "Recevoir le lien par e-mail": "دریافت پیوند از راه ایمیل",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "نام کاربری و گذرواژهٔ خود را وارد کنید. نام کاربری همان نامی است که هنگام ساخت حساب انتخاب شده، نه نشانی ایمیل.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "اگر این حساب وجود داشته باشد، هم‌اکنون ایمیلی با پیوندی که یک ساعت معتبر است برایش فرستاده شد.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "پس از چند دقیقه چیزی دریافت نکردید؟ پوشهٔ هرزنامه را ببینید و نام کاربری یا نشانی ایمیل را بررسی کنید. مدیر هم می‌تواند پیوند تازه‌ای به شما بدهد.",
+  "Identifiant ou adresse e-mail": "نام کاربری یا نشانی ایمیل",
+  "Mot de passe oublié ?": "گذرواژه را فراموش کرده‌اید؟",
+  "Retour à la connexion": "بازگشت به ورود",
   "Versions proposées": "نسخه‌های پیشنهادی",
   "Stables (conseillé)": "پایدار (توصیه‌شده)",
   "Bêta : nouveautés en avance, moins éprouvées": "بتا: امکانات تازه زودتر، کمتر آزموده",

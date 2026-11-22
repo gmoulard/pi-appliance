@@ -16,6 +16,16 @@
 // Traduction de la console : espagnol. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("es", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Cuenta {0}: elija una nueva contraseña de al menos {1} caracteres. Una frase de varias palabras es más fácil de recordar.",
+  "Mot de passe oublié": "Contraseña olvidada",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Introduzca su identificador o la dirección de correo de su cuenta: recibirá por correo un enlace para elegir una nueva contraseña. El enlace es válido durante una hora.",
+  "Recevoir le lien par e-mail": "Recibir el enlace por correo",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Introduzca su identificador y su contraseña. El identificador es el nombre elegido al crear la cuenta, no la dirección de correo.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "Si esta cuenta existe, se le acaba de enviar un correo con un enlace válido durante una hora.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "¿No ha recibido nada tras unos minutos? Mire en el correo no deseado y compruebe el identificador o la dirección de correo. El administrador también puede darle un nuevo enlace.",
+  "Identifiant ou adresse e-mail": "Identificador o dirección de correo",
+  "Mot de passe oublié ?": "¿Ha olvidado su contraseña?",
+  "Retour à la connexion": "Volver al inicio de sesión",
   "Versions proposées": "Versiones ofrecidas",
   "Stables (conseillé)": "Estables (recomendado)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: novedades antes, menos probadas",

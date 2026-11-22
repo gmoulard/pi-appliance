@@ -18,7 +18,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
    - [Retrouver son Pi sur son téléphone : l'application mobile](#application-mobile)
 4. [Administrer le Pi depuis internet](#console-sur-internet)
 5. [Ligne de commande du Pi (SSH)](#ligne-de-commande)
-6. [Mot de passe administrateur oublié : le fichier reset](#fichier-reset)
+6. [Mot de passe oublié : le lien par e-mail](#mot-de-passe-oublie), ou [le fichier reset](#fichier-reset)
 7. [Remettre le Pi à zéro](#remise-a-zero)
 8. [Diagnostic du Pi sans écran](#diagnostic)
 9. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
@@ -146,6 +146,10 @@ pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'
 ```
 
 Inutile de taper `sudo` : quand une commande a besoin des droits d'administrateur du Pi (toutes sauf `aide` et `version`), `pia` les demande lui-même, avec le mot de passe de votre compte si le Pi le réclame. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
+
+## Mot de passe oublié : le lien par e-mail {#mot-de-passe-oublie}
+
+Sur l'écran de connexion, touchez **Mot de passe oublié ?**, tapez votre identifiant ou l'adresse e-mail de votre compte, puis **Recevoir le lien par e-mail**. Ouvrez le lien reçu dans l'heure et choisissez un nouveau mot de passe ; le lien ne sert qu'une fois. Votre ancien mot de passe reste valable tant que vous n'en avez pas choisi un nouveau, et si la double authentification est activée, le code vous est toujours demandé. Rien reçu après quelques minutes ? Regardez dans les courriers indésirables. Sans e-mail (Pi sans internet, adresse perdue), utilisez le fichier `reset` ci-dessous pour le compte administrateur ; pour un autre compte, l'administrateur donne un nouveau lien.
 
 ## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
 

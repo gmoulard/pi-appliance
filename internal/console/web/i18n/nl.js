@@ -16,6 +16,16 @@
 // Traduction de la console : néerlandais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("nl", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Account {0}: kies een nieuw wachtwoord van minstens {1} tekens. Een zin van meerdere woorden is makkelijker te onthouden.",
+  "Mot de passe oublié": "Wachtwoord vergeten",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Voer uw gebruikersnaam of het e-mailadres van uw account in: u ontvangt per e-mail een link om een nieuw wachtwoord te kiezen. De link is een uur geldig.",
+  "Recevoir le lien par e-mail": "Link per e-mail ontvangen",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Voer uw gebruikersnaam en wachtwoord in. De gebruikersnaam is de naam die bij het aanmaken van het account is gekozen, niet het e-mailadres.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "Als dit account bestaat, is er zojuist een e-mail naartoe gestuurd met een link die een uur geldig is.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Na een paar minuten niets ontvangen? Kijk in de map met ongewenste e-mail en controleer de gebruikersnaam of het e-mailadres. De beheerder kan u ook een nieuwe link geven.",
+  "Identifiant ou adresse e-mail": "Gebruikersnaam of e-mailadres",
+  "Mot de passe oublié ?": "Wachtwoord vergeten?",
+  "Retour à la connexion": "Terug naar aanmelden",
   "Versions proposées": "Aangeboden versies",
   "Stables (conseillé)": "Stabiel (aanbevolen)",
   "Bêta : nouveautés en avance, moins éprouvées": "Bèta: nieuwigheden eerder, minder getest",

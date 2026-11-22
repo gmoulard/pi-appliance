@@ -16,6 +16,16 @@
 // Traduction de la console : arabe. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ar", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "الحساب {0}: اختر كلمة مرور جديدة من {1} أحرف على الأقل. الجملة المكوّنة من عدة كلمات أسهل للتذكّر.",
+  "Mot de passe oublié": "نسيت كلمة المرور",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "أدخل اسم المستخدم أو عنوان البريد الإلكتروني لحسابك: ستتلقى عبر البريد الإلكتروني رابطًا لاختيار كلمة مرور جديدة. الرابط صالح لمدة ساعة.",
+  "Recevoir le lien par e-mail": "استلام الرابط عبر البريد الإلكتروني",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "أدخل اسم المستخدم وكلمة المرور. اسم المستخدم هو الاسم الذي اخترته عند إنشاء الحساب، وليس عنوان البريد الإلكتروني.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "إذا كان هذا الحساب موجودًا، فقد أُرسل إليه للتو بريد إلكتروني يحتوي على رابط صالح لمدة ساعة.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "لم يصلك شيء بعد بضع دقائق؟ تحقق من مجلد البريد غير المرغوب فيه، وتحقق من اسم المستخدم أو عنوان البريد الإلكتروني. يمكن للمسؤول أيضًا أن يعطيك رابطًا جديدًا.",
+  "Identifiant ou adresse e-mail": "اسم المستخدم أو عنوان البريد الإلكتروني",
+  "Mot de passe oublié ?": "هل نسيت كلمة المرور؟",
+  "Retour à la connexion": "العودة إلى تسجيل الدخول",
   "Versions proposées": "الإصدارات المعروضة",
   "Stables (conseillé)": "مستقرة (موصى بها)",
   "Bêta : nouveautés en avance, moins éprouvées": "تجريبية: ميزات جديدة مبكرًا، أقل اختبارًا",

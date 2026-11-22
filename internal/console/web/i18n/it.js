@@ -16,6 +16,16 @@
 // Traduction de la console : italien. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("it", {
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Account {0}: scegli una nuova password di almeno {1} caratteri. Una frase di più parole è più facile da ricordare.",
+  "Mot de passe oublié": "Password dimenticata",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Inserisci il tuo identificativo o l'indirizzo e-mail del tuo account: riceverai via e-mail un link per scegliere una nuova password. Il link è valido per un'ora.",
+  "Recevoir le lien par e-mail": "Ricevi il link via e-mail",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Inserisci il tuo identificativo e la password. L'identificativo è il nome scelto alla creazione dell'account, non l'indirizzo e-mail.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "Se questo account esiste, gli è appena stata inviata un'e-mail con un link valido per un'ora.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Nulla dopo qualche minuto? Guarda nella posta indesiderata e verifica l'identificativo o l'indirizzo e-mail. L'amministratore può anche darti un nuovo link.",
+  "Identifiant ou adresse e-mail": "Identificativo o indirizzo e-mail",
+  "Mot de passe oublié ?": "Password dimenticata?",
+  "Retour à la connexion": "Torna all'accesso",
   "Versions proposées": "Versioni proposte",
   "Stables (conseillé)": "Stabili (consigliato)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: novità in anticipo, meno collaudate",
