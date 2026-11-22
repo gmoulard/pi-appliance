@@ -16,6 +16,9 @@
 // Traduction de la console : turc. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("tr", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "Konsol yalnızca evde açılır. Açmadan önce önerilir: «Hesabım» bölümünden iki adımlı doğrulamayı etkinleştirin.",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Konsol internete açılsın mı? Her hesap internetten kendi parolasıyla oturum açabilecek. Önerilen: «Hesabım» bölümünde iki adımlı doğrulama.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Pi'nizi her yerden, internet adresinden yönetin. Önerilen: «Hesabım» bölümünden iki adımlı doğrulamayı etkinleştirin, çünkü internetten herkes bir parolayı tahmin etmeyi deneyebilir.",
   "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "{0} hesabı: en az {1} karakterlik yeni bir parola seçin. Birkaç kelimeden oluşan bir cümleyi hatırlamak daha kolaydır.",
   "Mot de passe oublié": "Parolamı unuttum",
   "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Kullanıcı adınızı veya hesabınızın e-posta adresini girin: yeni bir parola seçmeniz için e-postayla bir bağlantı alacaksınız. Bağlantı bir saat geçerlidir.",
@@ -619,10 +622,7 @@ piTranslations("tr", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Çok fazla deneme: yeniden denemeden önce birkaç dakika bekleyin.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Bu kod telefonu hesabınızla da eşleştirir: uygulama ardından konsolu parolasız açar. Yalnızca kendi telefonlarınıza gösterin; birkaç dakikada bir değişir.",
   "Ce téléphone n'est plus appairé à ce Pi.": "Bu telefon artık bu Pi ile eşleştirilmiş değil.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "Önce «Hesabım» bölümünde iki adımlı doğrulamayı açın: konsolu internete açmak için zorunludur.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Pi'nizi internet adresinden, her yerden yönetin. Güvenlik için internetten yalnızca iki adımlı doğrulamayı açmış hesaplar giriş yapabilir.",
   "Console sur internet": "İnternette konsol",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "İnternetten yalnızca iki adımlı doğrulamayı açmış hesaplar giriş yapabilir.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "Konsol internete kapatılsın mı? Yalnızca evde açılacak.",
   "Fermer la console sur internet": "Konsolu internete kapat",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Modeminizin 80 ve 443 numaralı bağlantı noktalarını da Pi'ye yönlendirmesi gerekir: adresin güvenlik sertifikasını alması bununla olur.",
@@ -635,7 +635,6 @@ piTranslations("tr", {
   "Retirer l'adresse": "Adresi kaldır",
   "Retirer l'adresse personnelle {0} ?": "{0} kişisel adresi kaldırılsın mı?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Pi'nin bir internet adresi olur olmaz konsol internete açılacak (DuckDNS veya pi-appliance.com, yukarıda).",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Konsol internete açılsın mı? İnternetten yalnızca iki adımlı doğrulaması olan hesaplar giriş yapabilecek.",
   "Ouvrir la console sur internet": "Konsolu internete aç",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "En kolayı: {0} adresine bir takma ad (CNAME kaydı). Modeminizin adresini izler, Pi üzerinde sağlayıcınızın parolası olmadan.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "DuckDNS olmadan, adı modeminizin genel IP adresine yönlendirin (A kaydı); bu adres değişebilir: bunun yerine yukarıdan DuckDNS'i ayarlayın."

@@ -16,6 +16,9 @@
 // Traduction de la console : néerlandais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("nl", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "De console opent alleen thuis. Aanbevolen voordat u hem opent: zet tweestapsverificatie aan in „Mijn account”.",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "De console op internet openen? Elk account kan dan vanaf internet aanmelden met zijn wachtwoord. Aanbevolen: tweestapsverificatie, in „Mijn account”.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Beheer uw Pi overal vandaan, op zijn internetadres. Aanbevolen: zet tweestapsverificatie aan in „Mijn account”, want vanaf internet kan iedereen proberen een wachtwoord te raden.",
   "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Account {0}: kies een nieuw wachtwoord van minstens {1} tekens. Een zin van meerdere woorden is makkelijker te onthouden.",
   "Mot de passe oublié": "Wachtwoord vergeten",
   "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Voer uw gebruikersnaam of het e-mailadres van uw account in: u ontvangt per e-mail een link om een nieuw wachtwoord te kiezen. De link is een uur geldig.",
@@ -619,10 +622,7 @@ piTranslations("nl", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Te veel pogingen: wacht een paar minuten voordat je het opnieuw probeert.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Deze code koppelt de telefoon ook aan je account: de app opent daarna de console zonder wachtwoord. Toon hem alleen aan je eigen telefoons; hij verandert om de paar minuten.",
   "Ce téléphone n'est plus appairé à ce Pi.": "Deze telefoon is niet meer gekoppeld aan deze Pi.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "Zet eerst tweestapsverificatie aan in ‘Mijn account’: die is verplicht om de console op internet te openen.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Beheer je Pi van overal, op zijn internetadres. Voor de veiligheid kunnen vanaf internet alleen accounts met tweestapsverificatie zich aanmelden.",
   "Console sur internet": "Console op internet",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Vanaf internet kunnen alleen accounts met tweestapsverificatie zich aanmelden.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "De console op internet sluiten? Hij opent dan alleen nog thuis.",
   "Fermer la console sur internet": "Console op internet sluiten",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Je router moet ook de poorten 80 en 443 doorsturen naar de Pi: zo krijgt het adres zijn beveiligingscertificaat.",
@@ -635,7 +635,6 @@ piTranslations("nl", {
   "Retirer l'adresse": "Adres verwijderen",
   "Retirer l'adresse personnelle {0} ?": "Het eigen adres {0} verwijderen?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "De console opent op internet zodra de Pi een internetadres heeft (DuckDNS of pi-appliance.com, hierboven).",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "De console op internet openen? Alleen accounts met tweestapsverificatie kunnen zich dan vanaf internet aanmelden.",
   "Ouvrir la console sur internet": "Console op internet openen",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "Het eenvoudigst: een alias (CNAME-vermelding) naar {0}. Die volgt het adres van uw router, zonder wachtwoord van uw aanbieder op de Pi.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Zonder DuckDNS laat u de naam naar het openbare IP-adres van uw router wijzen (A-vermelding); dat kan veranderen: stel liever DuckDNS in, hierboven."

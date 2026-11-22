@@ -16,6 +16,9 @@
 // Traduction de la console : japonais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ja", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "コンソールは自宅でのみ開きます。開く前に推奨：「マイアカウント」で 2 段階認証を有効にしてください。",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "コンソールをインターネットに公開しますか？各アカウントがパスワードでインターネットからログインできるようになります。推奨：「マイアカウント」の 2 段階認証。",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "インターネット上のアドレスで、どこからでも Pi を管理できます。推奨：「マイアカウント」で 2 段階認証を有効にしてください。インターネットからは誰でもパスワードの推測を試せるためです。",
   "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "アカウント {0}：{1} 文字以上の新しいパスワードを選んでください。複数の単語からなる文のほうが覚えやすくなります。",
   "Mot de passe oublié": "パスワードを忘れた場合",
   "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "ユーザー名またはアカウントのメールアドレスを入力してください。新しいパスワードを選ぶためのリンクがメールで届きます。リンクの有効期限は 1 時間です。",
@@ -619,10 +622,7 @@ piTranslations("ja", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "試行回数が多すぎます。数分待ってからもう一度お試しください。",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "このコードはスマートフォンをあなたのアカウントにペアリングもします。その後アプリはパスワードなしでコンソールを開きます。自分のスマートフォン以外には見せないでください。コードは数分ごとに変わります。",
   "Ce téléphone n'est plus appairé à ce Pi.": "このスマートフォンはもうこの Pi とペアリングされていません。",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "まず「マイアカウント」で 2 段階認証を有効にしてください。インターネットでコンソールを開くには必須です。",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Pi のインターネットアドレスで、どこからでも Pi を管理できます。安全のため、インターネットからは 2 段階認証を有効にしたアカウントだけがログインできます。",
   "Console sur internet": "インターネットのコンソール",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "インターネットからは、2 段階認証を有効にしたアカウントだけがログインできます。",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "インターネットのコンソールを閉じますか？自宅でしか開けなくなります。",
   "Fermer la console sur internet": "インターネットのコンソールを閉じる",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "ルーターでポート 80 と 443 を Pi に転送する必要もあります。これによりアドレスのセキュリティ証明書を取得できます。",
@@ -635,7 +635,6 @@ piTranslations("ja", {
   "Retirer l'adresse": "アドレスを削除",
   "Retirer l'adresse personnelle {0} ?": "独自のアドレス {0} を削除しますか？",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Pi にインターネットアドレス（上の DuckDNS または pi-appliance.com）ができ次第、コンソールはインターネットで開きます。",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "インターネットでコンソールを開きますか？インターネットからは 2 段階認証を有効にしたアカウントだけがログインできます。",
   "Ouvrir la console sur internet": "インターネットでコンソールを開く",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "いちばん簡単なのは {0} へのエイリアス（CNAME レコード）です。ルーターのアドレスに追従し、Pi に業者のパスワードは不要です。",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "DuckDNS がない場合は、名前をルーターのグローバル IP アドレスに向けてください（A レコード）。このアドレスは変わることがあります。上の DuckDNS を設定するほうがおすすめです。"

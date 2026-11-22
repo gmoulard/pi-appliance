@@ -16,6 +16,9 @@
 // Traduction de la console : persan. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("fa", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "کنسول فقط در خانه باز می‌شود. پیش از باز کردن پیشنهاد می‌شود: تأیید دومرحله‌ای را در «حساب من» فعال کنید.",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "کنسول روی اینترنت باز شود؟ هر حساب می‌تواند با گذرواژهٔ خود از اینترنت وارد شود. پیشنهاد: تأیید دومرحله‌ای، در «حساب من».",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Pi خود را از هر جا، در نشانی اینترنتی‌اش، مدیریت کنید. پیشنهاد: تأیید دومرحله‌ای را در «حساب من» فعال کنید، چون از اینترنت هر کسی می‌تواند حدس زدن گذرواژه را امتحان کند.",
   "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "حساب {0}: یک گذرواژهٔ جدید با دست‌کم {1} نویسه انتخاب کنید. جمله‌ای چندکلمه‌ای راحت‌تر به خاطر می‌ماند.",
   "Mot de passe oublié": "فراموشی گذرواژه",
   "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "نام کاربری یا نشانی ایمیل حساب خود را وارد کنید: پیوندی برای انتخاب گذرواژهٔ جدید از راه ایمیل دریافت خواهید کرد. این پیوند یک ساعت معتبر است.",
@@ -619,10 +622,7 @@ piTranslations("fa", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "تلاش‌های بیش از حد: چند دقیقه صبر کنید و دوباره تلاش کنید.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "این کد تلفن را با حساب شما نیز جفت می‌کند: سپس برنامه کنسول را بدون گذرواژه باز می‌کند. آن را فقط به تلفن‌های خودتان نشان دهید؛ هر چند دقیقه یک بار تغییر می‌کند.",
   "Ce téléphone n'est plus appairé à ce Pi.": "این تلفن دیگر با این Pi جفت نیست.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "ابتدا در «حساب من» تأیید دومرحله‌ای را فعال کنید: برای باز کردن کنسول روی اینترنت الزامی است.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Pi خود را از هر جایی، با نشانی اینترنتی‌اش مدیریت کنید. برای امنیت، از اینترنت فقط حساب‌هایی که تأیید دومرحله‌ای را فعال کرده‌اند می‌توانند وارد شوند.",
   "Console sur internet": "کنسول روی اینترنت",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "از اینترنت فقط حساب‌هایی که تأیید دومرحله‌ای را فعال کرده‌اند می‌توانند وارد شوند.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "کنسول روی اینترنت بسته شود؟ فقط در خانه باز می‌شود.",
   "Fermer la console sur internet": "بستن کنسول روی اینترنت",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "مودم شما باید درگاه‌های 80 و 443 را هم به Pi هدایت کند: این کار به نشانی امکان می‌دهد گواهی امنیتی بگیرد.",
@@ -635,7 +635,6 @@ piTranslations("fa", {
   "Retirer l'adresse": "حذف نشانی",
   "Retirer l'adresse personnelle {0} ?": "نشانی شخصی {0} حذف شود؟",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "کنسول به‌محض اینکه Pi نشانی اینترنتی داشته باشد (DuckDNS یا pi-appliance.com، بالا) روی اینترنت باز می‌شود.",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "کنسول روی اینترنت باز شود؟ از اینترنت فقط حساب‌های دارای تأیید دومرحله‌ای می‌توانند وارد شوند.",
   "Ouvrir la console sur internet": "باز کردن کنسول روی اینترنت",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "ساده‌ترین راه: یک نام مستعار (رکورد CNAME) به {0}. این نشانی مودم شما را دنبال می‌کند، بدون گذرواژهٔ ارائه‌دهنده روی Pi.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، نام را به نشانی IP عمومی مودم خود اشاره دهید (رکورد A)؛ ممکن است عوض شود: بهتر است DuckDNS را در بالا تنظیم کنید."

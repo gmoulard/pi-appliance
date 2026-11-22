@@ -35,7 +35,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.11**: Accès : direct (UPnP ou guide), relais du projet sinon (7.2, 7.3).
 - [x] **TODO-1.12**: Connexion unique ; rôles administrateur, utilisateur, invité (8.1).
 - [x] **TODO-1.13**: Accès choisi par service : public, connectés, maison (8.2).
-- [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3).
+- [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3). Obligation retirée le 2026-11-22 à la demande de l'utilisateur : la double authentification reste facultative et conseillée.
 - [x] **TODO-1.15**: Statistiques anonymes sur accord explicite (8.4).
 - [x] **TODO-1.16**: Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
 - [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2).
@@ -218,7 +218,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Écrans : choix à l'installation et dans la fiche du service, en langage courant, dans les 12 langues.
   - [x] Spécification 8.2 marquée réalisée, limites notées.
 - [ ] **TODO-3.11**: Console fermée sur internet par défaut (8.3) : Traefik limite désormais `/pi-appliance` aux plages privées IPv4, à la boucle locale et aux plages locales IPv6, avec une priorité basse ; le test Traefik vérifie le refus d'une source hors liste autorisée et laisse passer les routeurs des services. Reste à définir les plages réelles du VPN et du tunnel relais : si le pair du relais a une adresse privée, `ClientIP` l'autorise aussi. L'accès depuis un LAN IPv6 à adresse globale est également refusé. Ne pas cocher avant d'avoir défini ces réseaux et validé leur séparation.
-- [x] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3). Fait : carte « Console sur internet » (fermée par défaut, ouverte par un administrateur qui a la double authentification), routeur Traefik `console-internet.yml` écrit par la console pour les adresses internet du Pi avec certificat Let's Encrypt, refus depuis internet des comptes sans double authentification, actions sensibles réservées à la maison ; tests Go et Traefik.
+- [x] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3). Fait : carte « Console sur internet » (fermée par défaut, ouverte par un administrateur qui a la double authentification), routeur Traefik `console-internet.yml` écrit par la console pour les adresses internet du Pi avec certificat Let's Encrypt, refus depuis internet des comptes sans double authentification, actions sensibles réservées à la maison ; tests Go et Traefik. Double authentification plus obligatoire depuis le 2026-11-22 (décision de l'utilisateur, 8.3).
   - [ ] À vérifier sur un vrai Pi : ports 80 et 443 redirigés par la box, certificat Let's Encrypt obtenu pour l'adresse DuckDNS ou pi-appliance.com, connexion depuis un téléphone en 4G, fermeture.
 
 ## 4. Étape 3 — Le reste

@@ -2569,7 +2569,7 @@ function showAddress(status) {
 }
 
 // Console sur internet (spécification 8.3) : fermée par défaut, ouverte par un
-// administrateur qui a activé la double authentification.
+// administrateur ; la double authentification y est conseillée, plus obligatoire.
 const internetBox = document.getElementById("internetBox");
 const internetState = document.getElementById("internetState");
 const internetOpen = document.getElementById("internetOpen");
@@ -2592,7 +2592,7 @@ function showInternet(status) {
     help.append(element("p", t("Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut."), "meta"));
   }
   internetDomainRemove.hidden = !status.domain;
-  internetOpen.hidden = status.enabled || !status.totp || status.internet;
+  internetOpen.hidden = status.enabled || status.internet;
   internetClose.hidden = !status.enabled;
   const dot = element("span", undefined, `dot ${status.enabled ? "ok" : ""}`);
   let text;
@@ -2601,7 +2601,7 @@ function showInternet(status) {
   } else if (status.enabled) {
     text = t("La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).");
   } else if (!status.totp) {
-    text = t("Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.");
+    text = t("La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».");
   } else {
     text = t("La console ne s'ouvre qu'à la maison.");
   }
@@ -2617,7 +2617,7 @@ async function loadInternet() {
 }
 
 async function setInternet(enabled) {
-  if (enabled && !window.confirm(t("Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet."))) return;
+  if (enabled && !window.confirm(t("Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte »."))) return;
   if (!enabled && !window.confirm(t("Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison."))) return;
   const button = enabled ? internetOpen : internetClose;
   button.disabled = true;
@@ -3963,9 +3963,6 @@ api("health")
       showAuth("setup");
     } else if (!session.account) {
       showAuth("login");
-      if (session.internet) {
-        showMessage([t("Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.")], "info");
-      }
       if (FACTORY_PAGE) {
         showMessage([t("Connectez-vous avec un compte administrateur pour remettre le Pi à zéro.")], "info");
       }

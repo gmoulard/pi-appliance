@@ -301,13 +301,10 @@ func (c *console) account(r *http.Request) (auth.Account, bool) {
 	if err != nil {
 		return auth.Account{}, false
 	}
-	account, ok := c.Accounts.Session(cookie.Value)
-	// NE PAS relâcher : depuis internet, seuls les comptes avec double
-	// authentification ouvrent la console (spécification 8.3).
-	if ok && fromInternet(r) && account.TOTPSecret == "" {
-		return auth.Account{}, false
-	}
-	return account, ok
+	// Depuis internet, la double authentification n'est plus obligatoire
+	// (décision de l'utilisateur du 2026-11-22, spécification 8.3) : elle reste
+	// conseillée, et exigible compte par compte par l'administrateur.
+	return c.Accounts.Session(cookie.Value)
 }
 
 // CLIAccount : compte de la ligne de commande du Pi, administrateur.
@@ -422,12 +419,6 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 	token, account, err := c.Accounts.Login(request.Name, request.Password, request.Code, clientIP(r))
 	if err != nil {
 		writeAuthError(w, err)
-		return
-	}
-	if fromInternet(r) && account.TOTPSecret == "" {
-		// Même réponse qu'un mauvais mot de passe : rien n'est révélé sur le compte.
-		c.Accounts.Logout(token)
-		writeAuthError(w, auth.ErrCredentials)
 		return
 	}
 	if account.Role == auth.RoleAdmin {

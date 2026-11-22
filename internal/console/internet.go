@@ -289,10 +289,6 @@ func (c *console) internetSave(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "Demande illisible.")
 		return
 	}
-	if enabled && account.TOTPSecret == "" {
-		writeError(w, http.StatusConflict, "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.")
-		return
-	}
 	if c.InternetFile == "" {
 		writeError(w, http.StatusNotImplemented, "La console ne s'ouvre pas sur internet ici.")
 		return

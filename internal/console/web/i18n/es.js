@@ -16,6 +16,9 @@
 // Traduction de la console : espagnol. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("es", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "La consola solo se abre en casa. Recomendado antes de abrirla: active la autenticación en dos pasos en «Mi cuenta».",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "¿Abrir la consola en internet? Cada cuenta podrá conectarse desde internet con su contraseña. Recomendado: la autenticación en dos pasos, en «Mi cuenta».",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Administre su Pi desde cualquier lugar, en su dirección de internet. Recomendado: active la autenticación en dos pasos en «Mi cuenta», porque desde internet cualquiera puede intentar adivinar una contraseña.",
   "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Cuenta {0}: elija una nueva contraseña de al menos {1} caracteres. Una frase de varias palabras es más fácil de recordar.",
   "Mot de passe oublié": "Contraseña olvidada",
   "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Introduzca su identificador o la dirección de correo de su cuenta: recibirá por correo un enlace para elegir una nueva contraseña. El enlace es válido durante una hora.",
@@ -619,10 +622,7 @@ piTranslations("es", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Demasiados intentos: espere unos minutos antes de volver a intentarlo.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Este código también empareja el teléfono con su cuenta: después la aplicación abrirá la consola sin contraseña. Muéstrelo solo a sus propios teléfonos; cambia cada pocos minutos.",
   "Ce téléphone n'est plus appairé à ce Pi.": "Este teléfono ya no está emparejado con esta Pi.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "Active primero la verificación en dos pasos en «Mi cuenta»: es obligatoria para abrir la consola en internet.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Administre su Pi desde cualquier lugar, en su dirección de internet. Por seguridad, desde internet solo pueden iniciar sesión las cuentas que han activado la verificación en dos pasos.",
   "Console sur internet": "Consola en internet",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Desde internet, solo pueden iniciar sesión las cuentas que han activado la verificación en dos pasos.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "¿Cerrar la consola en internet? Solo se abrirá en casa.",
   "Fermer la console sur internet": "Cerrar la consola en internet",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Su router también debe redirigir los puertos 80 y 443 a la Pi: así la dirección obtiene su certificado de seguridad.",
@@ -635,7 +635,6 @@ piTranslations("es", {
   "Retirer l'adresse": "Quitar la dirección",
   "Retirer l'adresse personnelle {0} ?": "¿Quitar la dirección personal {0}?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "La consola se abrirá en internet en cuanto la Pi tenga una dirección de internet (DuckDNS o pi-appliance.com, arriba).",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "¿Abrir la consola en internet? Solo las cuentas con verificación en dos pasos podrán iniciar sesión desde internet.",
   "Ouvrir la console sur internet": "Abrir la consola en internet",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "Lo más sencillo: un alias (entrada CNAME) hacia {0}. Sigue la dirección de su router, sin contraseña de su proveedor en la Pi.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Sin DuckDNS, haga apuntar el nombre a la dirección IP pública de su router (entrada A); puede cambiar: configure mejor DuckDNS, más arriba."

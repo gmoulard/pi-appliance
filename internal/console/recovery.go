@@ -111,9 +111,9 @@ func (c *console) useResetLink(w http.ResponseWriter, r *http.Request) {
 	if account.Role == auth.RoleAdmin && c.Accounts.FirstAdmin(account.Name) {
 		c.protectBackups(request.Password, false)
 	}
-	// Double authentification activée, ou depuis internet sans elle : connexion
-	// normale ensuite (avec le code), pas de session ouverte ici.
-	if account.TOTPSecret != "" || fromInternet(r) {
+	// Double authentification activée : connexion normale ensuite, avec le
+	// code ; pas de session ouverte ici.
+	if account.TOTPSecret != "" {
 		writeJSON(w, http.StatusOK, account.Public())
 		return
 	}
