@@ -32,7 +32,16 @@ pi-appliance s'adresse au **grand public** : des personnes sans connaissances te
 
 ### 1.2 Licence
 
-pi-appliance est un logiciel libre sous licence **GNU Affero General Public License version 3** (AGPL-3.0), fichier [`LICENSE`](../LICENSE). Toute personne qui modifie pi-appliance et le met à disposition d'autres utilisateurs, y compris à travers le réseau, doit publier ses modifications sous la même licence. Les applications de la marketplace gardent leur propre licence.
+**Réalisé** (2026-11-22) : le code de pi-appliance est public, mais ce n'est plus un logiciel libre. Il est sous licence **Creative Commons Attribution - Pas d'utilisation commerciale - Pas de modification 4.0** (CC BY-NC-ND 4.0), avec des permissions supplémentaires, fichier [`LICENSE`](../LICENSE) :
+
+- chacun peut utiliser pi-appliance, le copier et le diffuser tel quel, et l'intégrer sans le modifier dans un autre projet non commercial (compilé ou empaqueté compris), en gardant les en-têtes et le fichier `LICENSE` et en citant le projet avec un lien et le nom de l'auteur ;
+- les versions modifiées et les projets dérivés sont interdits ; une version modifiée ne peut être publiée que pour être proposée au dépôt officiel ; changer les réglages de son propre appareil n'est pas une modification ;
+- tout usage commercial, y compris par une entreprise, demande une licence séparée de l'auteur (guillaume@moulard.org) ;
+- tout le monde peut contribuer, selon [`CONTRIBUTING.md`](../CONTRIBUTING.md) : le contributeur garde ses droits d'auteur et accorde à l'auteur du projet le droit de diffuser sa contribution sous toute licence, commerciale comprise (accord de contribution) ;
+- le code publié jusqu'à la version 0.1.3 (commit `4b80dff`) reste sous GNU AGPL-3.0 ;
+- les applications de la marketplace et les autres composants tiers gardent leur propre licence.
+
+Chaque fichier de code porte l'en-tête de licence donné dans `CLAUDE.md`.
 
 ### 1.3 Objectif de la première version
 
@@ -664,7 +673,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | Chemin | Contenu |
 |--------|---------|
 | `README.md` | Présentation du projet |
-| `LICENSE` | Texte de la licence AGPL-3.0 |
+| `LICENSE` | Licence CC BY-NC-ND 4.0 et permissions supplémentaires (1.2) |
+| `CONTRIBUTING.md` | Comment contribuer et accord de contribution (1.2) |
 | `VERSION` | Numéro de la dernière version publiée, `x.y.z` (9.2) |
 | `CHANGELOG.md` | Historique des versions (9.2) |
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
