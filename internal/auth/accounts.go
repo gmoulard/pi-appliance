@@ -53,6 +53,17 @@ func (s *Store) List() []Public {
 	return list
 }
 
+// Get renvoie un compte par son identifiant.
+func (s *Store) Get(name string) (Account, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	account, ok := s.accounts[strings.ToLower(strings.TrimSpace(name))]
+	if !ok {
+		return Account{}, ErrNotFound
+	}
+	return account, nil
+}
+
 // Create crée un compte sans mot de passe et renvoie le jeton de son invitation.
 func (s *Store) Create(name, email string, role Role, expires *time.Time) (Account, string, error) {
 	name = strings.ToLower(strings.TrimSpace(name))

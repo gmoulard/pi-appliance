@@ -171,6 +171,14 @@ Une appliance se gère depuis sa propre console : pas de tableau de bord commun 
 - `installer <application> [--nom NOM] [--acces public|users|home] [--param nom=valeur]… [--confirmer]` : installe et affiche l'avancement (préparation, téléchargement image par image, création, démarrage, vérification), puis l'adresse et les mots de passe créés par le Pi, montrés une seule fois. Une application qui a la main sur tout le Pi (Portainer) demande `--confirmer`.
 - `desinstaller <service> [--effacer-donnees] [--oui]` : données **gardées par défaut** ; `--effacer-donnees` les efface, après une question (ou `--oui`).
 - `demarrer`, `arreter`, `redemarrer <service>`.
+- `user` (TODO-5.19, demande de l'utilisateur du 2026-11-22 ; noms en anglais seulement, choix de l'utilisateur) : comptes de la console (section 8.1), par la même API que l'écran « Comptes » ; `pia user` seul donne son aide.
+  - `user list` : comptes, rôle, e-mail, état (actif, invitation en attente, invité actif jusqu'au… inclus, accès terminé) et double authentification (non, activée, exigée).
+  - `user show <compte>` : le compte (rôle, état, double authentification, codes de secours restants), ses **téléphones appairés** (date d'appairage, dernière connexion) et les **liens de partage** qu'il a créés (service, nom, création, fin) : `GET api/accounts/{nom}` (administrateur).
+  - `user add <compte> <e-mail> [--role admin|user|guest] [--until AAAA-MM-JJ] [--require-2fa]` : rôle `user` par défaut, `--until` (dernier jour d'accès, à l'heure du Pi) obligatoire pour un invité et refusé sinon. **Le mot de passe n'est jamais tapé dans le terminal** (choix de l'utilisateur) : la personne reçoit le lien d'invitation par e-mail, ou `pia` l'affiche pour qu'on le lui transmette. Le lien pointe vers l'adresse internet de la console si elle est ouverte sur internet, sinon vers `https://<nom>.local`, jamais vers `127.0.0.1` où parle `pia`.
+  - `user edit <compte> [--role …] [--until …] [--require-2fa yes|no]` : ne change que ce qui est donné (passer à un autre rôle qu'invité retire la date de fin).
+  - `user reset <compte>` : nouveau lien pour choisir un mot de passe (oublié, ou invitation expirée), valable 7 jours ; le mot de passe actuel reste valable jusqu'au choix du nouveau. Marche aussi pour un administrateur : avec SSH, c'est une autre façon de retrouver l'accès que le fichier `reset`.
+  - `user 2fa-off <compte> [--yes]` : retire la double authentification (téléphone et codes de secours perdus), après une question.
+  - `user delete <compte> [--yes]` : après une question ; le dernier administrateur ne peut pas être supprimé.
 - `ssh [etat]` : SSH en marche, allumé au démarrage, connexion par mot de passe acceptée ou non (`sshd -T`), nombre de clés, commande de connexion (`ssh <compte>@<nom>.local`).
 - `ssh activer|desactiver [--oui]` : `systemctl enable|disable --now ssh` ; éteindre demande confirmation, avec un avertissement si la commande est lancée par SSH.
 - `ssh cle liste|ajouter|retirer [--utilisateur NOM]` : clés de `~/.ssh/authorized_keys` (dossier 700, fichier 600, au compte), du compte qui a lancé `sudo` par défaut, sinon du premier compte de personne. Une clé est vérifiée (type OpenSSH connu, contenu qui annonce le même type) ; une clé privée est refusée ; un doublon n'est pas ajouté ; les lignes non comprises (commentaires, options) sont gardées. La dernière clé ne peut pas être retirée quand les mots de passe sont refusés.
@@ -673,7 +681,7 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `go.mod` | Module Go `github.com/gmoulard/pi-appliance` |
 | `cmd/pi-appliance/` | Programme principal de la console |
 | `internal/console/` | Serveur web de la console ; `web/` : interface intégrée au binaire |
-| `internal/cli/` | Ligne de commande du Pi, `pia <commande>` (ou `pi-appliance <commande>`) : version du socle, état, catalogue, installation et désinstallation des services par l'API de la console, réglage de SSH (5.2) |
+| `internal/cli/` | Ligne de commande du Pi, `pia <commande>` (ou `pi-appliance <commande>`) : version du socle, état, catalogue, installation et désinstallation des services par l'API de la console, comptes (`pia user`), réglage de SSH (5.2) |
 | `internal/auth/` | Fournisseur d'identité : comptes et invités, invitations, connexion, double authentification, sessions de la console et déléguées, liens de partage d'Etherpad, appareils appairés de l'application mobile, fichier `reset` (6.3, 8.1, 8.5) |
 | `internal/services/` | Installation et désinstallation des services (Docker Compose) |
 | `internal/ddns/` | Mise à jour du nom DuckDNS avec l'adresse publique de la box (7.1) |

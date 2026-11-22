@@ -167,6 +167,21 @@ func (s *Store) Shares(service string, viewer Account) []SharePublic {
 	return list
 }
 
+// SharesOf renvoie les liens valables créés par owner, tous services confondus.
+func (s *Store) SharesOf(owner string) []SharePublic {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.Now()
+	list := []SharePublic{}
+	for _, share := range s.shares {
+		if share.Owner == owner && s.shareValid(share, now) {
+			list = append(list, share.Public())
+		}
+	}
+	sort.Slice(list, func(i, j int) bool { return list[i].CreatedAt.Before(list[j].CreatedAt) })
+	return list
+}
+
 // RevokeShare retire un lien : son créateur ou un administrateur.
 func (s *Store) RevokeShare(service, id string, by Account) error {
 	s.mu.Lock()

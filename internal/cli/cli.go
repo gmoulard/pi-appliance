@@ -157,6 +157,7 @@ func Run(args []string, env Env) int {
 		"redemarrer":   func(env Env, args []string) error { return control(env, args, "restart") },
 		"ssh":          sshCommand,
 		"update":       updateCommand,
+		"user":         userCommand,
 	}
 	run, ok := commands[command]
 	if !ok {
@@ -173,6 +174,10 @@ func Run(args []string, env Env) int {
 	if err := run(env, args[1:]); err != nil {
 		fmt.Fprintln(env.Err, err)
 		var usage usageError
+		var userUsage userUsageError
+		if errors.As(err, &userUsage) {
+			return 2
+		}
 		if errors.As(err, &usage) {
 			fmt.Fprint(env.Err, "\n"+help)
 			return 2
@@ -198,6 +203,9 @@ const help = `pia : ligne de commande du Pi (la console reste le moyen le plus s
   pia update [--oui]              installer la dernière version de pi-appliance
   pia update list                 versions publiées, celle du Pi signalée
   pia update <version> [--oui]    installer cette version (plus récente ou plus ancienne)
+
+  pia user list|show|add|edit|reset|2fa-off|delete
+                                  comptes de la console (pia user : aide détaillée)
 
   pia ssh [etat]                  SSH en marche ? mots de passe ? clés ?
   pia ssh activer|desactiver [--oui]

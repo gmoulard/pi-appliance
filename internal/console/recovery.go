@@ -153,7 +153,7 @@ func (c *console) consoleBase(r *http.Request) string {
 }
 
 // requestLanguage : langue du message, choisie dans la console (asked), sinon
-// la première de l'en-tête Accept-Language du navigateur.
+// la première de l'en-tête Accept-Language du navigateur, sinon le français.
 func requestLanguage(r *http.Request, asked string) string {
 	if asked = strings.ToLower(strings.TrimSpace(asked)); asked != "" {
 		return asked
@@ -161,5 +161,9 @@ func requestLanguage(r *http.Request, asked string) string {
 	first, _, _ := strings.Cut(r.Header.Get("Accept-Language"), ",")
 	first, _, _ = strings.Cut(strings.TrimSpace(first), ";")
 	first, _, _ = strings.Cut(first, "-")
-	return strings.ToLower(first)
+	if first = strings.ToLower(first); first == "" {
+		// Sans navigateur (pia) : le français, qui fait foi.
+		return "fr"
+	}
+	return first
 }
