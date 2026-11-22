@@ -2347,7 +2347,13 @@ async function loadNetwork() {
   }
   networkSection.hidden = false;
   showNetworkState(state);
-  showWifiList(await api("network/wifi").catch(() => ({ networks: [] })));
+  let list = await api("network/wifi").catch(() => ({ networks: [] }));
+  // Aucune recherche depuis le démarrage (Pi relié directement à la maison) :
+  // la lancer ici, elle ne coupe rien tant que le point d'accès est fermé.
+  if (!list.scannedAt && !state.accessPoint.open) {
+    list = await api("network/wifi/scan", { method: "POST" }).catch(() => list);
+  }
+  showWifiList(list);
   clearInterval(networkTimer);
   networkTimer = setInterval(showApCountdown, 30000);
   return state;

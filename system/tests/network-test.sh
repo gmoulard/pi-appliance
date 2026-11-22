@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Tests de « network.sh test » et « network.sh reboot », sans Pi : de faux
+# Tests de « network.sh test », « status » et « reboot », sans Pi : de faux
 # nmcli, ping, getent, avahi-resolve-host-name, systemctl et systemd-run
 # notent ce qui leur est demandé. sh system/tests/network-test.sh
 
@@ -45,7 +45,8 @@ fake nmcli 'echo "nmcli $*" >>"$FAKE/calls"
 case "$*" in
 *"device status"*) cat "$FAKE/devices" 2>/dev/null ;;
 *"connection show --active"*) [ -e "$FAKE/ap" ] && echo pi-appliance-ap ;;
-*"device wifi list"*) echo "yes:Maison\\:Salon" ;;
+*"device wifi list"*) [ -e "$FAKE/no-scan" ] || echo "yes:Maison\\:Salon" ;;
+*"802-11-wireless.ssid connection show"*) echo "Maison:Salon" ;;
 *"IP4.ADDRESS device show"*) echo "192.168.1.20/24" ;;
 *"IP4.GATEWAY device show"*) echo "192.168.1.1" ;;
 *"connection.autoconnect"*) cat "$FAKE/autoconnect" 2>/dev/null ;;
@@ -96,6 +97,17 @@ check "Wi-Fi : vérifications" "$(jq -c .checks "$work/out")" '{"connected":true
 check "Wi-Fi : box essayée sur wlan0" "$(grep -c 'ping .*-I wlan0 192.168.1.1' "$fake/calls")" 1
 check "Wi-Fi : adresse gardée" "$(jq -r '.addresses[0]' "$work/state/home-address")" 192.168.1.20
 [ ! -e "$fake/forbidden" ] || { echo "ÉCHEC le test touche à la puce Wi-Fi : $(cat "$fake/forbidden")"; failures=$((failures + 1)); }
+
+# Liste des Wi-Fi encore vide (aucune recherche depuis le démarrage) : le Pi
+# reste relié au Wi-Fi de la maison, dont le nom vient du réglage enregistré.
+touch "$fake/no-scan"
+run test
+check "sans recherche : nom du Wi-Fi" "$(jq -r .ssid "$work/out")" "Maison:Salon"
+run status
+check "état sans recherche : relié" "$(jq -r .wifi.connected "$work/out")" true
+check "état sans recherche : nom du Wi-Fi" "$(jq -r .wifi.ssid "$work/out")" "Maison:Salon"
+check "état sans recherche : adresse" "$(jq -r '.addresses | join(",")' "$work/out")" 192.168.1.20
+rm -f "$fake/no-scan"
 
 # Sans internet ni nom en .local : le test passe quand même (le Pi marche à la maison).
 rm -f "$fake/internet" "$fake/mdns"
@@ -155,4 +167,4 @@ if [ "$failures" -gt 0 ]; then
 	echo "$failures échec(s)"
 	exit 1
 fi
-echo "network.sh test et reboot : tout est bon"
+echo "network.sh test, status et reboot : tout est bon"

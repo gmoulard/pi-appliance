@@ -64,8 +64,7 @@ status() {
 	if ap_is_open; then state=open; fi
 	wired=false
 	if has_ethernet; then wired=true; fi
-	ssid=$(nmcli -t -f ACTIVE,SSID device wifi list ifname "$WIFI_DEVICE" --rescan no 2>/dev/null |
-		sed -n 's/^yes://p' | head -n 1 | sed 's/\\\(.\)/\1/g')
+	ssid=$(home_wifi_ssid)
 	if ap_is_open; then ssid=; fi
 	choice=$(cat "$NETWORK_CHOICE" 2>/dev/null || true)
 	country=$(wifi_country)
@@ -240,8 +239,7 @@ network_test() {
 		awk -F: -v type="$type" -v ap="$AP_CONNECTION" '$2 == type && $3 == "connected" && $4 != ap { print $1; exit }')
 	ssid=''
 	if [ "$choice" = wifi ] && ! ap_is_open; then
-		ssid=$(nmcli -t -f ACTIVE,SSID device wifi list ifname "$WIFI_DEVICE" --rescan no 2>/dev/null |
-			sed -n 's/^yes://p' | head -n 1 | sed 's/\\\(.\)/\1/g')
+		ssid=$(home_wifi_ssid)
 	fi
 	address=''
 	gateway=''
