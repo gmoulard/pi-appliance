@@ -4,7 +4,7 @@ Instructions pour Claude Code (ou tout agent) travaillant sur ce dépôt.
 
 ## Le projet
 
-pi-appliance transforme un Raspberry Pi en appliance de Fog Computing : image Raspberry Pi OS + Docker + couche produit (console `/pi-appliance`, marketplace, Traefik, exposition sur internet). Le produit visé est décrit dans [docs/specification.md](docs/specification.md), l'avancement dans [docs/TODO.md](docs/TODO.md) : les lire avant toute modification fonctionnelle et les mettre à jour dans le même changement. La spécification est marquée « cible » tant que le code n'existe pas : quand une fonction est réalisée, le dire dans la spécification et cocher le TODO.
+pi-appliance transforme un Raspberry Pi en appliance de Fog Computing : image Raspberry Pi OS + Docker + couche produit (console `/pi-appliance`, marketplace, Traefik, exposition sur internet). Le produit visé est décrit dans [docs/specification.md](docs/specification.md), l'avancement dans [docs/TODO.md](docs/TODO.md) : les lire avant toute modification fonctionnelle et les mettre à jour dans le même changement. La spécification est marquée « cible » tant que le code n'existe pas : quand une fonction est réalisée, le dire dans la spécification et la passer en `[~]` dans le TODO ; ne la cocher `[x]` qu'une fois ses critères d'acceptation remplis (essai sur un vrai Pi compris). États `[ ]`, `[~]`, `[!]` (bloqué, raison dite), `[x]` ; une action ouverte porte « Dépend de : » et ses critères d'acceptation (légende en tête du TODO, filtres du site dans `docs/todo-filter.js`).
 
 Public visé : le grand public (spécification 1.1). Tout se fait depuis la console, sans ligne de commande ; les écrans parlent en langage courant, sans jargon technique.
 
