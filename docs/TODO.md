@@ -152,6 +152,12 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [ ] À vérifier sur un vrai Pi : adresses ouvertes depuis Windows 10/11, Android, iPhone, Mac et Linux ; alerte du certificat une fois par service ; connexion à DokuWiki, Etherpad, Portainer et Cockpit ; déplacement des services d'un Pi mis à jour depuis la v0.1.3 (Nextcloud compris) ; déconnexion.
   - [ ] Le nom changé par `name.sh check` au démarrage (nom déjà pris sur le réseau) n'est vu par la console qu'à son redémarrage suivant : les services restent jusque-là à l'ancienne adresse.
 - [x] **TODO-2.64**: Écran « Réseau de la maison » faux sur un Pi déjà relié (capture du 2026-11-22) : « Le Pi n'est relié à aucun réseau. Adresse : 192.168.1.196. » et « Aucun Wi-Fi trouvé pour l'instant. ». Cause : `network.sh` lisait le nom du Wi-Fi dans la liste des Wi-Fi de nmcli (colonne `ACTIVE`), vide tant qu'aucune recherche n'a eu lieu depuis le démarrage ; la liste de la console n'est remplie qu'à l'ouverture du point d'accès ou par « Chercher à nouveau ». Corrigé (spécification 4) : l'état de la puce (`nmcli device status`) fait foi, le nom vient du réglage enregistré (`home_wifi_ssid`, `common.sh`), essai dans `system/tests/network-test.sh` ; la console lance d'elle-même une recherche quand la liste est vide et le point d'accès fermé (rien n'est coupé). À vérifier sur un vrai Pi.
+- [ ] **TODO-2.65**: Wi-Fi associé sans rien taper au premier démarrage (spécification 4, cible ; demande de l'utilisateur du 2026-11-22, à programmer plus tard) :
+  - [ ] Essai à la main sur un vrai Pi (3B+ et 4) avec une Livebox : association WPS par bouton avec NetworkManager (`wps-method pbc`), sinon par `wpa_supplicant` ; noter ce qui marche.
+  - [ ] `network.sh wifi-wps` : fermer le point d'accès, lancer l'association (2 minutes au plus), garder le Wi-Fi obtenu sous `pi-appliance-wifi`, rouvrir le point d'accès en cas d'échec avec une erreur propre ; essai dans `system/tests/network-test.sh`.
+  - [ ] Console : bouton « Associer avec le bouton de la box » en premier, explication avant la coupure du Wi-Fi de configuration, résultat lu dans l'état ; textes dans les 12 langues ; saisie à la main gardée en secours.
+  - [ ] Piste : code QR Wi-Fi de l'étiquette de la box lu par l'application mobile (pi-appliance-pwa, jsQR), le mot de passe n'allant qu'au Pi.
+  - [ ] Piste : Wi-Fi Easy Connect (DPP), si le pilote de la puce du Pi et `wpa_supplicant` le permettent.
 
 ### Marketplace (6)
 
