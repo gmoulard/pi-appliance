@@ -109,6 +109,21 @@ wifi_scan_json() {
 		| {scannedAt: $at, networks: .}'
 }
 
+# Nom du Wi-Fi de la maison auquel la puce est reliée ; rien si elle ne l'est pas
+# (ou si elle sert au point d'accès). L'état de la puce fait foi : la liste des
+# Wi-Fi de nmcli (colonne ACTIVE) reste vide tant qu'aucune recherche n'a eu lieu
+# depuis le démarrage, le nom vient alors du réglage enregistré.
+home_wifi_ssid() {
+	_hw_connection=$(nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status 2>/dev/null |
+		awk -F: -v device="$WIFI_DEVICE" -v ap="$AP_CONNECTION" '$1 == device && $2 == "wifi" && $3 == "connected" && $4 != ap { print $4; exit }')
+	[ -n "$_hw_connection" ] || return 0
+	_hw_ssid=$(nmcli -t -f ACTIVE,SSID device wifi list ifname "$WIFI_DEVICE" --rescan no 2>/dev/null |
+		sed -n 's/^yes://p' | head -n 1 | sed 's/\\\(.\)/\1/g')
+	[ -n "$_hw_ssid" ] || _hw_ssid=$(nmcli -g 802-11-wireless.ssid connection show "$_hw_connection" 2>/dev/null || true)
+	[ -n "$_hw_ssid" ] || _hw_ssid=$_hw_connection
+	printf '%s\n' "$_hw_ssid"
+}
+
 # Adresses IPv4 du Pi sur le réseau de la maison (hors point d'accès et Docker).
 addresses() {
 	nmcli -t -f DEVICE,TYPE,STATE,CONNECTION device status 2>/dev/null |
