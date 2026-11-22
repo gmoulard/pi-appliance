@@ -118,7 +118,7 @@ Servie par l'appliance sous `/pi-appliance`, en HTTPS seulement.
 4. Adresse de l'appliance : `<nom>.pi-appliance.com` (vérification que le nom est libre) ou domaine personnel (section 7.1).
 5. Test d'accès depuis internet ; guide de la box ou bascule sur le relais si besoin (section 7).
 6. Création des utilisateurs.
-7. Statistiques anonymes : proposées, désactivées par défaut (section 8.4).
+7. Statistiques anonymes : proposées, désactivées par défaut (section 8.4) ; fonction désactivée pour l'instant (2026-11-22), l'étape ne viendra qu'avec sa réactivation.
 8. Test du réseau de la maison, puis redémarrage du Pi. **Cible** (TODO-2.63) : entre les deux, mise à jour du Pi (système et pi-appliance), une seule fois et d'office, l'image n'étant reconstruite que de loin en loin ; ensuite les mises à jour restent proposées (section 9.2).
 
 L'assistant n'installe pas de service : une fois la mise en route terminée, l'administrateur choisit ses services dans la marketplace (section 6.2).
@@ -508,7 +508,8 @@ Offre :
 - Aucun secret (mot de passe Wi-Fi, clé SSH, jeton DNS) n'est versionné dans ce dépôt.
 - **Statistiques anonymes** : désactivées par défaut, proposées au premier démarrage. Si l'utilisateur accepte : version, modèle de Pi, services installés, rapports de plantage ; jamais d'adresse IP, de nom, d'adresse de l'appliance ni de contenu.
 
-**Réalisé** (statistiques anonymes, paquet `internal/stats`) :
+**Réalisé, puis désactivé le 2026-11-22** (statistiques anonymes, paquet `internal/stats`) : à la demande de l'utilisateur, la fonction est coupée par l'interrupteur `stats.Available` (`false`) ; le code ci-dessous est gardé et se réactive en passant l'interrupteur à `true` (TODO-4.7). Tant qu'elle est coupée, la console ne montre pas la section « Statistiques anonymes », `api/stats` répond 503 et rien n'est envoyé, même si l'administrateur les avait acceptées avant ; seuls les plantages restent comptés sur le Pi.
+
 
 - Désactivées par défaut. L'administrateur les accepte ou les refuse dans la console, section « Statistiques anonymes » (`GET` et `PUT api/stats`, `{"enabled": true|false}`), qui montre en langage courant **et tel quel** le message exact qui partirait. Le choix est gardé dans `<données>/stats.json` (droits 600), avec la date du dernier envoi et les plantages pas encore envoyés. L'étape de l'assistant viendra avec lui (section 5.1).
 - Contenu de l'envoi (format 1, JSON) : version de la console, modèle du Pi (`/proc/device-tree/model`, jamais le numéro de série), identifiants des applications de la marketplace installées (`nextcloud`, sans le nom donné au service), **nombre** de services hors marketplace (rien de leur fichier Compose), plantages de la console depuis le dernier envoi : la fonction de pi-appliance où une requête a planté, ou « arrêt brutal » (console arrêtée sans passer par sa fin normale, repérée par le fichier `<données>/running`), avec leur nombre, jamais le message d'erreur. Les plantages d'avant l'accord ne partent pas.

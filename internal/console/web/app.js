@@ -2973,10 +2973,13 @@ function showStats(status) {
 }
 
 async function loadStats() {
+  // Écran caché quand la console ne propose pas les statistiques anonymes
+  // (fonction désactivée, TODO-4.7) : l'API répond alors par une erreur.
   try {
     showStats(await api("stats"));
-  } catch (error) {
-    statsState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
+    statsSection.hidden = false;
+  } catch {
+    statsSection.hidden = true;
   }
 }
 
@@ -4436,7 +4439,6 @@ async function showConsole(account, wizard) {
     await loadAddress();
     await loadInternet();
     duckDNSTimer = setInterval(loadDuckDNS, 15000);
-    statsSection.hidden = false;
     await loadStats();
     await loadNetwork();
     await loadResources();

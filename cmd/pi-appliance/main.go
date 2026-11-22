@@ -264,7 +264,9 @@ func main() {
 	go manager.Relocate(ctx, log.Printf)
 	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
 	go checker.Run(ctx, 5*time.Minute)
-	go reporter.Run(ctx)
+	if stats.Available {
+		go reporter.Run(ctx)
+	}
 	buildRevision, buildDate := buildCommit()
 	config := console.Config{
 		Version:          version,
@@ -282,7 +284,7 @@ func main() {
 		Backups:          backups,
 		Updates:          checker,
 		Cockpit:          admin,
-		Stats:            reporter,
+		Stats:            statsConsole(reporter),
 		WizardFile:       filepath.Join(*data, "wizard-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
 		Mailer:           mailer,
@@ -337,4 +339,13 @@ func main() {
 	if err := reporter.Stop(); err != nil {
 		log.Printf("statistiques : %v", err)
 	}
+}
+
+// statsConsole donne les statistiques anonymes à la console seulement quand la
+// fonction est proposée (stats.Available) : sinon la console cache l'écran.
+func statsConsole(reporter *stats.Reporter) *stats.Reporter {
+	if !stats.Available {
+		return nil
+	}
+	return reporter
 }
