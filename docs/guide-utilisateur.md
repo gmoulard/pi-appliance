@@ -18,7 +18,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
    - [Retrouver son Pi sur son téléphone : l'application mobile](#application-mobile)
 4. [Administrer le Pi depuis internet](#console-sur-internet)
 5. [Ligne de commande du Pi (SSH)](#ligne-de-commande)
-6. [Mot de passe administrateur oublié : le fichier reset](#fichier-reset)
+6. [Mot de passe oublié : le lien par e-mail](#mot-de-passe-oublie), ou [le fichier reset](#fichier-reset)
 7. [Remettre le Pi à zéro](#remise-a-zero)
 8. [Diagnostic du Pi sans écran](#diagnostic)
 9. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
@@ -116,12 +116,12 @@ Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, s
 
 La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir :
 
-1. À la maison, dans « Mon compte », activez la **double authentification** : depuis internet, seuls les comptes qui l'ont activée peuvent se connecter.
+1. Conseillé : à la maison, dans « Mon compte », activez la **double authentification**. Ce n'est pas obligatoire, mais depuis internet n'importe qui peut essayer de deviner votre mot de passe ; avec elle, il faut aussi le code de votre téléphone.
 2. Donnez une adresse internet au Pi, dans « Adresse sur internet » : DuckDNS, puis votre adresse pi-appliance.com. Si vous avez votre propre nom de domaine, vous pouvez aussi, chez votre fournisseur, faire pointer un de ses noms vers votre box (par exemple `maison.exemple.fr`), puis le taper dans la carte « Console sur internet », champ « Votre adresse personnelle », et toucher **Enregistrer l'adresse**. La carte affiche l'entrée à créer chez votre fournisseur : de préférence un alias (**CNAME**) vers votre nom DuckDNS ou votre adresse pi-appliance.com, par exemple `maison.exemple.fr. CNAME monpi.duckdns.org.`, qui suit l'adresse de votre box sans mot de passe de votre fournisseur sur le Pi. Choisissez un sous-domaine (`maison.exemple.fr`) plutôt que le domaine seul (`exemple.fr`), où un alias ne peut pas être créé. La console refuse un nom qui n'existe pas encore sur internet : attendez quelques minutes après le changement chez le fournisseur.
 3. Dans votre box, faites suivre les ports **80** et **443** vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.
 4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`, ou `https://maison.exemple.fr/pi-appliance/` avec votre adresse personnelle.
 
-Depuis internet, la console demande votre mot de passe puis le code de votre application d'authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
+Depuis internet, la console demande votre mot de passe, puis le code de votre application d'authentification si vous avez activé la double authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 
 ## Ligne de commande du Pi (SSH) {#ligne-de-commande}
 
@@ -146,6 +146,10 @@ pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'
 ```
 
 Inutile de taper `sudo` : quand une commande a besoin des droits d'administrateur du Pi (toutes sauf `aide` et `version`), `pia` les demande lui-même, avec le mot de passe de votre compte si le Pi le réclame. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
+
+## Mot de passe oublié : le lien par e-mail {#mot-de-passe-oublie}
+
+Sur l'écran de connexion, touchez **Mot de passe oublié ?**, tapez votre identifiant ou l'adresse e-mail de votre compte, puis **Recevoir le lien par e-mail**. Ouvrez le lien reçu dans l'heure et choisissez un nouveau mot de passe ; le lien ne sert qu'une fois. Votre ancien mot de passe reste valable tant que vous n'en avez pas choisi un nouveau, et si la double authentification est activée, le code vous est toujours demandé. Rien reçu après quelques minutes ? Regardez dans les courriers indésirables. Sans e-mail (Pi sans internet, adresse perdue), utilisez le fichier `reset` ci-dessous pour le compte administrateur ; pour un autre compte, l'administrateur donne un nouveau lien.
 
 ## Mot de passe administrateur oublié : le fichier reset {#fichier-reset}
 

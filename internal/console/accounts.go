@@ -107,6 +107,9 @@ func (c *console) accountRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("DELETE "+BasePath+"/api/accounts/{name}/totp", c.adminOnly(c.resetTOTP))
 	mux.HandleFunc("POST "+BasePath+"/api/invitation/check", c.checkInvitation)
 	mux.HandleFunc("POST "+BasePath+"/api/invitation", c.acceptInvitation)
+	mux.HandleFunc("POST "+BasePath+"/api/password/forgot", c.forgotPassword)
+	mux.HandleFunc("POST "+BasePath+"/api/password/check", c.checkResetLink)
+	mux.HandleFunc("POST "+BasePath+"/api/password/reset", c.useResetLink)
 	mux.HandleFunc("POST "+BasePath+"/api/account/totp", c.ownAccount(c.beginTOTP))
 	mux.HandleFunc("POST "+BasePath+"/api/account/totp/confirm", c.ownAccount(c.confirmTOTP))
 	mux.HandleFunc("POST "+BasePath+"/api/account/totp/disable", c.ownAccount(c.disableTOTP))
@@ -174,10 +177,10 @@ func (c *console) invitationReply(r *http.Request, account auth.Account, token s
 	if secure(r) {
 		scheme = "https"
 	}
-	link := scheme + "://" + r.Host + BasePath + "/#invite=" + token
+	link := scheme + "://" + strings.ToLower(r.Host) + BasePath + "/#invite=" + token
 	reply := InvitationReply{Account: account.Public()}
 	if c.Mailer != nil {
-		if err := c.Mailer.Invite(account.Public(), link); err == nil {
+		if err := c.Mailer.Invite(account.Public(), link, requestLanguage(r, "")); err == nil {
 			reply.Sent = true
 			return reply
 		} else {
@@ -630,6 +633,8 @@ func accountError(w http.ResponseWriter, err error) bool {
 		writeError(w, http.StatusConflict, "Un compte porte déjà cet identifiant.")
 	case errors.Is(err, auth.ErrLastAdmin):
 		writeError(w, http.StatusConflict, "C'est le dernier administrateur : nommez d'abord un autre administrateur.")
+	case errors.Is(err, auth.ErrNoResetLink):
+		writeError(w, http.StatusGone, "Ce lien ne marche plus : il a déjà servi ou il a plus d'une heure. Demandez-en un nouveau avec « Mot de passe oublié ? ».")
 	case errors.Is(err, auth.ErrNoInvitation):
 		writeError(w, http.StatusGone, "Ce lien ne marche plus : demandez-en un nouveau à l'administrateur.")
 	case errors.Is(err, auth.ErrTOTPRequired):

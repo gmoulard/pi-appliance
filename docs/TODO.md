@@ -35,7 +35,7 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
 - [x] **TODO-1.11**: Accès : direct (UPnP ou guide), relais du projet sinon (7.2, 7.3).
 - [x] **TODO-1.12**: Connexion unique ; rôles administrateur, utilisateur, invité (8.1).
 - [x] **TODO-1.13**: Accès choisi par service : public, connectés, maison (8.2).
-- [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3).
+- [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3). Obligation retirée le 2026-11-22 à la demande de l'utilisateur : la double authentification reste facultative et conseillée.
 - [x] **TODO-1.15**: Statistiques anonymes sur accord explicite (8.4).
 - [x] **TODO-1.16**: Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
 - [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2).
@@ -205,6 +205,9 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
 - [ ] **TODO-3.4**: Shell Linux.
 - [ ] **TODO-3.5**: Service d'adresses du projet : réservation liée à la clé du Pi, alias vers DuckDNS, signes de vie, libération après 90 jours, noms interdits (7.1, 10.2). Code écrit avec l'inscription, sous TODO-5.10 ; reste à l'installer sur le Pi du projet.
 - [ ] **TODO-3.6**: Service d'envoi d'e-mails du projet : codes de vérification, récupération, alertes (8.5, 8.6, 10.2).
+  - [x] Récupération par e-mail (8.5) : « Mot de passe oublié ? » sur l'écran de connexion, lien d'une heure, service `cmd/pi-appliance-mail` écrit (10.2), invitations envoyées par e-mail aussi ; textes en 12 langues, tests.
+  - [ ] Installer le service sur le Pi du projet : `envoi.pi-appliance.com` dans Route 53, reverse proxy (journal des accès coupé), identifiants SMTP de SES (sortie du « bac à sable » SES pour écrire à toute adresse), puis essai de bout en bout depuis un vrai Pi.
+  - [ ] À revoir par l'utilisateur : la double authentification n'est pas retirée par le lien (8.5) ; messages seulement en français et en anglais ; vérification de l'adresse e-mail par un code (5.1) ; alertes (8.6).
 - [ ] **TODO-3.7**: Domaine personnel : guide OVH, avec étapes DNS chez OVH séparées des réglages dans la console ([guide utilisateur](guide-utilisateur.md#domaine-personnel-chez-ovh)). Tâche ouverte : le guide signale l'indisponibilité du parcours ; avant de le rendre opérationnel, il faut TODO-3.2 et TODO-3.5 pour fournir l'adresse cible, puis la prise en charge du domaine et de ses certificats dans la console. Fait le 2026-11-21 pour la console seule : adresse personnelle de la console sur internet (spécification 8.3), à vérifier sur un vrai Pi avec `vdl.moulard.org` ; la carte dit l'entrée DNS à créer (CNAME vers pi-appliance.com ou DuckDNS, sinon A ; 0.1.9) ; restent les services.
 - [ ] **TODO-3.8**: Accès direct : UPnP, guide de la box, test depuis internet ; y compris le port UDP 51820 du VPN WireGuard quand il est installé (TODO-4.6).
 - [ ] **TODO-3.9**: Relais : serveur, tunnel sortant (à partir de l'ancien `all-pi/autossh.sh`, historique git), bascule automatique, limites de l'offre gratuite, nombre maximal d'appliances et liste d'attente (pas d'offre payante, TODO-1.45).
@@ -215,7 +218,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Écrans : choix à l'installation et dans la fiche du service, en langage courant, dans les 12 langues.
   - [x] Spécification 8.2 marquée réalisée, limites notées.
 - [ ] **TODO-3.11**: Console fermée sur internet par défaut (8.3) : Traefik limite désormais `/pi-appliance` aux plages privées IPv4, à la boucle locale et aux plages locales IPv6, avec une priorité basse ; le test Traefik vérifie le refus d'une source hors liste autorisée et laisse passer les routeurs des services. Reste à définir les plages réelles du VPN et du tunnel relais : si le pair du relais a une adresse privée, `ClientIP` l'autorise aussi. L'accès depuis un LAN IPv6 à adresse globale est également refusé. Ne pas cocher avant d'avoir défini ces réseaux et validé leur séparation.
-- [x] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3). Fait : carte « Console sur internet » (fermée par défaut, ouverte par un administrateur qui a la double authentification), routeur Traefik `console-internet.yml` écrit par la console pour les adresses internet du Pi avec certificat Let's Encrypt, refus depuis internet des comptes sans double authentification, actions sensibles réservées à la maison ; tests Go et Traefik.
+- [x] **TODO-3.12**: Console ouverte sur internet avec double authentification (8.3). Fait : carte « Console sur internet » (fermée par défaut, ouverte par un administrateur qui a la double authentification), routeur Traefik `console-internet.yml` écrit par la console pour les adresses internet du Pi avec certificat Let's Encrypt, refus depuis internet des comptes sans double authentification, actions sensibles réservées à la maison ; tests Go et Traefik. Double authentification plus obligatoire depuis le 2026-11-22 (décision de l'utilisateur, 8.3).
   - [ ] À vérifier sur un vrai Pi : ports 80 et 443 redirigés par la box, certificat Let's Encrypt obtenu pour l'adresse DuckDNS ou pi-appliance.com, connexion depuis un téléphone en 4G, fermeture.
 
 ## 4. Étape 3 — Le reste

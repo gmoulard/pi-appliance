@@ -139,6 +139,8 @@ type SessionState struct {
 	Account *auth.Public `json:"account"`
 	// Internet : la demande vient d'internet (connexion avec double authentification seulement).
 	Internet bool `json:"internet"`
+	// RecoveryEmail : « mot de passe oublié » par e-mail possible sur ce Pi.
+	RecoveryEmail bool `json:"recovery_email"`
 }
 
 // Config rassemble ce dont la console a besoin.
@@ -183,7 +185,9 @@ type Config struct {
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
 	WizardFile    string
 	ACMEEmailFile string
-	// Mailer envoie les invitations ; nil : le lien est montré à l'administrateur.
+	// Mailer envoie les invitations et les liens « mot de passe oublié » ;
+	// nil : le lien d'invitation est montré à l'administrateur, et pas de
+	// récupération par e-mail (fichier reset seulement).
 	Mailer auth.Mailer
 	// DevicePublicKey : clé publique du Pi (device.pub), d'où vient son
 	// identifiant pour l'application mobile ; vide : pas d'identifiant.
@@ -297,13 +301,10 @@ func (c *console) account(r *http.Request) (auth.Account, bool) {
 	if err != nil {
 		return auth.Account{}, false
 	}
-	account, ok := c.Accounts.Session(cookie.Value)
-	// NE PAS relâcher : depuis internet, seuls les comptes avec double
-	// authentification ouvrent la console (spécification 8.3).
-	if ok && fromInternet(r) && account.TOTPSecret == "" {
-		return auth.Account{}, false
-	}
-	return account, ok
+	// Depuis internet, la double authentification n'est plus obligatoire
+	// (décision de l'utilisateur du 2026-11-22, spécification 8.3) : elle reste
+	// conseillée, et exigible compte par compte par l'administrateur.
+	return c.Accounts.Session(cookie.Value)
 }
 
 // CLIAccount : compte de la ligne de commande du Pi, administrateur.
@@ -366,7 +367,7 @@ func (c *console) adminOnly(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (c *console) session(w http.ResponseWriter, r *http.Request) {
-	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending(), Internet: fromInternet(r)}
+	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending(), Internet: fromInternet(r), RecoveryEmail: c.Mailer != nil}
 	if account, ok := c.account(r); ok {
 		public := account.Public()
 		state.Account = &public
@@ -418,12 +419,6 @@ func (c *console) login(w http.ResponseWriter, r *http.Request) {
 	token, account, err := c.Accounts.Login(request.Name, request.Password, request.Code, clientIP(r))
 	if err != nil {
 		writeAuthError(w, err)
-		return
-	}
-	if fromInternet(r) && account.TOTPSecret == "" {
-		// Même réponse qu'un mauvais mot de passe : rien n'est révélé sur le compte.
-		c.Accounts.Logout(token)
-		writeAuthError(w, auth.ErrCredentials)
 		return
 	}
 	if account.Role == auth.RoleAdmin {

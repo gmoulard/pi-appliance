@@ -16,6 +16,19 @@
 // Traduction de la console : anglais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("en", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "The console opens only at home. Recommended before opening it: turn on two-factor authentication in “My account”.",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Open the console on the internet? Every account will be able to sign in from the internet with its password. Recommended: two-factor authentication, in “My account”.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Manage your Pi from anywhere, at its internet address. Recommended: turn on two-factor authentication in “My account”, because from the internet anyone can try to guess a password.",
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Account {0}: choose a new password of at least {1} characters. A phrase of several words is easier to remember.",
+  "Mot de passe oublié": "Forgot password",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Enter your username or your account's email address: you will receive by email a link to choose a new password. The link is valid for one hour.",
+  "Recevoir le lien par e-mail": "Get the link by email",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Enter your username and password. The username is the name chosen when the account was created, not the email address.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "If this account exists, an email has just been sent to it with a link valid for one hour.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Nothing received after a few minutes? Check your spam folder, and check the username or email address. The administrator can also give you a new link.",
+  "Identifiant ou adresse e-mail": "Username or email address",
+  "Mot de passe oublié ?": "Forgot your password?",
+  "Retour à la connexion": "Back to sign-in",
   "Versions proposées": "Versions offered",
   "Stables (conseillé)": "Stable (recommended)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: new features early, less tested",
@@ -609,10 +622,7 @@ piTranslations("en", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Too many attempts: wait a few minutes before trying again.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "This code also pairs the phone with your account: the app will then open the console without a password. Only show it to your own phones; it changes every few minutes.",
   "Ce téléphone n'est plus appairé à ce Pi.": "This phone is no longer paired with this Pi.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "First turn on two-step verification in “My account”: it is required to open the console on the internet.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Manage your Pi from anywhere, at its internet address. For safety, from the internet, only accounts that have turned on two-step verification can sign in.",
   "Console sur internet": "Console on the internet",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "From the internet, only accounts that have turned on two-step verification can sign in.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "Close the console on the internet? It will only open at home.",
   "Fermer la console sur internet": "Close the console on the internet",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Your router must also forward ports 80 and 443 to the Pi: this is what lets the address get its security certificate.",
@@ -625,7 +635,6 @@ piTranslations("en", {
   "Retirer l'adresse": "Remove the address",
   "Retirer l'adresse personnelle {0} ?": "Remove your own address {0}?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "The console will open on the internet as soon as the Pi has an internet address (DuckDNS or pi-appliance.com, above).",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Open the console on the internet? Only accounts with two-step verification will be able to sign in from the internet.",
   "Ouvrir la console sur internet": "Open the console on the internet",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "The simplest: an alias (CNAME entry) to {0}. It follows your router's address, with no password from your provider on the Pi.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Without DuckDNS, point the name to your router's public IP address (A entry); it can change: set up DuckDNS instead, above."

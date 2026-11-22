@@ -16,6 +16,19 @@
 // Traduction de la console : arabe. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ar", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "لا تُفتح وحدة التحكم إلا في المنزل. يُنصح قبل فتحها: فعّل المصادقة الثنائية في «حسابي».",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "فتح وحدة التحكم على الإنترنت؟ سيتمكن كل حساب من تسجيل الدخول من الإنترنت بكلمة مروره. يُنصح: المصادقة الثنائية، في «حسابي».",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "أدِر جهاز Pi من أي مكان، على عنوانه على الإنترنت. يُنصح: فعّل المصادقة الثنائية في «حسابي»، لأن أي شخص على الإنترنت يمكنه محاولة تخمين كلمة مرور.",
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "الحساب {0}: اختر كلمة مرور جديدة من {1} أحرف على الأقل. الجملة المكوّنة من عدة كلمات أسهل للتذكّر.",
+  "Mot de passe oublié": "نسيت كلمة المرور",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "أدخل اسم المستخدم أو عنوان البريد الإلكتروني لحسابك: ستتلقى عبر البريد الإلكتروني رابطًا لاختيار كلمة مرور جديدة. الرابط صالح لمدة ساعة.",
+  "Recevoir le lien par e-mail": "استلام الرابط عبر البريد الإلكتروني",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "أدخل اسم المستخدم وكلمة المرور. اسم المستخدم هو الاسم الذي اخترته عند إنشاء الحساب، وليس عنوان البريد الإلكتروني.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "إذا كان هذا الحساب موجودًا، فقد أُرسل إليه للتو بريد إلكتروني يحتوي على رابط صالح لمدة ساعة.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "لم يصلك شيء بعد بضع دقائق؟ تحقق من مجلد البريد غير المرغوب فيه، وتحقق من اسم المستخدم أو عنوان البريد الإلكتروني. يمكن للمسؤول أيضًا أن يعطيك رابطًا جديدًا.",
+  "Identifiant ou adresse e-mail": "اسم المستخدم أو عنوان البريد الإلكتروني",
+  "Mot de passe oublié ?": "هل نسيت كلمة المرور؟",
+  "Retour à la connexion": "العودة إلى تسجيل الدخول",
   "Versions proposées": "الإصدارات المعروضة",
   "Stables (conseillé)": "مستقرة (موصى بها)",
   "Bêta : nouveautés en avance, moins éprouvées": "تجريبية: ميزات جديدة مبكرًا، أقل اختبارًا",
@@ -609,10 +622,7 @@ piTranslations("ar", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "محاولات كثيرة جدًا: انتظر بضع دقائق قبل إعادة المحاولة.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "يقرن هذا الرمز الهاتف أيضًا بحسابك: سيفتح التطبيق بعدها لوحة التحكم دون كلمة مرور. لا تعرضه إلا على هواتفك؛ يتغيّر كل بضع دقائق.",
   "Ce téléphone n'est plus appairé à ce Pi.": "لم يعد هذا الهاتف مقترنًا بهذا الـ Pi.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "فعّل أولًا التحقق بخطوتين في «حسابي»: فهو إلزامي لفتح لوحة التحكم على الإنترنت.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "أدِر جهاز Pi من أي مكان، عبر عنوانه على الإنترنت. للأمان، لا يمكن تسجيل الدخول من الإنترنت إلا للحسابات التي فعّلت التحقق بخطوتين.",
   "Console sur internet": "لوحة التحكم على الإنترنت",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "من الإنترنت، لا يمكن تسجيل الدخول إلا للحسابات التي فعّلت التحقق بخطوتين.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "إغلاق لوحة التحكم على الإنترنت؟ لن تُفتح إلا في المنزل.",
   "Fermer la console sur internet": "إغلاق لوحة التحكم على الإنترنت",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "يجب أيضًا أن يحوّل جهاز التوجيه المنفذين 80 و443 إلى الـ Pi: فبذلك يحصل العنوان على شهادة الأمان.",
@@ -625,7 +635,6 @@ piTranslations("ar", {
   "Retirer l'adresse": "إزالة العنوان",
   "Retirer l'adresse personnelle {0} ?": "إزالة العنوان الخاص {0}؟",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "ستُفتح لوحة التحكم على الإنترنت فور حصول الـ Pi على عنوان على الإنترنت (DuckDNS أو pi-appliance.com، أعلاه).",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "فتح لوحة التحكم على الإنترنت؟ لن يتمكن من تسجيل الدخول من الإنترنت إلا أصحاب الحسابات التي فعّلت التحقق بخطوتين.",
   "Ouvrir la console sur internet": "فتح لوحة التحكم على الإنترنت",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "الأبسط: اسم مستعار (سجل CNAME) يشير إلى {0}. يتبع عنوان الراوتر، دون كلمة مرور مزوّدك على الـ Pi.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "بدون DuckDNS، اجعل الاسم يشير إلى عنوان IP العام للراوتر (سجل A)؛ قد يتغيّر: الأفضل إعداد DuckDNS في الأعلى."

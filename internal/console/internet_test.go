@@ -120,9 +120,9 @@ func TestConsoleClosedOnInternetByDefault(t *testing.T) {
 	if _, err := os.Stat(traefik); !os.IsNotExist(err) {
 		t.Fatalf("fichier de Traefik écrit console fermée : %v", err)
 	}
-	// Ouvrir sans double authentification : refusé.
-	if response := f.do(http.MethodPut, "/pi-appliance/api/internet-console?enabled=true", "", "", cookie); response.Code != http.StatusConflict {
-		t.Fatalf("ouverture sans double authentification : code %d", response.Code)
+	// Ouvrir sans double authentification : permis (décision du 2026-11-22).
+	if response := f.do(http.MethodPut, "/pi-appliance/api/internet-console?enabled=true", "", "", cookie); response.Code != http.StatusOK {
+		t.Fatalf("ouverture sans double authentification : code %d %s", response.Code, response.Body.String())
 	}
 }
 
@@ -154,19 +154,21 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 		}
 	}
 
-	// Depuis internet : compte sans double authentification refusé comme un mauvais mot de passe.
-	paul := f.fromOutside(http.MethodPost, "/pi-appliance/api/login", `{"name": "paul", "password": "un autre mot de passe"}`, nil)
+	// Depuis internet : un compte sans double authentification se connecte
+	// avec son seul mot de passe (décision du 2026-11-22) ; un mauvais mot de passe reste refusé.
 	wrong := f.fromOutside(http.MethodPost, "/pi-appliance/api/login", `{"name": "paul", "password": "mauvais mot de passe"}`, nil)
-	if paul.Code != http.StatusUnauthorized || paul.Body.String() != wrong.Body.String() || len(paul.Result().Cookies()) != 0 {
-		t.Fatalf("compte sans double authentification : code %d %s (mauvais mot de passe : %s)", paul.Code, paul.Body.String(), wrong.Body.String())
+	if wrong.Code != http.StatusUnauthorized {
+		t.Fatalf("mauvais mot de passe : code %d", wrong.Code)
 	}
-	// Session de paul ouverte à la maison : sans effet depuis internet.
-	home := f.do(http.MethodPost, "/pi-appliance/api/login", "application/json", `{"name": "paul", "password": "un autre mot de passe"}`, nil)
-	paulCookie := sessionCookie(t, home)
-	if response := f.fromOutside(http.MethodGet, "/pi-appliance/api/services", "", paulCookie); response.Code != http.StatusUnauthorized {
+	paul := f.fromOutside(http.MethodPost, "/pi-appliance/api/login", `{"name": "paul", "password": "un autre mot de passe"}`, nil)
+	if paul.Code != http.StatusOK {
+		t.Fatalf("compte sans double authentification : code %d %s", paul.Code, paul.Body.String())
+	}
+	paulCookie := sessionCookie(t, paul)
+	if response := f.fromOutside(http.MethodGet, "/pi-appliance/api/services", "", paulCookie); response.Code != http.StatusOK {
 		t.Fatalf("session sans double authentification depuis internet : code %d", response.Code)
 	}
-	if session := decode[SessionState](t, f.fromOutside(http.MethodGet, "/pi-appliance/api/session", "", paulCookie)); session.Account != nil || !session.Internet {
+	if session := decode[SessionState](t, f.fromOutside(http.MethodGet, "/pi-appliance/api/session", "", paulCookie)); session.Account == nil || !session.Internet {
 		t.Fatalf("session %+v", session)
 	}
 

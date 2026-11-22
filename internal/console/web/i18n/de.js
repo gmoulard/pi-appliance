@@ -16,6 +16,19 @@
 // Traduction de la console : allemand. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("de", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "Die Konsole öffnet sich nur zu Hause. Empfohlen vor dem Öffnen: Aktivieren Sie die Zwei-Faktor-Authentifizierung unter „Mein Konto“.",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Konsole im Internet öffnen? Jedes Konto kann sich dann aus dem Internet mit seinem Passwort anmelden. Empfohlen: die Zwei-Faktor-Authentifizierung, unter „Mein Konto“.",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Verwalten Sie Ihren Pi von überall unter seiner Internetadresse. Empfohlen: Aktivieren Sie die Zwei-Faktor-Authentifizierung unter „Mein Konto“, denn aus dem Internet kann jeder versuchen, ein Passwort zu erraten.",
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Konto {0}: Wählen Sie ein neues Passwort mit mindestens {1} Zeichen. Ein Satz aus mehreren Wörtern ist leichter zu merken.",
+  "Mot de passe oublié": "Passwort vergessen",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Geben Sie Ihren Benutzernamen oder die E-Mail-Adresse Ihres Kontos ein: Sie erhalten per E-Mail einen Link, um ein neues Passwort zu wählen. Der Link ist eine Stunde gültig.",
+  "Recevoir le lien par e-mail": "Link per E-Mail erhalten",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Geben Sie Ihren Benutzernamen und Ihr Passwort ein. Der Benutzername ist der beim Anlegen des Kontos gewählte Name, nicht die E-Mail-Adresse.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "Wenn dieses Konto existiert, wurde ihm soeben eine E-Mail mit einem eine Stunde gültigen Link gesendet.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Nach einigen Minuten nichts erhalten? Sehen Sie im Spam-Ordner nach und prüfen Sie den Benutzernamen oder die E-Mail-Adresse. Der Administrator kann Ihnen auch einen neuen Link geben.",
+  "Identifiant ou adresse e-mail": "Benutzername oder E-Mail-Adresse",
+  "Mot de passe oublié ?": "Passwort vergessen?",
+  "Retour à la connexion": "Zurück zur Anmeldung",
   "Versions proposées": "Angebotene Versionen",
   "Stables (conseillé)": "Stabil (empfohlen)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: Neuerungen früher, weniger erprobt",
@@ -609,10 +622,7 @@ piTranslations("de", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Zu viele Versuche: Warten Sie einige Minuten, bevor Sie es erneut versuchen.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Dieser Code koppelt das Telefon auch mit Ihrem Konto: Die App öffnet danach die Konsole ohne Passwort. Zeigen Sie ihn nur Ihren eigenen Telefonen; er ändert sich alle paar Minuten.",
   "Ce téléphone n'est plus appairé à ce Pi.": "Dieses Telefon ist nicht mehr mit diesem Pi gekoppelt.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "Aktivieren Sie zuerst die Zwei-Schritt-Bestätigung unter „Mein Konto“: Sie ist Pflicht, um die Konsole im Internet zu öffnen.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Verwalten Sie Ihren Pi von überall unter seiner Internetadresse. Aus Sicherheitsgründen können sich aus dem Internet nur Konten mit aktivierter Zwei-Schritt-Bestätigung anmelden.",
   "Console sur internet": "Konsole im Internet",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Aus dem Internet können sich nur Konten mit aktivierter Zwei-Schritt-Bestätigung anmelden.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "Konsole im Internet schließen? Sie öffnet sich dann nur noch zu Hause.",
   "Fermer la console sur internet": "Konsole im Internet schließen",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Ihr Router muss außerdem die Ports 80 und 443 an den Pi weiterleiten: Nur so erhält die Adresse ihr Sicherheitszertifikat.",
@@ -625,7 +635,6 @@ piTranslations("de", {
   "Retirer l'adresse": "Adresse entfernen",
   "Retirer l'adresse personnelle {0} ?": "Die eigene Adresse {0} entfernen?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "Die Konsole öffnet sich im Internet, sobald der Pi eine Internetadresse hat (DuckDNS oder pi-appliance.com, oben).",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Konsole im Internet öffnen? Nur Konten mit Zwei-Schritt-Bestätigung können sich dann aus dem Internet anmelden.",
   "Ouvrir la console sur internet": "Konsole im Internet öffnen",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "Am einfachsten: ein Alias (CNAME-Eintrag) auf {0}. Er folgt der Adresse Ihres Routers, ohne Passwort Ihres Anbieters auf dem Pi.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Ohne DuckDNS lassen Sie den Namen auf die öffentliche IP-Adresse Ihres Routers zeigen (A-Eintrag); sie kann sich ändern: richten Sie besser DuckDNS ein, weiter oben."

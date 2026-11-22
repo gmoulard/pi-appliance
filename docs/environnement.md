@@ -23,6 +23,10 @@ Les services hors du dépôt dont dépend pi-appliance, et comment y accéder. C
 - Sous-domaines de machines : `mac`, `ia4ccm`, `mbpdevrenaudin.home`.
 - Probablement à supprimer : `todrop`, `ip-10-0-0-85.eu-west-3.compute.internal`.
 
+### Service d'envoi d'e-mails
+
+Le service d'envoi (`cmd/pi-appliance-mail`, [spécification 10.2](specification.md)) envoie les liens « mot de passe oublié » et d'invitation des appliances par le relais SMTP d'Amazon SES (`email-smtp.eu-west-3.amazonaws.com:587`, expéditeur `ne-pas-repondre@pi-appliance.com`). Il n'est pas encore installé. Il lui faut : un enregistrement `envoi.pi-appliance.com` vers le Pi du projet, des identifiants SMTP SES (utilisateur IAM avec le seul droit `ses:SendRawEmail`) dans `/etc/pi-appliance-mail/smtp` (droits 600, jamais dans le dépôt), et un compte SES sorti du « bac à sable » pour écrire à n'importe quelle adresse.
+
 ### Service d'adresses
 
 Le service d'adresses (`cmd/pi-appliance-addresses`, [spécification 7.1](specification.md)) écrit dans cette zone les alias `<nom>.pi-appliance.com` et `*.<nom>.pi-appliance.com` des appliances. Il n'est pas encore installé. Il lui faut :

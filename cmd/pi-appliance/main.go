@@ -38,6 +38,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/console"
 	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/diagnostic"
+	"github.com/gmoulard/pi-appliance/internal/mail"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
@@ -84,6 +85,7 @@ func main() {
 	cliTokenFile := flag.String("cli-token-file", cli.DefaultTokenFile, "jeton de la ligne de commande du Pi, lisible par root seul (vide : pas de ligne de commande)")
 	traefikInternet := flag.String("traefik-internet", "/etc/pi-appliance/traefik/dynamic/console-internet.yml", "configuration dynamique de Traefik écrite quand la console est ouverte sur internet (vide : jamais ouverte)")
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
+	mailURL := flag.String("mail-url", mail.DefaultServiceURL, "service d'envoi d'e-mails du projet, pour « mot de passe oublié » et les invitations (vide : pas d'e-mail)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
 	flag.Parse()
 	if *showVersion {
@@ -145,12 +147,20 @@ func main() {
 	}
 	duckdns.Logf = log.Printf
 	// Adresse <nom>.pi-appliance.com : clé propre au Pi, tirée au premier démarrage (spécification 7.1).
-	var address *addresses.Client
-	if *addressesURL != "" {
-		key, err := addresses.LoadOrCreateKey(filepath.Join(*data, "address-key"))
+	// La même clé signe les demandes au service d'envoi d'e-mails (spécification 10.2).
+	var key *addresses.Key
+	if *addressesURL != "" || *mailURL != "" {
+		key, err = addresses.LoadOrCreateKey(filepath.Join(*data, "address-key"))
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+	var mailer auth.Mailer
+	if *mailURL != "" {
+		mailer = &mail.Client{URL: *mailURL, Key: key}
+	}
+	var address *addresses.Client
+	if *addressesURL != "" {
 		address, err = addresses.OpenClient(filepath.Join(*data, "address.json"), key)
 		if err != nil {
 			log.Fatal(err)
@@ -236,6 +246,7 @@ func main() {
 		Stats:            reporter,
 		WizardFile:       filepath.Join(*data, "wizard-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
+		Mailer:           mailer,
 		Diagnostic:       diag,
 		DiagnosticWindow: window,
 		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),

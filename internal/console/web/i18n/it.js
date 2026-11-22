@@ -16,6 +16,19 @@
 // Traduction de la console : italien. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("it", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "La console si apre solo a casa. Consigliato prima di aprirla: attiva l'autenticazione a due fattori in «Il mio account».",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Aprire la console su internet? Ogni account potrà accedere da internet con la propria password. Consigliato: l'autenticazione a due fattori, in «Il mio account».",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Gestisci il tuo Pi ovunque, al suo indirizzo internet. Consigliato: attiva l'autenticazione a due fattori in «Il mio account», perché da internet chiunque può provare a indovinare una password.",
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "Account {0}: scegli una nuova password di almeno {1} caratteri. Una frase di più parole è più facile da ricordare.",
+  "Mot de passe oublié": "Password dimenticata",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "Inserisci il tuo identificativo o l'indirizzo e-mail del tuo account: riceverai via e-mail un link per scegliere una nuova password. Il link è valido per un'ora.",
+  "Recevoir le lien par e-mail": "Ricevi il link via e-mail",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "Inserisci il tuo identificativo e la password. L'identificativo è il nome scelto alla creazione dell'account, non l'indirizzo e-mail.",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "Se questo account esiste, gli è appena stata inviata un'e-mail con un link valido per un'ora.",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "Nulla dopo qualche minuto? Guarda nella posta indesiderata e verifica l'identificativo o l'indirizzo e-mail. L'amministratore può anche darti un nuovo link.",
+  "Identifiant ou adresse e-mail": "Identificativo o indirizzo e-mail",
+  "Mot de passe oublié ?": "Password dimenticata?",
+  "Retour à la connexion": "Torna all'accesso",
   "Versions proposées": "Versioni proposte",
   "Stables (conseillé)": "Stabili (consigliato)",
   "Bêta : nouveautés en avance, moins éprouvées": "Beta: novità in anticipo, meno collaudate",
@@ -609,10 +622,7 @@ piTranslations("it", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "Troppi tentativi: attendi qualche minuto prima di riprovare.",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "Questo codice associa anche il telefono al tuo account: poi l'app aprirà la console senza password. Mostralo solo ai tuoi telefoni; cambia ogni pochi minuti.",
   "Ce téléphone n'est plus appairé à ce Pi.": "Questo telefono non è più associato a questo Pi.",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "Attiva prima la verifica in due passaggi in «Il mio account»: è obbligatoria per aprire la console su internet.",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Gestisci il tuo Pi da qualsiasi luogo, al suo indirizzo internet. Per sicurezza, da internet possono accedere solo gli account che hanno attivato la verifica in due passaggi.",
   "Console sur internet": "Console su internet",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "Da internet possono accedere solo gli account che hanno attivato la verifica in due passaggi.",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "Chiudere la console su internet? Si aprirà solo a casa.",
   "Fermer la console sur internet": "Chiudi la console su internet",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "Il tuo router deve anche inoltrare le porte 80 e 443 al Pi: è ciò che permette di ottenere il certificato di sicurezza dell'indirizzo.",
@@ -625,7 +635,6 @@ piTranslations("it", {
   "Retirer l'adresse": "Rimuovi l'indirizzo",
   "Retirer l'adresse personnelle {0} ?": "Rimuovere l'indirizzo personale {0}?",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "La console si aprirà su internet appena il Pi avrà un indirizzo internet (DuckDNS o pi-appliance.com, sopra).",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "Aprire la console su internet? Solo gli account con la verifica in due passaggi potranno accedere da internet.",
   "Ouvrir la console sur internet": "Apri la console su internet",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "La cosa più semplice: un alias (voce CNAME) verso {0}. Segue l'indirizzo del tuo router, senza password del tuo fornitore sul Pi.",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "Senza DuckDNS, fai puntare il nome all'indirizzo IP pubblico del tuo router (voce A); può cambiare: configura piuttosto DuckDNS, più in alto."

@@ -32,11 +32,13 @@ import (
 // InvitationLifetime : durée de validité d'un lien d'invitation.
 const InvitationLifetime = 7 * 24 * time.Hour
 
-// Mailer envoie le lien d'invitation par e-mail. Il viendra avec le service
-// d'envoi d'e-mails du projet (TODO-3.6) ; en attendant, la console montre le
-// lien à l'administrateur, qui le transmet lui-même.
+// Mailer envoie par e-mail, par le service d'envoi du projet (internal/mail,
+// spécification 10.2), le lien d'invitation et le lien « mot de passe oublié ».
+// Si l'invitation ne part pas, la console montre le lien à l'administrateur,
+// qui le transmet lui-même. lang : langue de la console de qui fait la demande.
 type Mailer interface {
-	Invite(account Public, link string) error
+	Invite(account Public, link, lang string) error
+	PasswordReset(account Public, link, lang string) error
 }
 
 // List renvoie les comptes, triés par identifiant.
@@ -278,7 +280,7 @@ func (s *Store) ChangePassword(name, current, next string) (string, Account, err
 		return "", Account{}, ErrCredentials
 	}
 	account = s.accounts[name]
-	account.Hash = hash
+	account.Hash, account.ResetHash, account.ResetExpires = hash, "", time.Time{}
 	if err := s.put(account); err != nil {
 		return "", Account{}, err
 	}

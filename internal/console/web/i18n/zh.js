@@ -16,6 +16,19 @@
 // Traduction de la console : chinois. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("zh", {
+  "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "控制台只在家中打开。打开之前建议：在“我的账户”中启用双重验证。",
+  "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "在互联网上打开控制台？每个账户都可以用其密码从互联网登录。建议：在“我的账户”中启用双重验证。",
+  "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "通过 Pi 的互联网地址，随时随地管理您的 Pi。建议：在“我的账户”中启用双重验证，因为在互联网上任何人都可以尝试猜测密码。",
+  "Compte {0} : choisissez un nouveau mot de passe d'au moins {1} caractères. Une phrase de plusieurs mots est plus facile à retenir.": "账户 {0}：请选择一个至少 {1} 个字符的新密码。由几个词组成的句子更容易记住。",
+  "Mot de passe oublié": "忘记密码",
+  "Entrez votre identifiant ou l'adresse e-mail de votre compte : vous recevrez par e-mail un lien pour choisir un nouveau mot de passe. Le lien est valable une heure.": "请输入您的用户名或账户的电子邮件地址：您将通过电子邮件收到一个用于设置新密码的链接。该链接一小时内有效。",
+  "Recevoir le lien par e-mail": "通过电子邮件接收链接",
+  "Entrez votre identifiant et votre mot de passe. L'identifiant est le nom choisi à la création du compte, pas l'adresse e-mail.": "请输入您的用户名和密码。用户名是创建账户时选择的名称，而不是电子邮件地址。",
+  "Si ce compte existe, un e-mail vient de lui être envoyé avec un lien valable une heure.": "如果该账户存在，一封包含一小时内有效链接的电子邮件刚刚已发送给它。",
+  "Rien reçu après quelques minutes ? Regardez dans les courriers indésirables, et vérifiez l'identifiant ou l'adresse e-mail. L'administrateur peut aussi vous donner un nouveau lien.": "几分钟后仍未收到？请查看垃圾邮件，并检查用户名或电子邮件地址。管理员也可以给您一个新链接。",
+  "Identifiant ou adresse e-mail": "用户名或电子邮件地址",
+  "Mot de passe oublié ?": "忘记密码？",
+  "Retour à la connexion": "返回登录",
   "Versions proposées": "提供的版本",
   "Stables (conseillé)": "稳定版（推荐）",
   "Bêta : nouveautés en avance, moins éprouvées": "测试版：抢先体验新功能，测试较少",
@@ -609,10 +622,7 @@ piTranslations("zh", {
   "Trop d'essais : attendez quelques minutes avant de réessayer.": "尝试次数过多：请等待几分钟后再试。",
   "Ce code appaire aussi le téléphone à votre compte : l'application ouvrira ensuite la console sans mot de passe. Ne le montrez qu'à vos propres téléphones ; il change toutes les quelques minutes.": "此代码还会把手机与您的账户配对：之后应用将无需密码打开控制台。只给您自己的手机看；它每隔几分钟就会更换。",
   "Ce téléphone n'est plus appairé à ce Pi.": "此手机已不再与这台 Pi 配对。",
-  "Activez d'abord la double authentification dans « Mon compte » : elle est obligatoire pour ouvrir la console sur internet.": "请先在“我的账户”中启用两步验证：在互联网上开放控制台必须启用它。",
-  "Administrez votre Pi de n'importe où, à son adresse internet. Par sécurité, depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "在任何地方通过 Pi 的互联网地址管理它。为安全起见，从互联网只能登录已启用两步验证的账户。",
   "Console sur internet": "互联网上的控制台",
-  "Depuis internet, seuls les comptes qui ont activé la double authentification peuvent se connecter.": "从互联网只能登录已启用两步验证的账户。",
   "Fermer la console sur internet ? Elle ne s'ouvrira plus qu'à la maison.": "关闭互联网上的控制台？之后只能在家中打开。",
   "Fermer la console sur internet": "关闭互联网上的控制台",
   "Il faut aussi que votre box fasse suivre les ports 80 et 443 vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.": "您的路由器还需要把 80 和 443 端口转发到 Pi：这样该地址才能获得安全证书。",
@@ -625,7 +635,6 @@ piTranslations("zh", {
   "Retirer l'adresse": "移除地址",
   "Retirer l'adresse personnelle {0} ?": "移除个人地址 {0}？",
   "La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).": "一旦 Pi 有了互联网地址（上方的 DuckDNS 或 pi-appliance.com），控制台就会在互联网上开放。",
-  "Ouvrir la console sur internet ? Seuls les comptes avec la double authentification pourront s'y connecter depuis internet.": "在互联网上开放控制台？从互联网只有启用两步验证的账户才能登录。",
   "Ouvrir la console sur internet": "在互联网上开放控制台",
   "Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.": "最简单的方法：指向 {0} 的别名（CNAME 记录）。它会跟随您路由器的地址，Pi 上不需要您服务商的密码。",
   "Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut.": "没有 DuckDNS 时，请将该名称指向您路由器的公网 IP 地址（A 记录）；该地址可能会变：最好在上方设置 DuckDNS。"
