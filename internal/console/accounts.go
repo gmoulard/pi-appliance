@@ -65,6 +65,14 @@ type InvitationReply struct {
 	Sent    bool        `json:"sent"`
 }
 
+// AccountDetails : réponse de GET api/accounts/{name} (pia user show) : le
+// compte, ses téléphones appairés et les liens de partage qu'il a créés.
+type AccountDetails struct {
+	Account auth.Public         `json:"account"`
+	Devices []auth.DevicePublic `json:"devices"`
+	Shares  []auth.SharePublic  `json:"shares"`
+}
+
 type InvitationRequest struct {
 	Token    string `json:"token"`
 	Password string `json:"password"`
@@ -101,6 +109,7 @@ type ForwardRequest struct {
 func (c *console) accountRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET "+BasePath+"/api/accounts", c.adminOnly(c.listAccounts))
 	mux.HandleFunc("POST "+BasePath+"/api/accounts", c.adminOnly(c.createAccount))
+	mux.HandleFunc("GET "+BasePath+"/api/accounts/{name}", c.adminOnly(c.accountDetails))
 	mux.HandleFunc("PUT "+BasePath+"/api/accounts/{name}", c.adminOnly(c.updateAccount))
 	mux.HandleFunc("DELETE "+BasePath+"/api/accounts/{name}", c.adminOnly(c.deleteAccount))
 	mux.HandleFunc("POST "+BasePath+"/api/accounts/{name}/invitation", c.adminOnly(c.reinvite))
@@ -141,6 +150,15 @@ func (c *console) listAccounts(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{"accounts": c.Accounts.List()})
 }
 
+func (c *console) accountDetails(w http.ResponseWriter, r *http.Request) {
+	account, err := c.Accounts.Get(r.PathValue("name"))
+	if err != nil {
+		writeAuthError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, AccountDetails{Account: account.Public(), Devices: c.Accounts.Devices(account.Name), Shares: c.Accounts.SharesOf(account.Name)})
+}
+
 func (c *console) createAccount(w http.ResponseWriter, r *http.Request) {
 	var request AccountRequest
 	if !decodeJSON(w, r, &request) {
@@ -177,7 +195,16 @@ func (c *console) invitationReply(r *http.Request, account auth.Account, token s
 	if secure(r) {
 		scheme = "https"
 	}
-	link := scheme + "://" + strings.ToLower(r.Host) + BasePath + "/#invite=" + token
+	base := scheme + "://" + strings.ToLower(r.Host)
+	if _, cli := c.cliAccount(r); cli {
+		// pia parle à la console sur 127.0.0.1 : une adresse que la personne
+		// invitée peut ouvrir, internet si la console y est ouverte, sinon la maison.
+		base = "https://" + c.piName() + ".local"
+		if hosts := c.internetHosts(); c.internetEnabled() && len(hosts) > 0 {
+			base = "https://" + hosts[0]
+		}
+	}
+	link := base + BasePath + "/#invite=" + token
 	reply := InvitationReply{Account: account.Public()}
 	if c.Mailer != nil {
 		if err := c.Mailer.Invite(account.Public(), link, requestLanguage(r, "")); err == nil {

@@ -140,6 +140,14 @@ pia installer nextcloud              # installer (--nom, --acces, --param nom=va
 pia services                         # services installés
 pia redemarrer cloud                 # demarrer, arreter, redemarrer
 pia desinstaller cloud               # données gardées ; --effacer-donnees pour les effacer
+pia user list                        # comptes de la console
+pia user show paul                   # détail, téléphones appairés, liens de partage
+pia user add paul paul@exemple.fr    # nouveau compte : un lien pour choisir son mot de passe
+pia user add ines ines@exemple.fr --role guest --until 2026-12-31
+pia user edit paul --role admin      # aussi --until, --require-2fa yes|no
+pia user reset paul                  # nouveau lien de mot de passe (oublié, invitation expirée)
+pia user 2fa-off paul                # retirer la double authentification (téléphone perdu)
+pia user delete paul
 pia ssh                              # SSH : en marche ? mots de passe ? clés ?
 pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
 pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
