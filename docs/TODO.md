@@ -280,3 +280,5 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [ ] À vérifier sur un vrai Pi : code QR scanné par l'application (iPhone et Android), appairage puis connexion sans mot de passe depuis le téléphone, `api/hello` lue depuis l'application à la maison (alerte du certificat acceptée) et sur internet, identifiant inchangé après un renommage du Pi.
 - [ ] mettre un mode -force à pia pour ne plus avoir à valider la ligne de commande 
 - [ ] mettre un rappel de la licence une référence à l'URL du gît, la version le numéro de commit dans toutes les pieds de page HTML et de l'application. 
+- [ ] réorganiser les tuilles de l'interface avec tags selectives. 
+
