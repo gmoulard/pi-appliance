@@ -44,7 +44,19 @@ const (
 	authMiddleware   = "pi-appliance-auth@file"
 	homeMiddleware   = "pi-appliance-home@file"
 	adminsMiddleware = homeMiddleware + ",pi-appliance-admins@file"
+	// errorsMiddleware : page « service indisponible » de la console quand le
+	// service ne répond pas (502 à 504), en premier sur chaque routeur.
+	errorsMiddleware = "pi-appliance-errors@file"
 )
+
+// routerMiddlewares : middlewares du routeur Traefik d'un service, la page
+// d'erreur puis celui de son niveau d'accès.
+func routerMiddlewares(app, access string) string {
+	if middleware := accessMiddleware(app, access); middleware != "" {
+		return errorsMiddleware + "," + middleware
+	}
+	return errorsMiddleware
+}
 
 // ValidAccess dit si un niveau d'accès peut être choisi par l'administrateur
 // (AccessAdmins ne vient que du manifeste).
@@ -145,7 +157,7 @@ func (m *Manager) SetAccess(ctx context.Context, name, access string) (Instance,
 	return instance, nil
 }
 
-// withAccess pose (ou retire, pour public) le middleware d'accès sur le
+// withAccess pose la page d'erreur et le middleware d'accès (aucun pour public) sur le
 // routeur Traefik du service dans le fichier pi-appliance.override.json.
 func withAccess(override []byte, name, app, access string) ([]byte, error) {
 	var file map[string]any
@@ -162,11 +174,7 @@ func withAccess(override []byte, name, app, access string) ([]byte, error) {
 			continue
 		}
 		found = true
-		if middleware := accessMiddleware(app, access); middleware != "" {
-			labels[router+".middlewares"] = middleware
-		} else {
-			delete(labels, router+".middlewares")
-		}
+		labels[router+".middlewares"] = routerMiddlewares(app, access)
 		if app == EtherpadApp {
 			service["environment"] = etherpadEnvironment(access)
 		}

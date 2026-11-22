@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Configuration dynamique de Traefik : console, portail captif, certificat local.
+# Configuration dynamique de Traefik : console, portail captif, pages
+# d'erreur, certificat local.
 
 http:
   routers:
@@ -34,20 +35,32 @@ http:
         ClientIP(`::1/128`) ||
         ClientIP(`fc00::/7`) ||
         ClientIP(`fe80::/10`))
-      priority: 1
+      priority: 2
       service: pi-appliance-console
+      tls: {}
+    # Dernier recours (priorité 1, sous tous les autres) : adresse ou chemin
+    # sans routeur (service arrêté ou désinstallé, console demandée depuis
+    # internet) ; la console sert sa page « introuvable » (code 404), avec son
+    # pied de page, au lieu du « 404 page not found » de Traefik. Le chemin est
+    # toujours remplacé : rien d'autre de la console n'est joint ainsi.
+    pi-appliance-not-found:
+      entryPoints: [websecure]
+      rule: "PathPrefix(`/`)"
+      priority: 1
+      middlewares: [pi-appliance-not-found]
+      service: pi-appliance-errors
       tls: {}
     # NE PAS élargir : seule la demande api/hello de l'application mobile
     # (nom, version, empreinte de la clé publique, adresses des services ;
     # spécification 5.2) répond aussi depuis internet. Chemin exact, lecture
-    # seule ; le reste de la console reste fermé sur internet (8.3). Priorité 2 :
+    # seule ; le reste de la console reste fermé sur internet (8.3). Priorité 3 :
     # devant la console, derrière les routeurs des services.
     pi-appliance-hello:
       entryPoints: [websecure]
       rule: >-
         Path(`/pi-appliance/api/hello`) &&
         (Method(`GET`) || Method(`HEAD`) || Method(`OPTIONS`))
-      priority: 2
+      priority: 3
       service: pi-appliance-console
       tls: {}
     # Adresse nue (https://pi-appliance.local/) : vers la console.
@@ -68,6 +81,18 @@ http:
       priority: 100
 
   middlewares:
+    pi-appliance-not-found:
+      replacePath:
+        path: "/pi-appliance/erreur/404"
+    # Service qui ne répond pas (en train de démarrer, en panne) : page
+    # « service indisponible » de la console. Posé en premier sur le routeur de
+    # chaque service de la marketplace (internal/services, errorsMiddleware) et
+    # sur Cockpit. Pas sur la console : ses réponses 502 et 503 sont du JSON.
+    pi-appliance-errors:
+      errors:
+        status: ["502-504"]
+        service: pi-appliance-errors
+        query: "/pi-appliance/erreur/{status}"
     pi-appliance-to-console:
       redirectRegex:
         regex: "^https://([^/]+)/?$"
@@ -120,6 +145,12 @@ http:
 
   services:
     pi-appliance-console:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8080"
+    # La même console, pour les pages d'erreur seulement (chemin
+    # /pi-appliance/erreur/<code>, posé par les middlewares ci-dessus).
+    pi-appliance-errors:
       loadBalancer:
         servers:
           - url: "http://127.0.0.1:8080"

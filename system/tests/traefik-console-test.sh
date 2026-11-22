@@ -51,8 +51,16 @@ docker network create --subnet 192.168.244.0/24 "$NET192" >/dev/null
 docker network create --subnet 203.0.113.0/24 "$NET_PUBLIC" >/dev/null
 
 mkdir -p "$TMP/dynamic"
-awk '/^tls:$/ { exit } { print }' \
+# Pages d'erreur (service pi-appliance-errors) servies ici par le backend de
+# test, qui renvoie le chemin demandé : « erreur/404 » prouve que la demande
+# n'a pas joint la console (qui, injoignable ici, répond « 502 »).
+awk -v backend="http://$BACKEND:80" '
+	/^tls:$/ { exit }
+	/^    [a-z-]+:$/ { errors = ($1 == "pi-appliance-errors:") }
+	errors && /- url:/ { sub(/http:\/\/127\.0\.0\.1:8080/, backend) }
+	{ print }' \
 	"$ROOT/system/etc/pi-appliance/traefik/dynamic/console.yml" >"$TMP/dynamic/console.yml"
+grep -q "$BACKEND" "$TMP/dynamic/console.yml"
 
 cat >"$TMP/traefik.yml" <<'EOF'
 entryPoints:
@@ -86,6 +94,13 @@ http:
       rule: "Host(\`service.test\`)"
       service: test-service
       tls: {}
+    # Service qui ne répond pas : page « service indisponible » (502).
+    test-down:
+      entryPoints: [websecure]
+      rule: "Host(\`down.test\`)"
+      middlewares: [pi-appliance-errors@file]
+      service: test-down
+      tls: {}
     # Service « maison seulement » (spécification 8.2).
     test-home:
       entryPoints: [websecure]
@@ -98,6 +113,10 @@ http:
       loadBalancer:
         servers:
           - url: "http://$BACKEND:80"
+    test-down:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:1"
 EOF
 
 cat >"$TMP/request.py" <<'EOF'
@@ -122,7 +141,7 @@ print(status)
 EOF
 
 docker run -d --name "$BACKEND" --network "$NET10" --network-alias "$BACKEND" "$PYTHON_IMAGE" \
-	python -c 'from http.server import BaseHTTPRequestHandler,HTTPServer; H=type("H",(BaseHTTPRequestHandler,),{"do_GET":lambda s:(s.send_response(200),s.end_headers(),s.wfile.write(b"service backend"))}); HTTPServer(("0.0.0.0",80),H).serve_forever()' >/dev/null
+	python -c 'from http.server import BaseHTTPRequestHandler,HTTPServer; H=type("H",(BaseHTTPRequestHandler,),{"do_GET":lambda s:(s.send_response(200),s.end_headers(),s.wfile.write(b"service backend "+s.path.encode()))}); HTTPServer(("0.0.0.0",80),H).serve_forever()' >/dev/null
 docker run -d --name "$PROXY" --network "$NET10" --network-alias "$PROXY" \
 	-v "$VOLUME_TMP/traefik.yml:/etc/traefik/traefik.yml:ro" \
 	-v "$VOLUME_TMP/dynamic:/etc/traefik/dynamic:ro" \
@@ -158,11 +177,14 @@ fi
 for network in "$NET10" "$NET172" "$NET192"; do
 	request "$network" console.test 502 >/dev/null
 done
-request "$NET_PUBLIC" console.test 404 >/dev/null
+request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" >/dev/null
 # api/hello de l'application mobile : seule ouverte depuis internet, chemin exact.
 request "$NET_PUBLIC" console.test 502 "" /pi-appliance/api/hello >/dev/null
-request "$NET_PUBLIC" console.test 404 "" /pi-appliance/api/hello/ >/dev/null
-request "$NET_PUBLIC" console.test 404 "" /pi-appliance/api/session >/dev/null
+request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /pi-appliance/api/hello/ >/dev/null
+request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /pi-appliance/api/session >/dev/null
+# Adresse sans routeur : page « introuvable » ; service muet : « indisponible ».
+request "$NET10" autre.test 200 "/pi-appliance/erreur/404" /un/chemin >/dev/null
+request "$NET10" down.test 502 "/pi-appliance/erreur/502" >/dev/null
 request "$NET10" console.test 502 "" /pi-appliance/api/hello >/dev/null
 request "$NET_PUBLIC" service.test 200 "service backend" /pi-appliance/api/hello >/dev/null
 request "$NET10" service.test 200 "service backend" >/dev/null
@@ -180,7 +202,7 @@ http:
     pi-appliance-console-internet:
       entryPoints: [websecure]
       rule: "(Host(`console.test`)) && PathPrefix(`/pi-appliance`) && !PathPrefix(`/pi-appliance/api/auth/forward`)"
-      priority: 1
+      priority: 2
       service: pi-appliance-console@file
       tls:
         certResolver: letsencrypt
@@ -199,11 +221,11 @@ wait_for() {
 	done
 }
 wait_for 502 console.test
-request "$NET_PUBLIC" console.test 404 "" /pi-appliance/api/auth/forward >/dev/null
-request "$NET_PUBLIC" autre.test 404 >/dev/null
+request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /pi-appliance/api/auth/forward >/dev/null
+request "$NET_PUBLIC" autre.test 200 "/pi-appliance/erreur/404" >/dev/null
 request "$NET_PUBLIC" service.test 200 "service backend" >/dev/null
 request "$NET10" console.test 502 >/dev/null
 # Refermée : fichier retiré, la console redevient inaccessible depuis internet.
 rm "$TMP/dynamic/console-internet.yml"
-wait_for 404 console.test
+wait_for 200 console.test
 echo "ok"

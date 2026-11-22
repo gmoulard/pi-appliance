@@ -57,7 +57,8 @@ func padOverride(t *testing.T, m *Manager) (string, string) {
 		t.Fatal(err)
 	}
 	service := generated.Services["pad"]
-	return service.Labels["traefik.http.routers.pi-pad.middlewares"], service.Environment["REQUIRE_AUTHENTICATION"]
+	middleware, _ := accessPart(t, service.Labels["traefik.http.routers.pi-pad.middlewares"])
+	return middleware, service.Environment["REQUIRE_AUTHENTICATION"]
 }
 
 func TestEtherpadAccess(t *testing.T) {

@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strconv"
@@ -75,7 +77,44 @@ func sourceKeys(t *testing.T) []string {
 	for _, match := range attributePattern.FindAllStringSubmatch(body, -1) {
 		add(strings.TrimSpace(match[1]))
 	}
+	// Pages servies par Go (pages.go) : mêmes fichiers de traduction.
+	for _, key := range pageKeys {
+		add(key)
+	}
 	return keys
+}
+
+var pageCallPattern = regexp.MustCompile(`\bpageT\(\w+, "((?:[^"\\]|\\.)*)"`)
+
+// TestPageKeys : chaque phrase écrite dans un appel pageT(…, "…") est dans pageKeys.
+func TestPageKeys(t *testing.T) {
+	files, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := 0
+	for _, file := range files {
+		if strings.HasSuffix(file, "_test.go") {
+			continue
+		}
+		data, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, match := range pageCallPattern.FindAllStringSubmatch(string(data), -1) {
+			key, err := strconv.Unquote(`"` + match[1] + `"`)
+			if err != nil {
+				t.Fatal(err)
+			}
+			found++
+			if !slices.Contains(pageKeys, key) {
+				t.Errorf("%s : %q absent de pageKeys", file, key)
+			}
+		}
+	}
+	if found < 10 {
+		t.Fatalf("%d appels pageT seulement : extraction cassée ?", found)
+	}
 }
 
 func placeholders(text string) []string {

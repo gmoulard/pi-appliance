@@ -69,7 +69,8 @@ jobs:
           go test ./...
           if [ "${GITHUB_REF_TYPE}" = tag ]; then version=${GITHUB_REF_NAME}; else version=$(date +%Y-%m-%d)-${GITHUB_SHA::7}; fi
           echo "VERSION=$version" >>"$GITHUB_ENV"
-          GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=$version" -o pi-appliance-arm64 ./cmd/pi-appliance
+          # Commit et sa date : pied de page de la console (TODO-5.21).
+          GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=$version -X main.commit=${GITHUB_SHA} -X main.date=$(git log -1 --format=%cs)" -o pi-appliance-arm64 ./cmd/pi-appliance
       - name: Place sur le disque
         if: env.WITH_IMAGE == 'true'
         run: |

@@ -12,7 +12,9 @@ Le **socle pi-appliance** (Docker, Traefik, les services et les outils du systè
 
 <div id="marketplace-catalog" data-catalog-index="{{ '/static/pi-appliance-catalog.json' | relative_url }}">
 <p id="marketplace-catalog-status" role="status">Chargement du catalogue…</p>
+<p id="marketplace-tags-help" hidden>Touchez une ou plusieurs étiquettes pour ne voir que les applications qui en ont au moins une ; touchez-la de nouveau pour la retirer.</p>
 <div id="marketplace-tags" class="todo-filters" role="group" aria-label="Filtrer par étiquette" hidden></div>
+<p id="marketplace-tags-empty" hidden>Aucune application n'a ces étiquettes.</p>
 <table id="marketplace-catalog-table" hidden>
 <thead><tr><th>Application</th><th>Description</th><th>Catégorie</th><th>Étiquettes</th><th>Mémoire</th><th>Disque</th></tr></thead>
 <tbody></tbody>

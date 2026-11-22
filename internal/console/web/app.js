@@ -139,9 +139,12 @@ async function loadServices() {
   showServicesSummary(services);
   serviceUpdates = services.filter((service) => service.update_available).length;
   showUpdates();
+  // Ordre alphabétique des noms (TODO-5.22).
+  services.sort((a, b) => a.name.localeCompare(b.name, LOCALE));
   servicesList.replaceChildren(...services.map((service) => {
     const card = element("li", undefined, "card");
     tint(card, service.app);
+    card.dataset.tags = (service.tags || []).join(" ");
     const actions = element("div", undefined, "actions");
     // Un service sans page web (VPN) n'a pas d'adresse à ouvrir.
     if (!service.no_web_page) {
@@ -175,6 +178,10 @@ async function loadServices() {
       remove.addEventListener("click", () => uninstall(service, remove));
       buttons.append(remove);
       actions.append(buttons, advanced.panel);
+      // Hors catalogue : l'administrateur choisit les étiquettes (TODO-5.22).
+      if (service.tags_editable) {
+        actions.append(tagsChooser(service));
+      }
       if (devices) {
         actions.append(devices.panel);
       }
@@ -201,6 +208,9 @@ async function loadServices() {
     }
     if (service.site_files && service.app !== "site-web") {
       detail.append(element("p", buildText(service.build), "meta"));
+    }
+    if ((service.tags || []).length > 0) {
+      detail.append(tagList(service.tags));
     }
     card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
     return card;
@@ -588,41 +598,228 @@ const TAG_LABELS = {
   reseau: t("Réseau"),
   maison: t("Maison"),
 };
-const tagFilters = document.getElementById("tagFilters");
-let tagFilter = "";
-
-function showTagFilters(apps) {
-  const used = Object.keys(TAG_LABELS).filter((tag) => apps.some((app) => (app.tags || []).includes(tag)));
-  if (!used.includes(tagFilter)) {
-    tagFilter = "";
-  }
-  tagFilters.hidden = used.length < 2;
-  tagFilters.replaceChildren(...[["", t("Tous les services")], ...used.map((tag) => [tag, TAG_LABELS[tag]])].map(([tag, label]) => {
-    const button = element("button", label, "secondary");
-    button.type = "button";
-    button.dataset.tag = tag;
-    button.addEventListener("click", () => {
-      tagFilter = tag;
-      applyTagFilter();
-    });
-    return button;
-  }));
-  applyTagFilter();
-}
-
-function applyTagFilter() {
-  for (const button of tagFilters.querySelectorAll("button")) {
-    button.setAttribute("aria-pressed", String(button.dataset.tag === tagFilter));
-  }
-  for (const card of catalogList.children) {
-    card.hidden = tagFilter !== "" && !(card.dataset.tags || "").split(" ").includes(tagFilter);
-  }
-}
-
 function tagList(tags) {
   const list = element("ul", undefined, "app-tags");
   list.append(...tags.filter((tag) => TAG_LABELS[tag]).map((tag) => element("li", TAG_LABELS[tag])));
   return list;
+}
+
+// tagsChooser : étiquettes d'un service hors catalogue (Docker Compose libre,
+// application retirée), choisies par l'administrateur dans sa fiche (TODO-5.22).
+function tagsChooser(service) {
+  const details = element("details", undefined, "tags-chooser");
+  details.append(element("summary", t("Étiquettes")));
+  const form = element("form");
+  form.append(element("p", t("Choisissez jusqu'à 4 étiquettes pour retrouver ce service avec la barre du haut."), "meta"));
+  for (const [tag, label] of Object.entries(TAG_LABELS)) {
+    const field = element("label", undefined, "check");
+    const box = element("input");
+    box.type = "checkbox";
+    box.name = "tag";
+    box.value = tag;
+    box.checked = (service.tags || []).includes(tag);
+    field.append(box, label);
+    form.append(field);
+  }
+  const save = element("button", t("Enregistrer les étiquettes"), "secondary");
+  form.append(save);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const tags = [...form.querySelectorAll('input[name="tag"]:checked')].map((box) => box.value);
+    save.disabled = true;
+    try {
+      await api(`services/${encodeURIComponent(service.name)}/tags`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tags }),
+      });
+      showMessage([t("{0} : étiquettes enregistrées.", service.name)], "success");
+      await loadServices();
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      save.disabled = false;
+    }
+  });
+  details.append(form);
+  return details;
+}
+
+// Barre des tuiles (TODO-5.22) : en haut de la console, les trois types de
+// tuiles (Mon Pi, Mes services, Marketplace), puis, pour les types choisis,
+// leurs étiquettes : les thèmes de Mon Pi, les étiquettes du catalogue pour les
+// services. Choix multiple, « l'un ou l'autre » ; rien de choisi : tout est
+// affiché. Une étiquette ne trie que les tuiles de son type. Le choix est gardé
+// sur cet appareil (stockage du navigateur). Les tuiles portent data-kind
+// (section) et data-theme (Mon Pi) ou data-tags (services) ; la barre ne se
+// montre que quand au moins deux types sont à l'écran (pas pendant l'assistant).
+const TILE_KINDS = [
+  ["pi", t("Mon Pi")],
+  ["services", t("Mes services")],
+  ["catalog", t("Marketplace")],
+];
+const PI_THEMES = [
+  ["reseau-internet", t("Réseau et internet")],
+  ["etat", t("État")],
+  ["entretien", t("Entretien")],
+  ["comptes", t("Comptes et appareils")],
+];
+const TILES_KEY = "pi-tiles";
+const tileFilters = document.getElementById("tileFilters");
+const tileKinds = document.getElementById("tileKinds");
+const tileTags = document.getElementById("tileTags");
+const tileEmpty = document.getElementById("tileEmpty");
+const tileChoice = { kinds: new Set(), tags: new Set() };
+
+(function readTileChoice() {
+  try {
+    const saved = JSON.parse(window.localStorage.getItem(TILES_KEY) || "{}");
+    for (const kind of saved.kinds || []) tileChoice.kinds.add(String(kind));
+    for (const tag of saved.tags || []) tileChoice.tags.add(String(tag));
+  } catch {
+    // Stockage indisponible ou illisible : tout est affiché.
+  }
+})();
+
+function saveTileChoice() {
+  try {
+    window.localStorage.setItem(TILES_KEY, JSON.stringify({ kinds: [...tileChoice.kinds], tags: [...tileChoice.tags] }));
+  } catch {
+    // Sans stockage, le choix ne dure que le temps de cette page.
+  }
+}
+
+function setHidden(node, hidden) {
+  if (node.hidden !== hidden) node.hidden = hidden;
+}
+
+function filterButton(id, label, chosen) {
+  const button = element("button", label, "secondary");
+  button.type = "button";
+  button.setAttribute("aria-pressed", String(chosen.has(id)));
+  button.addEventListener("click", () => {
+    if (chosen.has(id)) chosen.delete(id);
+    else chosen.add(id);
+    saveTileChoice();
+    applyTiles();
+  });
+  return button;
+}
+
+// Tuiles à l'écran (sans l'attribut hidden posé par la console), par type.
+function shownTiles() {
+  const sections = [...document.querySelectorAll("main > section[data-kind]")].filter((section) => !section.hidden);
+  const byKind = new Map();
+  for (const section of sections) {
+    if (!byKind.has(section.dataset.kind)) byKind.set(section.dataset.kind, []);
+    byKind.get(section.dataset.kind).push(section);
+  }
+  return byKind;
+}
+
+function cardTags(card) {
+  return (card.dataset.tags || "").split(" ").filter(Boolean);
+}
+
+let tilesPending = false;
+
+function applyTiles() {
+  tilesPending = false;
+  const byKind = shownTiles();
+  const kinds = TILE_KINDS.filter(([kind]) => byKind.has(kind));
+  const filtering = kinds.length >= 2 && wizardSection.hidden;
+  setHidden(tileFilters, !filtering);
+  for (const node of document.querySelectorAll("main .filtered")) {
+    if (!filtering) node.classList.remove("filtered");
+  }
+  if (!filtering) return;
+  // Un type choisi mais absent de l'écran (autre compte) ne compte pas.
+  const chosenKinds = kinds.map(([kind]) => kind).filter((kind) => tileChoice.kinds.has(kind));
+  const kindOn = (kind) => chosenKinds.length === 0 || chosenKinds.includes(kind);
+  tileKinds.replaceChildren(...kinds.map(([kind, label]) => filterButton(kind, label, tileChoice.kinds)));
+  // Étiquettes proposées : celles des types choisis, présentes à l'écran.
+  const sections = (kind) => (chosenKinds.includes(kind) ? byKind.get(kind) || [] : []);
+  const themes = new Set(sections("pi").flatMap((section) => [section, ...section.querySelectorAll("[data-theme]")])
+    .filter((node) => !node.hidden && node.dataset.theme).map((node) => node.dataset.theme));
+  const tags = new Set([...sections("services"), ...sections("catalog")]
+    .flatMap((section) => [...section.querySelectorAll("li[data-tags]")].flatMap(cardTags)));
+  const offered = [
+    ...PI_THEMES.filter(([theme]) => themes.has(theme)).map(([theme, label]) => [`pi:${theme}`, label]),
+    ...Object.entries(TAG_LABELS).filter(([tag]) => tags.has(tag)),
+  ];
+  tileTags.replaceChildren(...offered.map(([id, label]) => filterButton(id, label, tileChoice.tags)));
+  setHidden(tileTags, offered.length === 0);
+  const offeredIds = new Set(offered.map(([id]) => id));
+  const chosenThemes = [...tileChoice.tags].filter((id) => offeredIds.has(id) && id.startsWith("pi:")).map((id) => id.slice(3));
+  const chosenTags = [...tileChoice.tags].filter((id) => offeredIds.has(id) && !id.startsWith("pi:"));
+  let shown = 0;
+  for (const [kind, list] of byKind) {
+    for (const section of list) {
+      let visible = kindOn(kind);
+      if (visible && kind === "pi") {
+        const themed = section.dataset.theme ? [section] : [...section.querySelectorAll(":scope > [data-theme]")];
+        for (const node of themed) {
+          const keep = chosenThemes.length === 0 || chosenThemes.includes(node.dataset.theme);
+          if (node !== section) node.classList.toggle("filtered", !keep);
+        }
+        visible = themed.some((node) => !node.hidden && (chosenThemes.length === 0 || chosenThemes.includes(node.dataset.theme)));
+      } else if (visible) {
+        const cards = [...section.querySelectorAll("li[data-tags], .cards > li")];
+        let kept = 0;
+        for (const card of cards) {
+          const keep = chosenTags.length === 0 || cardTags(card).some((tag) => chosenTags.includes(tag));
+          card.classList.toggle("filtered", !keep);
+          if (keep) kept += 1;
+        }
+        visible = chosenTags.length === 0 || kept > 0;
+      }
+      section.classList.toggle("filtered", !visible);
+      if (visible) shown += 1;
+    }
+  }
+  setHidden(tileEmpty, shown > 0);
+}
+
+function scheduleTiles() {
+  if (tilesPending) return;
+  tilesPending = true;
+  window.requestAnimationFrame(applyTiles);
+}
+
+// Les sections et les cartes apparaissent au fil des chargements : la barre suit.
+new MutationObserver((records) => {
+  if (records.some((record) => !tileFilters.contains(record.target))) scheduleTiles();
+}).observe(document.querySelector("main"), { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden"] });
+
+// Pied de page (TODO-5.21) : version (pas pour une version de
+// développement), commit et sa date, licence et code source ; les mêmes que
+// les pages servies par la console (pages.go, footerHTML).
+const REPO_URL = "https://github.com/gmoulard/pi-appliance";
+const LICENSE_URL = `${REPO_URL}/blob/master/LICENSE`;
+
+function footerLink(href, content) {
+  const link = element("a");
+  link.href = href;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.append(content);
+  return link;
+}
+
+function showFooter(health) {
+  const parts = [];
+  if (health.release) parts.push(document.createTextNode(`pi-appliance ${String(health.version).replace(/^v/, "")}`));
+  if (health.commit) {
+    const commit = element("span");
+    commit.append(`${t("commit")} `, footerLink(`${REPO_URL}/commit/${encodeURIComponent(health.commit)}`, element("code", health.commit.slice(0, 7))));
+    const day = /^\d{4}-\d{2}-\d{2}$/.test(health.date || "") ? new Date(`${health.date}T12:00:00`) : null;
+    if (day && !Number.isNaN(day.getTime())) {
+      commit.append(` ${t("du {0}", day.toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" }))}`);
+    }
+    parts.push(commit);
+  }
+  parts.push(footerLink(LICENSE_URL, t("Logiciel libre, licence AGPL-3.0")), footerLink(REPO_URL, t("Code source")));
+  footer.replaceChildren(...parts.flatMap((part, index) => (index === 0 ? [part] : [" · ", part])));
 }
 
 async function loadCatalog() {
@@ -680,7 +877,6 @@ async function loadCatalog() {
   if (currentAccount && currentAccount.role === "admin") {
     catalogList.append(customComposeCard());
   }
-  showTagFilters(apps);
 }
 
 // Avancement d'une installation (spécification 6.2) : la console relit
@@ -1962,7 +2158,6 @@ function showUpdates() {
   updatesCheck.disabled = busy || upgrading || status.checking;
   updatesChannel.value = status.appliance.channel || "stable";
   updatesChannel.disabled = upgrading;
-  footer.textContent = `pi-appliance ${status.appliance.current} · ${status.appliance.channel === "beta" ? t("canal bêta") : t("canal stable")}`;
 }
 
 // loadUpdates rend vrai quand plus rien n'est en cours (installation, recherche).
@@ -3938,7 +4133,7 @@ api("health")
   .then(async (health) => {
     status.textContent = t("Appliance en service.");
     statusDot.className = "dot ok";
-    footer.textContent = `pi-appliance ${health.version}`;
+    showFooter(health);
     showDeviceMessage();
     const invite = window.location.hash.match(/^#invite=([A-Za-z0-9_-]+)$/);
     if (invite && (await startInvitation(invite[1]))) {

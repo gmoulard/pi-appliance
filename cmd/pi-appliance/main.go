@@ -25,6 +25,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"syscall"
 	"time"
@@ -49,7 +50,36 @@ import (
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
-var version = "dev"
+// Version, commit complet et date du commit (AAAA-MM-JJ), donnés à la
+// construction : go build -ldflags "-X main.version=… -X main.commit=… -X main.date=…"
+// (workflows « Image », « Go » et « Système ») ; sans eux, commit et date
+// viennent des informations de git gravées par go build (buildCommit).
+var (
+	version = "dev"
+	commit  = ""
+	date    = ""
+)
+
+// buildCommit : commit et date du binaire, d'après -ldflags, sinon d'après
+// vcs.revision et vcs.time ; vides si inconnus (go run, go test).
+func buildCommit() (string, string) {
+	revision, when := commit, date
+	if info, ok := debug.ReadBuildInfo(); ok {
+		for _, setting := range info.Settings {
+			switch setting.Key {
+			case "vcs.revision":
+				if revision == "" {
+					revision = setting.Value
+				}
+			case "vcs.time":
+				if when == "" && len(setting.Value) >= 10 {
+					when = setting.Value[:10]
+				}
+			}
+		}
+	}
+	return revision, when
+}
 
 // defaultDomain : <nom du Pi>.local (name.sh donne à chaque Pi son nom).
 func defaultDomain() string {
@@ -229,8 +259,11 @@ func main() {
 	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
 	go checker.Run(ctx, 5*time.Minute)
 	go reporter.Run(ctx)
+	buildRevision, buildDate := buildCommit()
 	config := console.Config{
 		Version:          version,
+		Commit:           buildRevision,
+		Date:             buildDate,
 		Catalog:          market,
 		Services:         manager,
 		Accounts:         accounts,

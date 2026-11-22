@@ -156,7 +156,7 @@ func traefikInternet(enabled bool, hosts []string) string {
 	b.WriteString("http:\n  routers:\n    pi-appliance-console-internet:\n")
 	b.WriteString("      entryPoints: [websecure]\n")
 	fmt.Fprintf(&b, "      rule: \"(%s) && PathPrefix(`%s`) && !PathPrefix(`%s/api/auth/forward`)\"\n", strings.Join(rules, " || "), BasePath, BasePath)
-	b.WriteString("      priority: 1\n")
+	b.WriteString("      priority: 2\n")
 	b.WriteString("      service: pi-appliance-console@file\n")
 	b.WriteString("      tls:\n        certResolver: letsencrypt\n")
 	return b.String()
@@ -207,7 +207,7 @@ func RunInternet(ctx context.Context, config Config, every time.Duration) {
 // fermée : api/hello (application mobile), et l'authentification déléguée,
 // appelée par Traefik avec l'adresse du visiteur d'un service.
 func internetOpenPath(path string) bool {
-	return path == BasePath+"/api/hello" || strings.HasPrefix(path, BasePath+"/api/auth/forward")
+	return path == BasePath+"/api/hello" || strings.HasPrefix(path, BasePath+"/api/auth/forward") || strings.HasPrefix(path, BasePath+"/erreur/")
 }
 
 // homeOnlyPaths : à faire depuis la maison, même console ouverte.

@@ -42,8 +42,18 @@ func middlewareLabel(t *testing.T, m *Manager) (string, bool) {
 	if err := json.Unmarshal(data, &generated); err != nil {
 		t.Fatal(err)
 	}
-	value, ok := generated.Services["app"].Labels["traefik.http.routers.pi-cloud.middlewares"]
-	return value, ok
+	return accessPart(t, generated.Services["app"].Labels["traefik.http.routers.pi-cloud.middlewares"])
+}
+
+// accessPart : middleware d'accès d'un routeur, après la page d'erreur toujours posée en premier.
+func accessPart(t *testing.T, value string) (string, bool) {
+	t.Helper()
+	rest, found := strings.CutPrefix(value, errorsMiddleware)
+	if !found {
+		t.Fatalf("middlewares %q : %s attendu en premier", value, errorsMiddleware)
+	}
+	rest = strings.TrimPrefix(rest, ",")
+	return rest, rest != ""
 }
 
 func listedAccess(t *testing.T, m *Manager) string {

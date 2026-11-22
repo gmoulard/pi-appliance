@@ -33,7 +33,7 @@ jobs:
           go-version-file: go.mod
       - run: go vet ./...
       - run: go test ./...
-      - run: GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=${GITHUB_SHA::7}" -o pi-appliance-arm64 ./cmd/pi-appliance
+      - run: GOOS=linux GOARCH=arm64 go build -ldflags "-X main.version=${GITHUB_SHA::7} -X main.commit=${GITHUB_SHA} -X main.date=$(git log -1 --format=%cs)" -o pi-appliance-arm64 ./cmd/pi-appliance
       - uses: actions/upload-artifact@v7
         with:
           name: pi-appliance-arm64

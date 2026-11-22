@@ -480,7 +480,8 @@ func (c *console) loginCallback(w http.ResponseWriter, r *http.Request) bool {
 	}
 	// NE PAS renvoyer vers la console ici : un navigateur qui refuse les cookies
 	// tournerait sans fin entre la console et le service.
-	messagePage(w, http.StatusForbidden, "pi-appliance", "Cette connexion n'est plus valable : elle ne sert qu'une fois, pendant deux minutes, dans le navigateur qui l'a demandée.", target, "Ouvrir de nouveau la page")
+	lang := pageLanguage(r)
+	c.messagePage(w, r, http.StatusForbidden, "pi-appliance", pageT(lang, "Cette connexion n'est plus valable : elle ne sert qu'une fois, pendant deux minutes, dans le navigateur qui l'a demandée."), pageLink{target, pageT(lang, "Ouvrir de nouveau la page")})
 	return true
 }
 

@@ -103,7 +103,7 @@ func TestInstallPortainer(t *testing.T) {
 		t.Fatalf("accès %q", got)
 	}
 	override, err := os.ReadFile(filepath.Join(f.manager.Dir, "services", "portainer", "pi-appliance.override.json"))
-	if err != nil || !strings.Contains(string(override), `"pi-appliance-home@file,pi-appliance-admins@file"`) {
+	if err != nil || !strings.Contains(string(override), `"pi-appliance-errors@file,pi-appliance-home@file,pi-appliance-admins@file"`) {
 		t.Fatalf("labels Traefik : %v\n%s", err, override)
 	}
 	for _, access := range []string{"public", "home", "admins"} {

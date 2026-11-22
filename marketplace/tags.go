@@ -42,6 +42,11 @@ var Tags = []Tag{
 	{"maison", "Maison"},
 }
 
+// KnownTag : l'étiquette est dans la liste fermée Tags.
+func KnownTag(id string) bool {
+	return knownTag(id)
+}
+
 func knownTag(id string) bool {
 	for _, tag := range Tags {
 		if tag.ID == id {

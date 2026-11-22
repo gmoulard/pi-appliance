@@ -719,6 +719,40 @@ label.check input {
   color: #ffffff;
 }
 
+/* Barre des tuiles (TODO-5.22) : types, puis étiquettes des types choisis. */
+.tile-filters {
+  margin: 0 0 1.25rem;
+}
+
+.tile-filters .tag-filters {
+  margin: 0 0 0.5rem;
+}
+
+.tile-filters #tileTags {
+  padding-inline-start: 0.75rem;
+  border-inline-start: 3px solid var(--brand-pale);
+}
+
+.tile-filters #tileKinds button {
+  font-weight: 700;
+}
+
+main .filtered {
+  display: none !important;
+}
+
+.tags-chooser form {
+  gap: 0.25rem;
+}
+
+footer code {
+  font-family: var(--mono);
+}
+
+footer a {
+  color: inherit;
+}
+
 .app-tags {
   display: flex;
   flex-wrap: wrap;

@@ -18,7 +18,6 @@ package console
 import (
 	"errors"
 	"fmt"
-	"html"
 	"log"
 	"net/http"
 	"net/url"
@@ -168,7 +167,7 @@ func (c *console) forwardPad(w http.ResponseWriter, r *http.Request) {
 		token := query.Get(shareParam)
 		share, ok := c.Accounts.Share(token, service)
 		if !ok || !sharedPath(path, share.Pad) {
-			sharePage(w, http.StatusGone, "Ce lien de partage ne marche plus. Demandez-en un nouveau à la personne qui vous l'a envoyé.", "")
+			c.sharePage(w, r, http.StatusGone, "Ce lien de partage ne marche plus. Demandez-en un nouveau à la personne qui vous l'a envoyé.", nil, "")
 			return
 		}
 		// Le jeton quitte l'adresse : il ne reste ni dans Etherpad ni dans l'en-tête Referer.
@@ -208,13 +207,13 @@ func (c *console) forwardPad(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		sharePage(w, http.StatusGone, "Ce lien de partage ne marche plus. Demandez-en un nouveau à la personne qui vous l'a envoyé.", "")
+		c.sharePage(w, r, http.StatusGone, "Ce lien de partage ne marche plus. Demandez-en un nouveau à la personne qui vous l'a envoyé.", nil, "")
 	case !sharedPath(path, share.Pad):
 		if !page {
 			w.WriteHeader(http.StatusForbidden)
 			return
 		}
-		sharePage(w, http.StatusForbidden, fmt.Sprintf("Votre lien de partage n'ouvre que le document « %s ».", share.Pad), "/p/"+url.PathEscape(share.Pad))
+		c.sharePage(w, r, http.StatusForbidden, "Votre lien de partage n'ouvre que le document « {0} ».", []string{share.Pad}, "/p/"+url.PathEscape(share.Pad))
 	default:
 		w.Header().Set("Authorization", authorization)
 		w.WriteHeader(http.StatusOK)
@@ -258,23 +257,4 @@ func requestHostOf(host string) string {
 		host = host[:i]
 	}
 	return strings.ToLower(strings.TrimSuffix(host, "."))
-}
-
-// sharePage : page lisible par une personne sans compte, avec un lien de retour au document.
-func sharePage(w http.ResponseWriter, status int, text, back string) {
-	messagePage(w, status, "Etherpad", text, back, "Revenir au document")
-}
-
-// messagePage : courte page d'explication, avec un lien (back, backText) s'il y en a un.
-func messagePage(w http.ResponseWriter, status int, title, text, back, backText string) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Header().Set("Cache-Control", "no-store")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.Header().Set("Content-Security-Policy", "default-src 'none'; style-src 'unsafe-inline'")
-	w.WriteHeader(status)
-	link := ""
-	if back != "" {
-		link = `<p><a href="` + html.EscapeString(back) + `">` + html.EscapeString(backText) + `</a></p>`
-	}
-	fmt.Fprintf(w, `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>%s</title></head><body style="font-family: sans-serif; max-width: 36rem; margin: 3rem auto; padding: 0 1rem; line-height: 1.5"><p>%s</p>%s</body></html>`, html.EscapeString(title), html.EscapeString(text), link)
 }

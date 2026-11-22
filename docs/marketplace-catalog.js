@@ -56,25 +56,56 @@
     return card;
   }
 
+  // Filtre par étiquettes (TODO-5.22), comme la console : plusieurs
+  // étiquettes à la fois, une application est montrée si elle a l'une
+  // d'elles ; aucune choisie : toutes. Le choix est gardé dans l'adresse
+  // (#etiquette=fichiers,maison) pour pouvoir le partager.
+  function chosenTags(known) {
+    const match = window.location.hash.match(/^#etiquette=([a-z0-9,-]*)$/);
+    if (!match) return new Set();
+    return new Set(match[1].split(",").filter((id) => known.includes(id)));
+  }
+
   function showTagFilters(apps, tags, body) {
     const box = document.getElementById("marketplace-tags");
     const used = tags.filter((tag) => apps.some((app) => (app.tags || []).includes(tag.id)));
     if (!box || used.length < 2) return;
-    const buttons = [{ id: "", label: "Toutes" }, ...used].map((tag) => {
+    const known = used.map((tag) => tag.id);
+    let chosen = chosenTags(known);
+    const empty = document.getElementById("marketplace-tags-empty");
+    const apply = () => {
+      for (const button of box.querySelectorAll("button")) {
+        button.setAttribute("aria-pressed", String(chosen.has(button.dataset.tag)));
+      }
+      let shown = 0;
+      for (const row of body.children) {
+        row.hidden = chosen.size > 0 && !row.dataset.tags.split(" ").some((id) => chosen.has(id));
+        if (!row.hidden) shown += 1;
+      }
+      if (empty) empty.hidden = shown > 0;
+    };
+    box.replaceChildren(...used.map((tag) => {
       const button = document.createElement("button");
       button.type = "button";
       button.textContent = tag.label;
-      button.setAttribute("aria-pressed", String(tag.id === ""));
+      button.dataset.tag = tag.id;
       button.addEventListener("click", () => {
-        for (const other of buttons) other.setAttribute("aria-pressed", String(other === button));
-        for (const row of body.children) {
-          row.hidden = tag.id !== "" && !row.dataset.tags.split(" ").includes(tag.id);
-        }
+        if (chosen.has(tag.id)) chosen.delete(tag.id);
+        else chosen.add(tag.id);
+        const hash = chosen.size > 0 ? `#etiquette=${known.filter((id) => chosen.has(id)).join(",")}` : "";
+        window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${hash}`);
+        apply();
       });
       return button;
+    }));
+    window.addEventListener("hashchange", () => {
+      chosen = chosenTags(known);
+      apply();
     });
-    box.replaceChildren(...buttons);
     box.hidden = false;
+    const help = document.getElementById("marketplace-tags-help");
+    if (help) help.hidden = false;
+    apply();
   }
 
   function populateMarketplace(apps, planned, tags) {

@@ -19,11 +19,12 @@
 # réservée aux administrateurs connectés à la console (forward auth
 # api/auth/forward-admin), puis connexion à Cockpit avec le compte système
 # pi-admin. Tant que Cockpit n'est pas installé (cockpit.sh install), rien
-# n'écoute sur 127.0.0.1:9090 : Traefik répond « Bad Gateway ».
+# n'écoute sur 127.0.0.1:9090 : la console sert sa page « service
+# indisponible » (pi-appliance-errors, dynamic/console.yml).
 
 http:
   routers:
-    # Priorité 2 : au-dessus de la console (1), sous les routeurs des services
+    # Priorité 2 : au-dessus du dernier recours (1), sous les routeurs des services
     # (longueur de leur règle), qui gardent /cockpit sur leur propre adresse.
     pi-appliance-cockpit:
       entryPoints: [websecure]
@@ -37,7 +38,7 @@ http:
         ClientIP(`fc00::/7`) ||
         ClientIP(`fe80::/10`))
       priority: 2
-      middlewares: [pi-appliance-admin]
+      middlewares: [pi-appliance-errors, pi-appliance-admin]
       service: pi-appliance-cockpit
       tls: {}
 

@@ -33,3 +33,37 @@ func (c *console) setAccess(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, instance)
 }
+
+// setTags : étiquettes d'un service hors catalogue, choisies par l'administrateur
+// dans sa fiche (TODO-5.22) ; {"tags": []} les retire.
+func (c *console) setTags(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		Tags []string `json:"tags"`
+	}
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	name := r.PathValue("name")
+	instances, err := c.Services.List()
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	for _, instance := range instances {
+		if instance.Name != name {
+			continue
+		}
+		if _, ok := c.Catalog.Get(instance.App); ok {
+			writeError(w, http.StatusBadRequest, "Ce service prend les étiquettes de son application dans la marketplace.")
+			return
+		}
+		updated, err := c.Services.SetTags(name, request.Tags)
+		if err != nil {
+			writeServiceError(w, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, updated)
+		return
+	}
+	writeError(w, http.StatusNotFound, "Ce service n'est pas installé.")
+}

@@ -59,9 +59,15 @@ const (
 //go:embed web
 var webFiles embed.FS
 
+// Health : état de la console, et de quoi écrire son pied de page (TODO-5.21) :
+// version (vide pour une version de développement, ReleaseVersion), commit
+// complet et sa date (AAAA-MM-JJ), gravés dans le binaire à la construction.
 type Health struct {
 	Status  string `json:"status"`
 	Version string `json:"version"`
+	Release bool   `json:"release"`
+	Commit  string `json:"commit,omitempty"`
+	Date    string `json:"date,omitempty"`
 }
 
 type InstallRequest struct {
@@ -152,7 +158,11 @@ type Catalog interface {
 }
 
 type Config struct {
-	Version  string
+	Version string
+	// Commit : commit complet du code de la console ; Date : sa date, AAAA-MM-JJ.
+	// Vides : inconnus (pied de page sans commit).
+	Commit   string
+	Date     string
 	Catalog  Catalog
 	Services *services.Manager
 	Accounts *auth.Store
@@ -239,6 +249,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/progress", c.adminOnly(c.installProgress))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/access", c.adminOnly(c.setAccess))
+	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/tags", c.adminOnly(c.setTags))
 	mux.HandleFunc("POST "+BasePath+"/api/compose", c.adminOnly(c.installCompose))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/wireguard", c.adminOnly(c.wireGuard))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/wireguard/devices", c.adminOnly(c.addDevice))
@@ -282,6 +293,10 @@ func Handler(config Config) http.Handler {
 		mux.HandleFunc("GET "+BasePath+"/api/diagnostic", c.diagnosticStatus)
 		mux.HandleFunc("GET "+BasePath+"/api/diagnostic/logs", c.diagnosticLogs)
 		mux.HandleFunc("DELETE "+BasePath+"/api/diagnostic", c.diagnosticClose)
+	}
+	// Pages d'erreur de Traefik (pages.go) ; GET seul croiserait « GET /pi-appliance/ ».
+	for _, method := range []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"} {
+		mux.HandleFunc(method+" "+BasePath+"/erreur/{code}", c.errorPage)
 	}
 	for _, page := range []string{"/reset-to-factory", "/diagnostic"} {
 		mux.HandleFunc("GET "+BasePath+page, func(w http.ResponseWriter, r *http.Request) {
@@ -613,7 +628,7 @@ func (c *console) history(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (c *console) health(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, Health{Status: "ok", Version: c.Version})
+	writeJSON(w, http.StatusOK, Health{Status: "ok", Version: c.Version, Release: ReleaseVersion(c.Version), Commit: c.Commit, Date: c.Date})
 }
 
 func (c *console) listCatalog(w http.ResponseWriter, _ *http.Request) {
@@ -629,6 +644,10 @@ type ServiceView struct {
 	services.Instance
 	Status          services.Status `json:"status"`
 	UpdateAvailable bool            `json:"update_available"`
+	// TagsEditable : service hors catalogue (Docker Compose libre, application
+	// retirée), dont l'administrateur choisit les étiquettes (PUT api/services/<nom>/tags) ;
+	// sinon Tags sont celles de l'application du catalogue.
+	TagsEditable bool `json:"tags_editable"`
 }
 
 func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
@@ -644,9 +663,10 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = services.Status{Color: services.Orange, Message: "État inconnu."}
 		}
-		view := ServiceView{Instance: instance, Status: status}
+		view := ServiceView{Instance: instance, Status: status, TagsEditable: true}
 		if app, ok := c.Catalog.Get(instance.App); ok {
 			view.UpdateAvailable = c.Services.UpdateAvailable(app, instance.Name)
+			view.Tags, view.TagsEditable = app.Tags, false
 		}
 		views = append(views, view)
 	}

@@ -143,7 +143,7 @@ func TestHealth(t *testing.T) {
 	if response.Code != http.StatusOK {
 		t.Fatalf("code %d", response.Code)
 	}
-	if health := decode[Health](t, response); health != (Health{Status: "ok", Version: "1.2.3"}) {
+	if health := decode[Health](t, response); health != (Health{Status: "ok", Version: "1.2.3", Release: true}) {
 		t.Fatalf("réponse %+v", health)
 	}
 }

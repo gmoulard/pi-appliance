@@ -1,0 +1,170 @@
+// This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+// Copyright (c) 2026 Guillaume Moulard.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+package console
+
+import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+
+	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/marketplace"
+)
+
+// Pied de page des pages servies par Go et pages d'erreur de Traefik (TODO-5.21).
+
+func pageFixture(t *testing.T, version, commit, date string) http.Handler {
+	t.Helper()
+	f := newFixture(t)
+	catalog, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	return Handler(Config{Version: version, Commit: commit, Date: date, Catalog: catalog, Services: f.manager, Accounts: f.accounts})
+}
+
+func TestReleaseVersion(t *testing.T) {
+	for version, release := range map[string]bool{"0.1.4": true, "v0.1.4": true, "0.2.0-beta.1": true, "dev": false, "": false, "2026-11-22-abc1234": false, "abc1234": false} {
+		if ReleaseVersion(version) != release {
+			t.Errorf("%q : %v attendu", version, release)
+		}
+	}
+}
+
+func TestErrorPages(t *testing.T) {
+	handler := pageFixture(t, "0.1.4", "0123456789abcdef0123456789abcdef01234567", "2026-11-22")
+	cases := []struct {
+		path, remote, language string
+		status                 int
+		want, absent           []string
+	}{
+		{"/pi-appliance/erreur/404", "192.168.1.20:5000", "", http.StatusNotFound,
+			[]string{"Page introuvable", `lang="fr"`, "pi-appliance 0.1.4", "/commit/0123456789abcdef0123456789abcdef01234567", "<code>0123456</code>", "du 22 novembre 2026", "licence AGPL-3.0", LicenseURL, `href="https://maison.example.org/pi-appliance/"`}, nil},
+		{"/pi-appliance/erreur/502", "192.168.1.20:5000", "en-GB,en;q=0.8", http.StatusBadGateway,
+			[]string{"Service unavailable", "Try again", "of November 22, 2026", "Free software, AGPL-3.0 license", "Source code"}, nil},
+		{"/pi-appliance/erreur/504?lang=ar", "192.168.1.20:5000", "", http.StatusGatewayTimeout,
+			[]string{`dir="rtl"`, "الخدمة غير متاحة"}, nil},
+		// Depuis internet : la page s'ouvre, sans lien vers la console.
+		{"/pi-appliance/erreur/404", "203.0.113.5:5000", "", http.StatusNotFound,
+			[]string{"Page introuvable"}, []string{"Ouvrir la console"}},
+		{"/pi-appliance/erreur/418", "192.168.1.20:5000", "", http.StatusNotFound,
+			[]string{"Page introuvable"}, nil},
+	}
+	for _, c := range cases {
+		request := httptest.NewRequest(http.MethodGet, c.path, nil)
+		request.RemoteAddr = c.remote
+		if c.language != "" {
+			request.Header.Set("Accept-Language", c.language)
+		}
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		body := response.Body.String()
+		if response.Code != c.status || !strings.HasPrefix(response.Header().Get("Content-Type"), "text/html") {
+			t.Errorf("%s : code %d, %s", c.path, response.Code, response.Header().Get("Content-Type"))
+		}
+		for _, want := range c.want {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s : %q absent de %s", c.path, want, body)
+			}
+		}
+		for _, absent := range c.absent {
+			if strings.Contains(body, absent) {
+				t.Errorf("%s : %q présent", c.path, absent)
+			}
+		}
+	}
+	// Une demande POST (routeur de dernier recours) a aussi sa page.
+	request := httptest.NewRequest(http.MethodPost, "/pi-appliance/erreur/404", nil)
+	request.RemoteAddr = "192.168.1.20:5000"
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code != http.StatusNotFound || !strings.Contains(response.Body.String(), "Page introuvable") {
+		t.Fatalf("POST : code %d", response.Code)
+	}
+}
+
+// Version de développement : pas de version, seulement le commit ; sans commit, licence et code source seuls.
+func TestFooterDevelopment(t *testing.T) {
+	c := &console{Config: Config{Version: "2026-11-22-0123456", Commit: "0123456789abcdef", Date: "2026-11-22"}}
+	footer := c.footerHTML("fr")
+	if strings.Contains(footer, "pi-appliance 2026") || !strings.Contains(footer, "<code>0123456</code>") {
+		t.Fatalf("pied de page %s", footer)
+	}
+	c = &console{Config: Config{Version: "dev"}}
+	footer = c.footerHTML("de")
+	if strings.Contains(footer, "commit") || strings.Contains(footer, "Commit") || !strings.Contains(footer, "Freie Software, Lizenz AGPL-3.0") || !strings.Contains(footer, "Quellcode") {
+		t.Fatalf("pied de page %s", footer)
+	}
+}
+
+func TestHealthCommit(t *testing.T) {
+	handler := pageFixture(t, "dev", "0123456789abcdef", "2026-11-22")
+	request := httptest.NewRequest(http.MethodGet, "/pi-appliance/api/health", nil)
+	request.RemoteAddr = "192.168.1.20:5000"
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	var health Health
+	if err := json.NewDecoder(response.Body).Decode(&health); err != nil || health != (Health{Status: "ok", Version: "dev", Commit: "0123456789abcdef", Date: "2026-11-22"}) {
+		t.Fatalf("%+v %v", health, err)
+	}
+}
+
+// Étiquettes d'un service hors catalogue (TODO-5.22) : choisies par
+// l'administrateur ; un service du catalogue garde celles de son application.
+func TestServiceTags(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	dir := filepath.Join(f.manager.Dir, "services", "perso")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	state, _ := json.Marshal(services.Instance{Name: "perso", App: services.CustomApp, AppName: "Docker Compose libre", Address: "perso.maison.example.org"})
+	if err := os.WriteFile(filepath.Join(dir, "instance.json"), state, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	put := func(name, body string) *httptest.ResponseRecorder {
+		return f.do(http.MethodPut, "/pi-appliance/api/services/"+name+"/tags", "application/json", body, cookie)
+	}
+	if response := put("perso", `{"tags": ["maison", "fichiers"]}`); response.Code != http.StatusOK {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+	for _, body := range []string{`{"tags": ["inconnue"]}`, `{"tags": ["maison", "maison"]}`, `{"tags": ["maison", "fichiers", "reseau", "documents", "donnees"]}`} {
+		if response := put("perso", body); response.Code != http.StatusBadRequest {
+			t.Errorf("%s : code %d", body, response.Code)
+		}
+	}
+	if response := put("absent", `{"tags": []}`); response.Code != http.StatusNotFound {
+		t.Errorf("service absent : code %d", response.Code)
+	}
+	response := f.do(http.MethodGet, "/pi-appliance/api/services", "", "", cookie)
+	listed := decode[struct {
+		Services []ServiceView `json:"services"`
+	}](t, response)
+	if len(listed.Services) != 1 || strings.Join(listed.Services[0].Tags, ",") != "maison,fichiers" || !listed.Services[0].TagsEditable {
+		t.Fatalf("services %+v", listed.Services)
+	}
+	// Un service du catalogue : étiquettes de l'application, non modifiables.
+	if response := f.install(`{"app": "dokuwiki", "name": "wiki"}`, cookie); response.Code != http.StatusCreated {
+		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := put("wiki", `{"tags": ["maison"]}`); response.Code != http.StatusBadRequest {
+		t.Errorf("service du catalogue : code %d", response.Code)
+	}
+}

@@ -86,6 +86,9 @@ type Instance struct {
 	// NextcloudPending : Nextcloud installé, dossier pas encore créé.
 	NextcloudFolder  string `json:"nextcloud_folder,omitempty"`
 	NextcloudPending bool   `json:"nextcloud_pending,omitempty"`
+	// Tags : étiquettes choisies par l'administrateur pour un service hors
+	// catalogue (SetTags) ; un service du catalogue prend celles de son application.
+	Tags []string `json:"tags,omitempty"`
 }
 
 type Result struct {
@@ -372,9 +375,7 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 	if m.usesLetsEncrypt() {
 		labels[router+".tls.certresolver"] = "letsencrypt"
 	}
-	if middleware := accessMiddleware(app.ID, app.Access); middleware != "" {
-		labels[router+".middlewares"] = middleware
-	}
+	labels[router+".middlewares"] = routerMiddlewares(app.ID, app.Access)
 	service := map[string]any{
 		"labels":   labels,
 		"networks": []string{"default", Network},
