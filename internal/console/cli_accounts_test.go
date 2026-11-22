@@ -57,6 +57,18 @@ func (f fixture) cli(method, path, body string) *httptest.ResponseRecorder {
 	return recorder
 }
 
+// Sans langue de navigateur (pia), les e-mails partent en anglais.
+func TestCLIMailLanguage(t *testing.T) {
+	request := httptest.NewRequest(http.MethodPost, "http://127.0.0.1:8080/pi-appliance/api/accounts", nil)
+	if lang := requestLanguage(request, ""); lang != "en" {
+		t.Fatalf("sans Accept-Language : %q", lang)
+	}
+	request.Header.Set("Accept-Language", "fr-FR,fr;q=0.9")
+	if lang := requestLanguage(request, ""); lang != "fr" {
+		t.Fatalf("navigateur en français : %q", lang)
+	}
+}
+
 func TestCLIAccounts(t *testing.T) {
 	f := cliFixture(t)
 	f.admin(t)
