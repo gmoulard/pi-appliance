@@ -278,7 +278,7 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [x] Workflows « Tag » et « Image » : case « image », décochée pour publier le socle seul, sans image, avec un renvoi vers la dernière image (2026-11-21, v0.1.10, demande de l'utilisateur) ; guide et site le disent.
   - [x] Appairage du téléphone, connexion sans mot de passe (spécification 8.1 ; choix A1, B1, C2 du 2026-11-21) : code d'appairage `c` dans le code QR seulement (10 minutes, une fois), `POST appareil/appairer`, `appareil/connexion` et `appareil/retirer` (messages séparés par `|`, ECDSA P-256, empreinte RFC 7638, heure à 5 minutes près, numéro à usage unique, contrôle d'origine, page de passage pour le cookie `SameSite=Strict`), « Mon compte → Appareils » (renommer, retirer), appareils retirés avec le compte et par la remise à zéro ; textes en 12 langues ; parcours essayé dans Chromium.
   - [ ] À vérifier sur un vrai Pi : code QR scanné par l'application (iPhone et Android), appairage puis connexion sans mot de passe depuis le téléphone, `api/hello` lue depuis l'application à la maison (alerte du certificat acceptée) et sur internet, identifiant inchangé après un renommage du Pi.
-- [ ] mettre un mode -force à pia pour ne plus avoir à valider la ligne de commande 
-- [ ] mettre un rappel de la licence une référence à l'URL du gît, la version le numéro de commit dans toutes les pieds de page HTML et de l'application. 
-- [ ] réorganiser les tuilles de l'interface avec tags selectives. 
+- [ ] **TODO-5.20**: Mode `-force` pour `pia`, pour ne plus avoir à confirmer la commande.
+- [ ] **TODO-5.21**: Rappel de la licence, lien vers le dépôt git, version et numéro de commit dans tous les pieds de page HTML et de l'application.
+- [ ] **TODO-5.22**: Réorganiser les tuiles de l'interface, avec une sélection par étiquettes (`tags`).
 
