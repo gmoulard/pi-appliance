@@ -88,5 +88,6 @@ jobs:
       - name: pi-gen (préparation, sans construction)
         run: |
           set -eu
-          GOOS=linux GOARCH=arm64 go build -ldflags "-X main.commit=${GITHUB_SHA} -X main.date=$(git log -1 --format=%cs)" -o pi-appliance-arm64 ./cmd/pi-appliance
+          ldflags="-X main.commit=${GITHUB_SHA} -X main.date=$(git log -1 --format=%cs)"
+          GOOS=linux GOARCH=arm64 go build -ldflags "$ldflags" -o pi-appliance-arm64 ./cmd/pi-appliance
           DRY_RUN=1 image/build.sh pi-appliance-arm64
