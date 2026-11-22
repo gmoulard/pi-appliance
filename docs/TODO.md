@@ -237,6 +237,8 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [ ] Page « Se connecter à Claude » (administrateurs, à la maison), fermée une fois connecté ; volume et clé exclus des sauvegardes.
   - [ ] API et carte « Dépannage par Claude » dans « Mon Pi » (abonnement Claude demandé, tous les droits sur le Pi, mémoire), traduites dans les 12 langues.
   - [ ] À vérifier sur un vrai Pi (mémoire sur un Pi 3B+ de 1 Go) avec une vraie session Remote Control.
+- [ ] **TODO-2.64**: Application n8n (https://n8n.io/, automatisation de tâches entre services par un éditeur visuel) dans la marketplace (demande de l'utilisateur du 2026-11-22) : manifeste `marketplace/n8n/`, image `n8nio/n8n` en `arm64` (version fixée), données dans un volume, accès par défaut « connectés », étiquettes du catalogue, mémoire demandée (avertissement sur les petits Pi). Licence à vérifier avant : n8n est sous « Sustainable Use License » (*fair-code*, pas une licence libre), compatible avec un usage personnel mais à signaler dans la fiche. Dépend de : aucune.
+  - Critères d'acceptation : manifeste validé par `go test` et présent dans le catalogue publié ; n8n installé depuis la marketplace sur un vrai Pi, éditeur ouvert à `https://n8n-<nom>.local`, un flux simple (par exemple un webhook qui écrit dans un fichier) enregistré et lancé, données gardées après un redémarrage et une mise à jour du service, désinstallation avec la question sur les données ; licence dite dans la fiche et dans la spécification 6.3.
 
 ## 3. Étape 2 — Internet (7)
 
