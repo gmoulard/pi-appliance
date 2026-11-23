@@ -135,7 +135,7 @@ Le mot de passe reste sur le Pi : la console ne le réaffiche jamais (laissez le
 
 ## Protéger son compte : la double authentification {#double-authentification}
 
-Avec la double authentification, quelqu'un qui apprend votre mot de passe ne peut pas se connecter : à chaque connexion, la console demande en plus un code à 6 chiffres. Elle est facultative, mais proposée à chaque nouveau compte (carte « Protégez votre compte ») ; l'administrateur peut l'exiger pour un compte, qui ne peut alors rien ouvrir d'autre que « Mon compte » avant de l'avoir activée. Deux façons de recevoir le code, dans « Mon compte », seules ou ensemble :
+Avec la double authentification, quelqu'un qui apprend votre mot de passe ne peut pas se connecter : à chaque connexion, la console demande en plus un code à 6 chiffres. Elle est facultative, mais proposée à chaque nouveau compte (carte « Protégez votre compte », dans « Mon Pi ») ; l'administrateur peut l'exiger pour un compte, qui ne peut alors rien ouvrir d'autre que « Mon compte » avant de l'avoir activée. Deux façons de recevoir le code, dans « Mon compte », seules ou ensemble :
 
 - **Code par e-mail** (le plus simple, quand l'envoi des e-mails est réglé) : **Vérifier mon adresse e-mail**, puis tapez le code reçu. Votre adresse est alors vérifiée, et à chaque connexion la console vous envoie un code, valable 10 minutes et une seule fois. Pas reçu ? **Renvoyer le code** après une minute.
 - **Application d'authentification** (Aegis, Google Authenticator, Microsoft Authenticator…) : **Activer la double authentification**, photographiez le QR code, puis tapez le code affiché. Elle marche même sans e-mail, et protège aussi si quelqu'un prend votre boîte e-mail.

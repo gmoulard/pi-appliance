@@ -85,15 +85,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p><a href="./">Revenir à la console</a></p>
 </section>
 <p id="emailReminder" class="empty" hidden></p>
-<section id="twoFactorOffer" class="card" hidden>
-<h2>Protégez votre compte</h2>
-<p id="twoFactorOfferHelp"></p>
-<div class="controls">
-<button id="offerEmail" type="button" hidden>Recevoir un code par e-mail à chaque connexion</button>
-<button id="offerApp" class="secondary" type="button">Utiliser une application d'authentification</button>
-<button id="offerLater" class="secondary" type="button">Plus tard</button>
-</div>
-</section>
 <section id="wizard" class="card" hidden>
 <h2>Mise en route</h2>
 <p>Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.</p>
@@ -219,6 +210,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </div>
 <div id="piCharts" class="charts"></div>
 <p id="noHistory" class="empty" hidden>Les graphiques se rempliront au fil des heures.</p>
+</div>
+</section>
+<section id="twoFactorOffer" class="card" data-kind="pi" data-theme="comptes" hidden>
+<h2>Protégez votre compte</h2>
+<p id="twoFactorOfferHelp"></p>
+<div class="controls">
+<button id="offerEmail" type="button" hidden>Recevoir un code par e-mail à chaque connexion</button>
+<button id="offerApp" class="secondary" type="button">Utiliser une application d'authentification</button>
+<button id="offerLater" class="secondary" type="button">Plus tard</button>
 </div>
 </section>
 <section id="networkSection" data-kind="pi" data-theme="reseau-internet" hidden>
