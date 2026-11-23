@@ -954,6 +954,10 @@ async function loadCatalog() {
   // Cockpit, installé sur le système et non dans un conteneur, a sa carte à
   // part, gardée d'un chargement à l'autre (spécification 6.4).
   catalogList.append(cockpitBox);
+  // Carte de Cockpit remplie même si « Mon Pi » n'a pas été chargé.
+  if (currentAccount && currentAccount.role === "admin" && cockpitStatus === null) {
+    loadCockpit().then((done) => { if (!done) watchCockpit(); }).catch(() => {});
+  }
   if (currentAccount && currentAccount.role === "admin") {
     catalogList.append(customComposeCard());
   }
@@ -2052,8 +2056,19 @@ function showCockpit() {
 async function loadCockpit() {
   try {
     cockpitStatus = await api("cockpit");
-  } catch {
-    cockpitBox.hidden = true;
+  } catch (error) {
+    // Pas administrateur (403) ou console sans Cockpit (404) : pas de carte.
+    // Sinon la carte reste dans la Marketplace et dit ce qui ne va pas, au
+    // lieu de disparaître sans explication.
+    cockpitStatus = null;
+    if (error.status === 403 || error.status === 404) {
+      cockpitBox.hidden = true;
+      return true;
+    }
+    cockpitBox.hidden = false;
+    cockpitState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
+    cockpitForm.hidden = true;
+    cockpitActions.hidden = true;
     return true;
   }
   cockpitBox.hidden = false;
