@@ -810,7 +810,7 @@ function applyTiles() {
   const themes = new Set(sections("pi").flatMap((section) => [section, ...section.querySelectorAll("[data-theme]")])
     .filter((node) => !node.hidden && node.dataset.theme).map((node) => node.dataset.theme));
   const tags = new Set([...sections("services"), ...sections("catalog")]
-    .flatMap((section) => [...section.querySelectorAll("li[data-tags]")].flatMap(cardTags)));
+    .flatMap((section) => [...section.querySelectorAll("li[data-tags]")].filter((card) => !card.hidden).flatMap(cardTags)));
   const offered = [
     ...PI_THEMES.filter(([theme]) => themes.has(theme)).map(([theme, label]) => [`pi:${theme}`, label]),
     ...Object.entries(TAG_LABELS).filter(([tag]) => tags.has(tag)),
@@ -942,6 +942,9 @@ async function loadCatalog() {
     card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"), tagList(app.tags || []));
     return card;
   }));
+  // Cockpit, installé sur le système et non dans un conteneur, a sa carte à
+  // part, gardée d'un chargement à l'autre (spécification 6.4).
+  catalogList.append(cockpitBox);
   if (currentAccount && currentAccount.role === "admin") {
     catalogList.append(customComposeCard());
   }
@@ -1986,6 +1989,12 @@ const cockpitPassword = document.getElementById("cockpitPassword");
 const cockpitRemove = document.getElementById("cockpitRemove");
 let cockpitStatus = null;
 let cockpitTimer = null;
+// Carte de la Marketplace : icône, couleur, catégorie, licence et étiquette,
+// comme celles du catalogue.
+icons.cockpit = "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 12l4-4M12 7v1M7 12h1M16 12h1";
+tint(cockpitBox, "cockpit");
+cockpitBox.querySelector(".card-head").prepend(tile("cockpit"));
+cockpitBox.append(element("p", t("{0} · licence {1}", t("Administration"), "LGPL-2.1"), "meta"), tagList(["administration"]));
 // Changement du mot de passe demandé (formulaire ouvert sur Cockpit installé).
 let cockpitNewPassword = false;
 

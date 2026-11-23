@@ -355,17 +355,6 @@
         "maison"
       ],
       "todo": "TODO-4.9"
-    },
-    {
-      "id": "cockpit",
-      "name": "Cockpit",
-      "description": "Administrer le système du Pi depuis le navigateur (journaux, services, disques), pour les utilisateurs avertis.",
-      "icon": "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 12l4-4M12 7v1M7 12h1M16 12h1",
-      "category": "Administration",
-      "tags": [
-        "administration"
-      ],
-      "todo": "TODO-2.50"
     }
   ],
   "tags": [
