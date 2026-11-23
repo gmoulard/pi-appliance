@@ -4515,7 +4515,13 @@ async function showConsole(account, wizard) {
     await startWizard();
     return;
   }
+  // État du Pi (barre du haut, « Mon Pi ») lu en parallèle du reste, sans
+  // retarder l'ouverture de la page ; attendu seulement avant le catalogue, dont
+  // les jauges d'installation s'en servent.
+  let resourcesReady = Promise.resolve();
   if (account.role === "admin") {
+    resourcesReady = loadResources().catch(() => null);
+    startDashboard();
     duckDNSSection.hidden = false;
     await loadDuckDNS();
     await loadAddress();
@@ -4523,12 +4529,11 @@ async function showConsole(account, wizard) {
     duckDNSTimer = setInterval(loadDuckDNS, 15000);
     await loadStats();
     await loadNetwork();
-    await loadResources();
-    startDashboard();
     accountsSection.hidden = false;
     await loadAccounts();
     await loadMail();
   }
+  await resourcesReady;
   await loadCatalog();
   await loadServices();
 }
