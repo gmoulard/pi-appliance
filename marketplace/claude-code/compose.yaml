@@ -1,0 +1,201 @@
+x-pi-appliance:
+  name: Claude Code
+  description: Faire dépanner le Pi par Claude, l'assistant d'Anthropic, depuis l'application Claude (téléphone, ordinateur ou claude.ai/code), sans ouvrir de port sur la box. Il faut un abonnement Claude (Pro ou Max). Claude aura tous les droits sur votre Pi, il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Réservé aux administrateurs, à la maison. Claude Code n'est pas un logiciel libre, il n'est pas fourni par pi-appliance mais téléchargé chez Anthropic au premier démarrage. Son volume, qui garde la connexion au compte Claude, n'est jamais sauvegardé.
+  icon: M3 5h18v14H3zM7 10l3 2l-3 2M12 15h5
+  category: Administration
+  tags: [administration]
+  license: Propriétaire (Anthropic)
+  subdomain: claude
+  service: claude
+  port: 7681
+  memory_mb: 512
+  disk_mb: 1024
+  login: console
+  access: admins
+
+services:
+  # Claude Code en mode Remote Control (spécification 6.3) : une connexion
+  # sortante vers Anthropic, aucun port ouvert ; la session apparaît dans
+  # l'application Claude de l'administrateur. La page du service est un
+  # terminal web (ttyd) qui sert à se connecter une fois au compte Claude et à
+  # suivre Remote Control.
+  #
+  # Conteneur privilégié dans les programmes du Pi (pid: host) : Claude lance
+  # ses commandes sur le Pi lui-même, en root, par « sur-le-pi » (nsenter dans
+  # le processus 1 du Pi). Il a donc la main sur tout le Pi : le manifeste
+  # demande l'accès « administrateurs, à la maison » (access: admins), que la
+  # console garde et ne laisse pas changer, et l'installation est confirmée.
+  #
+  # Image officielle de ttyd (Ubuntu 24.04, arm64) ; tmux et curl sont
+  # installés depuis Ubuntu au premier démarrage du conteneur. Claude Code
+  # n'est ni dans l'image ni dans le dépôt (il n'est pas libre) : la boucle
+  # claude-pi le télécharge chez Anthropic (installateur officiel) dans le
+  # volume, et il se met à jour de lui-même.
+  claude:
+    image: tsl0922/ttyd:1.7.8
+    restart: unless-stopped
+    privileged: true
+    pid: host
+    # tini en « subreaper » : avec pid: host, il n'est pas le processus 1.
+    entrypoint: ["/usr/bin/tini", "-s", "--", "bash", "/run/pi-appliance/demarrage.sh"]
+    environment:
+      HOME: /root
+      LANG: C.UTF-8
+      # Pas de statistiques d'usage ni de rapports d'erreurs envoyés à
+      # Anthropic ; Remote Control reste possible (Claude Code 2.1.283 et plus).
+      DISABLE_TELEMETRY: "1"
+      DISABLE_ERROR_REPORTING: "1"
+    configs:
+      - source: demarrage
+        target: /run/pi-appliance/demarrage.sh
+      - source: claude-pi
+        target: /run/pi-appliance/claude-pi
+      - source: sur-le-pi
+        target: /run/pi-appliance/sur-le-pi
+      - source: tmux
+        target: /etc/tmux.conf
+      # Consignes lues par Claude Code dans toutes ses sessions (fichier
+      # CLAUDE.md « géré » de Linux).
+      - source: consignes
+        target: /etc/claude-code/CLAUDE.md
+    volumes:
+      - home:/root
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/7681"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10m
+
+configs:
+  demarrage:
+    content: |
+      # Démarrage du conteneur : outils du terminal, session tmux « claude »
+      # qui garde Remote Control, puis le terminal web.
+      set -u
+      if ! command -v tmux >/dev/null || ! command -v curl >/dev/null; then
+        until apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tmux curl ca-certificates; do
+          echo "tmux et curl ne s'installent pas (le Pi a-t-il internet ?) : nouvel essai dans 30 secondes." >&2
+          sleep 30
+        done
+        rm -rf /var/lib/apt/lists/*
+      fi
+      install -m 755 /run/pi-appliance/claude-pi /usr/local/bin/claude-pi
+      install -m 755 /run/pi-appliance/sur-le-pi /usr/local/bin/sur-le-pi
+      mkdir -p /root/pi
+      # Session recréée si elle s'arrête, même sans personne sur la page.
+      (
+        while true; do
+          tmux has-session -t claude 2>/dev/null || tmux new-session -d -s claude -x 100 -y 30 claude-pi
+          sleep 10
+        done
+      ) &
+      # -W : on peut écrire dans le terminal ; -O : seulement depuis la page
+      # du service elle-même (même adresse).
+      exec ttyd -W -O -p 7681 -t titleFixed="Claude Code sur le Pi" -t disableLeaveAlert=true tmux new-session -A -s claude claude-pi
+
+  claude-pi:
+    content: |
+      #!/bin/bash
+      # Garde Claude Code en Remote Control : télécharge Claude Code s'il
+      # manque, attend la connexion au compte Claude, puis relance
+      # « claude remote-control » chaque fois qu'il s'arrête.
+      export PATH="/root/.local/bin:$$PATH"
+      cd /root/pi || exit 1
+      nom="$$(sur-le-pi hostname 2>/dev/null || hostname)"
+      while true; do
+        clear
+        if ! command -v claude >/dev/null 2>&1; then
+          echo "Téléchargement de Claude Code chez Anthropic… (quelques minutes)"
+          if ! curl -fsSL https://claude.ai/install.sh | bash; then
+            echo "Le téléchargement n'a pas marché. Le Pi a-t-il internet ? Nouvel essai dans une minute."
+            sleep 60
+          fi
+          continue
+        fi
+        if ! claude auth status >/dev/null 2>&1; then
+          cat <<'TEXTE'
+
+        Connexion à votre compte Claude (une seule fois)
+        ------------------------------------------------
+
+        Il faut un abonnement Claude (Pro ou Max).
+
+        1. Touchez Entrée ci-dessous, puis choisissez votre abonnement Claude.
+        2. Ouvrez le lien qui s'affiche (sur ce téléphone ou cet ordinateur),
+           connectez-vous à Claude et copiez le code donné.
+        3. Revenez ici, collez le code et touchez Entrée.
+        4. Claude Code pose ensuite deux questions : faire confiance au
+           dossier, puis activer Remote Control. Répondez « y » (oui) aux deux.
+
+        Ensuite, ouvrez l'application Claude (ou claude.ai/code) : le Pi y
+        apparaît. Vous pouvez fermer cette page, Claude reste en marche.
+
+      TEXTE
+          read -r -p "Touchez Entrée pour commencer… " _
+          claude auth login
+          continue
+        fi
+        echo "Claude Code est connecté à votre compte. Remote Control démarre :"
+        echo "le Pi « $$nom » apparaît dans l'application Claude (ou claude.ai/code)."
+        echo "Vous pouvez fermer cette page."
+        echo
+        claude remote-control --name "Raspberry Pi $$nom"
+        echo
+        echo "Remote Control s'est arrêté. Il faut un abonnement Claude (Pro ou Max)."
+        echo "Il repart dans 10 secondes…"
+        sleep 10
+      done
+
+  sur-le-pi:
+    content: |
+      #!/bin/bash
+      # Lance une commande sur le Raspberry Pi lui-même, en root, hors du
+      # conteneur : fichiers, réseau et programmes du processus 1 du Pi.
+      # Sans commande : un shell sur le Pi.
+      if [ "$$#" -eq 0 ]; then
+        set -- bash -l
+      fi
+      exec nsenter -t 1 -m -u -i -n -p -C -- /usr/bin/env -i \
+        PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+        HOME=/root LANG=C.UTF-8 TERM="$${TERM:-xterm-256color}" "$$@"
+
+  tmux:
+    content: |
+      set -g status off
+      set -g history-limit 10000
+      set -g mouse on
+
+  consignes:
+    content: |
+      # Claude Code sur un Raspberry Pi de pi-appliance
+
+      Tu tournes dans le conteneur du service « Claude Code » de pi-appliance
+      (https://github.com/gmoulard/pi-appliance), installé depuis la
+      marketplace de la console pour dépanner ce Raspberry Pi. La personne te
+      parle depuis l'application Claude : elle n'est pas forcément à l'aise avec
+      l'informatique, réponds en langage courant.
+
+      - Les commandes que tu lances directement s'exécutent dans le conteneur
+        (Ubuntu), pas sur le Pi. Pour agir sur le Pi lui-même, en root, préfixe
+        la commande par `sur-le-pi` : `sur-le-pi journalctl -u pi-appliance -n 100`,
+        `sur-le-pi docker ps`, `sur-le-pi cat /etc/os-release`. Sans argument,
+        `sur-le-pi` ouvre un shell sur le Pi.
+      - Les fichiers du Pi se lisent aussi sous `/proc/1/root/` (par exemple
+        `/proc/1/root/var/lib/pi-appliance`).
+      - Tu as tous les droits sur le Pi : explique ce que tu vas faire avant
+        toute action qui modifie ou efface quelque chose, et préfère les
+        commandes qui ne font que lire.
+      - La console pi-appliance (service systemd `pi-appliance`, données dans
+        `/var/lib/pi-appliance`) installe les services comme des projets
+        Docker Compose `pi-<nom>` : ne les modifie pas à la main sans le dire,
+        leurs mises à jour et leurs sauvegardes passent par la console.
+      - Ne coupe pas le réseau du Pi, Docker ni ce conteneur : la connexion
+        avec la personne passe par eux.
+
+volumes:
+  # Claude Code, ses réglages et le jeton du compte Claude : jamais
+  # sauvegardé (étiquette lue par les sauvegardes de la console).
+  home:
+    labels:
+      pi-appliance.backup: "false"

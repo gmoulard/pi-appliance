@@ -24,9 +24,10 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 7. [Mot de passe oublié : le lien par e-mail](#mot-de-passe-oublie), ou [le fichier reset](#fichier-reset)
 8. [Remettre le Pi à zéro](#remise-a-zero)
 9. [Diagnostic du Pi sans écran](#diagnostic)
-10. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
-11. [Lancer la console depuis les sources](#depuis-les-sources)
-12. [Pour aller plus loin](#pour-aller-plus-loin)
+10. [Faire dépanner son Pi par Claude](#depannage-par-claude)
+11. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
+12. [Lancer la console depuis les sources](#depuis-les-sources)
+13. [Pour aller plus loin](#pour-aller-plus-loin)
 
 ## Ce que contient cette version {#contenu}
 
@@ -161,7 +162,7 @@ Un service s'ouvre depuis internet à l'adresse internet du Pi suivie de son nom
 - **« Les personnes qui ont un compte sur ce Pi »** : seulement quand la console est ouverte sur internet, car la connexion passe par elle.
 - **« La maison seulement »** : jamais depuis internet.
 
-Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, FileBrowser Quantum, Etherpad, DokuWiki, Astro, Next.js, Docker Compose libre) : elles restent à la maison, la fiche le dit. Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`).
+Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, FileBrowser Quantum, WordPress, n8n, Etherpad, DokuWiki, Astro, Next.js, Docker Compose libre) : elles restent à la maison, la fiche le dit. Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`).
 
 **À savoir :** sous internet, le service partage l'adresse de la console. Une page de ce service pourrait donc agir dans la console au nom d'une personne connectée. N'ouvrez sur internet que des services de confiance, dont vous connaissez le contenu.
 
@@ -228,6 +229,21 @@ Sans compte administrateur (mot de passe perdu, compte pas encore créé) : dép
 Si la console ne s'ouvre plus du tout (programme Traefik en panne), essayez `https://<nom du Pi>.local:8443/pi-appliance/diagnostic` : le Pi ouvre cette console de secours, qui ne montre que le diagnostic, quand Traefik ne répond plus depuis une minute et demie. Si rien ne répond, débranchez puis rebranchez l'alimentation du Pi.
 
 Si vous avez choisi un compte et activé SSH dans les réglages de Raspberry Pi Imager, ils sont gardés : une personne à l'aise avec l'informatique peut aussi se connecter au Pi par SSH. Le Wi-Fi réglé dans Imager, lui, est ignoré : le Wi-Fi de la maison se choisit dans le portail.
+
+## Faire dépanner son Pi par Claude {#depannage-par-claude}
+
+Pour les personnes à l'aise avec l'informatique : l'application **Claude Code** de la marketplace laisse Claude, l'assistant d'Anthropic, dépanner le Pi depuis l'application Claude de votre téléphone (ou depuis [claude.ai/code](https://claude.ai/code)), sans brancher d'ordinateur ni ouvrir de port sur la box. Pas encore essayé sur un vrai Pi.
+
+- **Il faut un abonnement Claude** (Pro ou Max).
+- **Claude aura tous les droits sur votre Pi** : il peut tout lire, tout modifier, tout effacer. Chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Seuls les administrateurs l'installent et l'ouvrent, depuis la maison.
+
+1. Dans la **Marketplace**, installez **Claude Code** et confirmez l'avertissement.
+2. Ouvrez le service (bouton **Ouvrir**) : une page noire, un terminal, s'affiche. La première fois, Claude Code y est téléchargé chez Anthropic (quelques minutes).
+3. Touchez **Entrée**, choisissez votre abonnement Claude, ouvrez le lien affiché, connectez-vous à Claude, puis collez le code donné dans la page et touchez **Entrée**.
+4. Claude Code pose deux questions la première fois (faire confiance au dossier, activer Remote Control) : répondez **y** (oui) aux deux.
+5. Ouvrez l'application Claude : une session « Raspberry Pi <nom du Pi> » apparaît. Décrivez votre problème, Claude regarde le Pi et propose ses commandes.
+
+Vous pouvez fermer la page du service : Claude reste en marche, et repart seul après un redémarrage du Pi. Quand vous n'en avez plus besoin, touchez **Arrêter** sur sa fiche (« Mes services ») : la connexion avec Anthropic se coupe. La connexion à votre compte Claude reste sur le Pi : elle n'est **jamais copiée dans les sauvegardes** ; sur un autre Pi, il faudra vous reconnecter.
 
 ## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
 

@@ -107,7 +107,7 @@ func TestBuiltinManifests(t *testing.T) {
 			}
 		})
 	}
-	for _, id := range []string{"nextcloud", "site-web", "dokuwiki", "etherpad", "postgresql", "wireguard"} {
+	for _, id := range []string{"nextcloud", "site-web", "dokuwiki", "etherpad", "postgresql", "wireguard", "n8n", "wordpress"} {
 		if !ids[id] {
 			t.Errorf("manifeste %s absent", id)
 		}
@@ -188,6 +188,35 @@ func TestParseWithoutWebPage(t *testing.T) {
 	web, err := Parse("wiki", []byte(valid))
 	if err != nil || !web.Web {
 		t.Fatalf("site web %+v, %v", web, err)
+	}
+}
+
+// Claude Code : réservé aux administrateurs, mémoire demandée, et son volume
+// (jeton du compte Claude) marqué pour ne jamais être sauvegardé.
+func TestBuiltinClaudeCode(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, ok := catalog.Get("claude-code")
+	if !ok || app.Access != "admins" || app.MemoryMB < 512 || !app.Web {
+		t.Fatalf("claude-code %+v", app)
+	}
+	var compose struct {
+		Volumes map[string]struct {
+			Labels map[string]string `yaml:"labels"`
+		} `yaml:"volumes"`
+	}
+	if err := yaml.Unmarshal(app.Compose, &compose); err != nil {
+		t.Fatal(err)
+	}
+	if len(compose.Volumes) == 0 {
+		t.Fatal("claude-code sans volume")
+	}
+	for name, volume := range compose.Volumes {
+		if volume.Labels["pi-appliance.backup"] != "false" {
+			t.Errorf("volume %s : étiquette pi-appliance.backup=false absente", name)
+		}
 	}
 }
 

@@ -190,11 +190,14 @@ func withAccess(override []byte, name, app, access string) ([]byte, error) {
 }
 
 // fullControl : options qui donnent tous les droits sur le Pi, comme le compte
-// root (custom.go). Les droits ajoutés limités du VPN (cap_add) n'en sont pas.
-var fullControl = map[string]bool{"docker-socket": true, "privileged": true}
+// root (custom.go) : accès à Docker, conteneur privilégié, programmes du Pi
+// visibles (pid: host, qui permet d'arrêter tout programme du Pi et, avec un
+// conteneur privilégié, d'y lancer des commandes : Claude Code). Les droits
+// ajoutés limités du VPN (cap_add) n'en sont pas.
+var fullControl = map[string]bool{"docker-socket": true, "privileged": true, "host-pid": true}
 
 // MarketplaceRisks : options d'une application de la marketplace qui donnent
-// tous les droits sur le Pi (accès à Docker, conteneur privilégié), à faire
+// tous les droits sur le Pi (accès à Docker, conteneur privilégié, pid: host), à faire
 // confirmer par l'administrateur avant de l'installer. Une application qui en
 // a doit être réservée aux administrateurs, à la maison (access: admins) :
 // sinon elle est refusée.

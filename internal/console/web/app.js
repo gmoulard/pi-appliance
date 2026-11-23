@@ -789,6 +789,12 @@ function cardTags(card) {
   return (card.dataset.tags || "").split(" ").filter(Boolean);
 }
 
+// nodeThemes : thèmes d'une case de « Mon Pi » ; une case peut en avoir
+// plusieurs, séparés par une espace (« Mises à jour » : état et entretien).
+function nodeThemes(node) {
+  return (node.dataset.theme || "").split(" ").filter(Boolean);
+}
+
 let tilesPending = false;
 
 function applyTiles() {
@@ -808,7 +814,7 @@ function applyTiles() {
   // Étiquettes proposées : celles des types choisis, présentes à l'écran.
   const sections = (kind) => (chosenKinds.includes(kind) ? byKind.get(kind) || [] : []);
   const themes = new Set(sections("pi").flatMap((section) => [section, ...section.querySelectorAll("[data-theme]")])
-    .filter((node) => !node.hidden && node.dataset.theme).map((node) => node.dataset.theme));
+    .filter((node) => !node.hidden && node.dataset.theme).flatMap(nodeThemes));
   const tags = new Set([...sections("services"), ...sections("catalog")]
     .flatMap((section) => [...section.querySelectorAll("li[data-tags]")].filter((card) => !card.hidden).flatMap(cardTags)));
   const offered = [
@@ -827,10 +833,10 @@ function applyTiles() {
       if (visible && kind === "pi") {
         const themed = section.dataset.theme ? [section] : [...section.querySelectorAll(":scope > [data-theme]")];
         for (const node of themed) {
-          const keep = chosenThemes.length === 0 || chosenThemes.includes(node.dataset.theme);
+          const keep = chosenThemes.length === 0 || nodeThemes(node).some((theme) => chosenThemes.includes(theme));
           if (node !== section) node.classList.toggle("filtered", !keep);
         }
-        visible = themed.some((node) => !node.hidden && (chosenThemes.length === 0 || chosenThemes.includes(node.dataset.theme)));
+        visible = themed.some((node) => !node.hidden && (chosenThemes.length === 0 || nodeThemes(node).some((theme) => chosenThemes.includes(theme))));
       } else if (visible) {
         const cards = [...section.querySelectorAll("li[data-tags], .cards > li")];
         let kept = 0;
@@ -925,6 +931,9 @@ async function loadCatalog() {
     }
     if (app.web) {
       form.append(accessField(app.access));
+    }
+    if (APP_WARNINGS[app.id]) {
+      form.append(element("p", APP_WARNINGS[app.id], "note"));
     }
     const button = element("button", t("Installer"));
     const fit = gauges(app.memory_mb, app.disk_mb);
@@ -1072,6 +1081,11 @@ const ACCESS_LABELS = {
 const ADMINS_ACCESS = "admins";
 const ADMINS_LABEL = t("Les administrateurs de ce Pi, à la maison seulement (et le VPN)");
 const ADMINS_WARNING = t("Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.");
+
+// Avertissement propre à une application, montré avant de l'installer.
+const APP_WARNINGS = {
+  "claude-code": t("Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude."),
+};
 
 function accessLabel(access) {
   return access === ADMINS_ACCESS ? ADMINS_LABEL : ACCESS_LABELS[access] || ACCESS_LABELS.public;
