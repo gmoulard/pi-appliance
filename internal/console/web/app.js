@@ -789,6 +789,12 @@ function cardTags(card) {
   return (card.dataset.tags || "").split(" ").filter(Boolean);
 }
 
+// nodeThemes : thèmes d'une case de « Mon Pi » ; une case peut en avoir
+// plusieurs, séparés par une espace (« Mises à jour » : état et entretien).
+function nodeThemes(node) {
+  return (node.dataset.theme || "").split(" ").filter(Boolean);
+}
+
 let tilesPending = false;
 
 function applyTiles() {
@@ -808,7 +814,7 @@ function applyTiles() {
   // Étiquettes proposées : celles des types choisis, présentes à l'écran.
   const sections = (kind) => (chosenKinds.includes(kind) ? byKind.get(kind) || [] : []);
   const themes = new Set(sections("pi").flatMap((section) => [section, ...section.querySelectorAll("[data-theme]")])
-    .filter((node) => !node.hidden && node.dataset.theme).map((node) => node.dataset.theme));
+    .filter((node) => !node.hidden && node.dataset.theme).flatMap(nodeThemes));
   const tags = new Set([...sections("services"), ...sections("catalog")]
     .flatMap((section) => [...section.querySelectorAll("li[data-tags]")].flatMap(cardTags)));
   const offered = [
@@ -827,10 +833,10 @@ function applyTiles() {
       if (visible && kind === "pi") {
         const themed = section.dataset.theme ? [section] : [...section.querySelectorAll(":scope > [data-theme]")];
         for (const node of themed) {
-          const keep = chosenThemes.length === 0 || chosenThemes.includes(node.dataset.theme);
+          const keep = chosenThemes.length === 0 || nodeThemes(node).some((theme) => chosenThemes.includes(theme));
           if (node !== section) node.classList.toggle("filtered", !keep);
         }
-        visible = themed.some((node) => !node.hidden && (chosenThemes.length === 0 || chosenThemes.includes(node.dataset.theme)));
+        visible = themed.some((node) => !node.hidden && (chosenThemes.length === 0 || nodeThemes(node).some((theme) => chosenThemes.includes(theme))));
       } else if (visible) {
         const cards = [...section.querySelectorAll("li[data-tags], .cards > li")];
         let kept = 0;
