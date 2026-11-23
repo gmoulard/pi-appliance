@@ -735,7 +735,7 @@ function setHidden(node, hidden) {
   if (node.hidden !== hidden) node.hidden = hidden;
 }
 
-function filterButton(id, label, chosen) {
+function filterButton(id, label, chosen, onChoose) {
   const button = element("button", label, "secondary");
   button.type = "button";
   button.setAttribute("aria-pressed", String(chosen.has(id)));
@@ -744,6 +744,7 @@ function filterButton(id, label, chosen) {
     else chosen.add(id);
     saveTileChoice();
     applyTiles();
+    if (chosen.has(id) && onChoose) onChoose();
   });
   return button;
 }
@@ -778,7 +779,7 @@ function applyTiles() {
   // Un type choisi mais absent de l'écran (autre compte) ne compte pas.
   const chosenKinds = kinds.map(([kind]) => kind).filter((kind) => tileChoice.kinds.has(kind));
   const kindOn = (kind) => chosenKinds.length === 0 || chosenKinds.includes(kind);
-  tileKinds.replaceChildren(...kinds.map(([kind, label]) => filterButton(kind, label, tileChoice.kinds)));
+  tileKinds.replaceChildren(...kinds.map(([kind, label]) => filterButton(kind, label, tileChoice.kinds, kind === "catalog" ? refreshOnlineCatalog : undefined)));
   // Étiquettes proposées : celles des types choisis, présentes à l'écran.
   const sections = (kind) => (chosenKinds.includes(kind) ? byKind.get(kind) || [] : []);
   const themes = new Set(sections("pi").flatMap((section) => [section, ...section.querySelectorAll("[data-theme]")])
@@ -1540,6 +1541,24 @@ function customComposeCard() {
 async function refreshResources() {
   await loadResources();
   await loadCatalog();
+}
+
+// Bouton Marketplace : la console relit le catalogue en ligne (une fois par
+// minute au plus, spécification 6.1). S'il a changé, la marketplace et les
+// services (« Nouvelle version disponible ») sont rechargés ; sinon seule la
+// date de lecture change. En cas d'échec, le catalogue affiché reste.
+async function refreshOnlineCatalog() {
+  try {
+    const { changed, source } = await api("catalog/refresh", { method: "POST" });
+    if (changed) {
+      await loadCatalog();
+      await loadServices();
+    } else {
+      showCatalogSource(source);
+    }
+  } catch {
+    // Pas d'internet ou console injoignable : rien ne change à l'écran.
+  }
 }
 
 // D'où vient le catalogue : lu en ligne (date) ou intégré à la console.

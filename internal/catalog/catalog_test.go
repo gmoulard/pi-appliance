@@ -25,6 +25,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -268,5 +269,47 @@ func TestPortainerNeedsBuiltinVersion(t *testing.T) {
 	}
 	if _, ok := s.Get("portainer"); !ok {
 		t.Fatalf("Portainer refusé : %v", s.Status().Refused)
+	}
+}
+
+// Bouton Marketplace : une lecture par minute au plus, et un catalogue
+// inchangé n'est pas retéléchargé.
+func TestRefreshNow(t *testing.T) {
+	g := &github{document: publish(t, map[string]string{"essai": essai})}
+	s := source(t, g)
+	ctx := context.Background()
+	if changed, err := s.RefreshNow(ctx); err != nil || !changed || g.requests != 2 {
+		t.Fatalf("première lecture : changed=%v err=%v requêtes=%d", changed, err, g.requests)
+	}
+	if changed, err := s.RefreshNow(ctx); err != nil || changed || g.requests != 2 {
+		t.Fatalf("second clic dans la minute : changed=%v err=%v requêtes=%d", changed, err, g.requests)
+	}
+	first := *s.Status().UpdatedAt
+	s.lastRead = time.Now().Add(-MinRefresh)
+	if changed, err := s.RefreshNow(ctx); err != nil || changed || g.requests != 3 {
+		t.Fatalf("catalogue inchangé : changed=%v err=%v requêtes=%d (index seul attendu)", changed, err, g.requests)
+	}
+	if status := s.Status(); !status.UpdatedAt.After(first) || status.Error != "" {
+		t.Fatalf("date de lecture non avancée : %+v", status)
+	}
+	wiki, _ := builtin(t).Get("dokuwiki")
+	g.document = publish(t, map[string]string{"dokuwiki": strings.Replace(string(wiki.Compose), "description: ", "description: Nouvelle version. ", 1)})
+	s.lastRead = time.Now().Add(-MinRefresh)
+	if changed, err := s.RefreshNow(ctx); err != nil || !changed || g.requests != 5 {
+		t.Fatalf("catalogue changé : changed=%v err=%v requêtes=%d", changed, err, g.requests)
+	}
+	if app, _ := s.Get("dokuwiki"); !strings.HasPrefix(app.Description, "Nouvelle version.") {
+		t.Fatalf("nouveau manifeste non pris : %q", app.Description)
+	}
+	if _, ok := s.Get("essai"); ok {
+		t.Fatal("application retirée du catalogue en ligne encore là")
+	}
+}
+
+// Sans adresse en ligne, le bouton ne lit rien.
+func TestRefreshNowOffline(t *testing.T) {
+	s := &Source{Builtin: builtin(t)}
+	if changed, err := s.RefreshNow(context.Background()); changed || err != nil {
+		t.Fatalf("changed=%v err=%v", changed, err)
 	}
 }

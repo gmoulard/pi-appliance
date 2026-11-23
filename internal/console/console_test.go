@@ -354,6 +354,28 @@ func TestCatalogSource(t *testing.T) {
 	}
 }
 
+// Bouton Marketplace : relecture du catalogue en ligne, connexion exigée.
+func TestCatalogRefresh(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	if response := f.do(http.MethodPost, "/pi-appliance/api/catalog/refresh", "", "", nil); response.Code != http.StatusUnauthorized {
+		t.Fatalf("sans connexion : code %d", response.Code)
+	}
+	// Catalogue intégré seulement : rien à relire.
+	if response := f.do(http.MethodPost, "/pi-appliance/api/catalog/refresh", "", "", cookie); response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"changed":false`) {
+		t.Fatalf("catalogue intégré : code %d : %s", response.Code, response.Body.String())
+	}
+	builtin, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.handler = Handler(Config{Version: "1.2.3", Catalog: &catalog.Source{Builtin: builtin}, Services: f.manager, Accounts: f.accounts})
+	response := f.do(http.MethodPost, "/pi-appliance/api/catalog/refresh", "", "", cookie)
+	if body := response.Body.String(); response.Code != http.StatusOK || !strings.Contains(body, `"changed":false`) || !strings.Contains(body, `"source":{"online":false}`) {
+		t.Fatalf("sans adresse en ligne : code %d : %s", response.Code, body)
+	}
+}
+
 func TestInstallListRemove(t *testing.T) {
 	f := newFixture(t)
 	cookie := f.admin(t)

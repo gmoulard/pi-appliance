@@ -256,6 +256,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/login", c.login)
 	mux.HandleFunc("POST "+BasePath+"/api/logout", c.logout)
 	mux.HandleFunc("GET "+BasePath+"/api/catalog", c.signedIn(c.listCatalog))
+	mux.HandleFunc("POST "+BasePath+"/api/catalog/refresh", c.signedIn(c.refreshCatalog))
 	mux.HandleFunc("GET "+BasePath+"/api/services", c.signedIn(c.listServices))
 	mux.HandleFunc("POST "+BasePath+"/api/services", c.adminOnly(c.install))
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}", c.adminOnly(c.remove))
@@ -694,6 +695,25 @@ func (c *console) listCatalog(w http.ResponseWriter, _ *http.Request) {
 		body["source"] = source.Status()
 	}
 	writeJSON(w, http.StatusOK, body)
+}
+
+// refreshCatalog relit le catalogue en ligne (bouton Marketplace) : une
+// lecture par minute au plus, catalogue inchangé non retéléchargé (catalog.Source).
+// Changed dit à la page de recharger la marketplace et les services.
+func (c *console) refreshCatalog(w http.ResponseWriter, r *http.Request) {
+	source, ok := c.Catalog.(interface {
+		RefreshNow(context.Context) (bool, error)
+		Status() catalog.Status
+	})
+	if !ok {
+		writeJSON(w, http.StatusOK, map[string]any{"changed": false})
+		return
+	}
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+	// Une lecture ratée garde le catalogue précédent : l'erreur est dans source.
+	changed, _ := source.RefreshNow(ctx)
+	writeJSON(w, http.StatusOK, map[string]any{"changed": changed, "source": source.Status()})
 }
 
 // ServiceView est un service installé avec son état vert, orange ou rouge.

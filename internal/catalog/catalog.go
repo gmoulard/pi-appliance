@@ -50,6 +50,9 @@ const (
 	// Interval : délai entre deux lectures ; RetryInterval après un échec.
 	Interval      = 6 * time.Hour
 	RetryInterval = 15 * time.Minute
+	// MinRefresh : délai minimal entre deux lectures demandées depuis la
+	// console (bouton Marketplace), pour ne pas solliciter GitHub à chaque clic.
+	MinRefresh = time.Minute
 )
 
 var documentName = regexp.MustCompile(`^pi-appliance-([0-9a-f]{32})\.json$`)
@@ -83,6 +86,14 @@ type Source struct {
 	mu      sync.RWMutex
 	current *marketplace.Catalog
 	status  Status
+	// digest : MD5 du catalogue en ligne appliqué ; un index qui le nomme
+	// encore ne fait pas retélécharger le catalogue.
+	digest string
+
+	// reading : une seule lecture en ligne à la fois ; lastRead : dernière
+	// lecture, pour MinRefresh.
+	reading  sync.Mutex
+	lastRead time.Time
 }
 
 type cache struct {
@@ -160,6 +171,36 @@ func (s *Source) LoadCache() {
 // Refresh lit le catalogue en ligne et le prend s'il est valable ; sinon le
 // catalogue précédent reste et l'erreur est notée dans Status.
 func (s *Source) Refresh(ctx context.Context) error {
+	s.reading.Lock()
+	defer s.reading.Unlock()
+	return s.refreshLocked(ctx)
+}
+
+// RefreshNow : lecture demandée depuis la console (bouton Marketplace). Rien
+// n'est lu si la dernière lecture date de moins de MinRefresh. Changed dit si
+// le catalogue a changé.
+func (s *Source) RefreshNow(ctx context.Context) (changed bool, err error) {
+	if s.URL == "" {
+		return false, nil
+	}
+	s.reading.Lock()
+	defer s.reading.Unlock()
+	if !s.lastRead.IsZero() && time.Since(s.lastRead) < MinRefresh {
+		return false, nil
+	}
+	before := s.currentDigest()
+	err = s.refreshLocked(ctx)
+	return err == nil && s.currentDigest() != before, err
+}
+
+func (s *Source) currentDigest() string {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return s.digest
+}
+
+func (s *Source) refreshLocked(ctx context.Context) error {
+	s.lastRead = time.Now()
 	err := s.refresh(ctx)
 	if err != nil {
 		s.mu.Lock()
@@ -187,6 +228,15 @@ func (s *Source) refresh(ctx context.Context) error {
 	match := documentName.FindStringSubmatch(pointer.File)
 	if match == nil {
 		return fmt.Errorf("index du catalogue : nom de fichier invalide %q", pointer.File)
+	}
+	if match[1] == s.currentDigest() {
+		// Catalogue inchangé : il est à jour, rien à retélécharger.
+		now := time.Now().UTC()
+		s.mu.Lock()
+		s.status.UpdatedAt = &now
+		s.status.Error = ""
+		s.mu.Unlock()
+		return nil
 	}
 	document, _, err := s.get(ctx, final.ResolveReference(&url.URL{Path: pointer.File}), maxDocument)
 	if err != nil {
@@ -275,6 +325,7 @@ func (s *Source) apply(document []byte, at time.Time) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.current = &catalog
+	s.digest = fmt.Sprintf("%x", md5.Sum(document))
 	s.status = Status{Online: true, UpdatedAt: &at, Refused: refused}
 	return nil
 }
