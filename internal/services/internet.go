@@ -52,7 +52,10 @@ const (
 // relatifs, rien à faire (MkDocs, site web à liens relatifs) ; « build » :
 // générateur qui construit une seconde copie du site pour ce chemin
 // (SITE_PATH dans son manifeste, servie par nginx quand Traefik pose
-// X-Forwarded-Prefix) ; un service installé avant doit être mis à jour.
+// X-Forwarded-Prefix) ; « base » : application réglée sur le chemin /<nom>/
+// pour ses deux adresses (chemin de base dans son manifeste, pathMarkers) :
+// Traefik ne retire pas le chemin (KeepsPath). Pour « build » et « base », un
+// service installé avant doit être mis à jour.
 // Un Docker Compose libre n'y est pas : rien ne dit qu'il y marcherait.
 var pathApps = map[string]string{
 	"site-web": "relative",
@@ -61,6 +64,16 @@ var pathApps = map[string]string{
 	"jekyll":   "build",
 	// Page et appels du serveur en adresses relatives (TODO-2.69).
 	"wordpress-markdown": "relative",
+	// baseURL /<nom>/ ; à la maison, l'application renvoie / vers /<nom>/.
+	"filebrowser": "base",
+}
+
+// pathMarkers : texte du fichier Compose installé qui dit qu'un service
+// « build » ou « base » a le réglage du chemin (sinon : PathUpdate).
+var pathMarkers = map[string]string{
+	"hugo":        "SITE_PATH",
+	"jekyll":      "SITE_PATH",
+	"filebrowser": "baseURL: /${PI_INSTANCE}/",
 }
 
 // InternetPath dit si le service s'ouvre sous le chemin /<nom>/ de l'adresse
@@ -72,14 +85,20 @@ func (m *Manager) InternetPath(instance Instance) string {
 	switch pathApps[instance.App] {
 	case "relative":
 		return PathReady
-	case "build":
+	case "build", "base":
 		compose, err := os.ReadFile(filepath.Join(m.serviceDir(instance.Name), composeName))
-		if err != nil || !bytes.Contains(compose, []byte("SITE_PATH")) {
+		if err != nil || !bytes.Contains(compose, []byte(pathMarkers[instance.App])) {
 			return PathUpdate
 		}
 		return PathReady
 	}
 	return PathUnsupported
+}
+
+// KeepsPath dit si l'application attend le chemin /<nom>/ dans l'adresse
+// (mode « base ») : son routeur sous l'adresse internet du Pi ne le retire pas.
+func KeepsPath(app string) bool {
+	return pathApps[app] == "base"
 }
 
 // RouterMiddlewares : middlewares Traefik du routeur d'un service (page

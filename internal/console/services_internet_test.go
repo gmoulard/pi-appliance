@@ -105,14 +105,20 @@ func TestServicesOnInternet(t *testing.T) {
 	installedApp(t, f, "hugo", "hugo", services.AccessPublic, "ancienne version")
 	installedApp(t, f, "blog", "hugo", services.AccessPublic, "SITE_PATH: /${PI_INSTANCE}/")
 	installedApp(t, f, "cloud", "nextcloud", services.AccessPublic, "")
+	// FileBrowser : chemin de base /<nom>/ dans le manifeste (mode « base »),
+	// à mettre à jour s'il a été installé avant.
+	installedApp(t, f, "fichiers", "filebrowser", services.AccessUsers, "baseURL: /${PI_INSTANCE}/")
+	installedApp(t, f, "docs", "filebrowser", services.AccessUsers, "ancienne version")
 
 	want := map[string][2]string{
-		"www":   {"https://maison.example.org/www/", ""},
-		"blog":  {"https://maison.example.org/blog/", ""},
-		"wiki":  {"", "console"},
-		"prive": {"", "home"},
-		"hugo":  {"", "update"},
-		"cloud": {"", "subpath"},
+		"www":      {"https://maison.example.org/www/", ""},
+		"blog":     {"https://maison.example.org/blog/", ""},
+		"wiki":     {"", "console"},
+		"prive":    {"", "home"},
+		"hugo":     {"", "update"},
+		"cloud":    {"", "subpath"},
+		"fichiers": {"", "console"},
+		"docs":     {"", "console"},
 	}
 	views := internetViews(t, f, admin)
 	for name, expected := range want {
@@ -125,8 +131,15 @@ func TestServicesOnInternet(t *testing.T) {
 	if response := f.do(http.MethodPut, "/pi-appliance/api/internet-console?enabled=true", "", "", admin); response.Code != http.StatusOK {
 		t.Fatalf("ouverture : %d %s", response.Code, response.Body.String())
 	}
-	if view := internetViews(t, f, admin)["wiki"]; view.InternetAddress != "https://maison.example.org/wiki/" {
+	views = internetViews(t, f, admin)
+	if view := views["wiki"]; view.InternetAddress != "https://maison.example.org/wiki/" {
 		t.Fatalf("wiki, console ouverte : %+v", view)
+	}
+	if view := views["fichiers"]; view.InternetAddress != "https://maison.example.org/fichiers/" {
+		t.Fatalf("FileBrowser, console ouverte : %+v", view)
+	}
+	if view := views["docs"]; view.InternetAddress != "" || view.InternetReason != "update" {
+		t.Fatalf("FileBrowser installé avant : %+v", view)
 	}
 	data, err := os.ReadFile(file)
 	if err != nil {
@@ -141,12 +154,15 @@ func TestServicesOnInternet(t *testing.T) {
 		"certResolver: letsencrypt",
 		"prefixes: [\"/wiki\"]",
 		"regex: '^(https?://[^/]+/www)(\\?.*)?$'",
+		// FileBrowser attend /fichiers/ dans l'adresse : chemin gardé.
+		"middlewares: [pi-fichiers-internet-slash@file, pi-appliance-errors@file, pi-appliance-auth@file]",
+		"service: pi-fichiers@docker",
 	} {
 		if !strings.Contains(content, expected) {
 			t.Errorf("services-internet.yml sans %q :\n%s", expected, content)
 		}
 	}
-	for _, absent := range []string{"pi-prive-", "pi-hugo-", "pi-cloud-"} {
+	for _, absent := range []string{"pi-prive-", "pi-hugo-", "pi-cloud-", "pi-docs-", "pi-fichiers-internet-strip", "[\"/fichiers\"]"} {
 		if strings.Contains(content, absent) {
 			t.Errorf("services-internet.yml publie %s :\n%s", absent, content)
 		}

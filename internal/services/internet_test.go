@@ -25,7 +25,8 @@ import (
 )
 
 // Applications du catalogue sous un chemin de l'adresse internet du Pi : les
-// générateurs « build » ont bien SITE_PATH dans leur manifeste.
+// générateurs « build » ont bien SITE_PATH dans leur manifeste, FileBrowser
+// (« base ») son chemin de base.
 func TestInternetPath(t *testing.T) {
 	catalog, err := marketplace.Builtin()
 	if err != nil {
@@ -52,6 +53,18 @@ func TestInternetPath(t *testing.T) {
 		if got := m.InternetPath(Instance{Name: "site", App: id}); got != PathUnsupported {
 			t.Errorf("%s : %q", id, got)
 		}
+	}
+	// Installé avant le chemin de base : à mettre à jour.
+	if err := os.WriteFile(filepath.Join(m.serviceDir("site"), composeName), []byte("services: {}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"hugo", "jekyll", "filebrowser"} {
+		if got := m.InternetPath(Instance{Name: "site", App: id}); got != PathUpdate {
+			t.Errorf("%s installé avant : %q", id, got)
+		}
+	}
+	if !KeepsPath("filebrowser") || KeepsPath("hugo") || KeepsPath("site-web") || KeepsPath(CustomApp) {
+		t.Error("KeepsPath : seul FileBrowser garde le chemin")
 	}
 	if got := m.InternetPath(Instance{Name: "cockpit", App: "site-web"}); got != PathReserved {
 		t.Errorf("nom réservé : %q", got)

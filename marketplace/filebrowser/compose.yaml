@@ -31,11 +31,24 @@ services:
       # Compte « admin » créé au premier démarrage avec ce mot de passe tiré
       # au hasard, à la place d'un mot de passe écrit dans le journal.
       FILEBROWSER_ADMIN_PASSWORD: ${FILEBROWSER_ADMIN_PASSWORD}
+      # Chemin de base de l'application (baseURL ci-dessous), répété ici :
+      # Docker Compose ne recrée pas le conteneur quand seul le contenu d'une
+      # configs change (TODO-2.70), la mise à jour du service ne le prendrait
+      # pas. À changer avec la configuration ci-dessous.
+      PI_CHEMIN: /${PI_INSTANCE}/
     # Les fichiers sont rangés dans le volume de l'application (sous-dossier
     # « fichiers », créé au démarrage), à côté de sa base : un volume neuf
     # monté sur /srv appartiendrait à root, et l'application, qui ne tourne
     # pas en root, ne pourrait rien y écrire.
     entrypoint: ["sh", "-c", "mkdir -p /home/filebrowser/data/fichiers && exec ./filebrowser"]
+    # Santé lue sous le chemin de base (celle de l'image lit /health, que
+    # l'application renvoie maintenant vers /<nom>/).
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:80/${PI_INSTANCE}/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
     configs:
       - source: config
         target: /run/pi-appliance/config.yaml
@@ -44,11 +57,19 @@ services:
 
 # Interface en français, pas d'inscription libre : l'administrateur crée les
 # comptes dans FileBrowser Quantum.
+# Chemin de base /<nom du service>/ (spécification 8.2, TODO-3.17) : la même
+# adresse sert à la maison (https://<service>-<nom du Pi>.local/, que
+# l'application renvoie vers /<nom>/) et depuis internet
+# (https://<adresse internet du Pi>/<nom>/, sans retrait du chemin par
+# Traefik). trustProxyHeaders : adresse du visiteur et liens de partage
+# d'après les en-têtes posés par Traefik, seul à joindre le conteneur.
 configs:
   config:
     content: |
       http:
         port: 80
+        baseURL: /${PI_INSTANCE}/
+        trustProxyHeaders: true
       server:
         sources:
           - path: /home/filebrowser/data/fichiers

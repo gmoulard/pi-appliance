@@ -100,7 +100,8 @@ func (c *console) publications() map[string]servicePublication {
 // dernier recours (1). Middlewares : /<nom> mène à /<nom>/, page d'erreur et
 // niveau d'accès comme sur le routeur Docker, chemin retiré en dernier (le
 // forward auth voit donc l'adresse complète, X-Forwarded-Uri en /<nom>/…),
-// avec l'en-tête X-Forwarded-Prefix posé par stripPrefix.
+// avec l'en-tête X-Forwarded-Prefix posé par stripPrefix ; chemin gardé pour
+// une application réglée sur /<nom>/ (services.KeepsPath : FileBrowser).
 func traefikServices(hosts []string, published map[string]servicePublication) string {
 	names := make([]string, 0, len(published))
 	for name, publication := range published {
@@ -123,7 +124,10 @@ func traefikServices(hosts []string, published map[string]servicePublication) st
 		id := "pi-" + name + "-internet"
 		chain := []string{id + "-slash@file"}
 		chain = append(chain, services.RouterMiddlewares(publication.App, publication.Access)...)
-		chain = append(chain, id+"-strip@file")
+		strip := !services.KeepsPath(publication.App)
+		if strip {
+			chain = append(chain, id+"-strip@file")
+		}
 		fmt.Fprintf(&routers, "    %s:\n", id)
 		routers.WriteString("      entryPoints: [websecure]\n")
 		fmt.Fprintf(&routers, "      rule: \"(%s) && (Path(`/%s`) || PathPrefix(`/%s/`))\"\n", hostRule, name, name)
@@ -134,7 +138,9 @@ func traefikServices(hosts []string, published map[string]servicePublication) st
 		fmt.Fprintf(&middlewares, "    %s-slash:\n      redirectRegex:\n", id)
 		fmt.Fprintf(&middlewares, "        regex: '^(https?://[^/]+/%s)(\\?.*)?$'\n", name)
 		middlewares.WriteString("        replacement: '${1}/${2}'\n")
-		fmt.Fprintf(&middlewares, "    %s-strip:\n      stripPrefix:\n        prefixes: [\"/%s\"]\n", id, name)
+		if strip {
+			fmt.Fprintf(&middlewares, "    %s-strip:\n      stripPrefix:\n        prefixes: [\"/%s\"]\n", id, name)
+		}
 	}
 	var b strings.Builder
 	b.WriteString("# Écrit par la console pi-appliance (services sur internet, spécification 8.2).\n")
