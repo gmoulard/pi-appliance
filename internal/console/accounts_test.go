@@ -142,6 +142,7 @@ func forwardRequest(f fixture, remote string, cookie *http.Cookie, headers map[s
 
 func forwardTo(f fixture, path, remote string, cookie *http.Cookie, headers map[string]string) *httptest.ResponseRecorder {
 	request := httptest.NewRequest(http.MethodGet, path, nil)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = remote
 	if cookie != nil {
 		request.AddCookie(cookie)
@@ -173,6 +174,7 @@ func installed(t *testing.T, f fixture, name, address, access string) {
 // returnFrom : POST api/auth/return derrière Traefik en HTTPS, sur l'adresse host de la console.
 func returnFrom(f fixture, host, body string, session *http.Cookie) *httptest.ResponseRecorder {
 	request := httptest.NewRequest(http.MethodPost, "http://"+host+"/pi-appliance/api/auth/return", strings.NewReader(body))
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "127.0.0.1:5000"
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Forwarded-Proto", "https")
@@ -288,6 +290,7 @@ func TestForwardAuth(t *testing.T) {
 	}
 	old := &http.Cookie{Name: forwardCookie, Value: "ancien-cookie-de-maison.local"}
 	both := httptest.NewRequest(http.MethodGet, "/pi-appliance/api/auth/forward", nil)
+	both.Header.Set("X-Pi-Appliance", "1")
 	both.RemoteAddr = "127.0.0.1:5000"
 	both.AddCookie(old)
 	both.AddCookie(forward)

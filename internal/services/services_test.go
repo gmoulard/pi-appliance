@@ -172,6 +172,8 @@ func TestInstallRejects(t *testing.T) {
 		values map[string]string
 	}{
 		"nom":               {"Cloud", nil},
+		"nom réservé":       {"pi-appliance", nil},
+		"chemin de Cockpit": {"cockpit", nil},
 		"paramètre inconnu": {"cloud", map[string]string{"OTHER": "x"}},
 		"retour à la ligne": {"cloud", map[string]string{"NEXTCLOUD_ADMIN_PASSWORD": "a\nb"}},
 		"apostrophe":        {"cloud", map[string]string{"NEXTCLOUD_ADMIN_PASSWORD": "l'été"}},

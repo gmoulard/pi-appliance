@@ -412,7 +412,6 @@ piTranslations("en", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "This Pi's administrators, at home only (and the VPN)",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "Warning: this application has full control over the whole Pi. It is open only to administrators, from home. Do not change in this application the services installed by the console: their updates and backups might stop working.",
   "Qui peut l'ouvrir": "Who can open it",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Away from home, sign in here at home first: the console's sign-in page cannot be opened from the internet yet.",
   "Changement de l'accès à {0}… Le service redémarre.": "Changing access to {0}… The service is restarting.",
   "{0} : accès changé.": "{0}: access changed.",
   "Administration du système": "System administration",
@@ -725,5 +724,14 @@ piTranslations("en", {
   "Valider": "Confirm",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "Your email address is verified: each time you sign in, the console will send you a code.",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "Your address {0} is not verified yet: verify it in “My account”, a code will be sent to you.",
-  "Vérifier mon adresse e-mail": "Verify my email address"
+  "Vérifier mon adresse e-mail": "Verify my email address",
+  "Ce service ne s'ouvre qu'à la maison.": "This service opens only at home.",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "From the internet, this service will open once the console is open on the internet (Internet address): signing in goes through it.",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "This service cannot be opened from the internet yet: the Pi has no internet address (Internet address).",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "This service opens only at home: it does not work under an address shared with the console.",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "Update this service to open it from the internet.",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "This service cannot be opened from the internet: its name is reserved for the console. Reinstall it under another name.",
+  "Depuis internet : {0}": "From the internet: {0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "On the internet, this service shares the console's address: only install services you trust, because a page of this service could act in the console on behalf of a signed-in person.",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "Your “Everyone, on the internet” services also open from the internet, at the Pi's address followed by their name (for example https://home.example.com/hugo/), with nothing to create at your domain name provider; those for people who have an account, only when the console is open on the internet."
 });

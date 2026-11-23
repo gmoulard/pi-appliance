@@ -69,6 +69,7 @@ func TestErrorPages(t *testing.T) {
 	}
 	for _, c := range cases {
 		request := httptest.NewRequest(http.MethodGet, c.path, nil)
+		request.Header.Set("X-Pi-Appliance", "1")
 		request.RemoteAddr = c.remote
 		if c.language != "" {
 			request.Header.Set("Accept-Language", c.language)
@@ -92,6 +93,7 @@ func TestErrorPages(t *testing.T) {
 	}
 	// Une demande POST (routeur de dernier recours) a aussi sa page.
 	request := httptest.NewRequest(http.MethodPost, "/pi-appliance/erreur/404", nil)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "192.168.1.20:5000"
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
@@ -117,6 +119,7 @@ func TestFooterDevelopment(t *testing.T) {
 func TestHealthCommit(t *testing.T) {
 	handler := pageFixture(t, "dev", "0123456789abcdef", "2026-11-22")
 	request := httptest.NewRequest(http.MethodGet, "/pi-appliance/api/health", nil)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "192.168.1.20:5000"
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)

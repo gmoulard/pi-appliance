@@ -71,6 +71,7 @@ func (f fixture) fromOutside(method, path, body string, cookie *http.Cookie) *ht
 		reader = strings.NewReader(body)
 	}
 	request := httptest.NewRequest(method, path, reader)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "127.0.0.1:40000"
 	request.Header.Set("X-Forwarded-For", "203.0.113.9")
 	request.Header.Set("X-Forwarded-Proto", "https")
@@ -232,6 +233,7 @@ func TestInternetHostsFiltered(t *testing.T) {
 func TestFromInternet(t *testing.T) {
 	for addr, want := range map[string]bool{"192.168.1.20:1": false, "10.13.13.2:1": false, "[fd00::1]:1": false, "[fe80::1]:1": false, "127.0.0.1:1": false, "203.0.113.9:1": true, "[2001:db8::1]:1": true} {
 		request := httptest.NewRequest(http.MethodGet, "/", nil)
+		request.Header.Set("X-Pi-Appliance", "1")
 		request.RemoteAddr = addr
 		if got := fromInternet(request); got != want {
 			t.Errorf("%s : %v", addr, got)
@@ -239,6 +241,7 @@ func TestFromInternet(t *testing.T) {
 	}
 	// Un visiteur direct (sans Traefik) ne choisit pas son adresse par X-Forwarded-For.
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "203.0.113.9:1"
 	request.Header.Set("X-Forwarded-For", "192.168.1.20")
 	if !fromInternet(request) {
@@ -261,6 +264,7 @@ func TestCLIToken(t *testing.T) {
 	f.admin(t)
 	try := func(remote, token, forwarded string) int {
 		request := httptest.NewRequest(http.MethodGet, "/pi-appliance/api/services", nil)
+		request.Header.Set("X-Pi-Appliance", "1")
 		request.RemoteAddr = remote
 		request.Header.Set("Authorization", "Bearer "+token)
 		if forwarded != "" {

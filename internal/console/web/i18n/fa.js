@@ -412,7 +412,6 @@ piTranslations("fa", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "مدیران این Pi، فقط در خانه (و از راه VPN)",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "هشدار: این برنامه کنترل کامل Pi را در دست دارد. فقط برای مدیران و فقط از خانه باز است. سرویس‌هایی را که کنسول نصب کرده است در این برنامه تغییر ندهید: ممکن است به‌روزرسانی‌ها و پشتیبان‌های آن‌ها دیگر کار نکنند.",
   "Qui peut l'ouvrir": "چه کسی می‌تواند آن را باز کند",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "بیرون از خانه، ابتدا همین‌جا در خانه وارد شوید: صفحهٔ ورود کنسول هنوز از اینترنت باز نمی‌شود.",
   "Changement de l'accès à {0}… Le service redémarre.": "در حال تغییر دسترسی به {0}… سرویس دوباره راه‌اندازی می‌شود.",
   "{0} : accès changé.": "{0}: دسترسی تغییر کرد.",
   "Administration du système": "مدیریت سیستم",
@@ -725,5 +724,14 @@ piTranslations("fa", {
   "Valider": "تأیید",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "نشانی ایمیل شما تأیید شد: در هر ورود، کنسول برایتان یک کد می‌فرستد.",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "نشانی {0} شما هنوز تأیید نشده: آن را در «حساب من» تأیید کنید، یک کد برایتان فرستاده می‌شود.",
-  "Vérifier mon adresse e-mail": "تأیید نشانی ایمیل من"
+  "Vérifier mon adresse e-mail": "تأیید نشانی ایمیل من",
+  "Ce service ne s'ouvre qu'à la maison.": "این سرویس فقط در خانه باز می‌شود.",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "از اینترنت، این سرویس وقتی باز می‌شود که کنسول روی اینترنت باز باشد (نشانی اینترنتی): ورود از طریق کنسول انجام می‌شود.",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "این سرویس هنوز از اینترنت باز نمی‌شود: Pi نشانی اینترنتی ندارد (نشانی اینترنتی).",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "این سرویس فقط در خانه باز می‌شود: زیر نشانی مشترک با کنسول کار نمی‌کند.",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "برای باز کردن این سرویس از اینترنت، آن را به‌روزرسانی کنید.",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "این سرویس از اینترنت باز نمی‌شود: نامش برای کنسول رزرو شده است. آن را با نام دیگری دوباره نصب کنید.",
+  "Depuis internet : {0}": "از اینترنت: {0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "روی اینترنت، این سرویس نشانی کنسول را به اشتراک می‌گذارد: فقط سرویس‌های مورد اعتماد را نصب کنید، چون یک صفحه از این سرویس می‌تواند به نام فردی که وارد شده در کنسول کاری انجام دهد.",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "سرویس‌های «همه، در اینترنت» شما از اینترنت هم باز می‌شوند، در نشانی Pi و سپس نام آن‌ها (مثلاً https://home.example.com/hugo/)، بدون ساختن چیزی نزد ارائه‌دهندهٔ نام دامنه؛ سرویس‌های افرادی که حساب دارند، فقط وقتی کنسول روی اینترنت باز است."
 });

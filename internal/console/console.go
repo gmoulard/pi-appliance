@@ -221,6 +221,10 @@ type Config struct {
 	// TraefikInternetFile : configuration dynamique de Traefik écrite quand la
 	// console est ouverte sur internet ; vide : Traefik pas réglé par la console.
 	TraefikInternetFile string
+	// ServicesInternetFile : configuration dynamique de Traefik des services
+	// ouverts sur internet, sous un chemin de l'adresse internet du Pi
+	// (services_internet.go) ; vide : aucun service publié ainsi.
+	ServicesInternetFile string
 	// CLIToken : jeton de la ligne de commande du Pi (pi-appliance <commande>),
 	// tiré à chaque démarrage et gardé dans un fichier lisible par root seul ;
 	// vide : pas de ligne de commande.
@@ -317,7 +321,45 @@ func Handler(config Config) http.Handler {
 	}
 	mux.Handle("GET "+BasePath+"/", http.StripPrefix(BasePath, http.FileServerFS(web)))
 	mux.Handle("GET "+BasePath, http.RedirectHandler(BasePath+"/", http.StatusMovedPermanently))
-	return c.internetGuard(mux)
+	return c.internetGuard(apiHeaderGuard(frameGuard(mux)))
+}
+
+// apiHeader : en-tête exigé sur chaque demande de l'API qui modifie (POST,
+// PUT, PATCH, DELETE), posé par la console (app.js, api()) et par la ligne de
+// commande. Un formulaire HTML ne sait pas le poser : une page d'un autre site,
+// ou d'un service ouvert sous l'adresse internet du Pi
+// (https://<adresse>/<service>/, même origine que la console), ne peut pas
+// faire agir la console par un simple formulaire.
+// NE PAS y voir plus : un script de la même origine (page d'un service sous
+// l'adresse internet du Pi) pose cet en-tête comme la console (risque accepté
+// par l'utilisateur, spécification 8.3).
+const apiHeader = "X-Pi-Appliance"
+
+func apiHeaderGuard(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet, http.MethodHead, http.MethodOptions:
+		default:
+			if strings.HasPrefix(r.URL.Path, BasePath+"/api/") && r.Header.Get(apiHeader) == "" {
+				writeError(w, http.StatusForbidden, "Demande refusée : elle ne vient pas de la console.")
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+// frameGuard : la console ne s'affiche dans aucun cadre (iframe), même d'une
+// page de la même adresse (service sous l'adresse internet du Pi) : pas de
+// clic piégé sur ses boutons.
+func frameGuard(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if w.Header().Get("Content-Security-Policy") == "" {
+			w.Header().Set("Content-Security-Policy", "frame-ancestors 'none'")
+		}
+		w.Header().Set("X-Frame-Options", "DENY")
+		next.ServeHTTP(w, r)
+	})
 }
 
 func (c *console) account(r *http.Request) (auth.Account, bool) {
@@ -662,6 +704,12 @@ type ServiceView struct {
 	// retirée), dont l'administrateur choisit les étiquettes (PUT api/services/<nom>/tags) ;
 	// sinon Tags sont celles de l'application du catalogue.
 	TagsEditable bool `json:"tags_editable"`
+	// InternetAddress : adresse du service depuis internet, sous un chemin de
+	// l'adresse internet du Pi (https://<adresse>/<nom>/) ; vide sinon, avec
+	// InternetReason : home, console, no_address, subpath, update ou reserved
+	// (services_internet.go).
+	InternetAddress string `json:"internet_address,omitempty"`
+	InternetReason  string `json:"internet_reason,omitempty"`
 }
 
 func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
@@ -672,19 +720,22 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	views := make([]ServiceView, 0, len(instances))
+	published := c.publications()
 	for _, instance := range instances {
 		status, err := c.Services.Status(r.Context(), instance.Name)
 		if err != nil {
 			status = services.Status{Color: services.Orange, Message: "État inconnu."}
 		}
 		view := ServiceView{Instance: instance, Status: status, TagsEditable: true}
+		view.InternetAddress, view.InternetReason = published[instance.Name].Address, published[instance.Name].Reason
 		if app, ok := c.Catalog.Get(instance.App); ok {
 			view.UpdateAvailable = c.Services.UpdateAvailable(app, instance.Name)
 			view.Tags, view.TagsEditable = app.Tags, false
 		}
 		views = append(views, view)
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"services": views})
+	// internet : la demande vient d'internet (« Ouvrir » mène à internet_address).
+	writeJSON(w, http.StatusOK, map[string]any{"services": views, "internet": fromInternet(r)})
 }
 
 func (c *console) control(w http.ResponseWriter, r *http.Request) {
@@ -742,6 +793,7 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 		writeServiceError(w, err)
 		return
 	}
+	c.syncTraefikNow()
 	writeJSON(w, http.StatusCreated, result)
 }
 
@@ -773,6 +825,7 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 	if err := c.Accounts.RevokeServiceShares(r.PathValue("name")); err != nil {
 		log.Printf("liens de partage de %s : %v", r.PathValue("name"), err)
 	}
+	c.syncTraefikNow()
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -801,6 +854,7 @@ func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
 			writeServiceError(w, err)
 			return
 		}
+		c.syncTraefikNow()
 		writeJSON(w, http.StatusOK, result)
 		return
 	}
