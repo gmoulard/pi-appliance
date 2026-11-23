@@ -14,8 +14,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Tests de « network.sh test », « status » et « reboot », sans Pi : de faux
-# nmcli, ping, getent, avahi-resolve-host-name, systemctl et systemd-run
+# Tests de « network.sh test », « status », « wifi-wps » et « reboot », sans Pi : de faux
+# nmcli, ping, getent, avahi-resolve-host-name, systemctl, systemd-run,
+# wpa_supplicant et wpa_cli
 # notent ce qui leur est demandé. sh system/tests/network-test.sh
 
 # Corps des faux programmes entre apostrophes : développés quand ils tournent.
@@ -50,6 +51,7 @@ case "$*" in
 *"IP4.ADDRESS device show"*) echo "192.168.1.20/24" ;;
 *"IP4.GATEWAY device show"*) echo "192.168.1.1" ;;
 *"connection.autoconnect"*) cat "$FAKE/autoconnect" 2>/dev/null ;;
+*"connection edit"*) cat >>"$FAKE/edit" ;;
 *" up "*|*" down "*|*rescan\ yes*) echo "nmcli interdit : $*" >>"$FAKE/forbidden" ;;
 esac
 exit 0'
@@ -60,9 +62,14 @@ fake systemctl 'echo "systemctl $*" >>"$FAKE/calls"
 case "$*" in *is-active*) [ -e "$FAKE/timer" ] ;; *) exit 0 ;; esac'
 fake systemd-run 'echo "systemd-run $*" >>"$FAKE/calls"; [ -e "$FAKE/run-fails" ] && exit 1; touch "$FAKE/timer"'
 fake sync 'exit 0'
+# Bouton WPS : la box répond (fichier wps) avec le réseau écrit par wpa_supplicant.
+fake wpa_supplicant 'echo "wpa_supplicant $*" >>"$FAKE/calls"; [ ! -e "$FAKE/no-supplicant" ]'
+fake wpa_cli 'echo "wpa_cli $*" >>"$FAKE/calls"
+[ -e "$FAKE/wps" ] && cat "$FAKE/wps" >>"$PI_RUN/wps/wpa.conf"
+exit 0'
 fake iw 'exit 0'
 
-export PATH="$bin:$PATH" PI_LIB="$LIB" PI_STATE="$work/state" PI_RUN="$work/run" REBOOT_DELAY=5
+export PATH="$bin:$PATH" PI_LIB="$LIB" PI_STATE="$work/state" PI_RUN="$work/run" REBOOT_DELAY=5 WPS_TIMEOUT=2
 echo maison >"$work/state/name"
 
 # check <nom> <valeur> <attendu>
@@ -163,8 +170,43 @@ run reboot
 check "redémarrage impossible : code" "$code" 1
 check "redémarrage impossible : erreur" "$(jq -r .error "$work/out")" failed
 
+# Bouton WPS de la box : le Wi-Fi reçu est enregistré comme un Wi-Fi choisi à la main.
+rm -f "$work/state/network-choice" "$fake/edit"
+: >"$fake/calls"
+printf 'network={\n\tssid="Maison: Salon"\n\tpsk="mot de passe secret"\n\tkey_mgmt=WPA-PSK\n}\n' >"$fake/wps"
+run wifi-wps
+check "WPS : code" "$code" 0
+check "WPS : nom du Wi-Fi" "$(jq -r .ssid "$work/out")" "Maison: Salon"
+check "WPS : mot de passe enregistré" "$(grep -c 'set wifi-sec.psk mot de passe secret' "$fake/edit")" 1
+check "WPS : mot de passe hors des lignes de commande" "$(grep -c 'secret' "$fake/calls")" 0
+check "WPS : réseau choisi" "$(cat "$work/state/network-choice")" wifi
+check "WPS : puce rendue à NetworkManager" "$(grep -c 'device set wlan0 managed yes' "$fake/calls")" 1
+check "WPS : fichier du mot de passe effacé" "$([ -e "$work/run/wps" ] && echo présent || echo effacé)" effacé
+
+# Nom non ASCII, écrit en hexadécimal par wpa_supplicant ; clé brute de 64 caractères.
+rm -f "$fake/edit"
+key=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+printf 'network={\n\tssid=4cc3a961\n\tpsk=%s\n}\n' "$key" >"$fake/wps"
+run wifi-wps
+check "WPS hexadécimal : nom du Wi-Fi" "$(jq -r .ssid "$work/out")" "Léa"
+check "WPS hexadécimal : clé" "$(grep -c "set wifi-sec.psk $key" "$fake/edit")" 1
+
+# Personne n'appuie sur le bouton : erreur propre, point d'accès rouvert au premier démarrage.
+rm -f "$fake/wps" "$work/state/network-choice"
+: >"$fake/calls"
+run wifi-wps
+check "WPS sans appui : code" "$code" 1
+check "WPS sans appui : erreur" "$(jq -r .error "$work/out")" wps-timeout
+check "WPS sans appui : erreur gardée" "$(cat "$work/run/network-error")" wps-timeout
+check "WPS sans appui : point d'accès rouvert" "$(grep -c 'connection up pi-appliance-ap' "$fake/calls")" 1
+check "WPS sans appui : puce rendue à NetworkManager" "$(grep -c 'device set wlan0 managed yes' "$fake/calls")" 1
+touch "$fake/no-supplicant"
+run wifi-wps
+check "WPS impossible : erreur" "$(jq -r .error "$work/out")" wps-failed
+rm -f "$fake/no-supplicant"
+
 if [ "$failures" -gt 0 ]; then
 	echo "$failures échec(s)"
 	exit 1
 fi
-echo "network.sh test, status et reboot : tout est bon"
+echo "network.sh test, status, wifi-wps et reboot : tout est bon"

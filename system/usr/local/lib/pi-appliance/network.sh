@@ -22,6 +22,7 @@
 #   network.sh wifi-list    dernière liste des Wi-Fi visibles
 #   network.sh wifi-scan    nouvelle recherche (ferme le point d'accès quelques secondes)
 #   network.sh wifi-join    connexion ; entrée standard : {"ssid": "…", "password": "…", "hidden": false}
+#   network.sh wifi-wps     association par le bouton WPS de la box (2 minutes pour appuyer)
 #   network.sh wired        garder le câble comme réseau du Pi
 #   network.sh country FR   pays du Wi-Fi (code ISO 3166 à deux lettres)
 #   network.sh name salon   nom du Pi : <nom>.local et nom du Wi-Fi de configuration (name.sh)
@@ -36,6 +37,7 @@ set -eu
 
 PI_LIB=${PI_LIB:-/usr/local/lib/pi-appliance}
 REBOOT_DELAY=${REBOOT_DELAY:-5}
+WPS_TIMEOUT=${WPS_TIMEOUT:-120}
 # shellcheck source=common.sh
 . "$PI_LIB/common.sh"
 
@@ -170,6 +172,73 @@ wifi_join() {
 	esac
 }
 
+# wps_value <fichier> <clé> : valeur de la clé dans le réseau écrit par
+# wpa_supplicant, entre guillemets (texte) ou en hexadécimal (nom non ASCII, clé
+# de 64 caractères) ; le nom en hexadécimal est remis en octets.
+wps_value() {
+	raw=$(sed -n "s/^[[:space:]]*$2=//p" "$1" | head -n 1)
+	case "$raw" in
+	\"*\") raw=${raw#\"}; printf '%s' "${raw%\"}" ;;
+	*) if [ "$2" = ssid ]; then
+		# shellcheck disable=SC2059
+		printf "$(printf '%s' "$raw" | tr 'A-F' 'a-f' | awk '{
+			for (i = 1; i < length($0); i += 2) {
+				b = (index("0123456789abcdef", substr($0, i, 1)) - 1) * 16 + index("0123456789abcdef", substr($0, i + 1, 1)) - 1
+				printf "\\%03o", b
+			}
+		}')"
+	else
+		printf '%s' "$raw"
+	fi ;;
+	esac
+}
+
+# Association par le bouton WPS de la box (TODO-2.66). NetworkManager ne la fait
+# pas sans agent de secrets : la puce lui est reprise le temps de l'appui, un
+# wpa_supplicant à part reçoit le nom et le mot de passe du Wi-Fi de la box, puis
+# wifi_join les enregistre comme un Wi-Fi choisi à la main.
+wifi_wps() {
+	was_open=0
+	if ap_is_open; then was_open=1; ap_close; fi
+	dir=$PI_RUN/wps
+	rm -rf "$dir"
+	mkdir -p "$dir"
+	conf=$dir/wpa.conf
+	printf 'ctrl_interface=%s\nupdate_config=1\n' "$dir/ctrl" >"$conf"
+	nmcli device set "$WIFI_DEVICE" managed no >/dev/null 2>&1 || true
+	found=0
+	code=wps-failed
+	if wpa_supplicant -B -i "$WIFI_DEVICE" -c "$conf" -P "$dir/pid" >/dev/null 2>&1 &&
+		wpa_cli -p "$dir/ctrl" -i "$WIFI_DEVICE" wps_pbc >/dev/null 2>&1; then
+		code=wps-timeout
+		waited=0
+		while [ "$waited" -lt "$WPS_TIMEOUT" ]; do
+			if grep -q '^[[:space:]]*psk=' "$conf"; then found=1; break; fi
+			sleep 2
+			waited=$((waited + 2))
+		done
+	fi
+	if [ -s "$dir/pid" ]; then kill "$(cat "$dir/pid")" 2>/dev/null || true; fi
+	nmcli device set "$WIFI_DEVICE" managed yes >/dev/null 2>&1 || true
+	if [ "$found" = 1 ]; then
+		ssid=$(wps_value "$conf" ssid)
+		psk=$(wps_value "$conf" psk)
+		rm -rf "$dir"
+		# Le mot de passe passe par printf (commande interne) et l'entrée standard :
+		# jamais par une ligne de commande.
+		printf '%s\n%s\n' "$ssid" "$psk" | jq -R -s 'split("\n") | {ssid: .[0], password: .[1]}' | wifi_join
+		return
+	fi
+	rm -rf "$dir"
+	echo "$code" >"$ERROR_FILE"
+	nmcli --wait 30 connection up "$WIFI_CONNECTION" >/dev/null 2>&1 || true
+	if [ "$was_open" = 1 ] || ! is_configured; then ap_open || true; fi
+	case "$code" in
+	wps-timeout) fail "$code" "Aucune box n'a répondu : appuyez sur le bouton WPS de la box dans les 2 minutes." ;;
+	*) fail "$code" "L'association par le bouton de la box a échoué." ;;
+	esac
+}
+
 wired() {
 	if ! has_ethernet; then
 		fail no-cable "Aucun câble réseau branché, ou la box ne répond pas."
@@ -295,10 +364,11 @@ status) status ;;
 wifi-list) wifi_list ;;
 wifi-scan) with_wifi_lock wifi_rescan; wifi_list ;;
 wifi-join) with_wifi_lock wifi_join ;;
+wifi-wps) with_wifi_lock wifi_wps ;;
 wired) wired ;;
 country) set_country "${2:-}" ;;
 name) set_name "${2:-}" ;;
 test) network_test ;;
 reboot) reboot_pi ;;
-*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wired | country <code> | name <nom> | test | reboot" ;;
+*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wifi-wps | wired | country <code> | name <nom> | test | reboot" ;;
 esac
