@@ -732,7 +732,8 @@ const tileChoice = { kinds: new Set(), tags: new Set() };
 (function readTileChoice() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(TILES_KEY) || "{}");
-    for (const kind of saved.kinds || []) tileChoice.kinds.add(String(kind));
+    // Un seul type à la fois (Mon Pi, Mes services ou Marketplace).
+    for (const kind of (saved.kinds || []).slice(0, 1)) tileChoice.kinds.add(String(kind));
     for (const tag of saved.tags || []) tileChoice.tags.add(String(tag));
   } catch {
     // Stockage indisponible ou illisible : tout est affiché.
@@ -751,13 +752,19 @@ function setHidden(node, hidden) {
   if (node.hidden !== hidden) node.hidden = hidden;
 }
 
-function filterButton(id, label, chosen) {
+// filterButton : bouton de la barre du haut. single : un seul choix à la fois
+// (types Mon Pi, Mes services, Marketplace, qui ne se cumulent pas) ; toucher
+// le type choisi le retire et réaffiche tout. Les étiquettes, elles, se cumulent.
+function filterButton(id, label, chosen, single = false) {
   const button = element("button", label, "secondary");
   button.type = "button";
   button.setAttribute("aria-pressed", String(chosen.has(id)));
   button.addEventListener("click", () => {
     if (chosen.has(id)) chosen.delete(id);
-    else chosen.add(id);
+    else {
+      if (single) chosen.clear();
+      chosen.add(id);
+    }
     saveTileChoice();
     applyTiles();
   });
@@ -794,7 +801,7 @@ function applyTiles() {
   // Un type choisi mais absent de l'écran (autre compte) ne compte pas.
   const chosenKinds = kinds.map(([kind]) => kind).filter((kind) => tileChoice.kinds.has(kind));
   const kindOn = (kind) => chosenKinds.length === 0 || chosenKinds.includes(kind);
-  tileKinds.replaceChildren(...kinds.map(([kind, label]) => filterButton(kind, label, tileChoice.kinds)));
+  tileKinds.replaceChildren(...kinds.map(([kind, label]) => filterButton(kind, label, tileChoice.kinds, true)));
   // Étiquettes proposées : celles des types choisis, présentes à l'écran.
   const sections = (kind) => (chosenKinds.includes(kind) ? byKind.get(kind) || [] : []);
   const themes = new Set(sections("pi").flatMap((section) => [section, ...section.querySelectorAll("[data-theme]")])
