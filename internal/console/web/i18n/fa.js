@@ -745,5 +745,6 @@ piTranslations("fa", {
   "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "سرویس‌های «همه، در اینترنت» شما از اینترنت هم باز می‌شوند، در نشانی Pi و سپس نام آن‌ها (مثلاً https://home.example.com/hugo/)، بدون ساختن چیزی نزد ارائه‌دهندهٔ نام دامنه؛ سرویس‌های افرادی که حساب دارند، فقط وقتی کنسول روی اینترنت باز است.",
   "CPU {0} %": "پردازنده {0}٪",
   "RAM {0} %": "حافظه {0}٪",
-  "Disque {0} / {1}": "دیسک {0} / {1}"
+  "Disque {0} / {1}": "دیسک {0} / {1}",
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude همهٔ دسترسی‌ها را روی Pi شما خواهد داشت: می‌تواند همه چیز را بخواند، تغییر دهد و پاک کند؛ هر کار از برنامهٔ Claude شما می‌گذرد و شما آن را می‌پذیرید یا رد می‌کنید. اشتراک Claude ‏(Pro یا Max) لازم است. پس از نصب، سرویس را باز کنید تا یک بار وارد حساب Claude خود شوید."
 });
