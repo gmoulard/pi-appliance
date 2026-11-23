@@ -162,7 +162,7 @@ Un service s'ouvre depuis internet à l'adresse internet du Pi suivie de son nom
 - **« Les personnes qui ont un compte sur ce Pi »** : seulement quand la console est ouverte sur internet, car la connexion passe par elle.
 - **« La maison seulement »** : jamais depuis internet.
 
-Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, FileBrowser Quantum, WordPress, n8n, Etherpad, DokuWiki, Astro, Next.js, Docker Compose libre) : elles restent à la maison, la fiche le dit. Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`).
+Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, FileBrowser Quantum, WordPress, WordPress vers Markdown, n8n, Etherpad, DokuWiki, Astro, Next.js, Docker Compose libre) : elles restent à la maison, la fiche le dit. Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`).
 
 **À savoir :** sous internet, le service partage l'adresse de la console. Une page de ce service pourrait donc agir dans la console au nom d'une personne connectée. N'ouvrez sur internet que des services de confiance, dont vous connaissez le contenu.
 
@@ -229,6 +229,17 @@ Sans compte administrateur (mot de passe perdu, compte pas encore créé) : dép
 Si la console ne s'ouvre plus du tout (programme Traefik en panne), essayez `https://<nom du Pi>.local:8443/pi-appliance/diagnostic` : le Pi ouvre cette console de secours, qui ne montre que le diagnostic, quand Traefik ne répond plus depuis une minute et demie. Si rien ne répond, débranchez puis rebranchez l'alimentation du Pi.
 
 Si vous avez choisi un compte et activé SSH dans les réglages de Raspberry Pi Imager, ils sont gardés : une personne à l'aise avec l'informatique peut aussi se connecter au Pi par SSH. Le Wi-Fi réglé dans Imager, lui, est ignoré : le Wi-Fi de la maison se choisit dans le portail.
+
+## Transformer un site WordPress en fichiers Markdown {#wordpress-vers-markdown}
+
+L'application **WordPress vers Markdown** de la marketplace transforme les articles et les pages d'un site WordPress en fichiers texte Markdown, avec leurs images : pour garder une copie de son blog, ou pour le passer dans un générateur de site comme Hugo, MkDocs ou Jekyll. Pas encore essayé sur un vrai Pi.
+
+1. Dans votre WordPress (celui du Pi ou un autre), ouvrez **Outils → Exporter**, choisissez **Tout le contenu**, puis **Télécharger le fichier d'export** : vous obtenez un fichier `.xml`.
+2. Dans la **Marketplace** de la console, installez **WordPress vers Markdown**, puis ouvrez le service (bouton **Ouvrir**). Par défaut, seules les personnes qui ont un compte sur le Pi peuvent l'ouvrir.
+3. Choisissez le fichier `.xml` (40 Mo au plus), cochez les réglages voulus (télécharger les images, ranger les articles par année et par mois, mettre la date au début du nom de chaque article), puis touchez **Convertir**.
+4. La page montre l'avancement. À la fin, touchez **Télécharger le fichier .zip** : chaque article y a son dossier, avec son texte (`index.md`) et ses images.
+
+Les images sont prises sur le site WordPress d'origine, qui doit être en ligne ; celles qui n'ont pas pu être téléchargées sont listées dans le fichier `images-manquantes.txt` du `.zip`. Votre fichier reste sur le Pi : rien n'est envoyé ailleurs que les demandes d'images à votre site. Il est effacé du Pi peu après le téléchargement, et au plus tard une heure après la conversion. Une seule conversion à la fois sur le Pi. La première fois, le Pi doit avoir internet pour télécharger l'outil de conversion (quelques minutes).
 
 ## Faire dépanner son Pi par Claude {#depannage-par-claude}
 

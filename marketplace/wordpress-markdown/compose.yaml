@@ -1,0 +1,1032 @@
+x-pi-appliance:
+  name: WordPress vers Markdown
+  description: Transformer les articles et les pages d'un site WordPress en fichiers Markdown, avec leurs images, à partir de son fichier d'export (Outils → Exporter dans WordPress). On dépose le fichier .xml sur la page du service et on récupère un fichier .zip. Le fichier reste sur le Pi ; seules les images sont demandées au site WordPress d'origine.
+  icon: M6 3h8l4 4v14H6zM14 3v4h4M12 10v7M9 14l3 3l3-3
+  category: Documents
+  tags: [documents, site-web]
+  license: MIT
+  subdomain: markdown
+  service: convertisseur
+  port: 3000
+  memory_mb: 512
+  disk_mb: 1024
+  login: console
+  access: users
+
+services:
+  # Page d'envoi et conversion d'un export WordPress (.xml) en Markdown
+  # (spécification 6.3). Image officielle de Node.js, à version majeure fixée,
+  # sans image propre au projet (la console refuse « build ») : le petit
+  # serveur web (sans dépendance) et la page sont dans ce fichier (configs).
+  # L'outil wordpress-export-to-markdown (MIT) n'est ni dans l'image ni dans
+  # le dépôt : le serveur l'installe depuis npm, à la version fixée ci-dessous,
+  # au premier démarrage du conteneur (et après une mise à jour du service).
+  # Pas de volume : rien n'est gardé, les fichiers de travail sont effacés
+  # peu après le téléchargement, et au plus tard une heure après la conversion.
+  convertisseur:
+    image: node:24-alpine
+    restart: unless-stopped
+    user: node
+    working_dir: /home/node
+    command: ["node", "/run/pi-appliance/serveur.js"]
+    environment:
+      PORT: "3000"
+      OUTIL_VERSION: "3.0.6"
+      OUTIL_DOSSIER: /home/node/outil
+      TRAVAIL: /tmp/conversions
+      PAGE: /run/pi-appliance/page.html
+      # Taille maximale du fichier d'export envoyé : l'outil lit tout le
+      # fichier en mémoire (environ 520 Mo au plus fort pour un export de
+      # 50 Mo, 5 000 articles ; un blog courant fait quelques Mo).
+      TAILLE_MAX_MO: "40"
+      DUREE_MAX_MINUTES: "60"
+      NO_UPDATE_NOTIFIER: "1"
+      # À augmenter à chaque changement du serveur ou de la page ci-dessous :
+      # Docker Compose ne recrée pas le conteneur quand seul le contenu d'une
+      # configs change, la mise à jour du service ne le prendrait pas.
+      VERSION_DU_SERVEUR: "1"
+    configs:
+      - source: serveur
+        target: /run/pi-appliance/serveur.js
+      - source: page
+        target: /run/pi-appliance/page.html
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/sante"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+configs:
+  serveur:
+    content: |
+      // This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+      // Copyright (c) 2026 Guillaume Moulard.
+      //
+      // This program is free software: you can redistribute it and/or modify
+      // it under the terms of the GNU Affero General Public License as published
+      // by the Free Software Foundation, version 3.
+      //
+      // This program is distributed in the hope that it will be useful,
+      // but WITHOUT ANY WARRANTY; without even the implied warranty of
+      // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      // GNU Affero General Public License for more details.
+      //
+      // You should have received a copy of the GNU Affero General Public License
+      // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+      // Petit serveur web de « WordPress vers Markdown » (marketplace de
+      // pi-appliance), sans dépendance : il sert la page d'envoi, reçoit le fichier
+      // d'export WordPress (.xml, envoyé tel quel), lance wordpress-export-to-markdown
+      // (installé une fois au démarrage, version fixée), puis rend un .zip.
+      // Une conversion à la fois ; les fichiers sont effacés peu après le
+      // téléchargement, et au plus tard une heure après la conversion.
+      // Ce fichier ne contient pas de caractère dollar : Docker Compose les lirait
+      // comme des variables.
+
+      "use strict";
+
+      const http = require("http");
+      const fs = require("fs");
+      const fsp = require("fs/promises");
+      const path = require("path");
+      const crypto = require("crypto");
+      const zlib = require("zlib");
+      const util = require("util");
+      const childProcess = require("child_process");
+
+      const PORT = Number(process.env.PORT || 3000);
+      const PAGE = process.env.PAGE || "/run/pi-appliance/page.html";
+      const OUTIL_VERSION = process.env.OUTIL_VERSION || "";
+      const OUTIL_DOSSIER = process.env.OUTIL_DOSSIER || "/home/node/outil";
+      // OUTIL_COMMANDE : commande de conversion à la place de l'outil (essais).
+      const OUTIL_COMMANDE = process.env.OUTIL_COMMANDE || "";
+      const TRAVAIL = process.env.TRAVAIL || "/tmp/conversions";
+      const TAILLE_MAX = Number(process.env.TAILLE_MAX_MO || 50) * 1024 * 1024;
+      const DUREE_MAX = Number(process.env.DUREE_MAX_MINUTES || 60) * 60 * 1000;
+      const GARDE = 60 * 60 * 1000;
+      const GARDE_APRES_TELECHARGEMENT = 5 * 60 * 1000;
+      const RESULTATS_MAX = 5;
+      const NOM_OUTIL = "wordpress-export-to-markdown";
+
+      const deflateRaw = util.promisify(zlib.deflateRaw);
+
+      const MESSAGES = {
+        pasWordpress: "Ce fichier n'est pas un export WordPress. Dans WordPress, ouvrez Outils → Exporter, choisissez « Tout le contenu », puis envoyez ici le fichier .xml obtenu.",
+        illisible: "Ce fichier d'export WordPress est abîmé ou incomplet : il n'a pas pu être lu. Refaites l'export dans WordPress (Outils → Exporter → « Tout le contenu ») et réessayez.",
+        vide: "Aucun article ni page n'a été trouvé dans ce fichier. Dans WordPress, choisissez bien « Tout le contenu » au moment d'exporter.",
+        memoire: "Le Pi n'a pas eu assez de mémoire pour convertir ce fichier. Arrêtez d'autres services dans la console et réessayez.",
+        duree: "La conversion a duré plus de " + Math.round(DUREE_MAX / 60000) + " minutes : elle a été arrêtée. Essayez sans télécharger les images.",
+        autre: "La conversion n'a pas abouti. Réessayez ; si cela recommence, les détails ci-dessous peuvent aider.",
+      };
+
+      // État de l'outil : installé au démarrage du conteneur.
+      const outil = { pret: false, message: "Préparation de l'outil de conversion (premier démarrage, quelques minutes)…" };
+      // Conversions par identifiant ; une seule « en cours » à la fois.
+      const conversions = new Map();
+      let enCours = null;
+
+      function journal(texte) {
+        console.log(new Date().toISOString() + " " + texte);
+      }
+
+      // ---------------------------------------------------------------------------
+      // Installation de l'outil (une fois par conteneur, version fixée).
+
+      function versionInstallee() {
+        try {
+          const paquet = path.join(OUTIL_DOSSIER, "node_modules", NOM_OUTIL, "package.json");
+          return JSON.parse(fs.readFileSync(paquet, "utf8")).version;
+        } catch (erreur) {
+          return "";
+        }
+      }
+
+      function installerOutil() {
+        if (OUTIL_COMMANDE || versionInstallee() === OUTIL_VERSION) {
+          outil.pret = true;
+          outil.message = "";
+          journal("outil de conversion prêt");
+          return;
+        }
+        journal("installation de " + NOM_OUTIL + "@" + OUTIL_VERSION);
+        fs.mkdirSync(OUTIL_DOSSIER, { recursive: true });
+        const cache = path.join(TRAVAIL, "cache-npm");
+        const npm = childProcess.spawn("npm", [
+          "install", "--prefix", OUTIL_DOSSIER, "--no-save", "--no-audit", "--no-fund",
+          "--omit=dev", "--ignore-scripts", "--loglevel=error", NOM_OUTIL + "@" + OUTIL_VERSION,
+        ], { stdio: ["ignore", "inherit", "inherit"], env: Object.assign({}, process.env, { npm_config_cache: cache, npm_config_update_notifier: "false" }) });
+        npm.on("error", () => {});
+        npm.on("close", (code) => {
+          fs.rm(cache, { recursive: true, force: true }, () => {});
+          if (code === 0 && versionInstallee() === OUTIL_VERSION) {
+            outil.pret = true;
+            outil.message = "";
+            journal("outil de conversion installé");
+            return;
+          }
+          outil.message = "L'outil de conversion n'a pas pu être téléchargé (le Pi a-t-il accès à internet ?). Nouvel essai dans une minute.";
+          journal("échec de l'installation de l'outil, nouvel essai dans une minute");
+          setTimeout(installerOutil, 60 * 1000);
+        });
+      }
+
+      // ---------------------------------------------------------------------------
+      // Archive .zip (méthodes « stockée » et « deflate », noms en UTF-8).
+
+      const DEJA_COMPRESSES = new Set([".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif", ".heic", ".mp3", ".mp4", ".mov", ".webm", ".zip", ".gz", ".pdf", ".woff", ".woff2"]);
+
+      async function listerFichiers(racine, dossier, liste) {
+        const entrees = await fsp.readdir(path.join(racine, dossier), { withFileTypes: true });
+        entrees.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+        for (const entree of entrees) {
+          const relatif = dossier ? dossier + "/" + entree.name : entree.name;
+          if (entree.isDirectory()) {
+            await listerFichiers(racine, relatif, liste);
+          } else if (entree.isFile()) {
+            liste.push(relatif);
+          }
+        }
+        return liste;
+      }
+
+      function dateDos(date) {
+        const heure = (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2);
+        const jour = ((date.getFullYear() - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+        return { heure: heure, jour: jour };
+      }
+
+      async function creerZip(racine, destination) {
+        const fichiers = await listerFichiers(racine, "", []);
+        if (fichiers.length > 65000) {
+          throw new Error("trop de fichiers pour une archive .zip simple");
+        }
+        const sortie = await fsp.open(destination, "w");
+        const central = [];
+        let position = 0;
+        const date = dateDos(new Date());
+        try {
+          for (const nom of fichiers) {
+            const contenu = await fsp.readFile(path.join(racine, nom));
+            const crc = zlib.crc32(contenu) >>> 0;
+            let donnees = contenu;
+            let methode = 0;
+            if (!DEJA_COMPRESSES.has(path.extname(nom).toLowerCase())) {
+              const compresse = await deflateRaw(contenu);
+              if (compresse.length < contenu.length) {
+                donnees = compresse;
+                methode = 8;
+              }
+            }
+            const nomOctets = Buffer.from(nom, "utf8");
+            if (position + 30 + nomOctets.length + donnees.length > 0xfffffff0) {
+              throw new Error("archive de plus de 4 Go");
+            }
+            const entete = Buffer.alloc(30);
+            entete.writeUInt32LE(0x04034b50, 0);
+            entete.writeUInt16LE(20, 4);
+            entete.writeUInt16LE(0x0800, 6);
+            entete.writeUInt16LE(methode, 8);
+            entete.writeUInt16LE(date.heure, 10);
+            entete.writeUInt16LE(date.jour, 12);
+            entete.writeUInt32LE(crc, 14);
+            entete.writeUInt32LE(donnees.length, 18);
+            entete.writeUInt32LE(contenu.length, 22);
+            entete.writeUInt16LE(nomOctets.length, 26);
+            entete.writeUInt16LE(0, 28);
+            await sortie.write(entete);
+            await sortie.write(nomOctets);
+            await sortie.write(donnees);
+            const fiche = Buffer.alloc(46);
+            fiche.writeUInt32LE(0x02014b50, 0);
+            fiche.writeUInt16LE(0x0314, 4);
+            fiche.writeUInt16LE(20, 6);
+            fiche.writeUInt16LE(0x0800, 8);
+            fiche.writeUInt16LE(methode, 10);
+            fiche.writeUInt16LE(date.heure, 12);
+            fiche.writeUInt16LE(date.jour, 14);
+            fiche.writeUInt32LE(crc, 16);
+            fiche.writeUInt32LE(donnees.length, 20);
+            fiche.writeUInt32LE(contenu.length, 24);
+            fiche.writeUInt16LE(nomOctets.length, 28);
+            fiche.writeUInt32LE((0o100644 << 16) >>> 0, 38);
+            fiche.writeUInt32LE(position, 42);
+            central.push(fiche, nomOctets);
+            position += 30 + nomOctets.length + donnees.length;
+          }
+          const repertoire = Buffer.concat(central);
+          const fin = Buffer.alloc(22);
+          fin.writeUInt32LE(0x06054b50, 0);
+          fin.writeUInt16LE(fichiers.length, 8);
+          fin.writeUInt16LE(fichiers.length, 10);
+          fin.writeUInt32LE(repertoire.length, 12);
+          fin.writeUInt32LE(position, 16);
+          await sortie.write(repertoire);
+          await sortie.write(fin);
+        } finally {
+          await sortie.close();
+        }
+        return fichiers;
+      }
+
+      // ---------------------------------------------------------------------------
+      // Conversion.
+
+      function etatPublic(conversion) {
+        return {
+          etape: conversion.etape,
+          articles: conversion.articles,
+          pages: conversion.pages,
+          images_total: conversion.imagesTotal,
+          images_faites: conversion.imagesFaites,
+          images_ratees: conversion.imagesRatees.length,
+          erreur: conversion.erreur || "",
+          details: conversion.erreur ? conversion.lignes.filter((ligne) => !/^at /.test(ligne)).slice(-10).join("\n") : "",
+          taille: conversion.tailleZip || 0,
+        };
+      }
+
+      function effacer(conversion) {
+        clearTimeout(conversion.minuterie);
+        conversions.delete(conversion.id);
+        fs.rm(conversion.dossier, { recursive: true, force: true }, () => {});
+      }
+
+      function garder(conversion, delai) {
+        clearTimeout(conversion.minuterie);
+        conversion.minuterie = setTimeout(() => effacer(conversion), delai);
+        conversion.minuterie.unref();
+      }
+
+      function lireLigne(conversion, ligne) {
+        ligne = ligne.trim();
+        if (!ligne) {
+          return;
+        }
+        conversion.lignes.push(ligne);
+        if (conversion.lignes.length > 200) {
+          conversion.lignes.shift();
+        }
+        let trouve;
+        if ((trouve = /^(\d+) normal posts found/.exec(ligne))) {
+          conversion.articles = Number(trouve[1]);
+        } else if ((trouve = /^(\d+) pages found/.exec(ligne))) {
+          conversion.pages = Number(trouve[1]);
+        } else if ((trouve = /^(\d+) custom ".*" posts found/.exec(ligne))) {
+          conversion.autres += Number(trouve[1]);
+        } else if (/^Saving posts/.test(ligne)) {
+          conversion.etape = "textes";
+        } else if (/^Saving images/.test(ligne)) {
+          conversion.etape = "images";
+        } else if ((trouve = /^(\d+) images to save/.exec(ligne))) {
+          conversion.imagesTotal = Number(trouve[1]);
+        } else if (/^✓ \[image\]/.test(ligne)) {
+          conversion.imagesFaites++;
+        } else if ((trouve = /^✗ \[image\] (.*)/.exec(ligne))) {
+          conversion.imagesFaites++;
+          conversion.imagesRatees.push(trouve[1]);
+        } else if (/^All done!/.test(ligne)) {
+          conversion.reussie = true;
+        }
+      }
+
+      function commandeConversion(conversion) {
+        const options = [
+          "--wizard=false",
+          "--input=" + conversion.xml,
+          "--output=" + conversion.sortie,
+          "--post-folders=true",
+          "--prefix-date=" + (conversion.reglages.date ? "true" : "false"),
+          "--date-folders=" + (conversion.reglages.annees ? "year-month" : "none"),
+          "--save-images=" + (conversion.reglages.images ? "all" : "none"),
+          "--timezone=" + conversion.reglages.fuseau,
+        ];
+        if (OUTIL_COMMANDE) {
+          return { programme: OUTIL_COMMANDE, arguments: options };
+        }
+        const app = path.join(OUTIL_DOSSIER, "node_modules", NOM_OUTIL, "app.js");
+        return { programme: process.execPath, arguments: [app].concat(options) };
+      }
+
+      function expliquerEchec(conversion, signal) {
+        const texte = conversion.lignes.join("\n");
+        if (signal === "SIGKILL" && conversion.tropLong) {
+          return MESSAGES.duree;
+        }
+        if (/heap out of memory|ENOMEM|Allocation failed/i.test(texte) || signal === "SIGKILL") {
+          return MESSAGES.memoire;
+        }
+        if (/Could not find |Non-whitespace before first tag|Unexpected close tag|Unclosed root tag|Invalid character|Unexpected end|Attribute without value|Invalid attribute name/i.test(texte)) {
+          return MESSAGES.illisible;
+        }
+        return MESSAGES.autre;
+      }
+
+      function lancer(conversion) {
+        const commande = commandeConversion(conversion);
+        conversion.etape = "lecture";
+        journal("conversion " + conversion.id.slice(0, 8) + " : début");
+        const processus = childProcess.spawn(commande.programme, commande.arguments, {
+          cwd: conversion.dossier,
+          stdio: ["ignore", "pipe", "pipe"],
+          env: Object.assign({}, process.env, { NO_COLOR: "1", FORCE_COLOR: "0" }),
+        });
+        const minuterie = setTimeout(() => {
+          conversion.tropLong = true;
+          processus.kill("SIGKILL");
+        }, DUREE_MAX);
+        for (const flux of [processus.stdout, processus.stderr]) {
+          let reste = "";
+          flux.setEncoding("utf8");
+          flux.on("data", (morceau) => {
+            const lignes = (reste + morceau).split("\n");
+            reste = lignes.pop();
+            for (const ligne of lignes) {
+              lireLigne(conversion, ligne);
+            }
+          });
+          flux.on("end", () => lireLigne(conversion, reste));
+        }
+        processus.on("error", (erreur) => {
+          conversion.lignes.push(String(erreur));
+        });
+        processus.on("close", (code, signal) => {
+          clearTimeout(minuterie);
+          terminer(conversion, code, signal).catch((erreur) => {
+            conversion.lignes.push(String(erreur));
+            echouer(conversion, MESSAGES.autre);
+          });
+        });
+      }
+
+      function echouer(conversion, message) {
+        conversion.etape = "erreur";
+        conversion.erreur = message;
+        enCours = null;
+        journal("conversion " + conversion.id.slice(0, 8) + " : échec");
+        // Fichiers effacés tout de suite ; seul le message reste une heure.
+        fs.rm(conversion.dossier, { recursive: true, force: true }, () => {});
+        garder(conversion, GARDE);
+      }
+
+      async function terminer(conversion, code, signal) {
+        await fsp.rm(conversion.xml, { force: true });
+        if (code !== 0 || signal || !conversion.reussie) {
+          echouer(conversion, expliquerEchec(conversion, signal));
+          return;
+        }
+        let fichiers = [];
+        try {
+          fichiers = await listerFichiers(conversion.sortie, "", []);
+        } catch (erreur) {
+          fichiers = [];
+        }
+        if (!fichiers.some((nom) => nom.endsWith(".md"))) {
+          echouer(conversion, MESSAGES.vide);
+          return;
+        }
+        if (conversion.imagesRatees.length > 0) {
+          const texte = "Images qui n'ont pas pu être téléchargées depuis le site d'origine\n" +
+            "(site hors ligne, image supprimée ou adresse changée).\n" +
+            "Le lien vers chacune est déjà écrit dans son article (dossier images) :\n" +
+            "si vous avez l'image, déposez-la dans ce dossier, sous le même nom.\n\n" +
+            conversion.imagesRatees.join("\n") + "\n";
+          await fsp.writeFile(path.join(conversion.sortie, "images-manquantes.txt"), texte);
+        }
+        conversion.etape = "archive";
+        await creerZip(conversion.sortie, conversion.zip);
+        await fsp.rm(conversion.sortie, { recursive: true, force: true });
+        conversion.tailleZip = (await fsp.stat(conversion.zip)).size;
+        conversion.etape = "pret";
+        enCours = null;
+        journal("conversion " + conversion.id.slice(0, 8) + " : prête");
+        garder(conversion, GARDE);
+      }
+
+      // ---------------------------------------------------------------------------
+      // Serveur web.
+
+      function repondre(reponse, statut, objet) {
+        const corps = JSON.stringify(objet);
+        reponse.writeHead(statut, {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
+        });
+        reponse.end(corps);
+      }
+
+      function lireReglages(parametres) {
+        const fuseau = parametres.get("fuseau") || "UTC";
+        try {
+          if (fuseau.length > 64 || /[^A-Za-z0-9_+\-/]/.test(fuseau)) {
+            throw new Error("fuseau");
+          }
+          new Intl.DateTimeFormat("fr", { timeZone: fuseau });
+        } catch (erreur) {
+          return null;
+        }
+        return {
+          annees: parametres.get("annees") === "1",
+          date: parametres.get("date") === "1",
+          images: parametres.get("images") === "1",
+          fuseau: fuseau,
+        };
+      }
+
+      function ressembleAWordpress(debut) {
+        const texte = debut.toString("utf8");
+        return /<rss[\s>]/.test(texte) && /wordpress\.org\/export\//.test(texte);
+      }
+
+      async function recevoir(requete, reponse, parametres) {
+        if (!/^application\/xml\b/.test(requete.headers["content-type"] || "")) {
+          repondre(reponse, 415, { erreur: "Envoi refusé : utilisez la page de ce service." });
+          requete.resume();
+          return;
+        }
+        if (!outil.pret) {
+          repondre(reponse, 503, { erreur: outil.message });
+          requete.resume();
+          return;
+        }
+        if (enCours) {
+          repondre(reponse, 409, { erreur: "Une conversion est déjà en cours sur ce Pi (peut-être lancée par une autre personne). Réessayez dans quelques minutes." });
+          requete.resume();
+          return;
+        }
+        if ([...conversions.values()].filter((autre) => autre.etape === "pret").length >= RESULTATS_MAX) {
+          repondre(reponse, 409, { erreur: "Trop de conversions attendent d'être téléchargées sur ce Pi. Réessayez dans une heure au plus." });
+          requete.resume();
+          return;
+        }
+        const reglages = lireReglages(parametres);
+        if (!reglages) {
+          repondre(reponse, 400, { erreur: "Réglages invalides." });
+          requete.resume();
+          return;
+        }
+        const tropGros = "Ce fichier est trop gros : " + Math.round(TAILLE_MAX / 1024 / 1024) + " Mo au plus.";
+        if (Number(requete.headers["content-length"] || 0) > TAILLE_MAX) {
+          repondre(reponse, 413, { erreur: tropGros });
+          requete.destroy();
+          return;
+        }
+        const id = crypto.randomBytes(16).toString("hex");
+        const dossier = path.join(TRAVAIL, id);
+        const conversion = {
+          id: id, dossier: dossier, reglages: reglages,
+          xml: path.join(dossier, "export.xml"), sortie: path.join(dossier, "markdown"), zip: path.join(dossier, "wordpress-markdown.zip"),
+          etape: "envoi", articles: 0, pages: 0, autres: 0, imagesTotal: 0, imagesFaites: 0, imagesRatees: [],
+          lignes: [], reussie: false, erreur: "", tailleZip: 0, minuterie: null, tropLong: false,
+        };
+        enCours = conversion;
+        await fsp.mkdir(dossier, { recursive: true, mode: 0o700 });
+        const fichier = fs.createWriteStream(conversion.xml);
+        let recu = 0;
+        let debut = Buffer.alloc(0);
+        let abandon = "";
+        requete.on("data", (morceau) => {
+          recu += morceau.length;
+          if (debut.length < 65536) {
+            debut = Buffer.concat([debut, morceau.subarray(0, 65536 - debut.length)]);
+          }
+          if (recu > TAILLE_MAX && !abandon) {
+            abandon = tropGros;
+            requete.unpipe(fichier);
+            requete.resume();
+          }
+        });
+        requete.pipe(fichier);
+        const fin = () => new Promise((resoudre) => {
+          let fait = false;
+          const une = (etat) => { if (!fait) { fait = true; resoudre(etat); } };
+          requete.on("end", () => une("fin"));
+          requete.on("aborted", () => une("coupure"));
+          requete.on("error", () => une("coupure"));
+          requete.on("close", () => une(requete.complete ? "fin" : "coupure"));
+        });
+        const etat = await fin();
+        await new Promise((resoudre) => fichier.end(resoudre));
+        const refuser = (statut, message) => {
+          enCours = null;
+          conversions.delete(id);
+          fs.rm(dossier, { recursive: true, force: true }, () => {});
+          if (!reponse.headersSent && !reponse.destroyed) {
+            repondre(reponse, statut, { erreur: message });
+          }
+        };
+        if (etat !== "fin") {
+          refuser(400, "L'envoi du fichier a été interrompu. Réessayez.");
+          return;
+        }
+        if (abandon) {
+          refuser(413, abandon);
+          return;
+        }
+        if (recu === 0 || !ressembleAWordpress(debut)) {
+          refuser(400, MESSAGES.pasWordpress);
+          return;
+        }
+        conversions.set(id, conversion);
+        repondre(reponse, 202, { id: id });
+        lancer(conversion);
+      }
+
+      function envoyerZip(requete, reponse, conversion) {
+        if (!conversion || conversion.etape !== "pret") {
+          reponse.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+          reponse.end("Ce fichier n'est plus sur le Pi : il est effacé peu après le téléchargement, et au plus tard une heure après la conversion. Relancez la conversion.");
+          return;
+        }
+        const flux = fs.createReadStream(conversion.zip);
+        flux.on("error", () => reponse.destroy());
+        reponse.writeHead(200, {
+          "Content-Type": "application/zip",
+          "Content-Length": conversion.tailleZip,
+          "Content-Disposition": "attachment; filename=\"wordpress-markdown.zip\"",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff",
+        });
+        reponse.on("finish", () => {
+          if (!conversion.telecharge) {
+            conversion.telecharge = true;
+            journal("conversion " + conversion.id.slice(0, 8) + " : téléchargée");
+            garder(conversion, GARDE_APRES_TELECHARGEMENT);
+          }
+        });
+        flux.pipe(reponse);
+      }
+
+      function servirPage(reponse) {
+        fs.readFile(PAGE, (erreur, contenu) => {
+          if (erreur) {
+            reponse.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
+            reponse.end("Page introuvable.");
+            return;
+          }
+          reponse.writeHead(200, {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-cache",
+            "X-Content-Type-Options": "nosniff",
+            "Referrer-Policy": "no-referrer",
+            "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'self'",
+          });
+          reponse.end(contenu);
+        });
+      }
+
+      const serveur = http.createServer((requete, reponse) => {
+        const adresse = new URL(requete.url, "http://localhost");
+        const chemin = adresse.pathname;
+        const id = adresse.searchParams.get("id") || "";
+        if (requete.method === "GET" && (chemin === "/" || chemin === "/index.html")) {
+          servirPage(reponse);
+        } else if (requete.method === "GET" && chemin === "/sante") {
+          repondre(reponse, 200, { ok: true });
+        } else if (requete.method === "GET" && chemin === "/etat") {
+          const conversion = conversions.get(id);
+          repondre(reponse, 200, {
+            outil_pret: outil.pret,
+            outil_message: outil.message,
+            taille_max: TAILLE_MAX,
+            occupe: Boolean(enCours),
+            conversion: conversion ? etatPublic(conversion) : null,
+          });
+        } else if (requete.method === "POST" && chemin === "/convertir") {
+          recevoir(requete, reponse, adresse.searchParams).catch((erreur) => {
+            journal("erreur à la réception : " + erreur);
+            enCours = null;
+            if (!reponse.headersSent) {
+              repondre(reponse, 500, { erreur: MESSAGES.autre });
+            }
+          });
+        } else if (requete.method === "GET" && chemin === "/telecharger") {
+          envoyerZip(requete, reponse, conversions.get(id));
+        } else {
+          reponse.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+          reponse.end("Page introuvable.");
+        }
+      });
+
+      // Fichiers d'une conversion d'avant le redémarrage : effacés.
+      fs.rmSync(TRAVAIL, { recursive: true, force: true });
+      fs.mkdirSync(TRAVAIL, { recursive: true, mode: 0o700 });
+      serveur.requestTimeout = 0;
+      serveur.listen(PORT, () => journal("page servie sur le port " + PORT));
+      installerOutil();
+      for (const signal of ["SIGTERM", "SIGINT"]) {
+        process.on(signal, () => process.exit(0));
+      }
+
+  page:
+    content: |
+      <!DOCTYPE html>
+      <!--
+      This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+      Copyright (c) 2026 Guillaume Moulard.
+
+      This program is free software: you can redistribute it and/or modify
+      it under the terms of the GNU Affero General Public License as published
+      by the Free Software Foundation, version 3.
+
+      This program is distributed in the hope that it will be useful,
+      but WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      GNU Affero General Public License for more details.
+
+      You should have received a copy of the GNU Affero General Public License
+      along with this program.  If not, see <https://www.gnu.org/licenses/>.
+      -->
+      <html lang="fr">
+      <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>WordPress vers Markdown</title>
+      <style>
+        :root {
+          --brand: #c71f5d;
+          --brand-dark: #a8174e;
+          --brand-shadow: #7e0f39;
+          --brand-pale: #fce4ec;
+          --ink: #33141f;
+          --muted: #6b3d4e;
+          --paper: #fff5f7;
+          --card: #ffffff;
+          --line: #f0d3dc;
+          --success: #e2f4ea;
+          --success-ink: #17663c;
+          --info: #fff1cc;
+          --title: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+          color-scheme: light;
+        }
+        * { box-sizing: border-box; }
+        [hidden] { display: none !important; }
+        body {
+          margin: 0;
+          font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          font-size: 1.0625rem;
+          line-height: 1.5;
+          color: var(--ink);
+          background: var(--paper);
+        }
+        main { max-width: 40rem; margin: 0 auto; padding: 1rem 1rem 2rem; }
+        h1 { font-family: var(--title); font-weight: 800; font-size: 1.6rem; line-height: 1.2; margin: 0.5rem 0 0.25rem; }
+        h2 { font-family: var(--title); font-weight: 800; font-size: 1.15rem; margin: 0 0 0.5rem; }
+        p { margin: 0 0 0.75rem; }
+        .intro { color: var(--muted); }
+        .carte {
+          background: var(--card);
+          border-radius: 20px;
+          box-shadow: 0 4px 0 var(--line);
+          padding: 1rem 1.1rem;
+          margin: 1rem 0;
+        }
+        .aide { color: var(--muted); font-size: 0.95rem; }
+        .depot {
+          display: block;
+          border: 2px dashed var(--brand);
+          border-radius: 14px;
+          background: var(--brand-pale);
+          padding: 1rem;
+          text-align: center;
+          cursor: pointer;
+        }
+        .depot.survol { background: #f9cfdd; }
+        .depot strong { color: var(--brand-dark); }
+        .depot input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+        .depot:focus-within { outline: 3px solid var(--brand); outline-offset: 2px; }
+        .choix { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.5rem 0; min-height: 44px; cursor: pointer; }
+        .choix input { width: 1.4rem; height: 1.4rem; margin: 0.1rem 0 0; accent-color: var(--brand); flex: none; }
+        .choix small { display: block; color: var(--muted); }
+        button, .bouton {
+          display: inline-block;
+          font: inherit;
+          font-weight: 700;
+          min-height: 48px;
+          padding: 0.7rem 1.5rem;
+          border: 0;
+          border-radius: 999px;
+          background: var(--brand);
+          color: #fff;
+          box-shadow: 0 4px 0 var(--brand-shadow);
+          cursor: pointer;
+          text-decoration: none;
+        }
+        button:active, .bouton:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--brand-shadow); }
+        button:disabled { opacity: 0.5; cursor: default; transform: none; box-shadow: 0 4px 0 var(--brand-shadow); }
+        button:focus-visible, .bouton:focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
+        .secondaire { background: var(--brand-pale); color: var(--brand-dark); box-shadow: none; }
+        .secondaire:active { box-shadow: none; }
+        .message { border-radius: 14px; padding: 0.75rem 1rem; margin: 0.75rem 0 0; }
+        .erreur { background: var(--brand-pale); color: var(--brand-shadow); }
+        .info { background: var(--info); }
+        .succes { background: var(--success); color: var(--success-ink); }
+        .barre { height: 12px; border-radius: 999px; background: var(--line); overflow: hidden; margin: 0.5rem 0; }
+        .barre span { display: block; height: 100%; width: 0; background: var(--brand); transition: width 0.3s; }
+        .barre.indefinie span { width: 30%; animation: va-et-vient 1.4s ease-in-out infinite alternate; }
+        @keyframes va-et-vient { from { margin-left: 0; } to { margin-left: 70%; } }
+        details { margin-top: 0.5rem; font-size: 0.9rem; }
+        pre { white-space: pre-wrap; word-break: break-word; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.8rem; }
+        footer { color: var(--muted); font-size: 0.9rem; }
+        a { color: var(--brand-dark); }
+        a.bouton { color: #fff; }
+      </style>
+      </head>
+      <body>
+      <main>
+        <h1>WordPress vers Markdown</h1>
+        <p class="intro">Transformez les articles et les pages d'un site WordPress en fichiers texte Markdown, avec leurs images, pour les garder ou les mettre dans un autre site.</p>
+
+        <p id="outil" class="message info" hidden></p>
+
+        <form id="formulaire" class="carte">
+          <h2>1. Votre fichier d'export WordPress</h2>
+          <p class="aide">Dans votre WordPress, ouvrez le menu <strong>Outils → Exporter</strong>, choisissez « Tout le contenu », puis « Télécharger le fichier d'export » : vous obtenez un fichier qui se termine par <strong>.xml</strong>.</p>
+          <label class="depot" id="depot">
+            <input type="file" id="fichier" accept=".xml,application/xml,text/xml">
+            <strong id="nom-fichier">Choisir le fichier .xml</strong><br>
+            <span class="aide" id="taille-max">ou le déposer ici</span>
+          </label>
+
+          <h2 style="margin-top:1.25rem">2. Réglages</h2>
+          <label class="choix"><input type="checkbox" id="images" checked>
+            <span>Télécharger les images<small>Celles des articles et des pages, prises sur votre site WordPress d'origine, qui doit être en ligne. Plus long.</small></span></label>
+          <label class="choix"><input type="checkbox" id="annees">
+            <span>Ranger les articles par année et par mois<small>Par exemple un dossier 2024, puis 05 pour mai.</small></span></label>
+          <label class="choix"><input type="checkbox" id="date">
+            <span>Mettre la date au début du nom de chaque article<small>Par exemple 2024-05-17-mon-article.</small></span></label>
+
+          <p style="margin:1rem 0 0"><button type="submit" id="lancer">Convertir</button></p>
+          <p id="erreur-envoi" class="message erreur" role="alert" hidden></p>
+        </form>
+
+        <section id="suivi" class="carte" hidden aria-live="polite">
+          <h2 id="suivi-titre">Conversion en cours…</h2>
+          <div id="barre" class="barre indefinie"><span></span></div>
+          <p id="suivi-texte"></p>
+          <div id="pret" hidden>
+            <p class="message succes" id="pret-texte"></p>
+            <p id="images-ratees" class="message info" hidden></p>
+            <p style="margin-top:1rem"><a class="bouton" id="telecharger" href="#" download="wordpress-markdown.zip">Télécharger le fichier .zip</a></p>
+          </div>
+          <div id="echec" hidden>
+            <p class="message erreur" id="echec-texte" role="alert"></p>
+            <details id="echec-details" hidden><summary>Détails</summary><pre id="echec-pre"></pre></details>
+          </div>
+          <p id="recommencer-ligne" hidden style="margin-top:1rem"><button type="button" class="secondaire" id="recommencer">Convertir un autre fichier</button></p>
+        </section>
+
+        <footer>
+          <p>Votre fichier reste sur ce Raspberry Pi : rien n'est envoyé ailleurs, sauf les demandes d'images à votre site WordPress d'origine. Les fichiers sont effacés du Pi peu après le téléchargement, et au plus tard une heure après la conversion.</p>
+          <p>Conversion faite par <a href="https://github.com/lonekorean/wordpress-export-to-markdown">wordpress-export-to-markdown</a> (licence MIT), dans pi-appliance.</p>
+        </footer>
+      </main>
+      <script>
+      "use strict";
+      (function () {
+        var TAILLE_MAX = 40 * 1024 * 1024;
+        // Adresses relatives : la page marche aussi sous un chemin (/<service>/).
+        var base = location.pathname.slice(-1) === "/" ? "" : location.pathname.split("/").pop() + "/";
+        var champ = document.getElementById("fichier");
+        var depot = document.getElementById("depot");
+        var formulaire = document.getElementById("formulaire");
+        var bouton = document.getElementById("lancer");
+        var suivi = document.getElementById("suivi");
+        var fichier = null;
+        var identifiant = "";
+        var minuterie = 0;
+
+        function el(id) { return document.getElementById(id); }
+        function montrer(id, oui) { el(id).hidden = !oui; }
+        function mo(octets) {
+          if (octets < 1024 * 1024) { return Math.max(1, Math.round(octets / 1024)) + " Ko"; }
+          return (octets / 1024 / 1024).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " Mo";
+        }
+        function memoriser(valeur) {
+          try { if (valeur) { sessionStorage.setItem("conversion", valeur); } else { sessionStorage.removeItem("conversion"); } } catch (e) { /* navigateur sans stockage */ }
+        }
+        function relire() {
+          try { return sessionStorage.getItem("conversion") || ""; } catch (e) { return ""; }
+        }
+
+        el("taille-max").textContent = "ou le déposer ici (" + mo(TAILLE_MAX) + " au plus)";
+
+        function choisir(f) {
+          fichier = f || null;
+          montrer("erreur-envoi", false);
+          el("nom-fichier").textContent = fichier ? fichier.name + " (" + mo(fichier.size) + ")" : "Choisir le fichier .xml";
+        }
+        champ.addEventListener("change", function () { choisir(champ.files[0]); });
+        ["dragenter", "dragover"].forEach(function (nom) {
+          depot.addEventListener(nom, function (e) { e.preventDefault(); depot.classList.add("survol"); });
+        });
+        ["dragleave", "drop"].forEach(function (nom) {
+          depot.addEventListener(nom, function () { depot.classList.remove("survol"); });
+        });
+        depot.addEventListener("drop", function (e) {
+          e.preventDefault();
+          if (e.dataTransfer && e.dataTransfer.files.length) { choisir(e.dataTransfer.files[0]); }
+        });
+
+        function erreurEnvoi(texte) {
+          el("erreur-envoi").textContent = texte;
+          montrer("erreur-envoi", true);
+          bouton.disabled = false;
+        }
+
+        formulaire.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!fichier) { erreurEnvoi("Choisissez d'abord le fichier d'export WordPress (.xml)."); return; }
+          if (fichier.name.slice(-4).toLowerCase() !== ".xml") {
+            erreurEnvoi("Ce fichier ne se termine pas par .xml : ce n'est pas un export WordPress. Dans WordPress, ouvrez Outils → Exporter.");
+            return;
+          }
+          if (fichier.size > TAILLE_MAX) { erreurEnvoi("Ce fichier est trop gros : " + mo(TAILLE_MAX) + " au plus."); return; }
+          var fuseau = "UTC";
+          try { fuseau = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (x) { /* fuseau inconnu */ }
+          var requete = "convertir?images=" + (el("images").checked ? 1 : 0) + "&annees=" + (el("annees").checked ? 1 : 0) +
+            "&date=" + (el("date").checked ? 1 : 0) + "&fuseau=" + encodeURIComponent(fuseau);
+          bouton.disabled = true;
+          montrer("erreur-envoi", false);
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", base + requete);
+          xhr.setRequestHeader("Content-Type", "application/xml");
+          xhr.upload.onprogress = function (p) {
+            if (p.lengthComputable) { bouton.textContent = "Envoi du fichier : " + Math.round(100 * p.loaded / p.total) + " %"; }
+          };
+          xhr.onloadend = function () {
+            bouton.textContent = "Convertir";
+            var reponse = {};
+            try { reponse = JSON.parse(xhr.responseText); } catch (x) { /* réponse vide */ }
+            if (xhr.status === 202 && reponse.id) {
+              identifiant = reponse.id;
+              memoriser(identifiant);
+              commencerSuivi();
+              return;
+            }
+            if (xhr.status === 0) { erreurEnvoi("Le Pi ne répond pas : vérifiez la connexion et réessayez."); return; }
+            if (xhr.status === 401 || xhr.status === 403) { erreurEnvoi("Votre connexion a expiré : rechargez la page et reconnectez-vous."); return; }
+            erreurEnvoi(reponse.erreur || "L'envoi n'a pas abouti (erreur " + xhr.status + "). Réessayez.");
+          };
+          xhr.send(fichier);
+        });
+
+        function commencerSuivi() {
+          formulaire.hidden = true;
+          suivi.hidden = false;
+          montrer("pret", false);
+          montrer("echec", false);
+          montrer("recommencer-ligne", false);
+          el("suivi-titre").textContent = "Conversion en cours…";
+          el("suivi-texte").textContent = "Lecture du fichier…";
+          barre(-1);
+          relever();
+        }
+
+        function barre(part) {
+          var b = el("barre");
+          b.hidden = part === null;
+          b.classList.toggle("indefinie", part < 0);
+          b.firstElementChild.style.width = part < 0 ? "" : Math.round(part * 100) + "%";
+        }
+
+        function compte(n, un, plusieurs) { return n + " " + (n > 1 ? plusieurs : un); }
+
+        function relever() {
+          clearTimeout(minuterie);
+          fetch(base + "etat?id=" + encodeURIComponent(identifiant), { cache: "no-store", credentials: "same-origin" })
+            .then(function (r) { if (!r.ok) { throw new Error(String(r.status)); } return r.json(); })
+            .then(afficher)
+            .catch(function () {
+              el("suivi-texte").textContent = "Le Pi ne répond pas pour le moment, nouvel essai…";
+              minuterie = setTimeout(relever, 3000);
+            });
+        }
+
+        function afficher(etat) {
+          var c = etat.conversion;
+          if (!c) {
+            memoriser("");
+            finir("La conversion n'est plus sur le Pi (fichiers effacés au bout d'une heure, ou Pi redémarré). Relancez-la.", "");
+            return;
+          }
+          var trouves = compte(c.articles, "article", "articles") + " et " + compte(c.pages, "page", "pages") + " trouvés";
+          if (c.etape === "lecture" || c.etape === "envoi") {
+            el("suivi-texte").textContent = "Lecture du fichier…";
+            barre(-1);
+          } else if (c.etape === "textes") {
+            el("suivi-texte").textContent = trouves + ". Écriture des fichiers Markdown…";
+            barre(-1);
+          } else if (c.etape === "images") {
+            el("suivi-texte").textContent = trouves + ". Téléchargement des images : " + c.images_faites + " sur " + c.images_total + "…";
+            barre(c.images_total ? c.images_faites / c.images_total : -1);
+          } else if (c.etape === "archive") {
+            el("suivi-texte").textContent = trouves + ". Préparation du fichier .zip…";
+            barre(-1);
+          } else if (c.etape === "pret") {
+            el("suivi-titre").textContent = "C'est prêt !";
+            el("suivi-texte").textContent = "";
+            barre(null);
+            el("pret-texte").textContent = trouves + ". Le fichier .zip fait " + mo(c.taille) + ".";
+            el("images-ratees").textContent = c.images_ratees ? compte(c.images_ratees, "image n'a", "images n'ont") +
+              " pas pu être téléchargée" + (c.images_ratees > 1 ? "s" : "") + " depuis votre site d'origine (site hors ligne, image supprimée ou adresse changée) : la liste est dans le fichier images-manquantes.txt du .zip." : "";
+            montrer("images-ratees", c.images_ratees > 0);
+            el("telecharger").href = base + "telecharger?id=" + encodeURIComponent(identifiant);
+            montrer("pret", true);
+            montrer("recommencer-ligne", true);
+            return;
+          } else if (c.etape === "erreur") {
+            memoriser("");
+            finir(c.erreur, c.details);
+            return;
+          }
+          minuterie = setTimeout(relever, 1000);
+        }
+
+        function finir(texte, details) {
+          el("suivi-titre").textContent = "La conversion n'a pas abouti";
+          el("suivi-texte").textContent = "";
+          barre(null);
+          el("echec-texte").textContent = texte;
+          el("echec-pre").textContent = details || "";
+          montrer("echec-details", Boolean(details));
+          montrer("echec", true);
+          montrer("recommencer-ligne", true);
+        }
+
+        el("telecharger").addEventListener("click", function () { memoriser(""); });
+
+        el("recommencer").addEventListener("click", function () {
+          clearTimeout(minuterie);
+          identifiant = "";
+          memoriser("");
+          suivi.hidden = true;
+          formulaire.hidden = false;
+          bouton.disabled = false;
+          champ.value = "";
+          choisir(null);
+        });
+
+        // État de l'outil (premier démarrage) ; conversion reprise après un rechargement.
+        function verifierOutil() {
+          fetch(base + "etat", { cache: "no-store", credentials: "same-origin" })
+            .then(function (r) { return r.json(); })
+            .then(function (etat) {
+              if (etat.taille_max) {
+                TAILLE_MAX = etat.taille_max;
+                el("taille-max").textContent = "ou le déposer ici (" + mo(TAILLE_MAX) + " au plus)";
+              }
+              el("outil").textContent = etat.outil_message || "";
+              montrer("outil", !etat.outil_pret);
+              if (!etat.outil_pret) { setTimeout(verifierOutil, 5000); }
+            })
+            .catch(function () { setTimeout(verifierOutil, 5000); });
+        }
+        verifierOutil();
+        identifiant = relire();
+        if (identifiant) { commencerSuivi(); }
+      })();
+      </script>
+      </body>
+      </html>

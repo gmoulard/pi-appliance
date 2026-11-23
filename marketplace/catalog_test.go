@@ -220,6 +220,43 @@ func TestBuiltinClaudeCode(t *testing.T) {
 	}
 }
 
+// WordPress vers Markdown (TODO-2.69) : la page et le serveur sont dans les
+// configs du manifeste, avec l'en-tête de licence, sans « $ » (Docker Compose
+// le lirait comme une variable) ; l'outil est installé à une version fixée.
+func TestBuiltinWordpressMarkdown(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, ok := catalog.Get("wordpress-markdown")
+	if !ok || app.Access != "users" || app.Login != "console" || !app.Web {
+		t.Fatalf("wordpress-markdown %+v", app)
+	}
+	var compose struct {
+		Services map[string]struct {
+			Environment map[string]string `yaml:"environment"`
+		} `yaml:"services"`
+		Configs map[string]struct {
+			Content string `yaml:"content"`
+		} `yaml:"configs"`
+	}
+	if err := yaml.Unmarshal(app.Compose, &compose); err != nil {
+		t.Fatal(err)
+	}
+	if !regexp.MustCompile(`^\d+\.\d+\.\d+$`).MatchString(compose.Services[app.Service].Environment["OUTIL_VERSION"]) {
+		t.Errorf("OUTIL_VERSION %q : version de l'outil non fixée", compose.Services[app.Service].Environment["OUTIL_VERSION"])
+	}
+	for _, name := range []string{"serveur", "page"} {
+		content := compose.Configs[name].Content
+		if !strings.Contains(content, "GNU Affero General Public License") {
+			t.Errorf("configs %s : en-tête de licence absent", name)
+		}
+		if strings.Contains(content, "$") {
+			t.Errorf("configs %s : caractère $ lu comme une variable par Docker Compose", name)
+		}
+	}
+}
+
 func TestBuiltinWireGuard(t *testing.T) {
 	catalog, err := Builtin()
 	if err != nil {
