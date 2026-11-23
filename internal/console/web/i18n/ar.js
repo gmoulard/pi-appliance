@@ -742,5 +742,8 @@ piTranslations("ar", {
   "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "لا تُفتح هذه الخدمة من الإنترنت: اسمها محجوز لوحدة التحكم. أعد تثبيتها باسم آخر.",
   "Depuis internet : {0}": "من الإنترنت: {0}",
   "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "على الإنترنت، تتشارك هذه الخدمة عنوان وحدة التحكم: لا تثبّت إلا الخدمات الموثوقة، لأن صفحة من هذه الخدمة قد تتصرف في وحدة التحكم باسم شخص مسجّل الدخول.",
-  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "خدماتك «الجميع، على الإنترنت» تُفتح أيضًا من الإنترنت، على عنوان جهاز Pi متبوعًا باسمها (مثلًا https://home.example.com/hugo/)، دون إنشاء أي شيء لدى مزوّد اسم النطاق؛ أما خدمات الأشخاص الذين لديهم حساب، فلا تُفتح إلا عندما تكون وحدة التحكم مفتوحة على الإنترنت."
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "خدماتك «الجميع، على الإنترنت» تُفتح أيضًا من الإنترنت، على عنوان جهاز Pi متبوعًا باسمها (مثلًا https://home.example.com/hugo/)، دون إنشاء أي شيء لدى مزوّد اسم النطاق؛ أما خدمات الأشخاص الذين لديهم حساب، فلا تُفتح إلا عندما تكون وحدة التحكم مفتوحة على الإنترنت.",
+  "CPU {0} %": "المعالج {0}٪",
+  "RAM {0} %": "الذاكرة {0}٪",
+  "Disque {0} / {1}": "القرص {0} / {1}"
 });

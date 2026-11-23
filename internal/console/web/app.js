@@ -348,6 +348,7 @@ function gauges(memoryMB, diskMB) {
 
 async function loadResources() {
   resources = await api("system").catch(() => ({ memory: null, disk: null, usb_disk: null }));
+  showHeroLoad();
   const list = gauges(0, 0);
   piGauges.replaceChildren(...list);
   const tiles = nowTiles();
@@ -457,6 +458,21 @@ function nowTiles() {
     }
   }
   return tiles;
+}
+
+// showHeroLoad : charge du Pi dans la barre du haut, à côté de « Appliance en
+// service. » (administrateur, api/system) : processeur, mémoire, et disque des
+// données (le disque USB s'il y en a un, sinon la carte SD).
+const heroLoad = document.getElementById("heroLoad");
+function showHeroLoad() {
+  const parts = [];
+  if (known(resources.cpu_percent)) parts.push(t("CPU {0} %", number(resources.cpu_percent)));
+  const memory = resources.memory;
+  if (memory && memory.total_mb > 0) parts.push(t("RAM {0} %", number((100 * memory.used_mb) / memory.total_mb)));
+  const disk = resources.usb_disk || resources.disk;
+  if (disk && disk.total_mb > 0) parts.push(t("Disque {0} / {1}", sizeText(disk.used_mb), sizeText(disk.total_mb)));
+  heroLoad.textContent = parts.join(" · ");
+  heroLoad.hidden = parts.length === 0;
 }
 
 function plural(n, one, many) {
@@ -4060,6 +4076,7 @@ function showAuth(mode) {
   authSection.hidden = false;
   servicesSection.hidden = true;
   catalogSection.hidden = true;
+  heroLoad.hidden = true;
   logoutButton.hidden = true;
   emailReminder.hidden = true;
   networkSection.hidden = true;

@@ -742,5 +742,8 @@ piTranslations("ja", {
   "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "このサービスはインターネットから開けません。名前がコンソール用に予約されています。別の名前で再インストールしてください。",
   "Depuis internet : {0}": "インターネットから：{0}",
   "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "インターネットでは、このサービスはコンソールとアドレスを共有します。信頼できるサービスだけをインストールしてください。このサービスのページが、ログイン中の人に代わってコンソールで操作できてしまうおそれがあります。",
-  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "「誰でも（インターネット上）」のサービスは、Pi のアドレスの後に名前を付けたアドレス（例：https://home.example.com/hugo/）でインターネットからも開けます。ドメイン名のプロバイダーで何かを作る必要はありません。アカウントを持つ人向けのサービスは、コンソールがインターネットで開かれているときだけ開けます。"
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "「誰でも（インターネット上）」のサービスは、Pi のアドレスの後に名前を付けたアドレス（例：https://home.example.com/hugo/）でインターネットからも開けます。ドメイン名のプロバイダーで何かを作る必要はありません。アカウントを持つ人向けのサービスは、コンソールがインターネットで開かれているときだけ開けます。",
+  "CPU {0} %": "CPU {0}%",
+  "RAM {0} %": "メモリ {0}%",
+  "Disque {0} / {1}": "ディスク {0} / {1}"
 });

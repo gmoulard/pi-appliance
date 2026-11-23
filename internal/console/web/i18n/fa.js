@@ -742,5 +742,8 @@ piTranslations("fa", {
   "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "این سرویس از اینترنت باز نمی‌شود: نامش برای کنسول رزرو شده است. آن را با نام دیگری دوباره نصب کنید.",
   "Depuis internet : {0}": "از اینترنت: {0}",
   "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "روی اینترنت، این سرویس نشانی کنسول را به اشتراک می‌گذارد: فقط سرویس‌های مورد اعتماد را نصب کنید، چون یک صفحه از این سرویس می‌تواند به نام فردی که وارد شده در کنسول کاری انجام دهد.",
-  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "سرویس‌های «همه، در اینترنت» شما از اینترنت هم باز می‌شوند، در نشانی Pi و سپس نام آن‌ها (مثلاً https://home.example.com/hugo/)، بدون ساختن چیزی نزد ارائه‌دهندهٔ نام دامنه؛ سرویس‌های افرادی که حساب دارند، فقط وقتی کنسول روی اینترنت باز است."
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "سرویس‌های «همه، در اینترنت» شما از اینترنت هم باز می‌شوند، در نشانی Pi و سپس نام آن‌ها (مثلاً https://home.example.com/hugo/)، بدون ساختن چیزی نزد ارائه‌دهندهٔ نام دامنه؛ سرویس‌های افرادی که حساب دارند، فقط وقتی کنسول روی اینترنت باز است.",
+  "CPU {0} %": "پردازنده {0}٪",
+  "RAM {0} %": "حافظه {0}٪",
+  "Disque {0} / {1}": "دیسک {0} / {1}"
 });
