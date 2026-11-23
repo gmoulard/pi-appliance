@@ -330,6 +330,75 @@
       "site_files": false,
       "web": false,
       "compose": "x-pi-appliance:\n  name: VPN WireGuard\n  description: Retrouvez depuis l'extérieur les appareils de la maison (imprimante, disque réseau, ce Pi) avec votre téléphone, configuré en scannant un QR code. Votre navigation sur internet ne passe pas par la maison.\n  icon: M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4\n  category: Réseau\n  license: GPL-3.0\n  subdomain: vpn\n  # Pas de page web : rien n'est publié par Traefik. La console ouvre le port\n  # UDP 51820 du Pi, à rediriger aussi sur la box (accès direct, section 7.2).\n  service: wireguard\n  host_ports:\n    - port: 51820\n      protocol: udp\n  memory_mb: 64\n  disk_mb: 256\n  # Pas de comptes : chaque appareil a sa clé, créée dans la console.\n  login: application\n  access: public\n\nservices:\n  # Image linuxserver.io en « mode client » (PEERS absent) : elle démarre les\n  # fichiers de /config/wg_confs. La console écrit wg0.conf (clés tirées sur le\n  # Pi, un [Peer] par appareil) dans \u003cdonnées\u003e/services/\u003cnom\u003e/wireguard, monté\n  # là par pi-appliance.override.json, puis redémarre le service.\n  wireguard:\n    image: linuxserver/wireguard:1.0.20260223\n    restart: unless-stopped\n    cap_add:\n      - NET_ADMIN\n    sysctls:\n      - net.ipv4.ip_forward=1\n      - net.ipv4.conf.all.src_valid_mark=1\n    environment:\n      TZ: Etc/UTC\n    volumes:\n      - config:/config\n\nvolumes:\n  config:\n"
+    },
+    {
+      "id": "wordpress",
+      "name": "WordPress",
+      "description": "Créer un site ou un blog et écrire ses pages et articles depuis le navigateur, avec des thèmes et des extensions.",
+      "icon": "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM6.5 9l3 8l2.5-6l2.5 6l3-8M5 9h3M16 9h3",
+      "category": "Site web",
+      "tags": [
+        "site-web",
+        "documents"
+      ],
+      "license": "GPL-2.0-or-later",
+      "subdomain": "wordpress",
+      "memory_mb": 1024,
+      "disk_mb": 2048,
+      "login": "application",
+      "access": "public",
+      "parameters": [
+        {
+          "name": "WORDPRESS_ADMIN_PASSWORD",
+          "label": "Mot de passe de l'administrateur de WordPress (identifiant admin)",
+          "generate": true
+        },
+        {
+          "name": "DB_PASSWORD",
+          "label": "",
+          "generate": true
+        },
+        {
+          "name": "DB_ROOT_PASSWORD",
+          "label": "",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: WordPress\n  description: Créer un site ou un blog et écrire ses pages et articles depuis le navigateur, avec des thèmes et des extensions.\n  icon: M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM6.5 9l3 8l2.5-6l2.5 6l3-8M5 9h3M16 9h3\n  category: Site web\n  license: GPL-2.0-or-later\n  subdomain: wordpress\n  service: app\n  port: 80\n  memory_mb: 1024\n  disk_mb: 2048\n  login: application\n  access: public\n  parameters:\n    - name: WORDPRESS_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur de WordPress (identifiant admin)\n      generate: true\n    - name: DB_PASSWORD\n      generate: true\n    - name: DB_ROOT_PASSWORD\n      generate: true\n\nservices:\n  # Même image MariaDB que Nextcloud : ses couches ne sont qu'une fois sur\n  # le Pi.\n  db:\n    image: mariadb:11.4\n    restart: unless-stopped\n    environment:\n      MARIADB_DATABASE: wordpress\n      MARIADB_USER: wordpress\n      MARIADB_PASSWORD: ${DB_PASSWORD}\n      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    volumes:\n      - db:/var/lib/mysql\n    healthcheck:\n      test: [\"CMD\", \"healthcheck.sh\", \"--connect\", \"--innodb_initialized\"]\n      interval: 10s\n      timeout: 5s\n      retries: 30\n\n  app:\n    image: wordpress:7.1-php8.4-apache\n    restart: unless-stopped\n    depends_on:\n      db:\n        condition: service_healthy\n    environment:\n      WORDPRESS_DB_HOST: db\n      WORDPRESS_DB_NAME: wordpress\n      WORDPRESS_DB_USER: wordpress\n      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}\n      WORDPRESS_ADMIN_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}\n      # Adresse du site : celle du service (PI_HOST), relue à chaque page\n      # (wp-config.php de l'image évalue WORDPRESS_CONFIG_EXTRA) ; la console\n      # la réécrit quand le nom du Pi change, et WordPress suit sans réglage.\n      # Les liens déjà écrits dans les articles gardent l'ancienne adresse.\n      # HTTPS : posé par l'image d'après l'en-tête X-Forwarded-Proto de Traefik.\n      WORDPRESS_CONFIG_EXTRA: |\n        define('WP_HOME', 'https://${PI_HOST}');\n        define('WP_SITEURL', 'https://${PI_HOST}');\n    # Installation faite au premier démarrage, avec le compte « admin » et le\n    # mot de passe tiré au hasard : sinon le premier visiteur du site\n    # choisirait le compte administrateur dans l'assistant de WordPress. La\n    # traduction française est téléchargée depuis wordpress.org si le Pi a\n    # internet ; sinon WordPress reste en anglais (Réglages, Général, pour la\n    # changer plus tard). Le service n'est prêt (contrôle de santé) qu'une\n    # fois l'installation faite.\n    entrypoint:\n      - sh\n      - -c\n      - |\n        (\n          until su -s /bin/sh www-data -c 'php /usr/local/share/pi-appliance/install.php' | grep -q '^pi-appliance: installed$$'; do\n            sleep 3\n          done\n          touch /tmp/pi-appliance-installed\n        ) \u0026\n        exec docker-entrypoint.sh apache2-foreground\n    configs:\n      - source: install\n        target: /usr/local/share/pi-appliance/install.php\n      - source: php\n        target: /usr/local/etc/php/conf.d/pi-appliance.ini\n    healthcheck:\n      test: [\"CMD\", \"test\", \"-f\", \"/tmp/pi-appliance-installed\"]\n      interval: 5s\n      timeout: 5s\n      retries: 3\n      start_period: 15m\n      start_interval: 5s\n    volumes:\n      - html:/var/www/html\n\nconfigs:\n  # Photos et documents jusqu'à 64 Mo (2 Mo par défaut dans PHP).\n  php:\n    content: |\n      upload_max_filesize = 64M\n      post_max_size = 64M\n      memory_limit = 256M\n  install:\n    content: |\n      \u003c?php\n      // Installation de WordPress au premier démarrage (pi-appliance).\n      if (!is_file('/var/www/html/wp-config.php')) {\n          exit(1);\n      }\n      $$_SERVER['HTTP_HOST'] = 'localhost';\n      $$_SERVER['HTTPS'] = 'on';\n      define('WP_INSTALLING', true);\n      require '/var/www/html/wp-load.php';\n      require_once ABSPATH . 'wp-admin/includes/upgrade.php';\n      require_once ABSPATH . 'wp-admin/includes/translation-install.php';\n      if (!is_blog_installed()) {\n          $$language = '';\n          if (wp_can_install_language_pack()) {\n              $$language = wp_download_language_pack('fr_FR') ?: '';\n          }\n          $$host = parse_url(WP_HOME, PHP_URL_HOST);\n          wp_install('Mon site', 'admin', 'admin@' . $$host, true, '', getenv('WORDPRESS_ADMIN_PASSWORD'), $$language);\n      }\n      if (is_blog_installed()) {\n          echo \"pi-appliance: installed\\n\";\n      }\n\nvolumes:\n  db:\n  html:\n"
+    },
+    {
+      "id": "n8n",
+      "name": "n8n",
+      "description": "Automatiser des tâches entre vos services et sites (recevoir un message, ranger un fichier, prévenir par e-mail…) en reliant des blocs dans un éditeur visuel, en anglais. Licence « Sustainable Use License » de n8n, gratuite pour un usage personnel ou interne, mais pas une licence libre.",
+      "icon": "M3 9h5v6H3zM16 4h5v6h-5zM16 14h5v6h-5zM8 12h4M12 7v10M12 7h4M12 17h4",
+      "category": "Automatisation",
+      "tags": [
+        "administration",
+        "maison"
+      ],
+      "license": "Sustainable Use License",
+      "subdomain": "n8n",
+      "memory_mb": 1024,
+      "disk_mb": 3072,
+      "login": "application",
+      "access": "users",
+      "parameters": [
+        {
+          "name": "N8N_ADMIN_PASSWORD",
+          "label": "Mot de passe du propriétaire de n8n (adresse e-mail admin@pi-appliance.local)",
+          "generate": true
+        },
+        {
+          "name": "N8N_ENCRYPTION_KEY",
+          "label": "",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: n8n\n  description: Automatiser des tâches entre vos services et sites (recevoir un message, ranger un fichier, prévenir par e-mail…) en reliant des blocs dans un éditeur visuel, en anglais. Licence « Sustainable Use License » de n8n, gratuite pour un usage personnel ou interne, mais pas une licence libre.\n  icon: M3 9h5v6H3zM16 4h5v6h-5zM16 14h5v6h-5zM8 12h4M12 7v10M12 7h4M12 17h4\n  category: Automatisation\n  license: Sustainable Use License\n  subdomain: n8n\n  service: n8n\n  port: 5678\n  memory_mb: 1024\n  disk_mb: 3072\n  login: application\n  access: users\n  parameters:\n    - name: N8N_ADMIN_PASSWORD\n      label: Mot de passe du propriétaire de n8n (adresse e-mail admin@pi-appliance.local)\n      generate: true\n    - name: N8N_ENCRYPTION_KEY\n      generate: true\n\nservices:\n  n8n:\n    image: n8nio/n8n:2.48.7\n    restart: unless-stopped\n    # Compte propriétaire créé au premier démarrage, et remis au mot de passe\n    # tiré au hasard à chaque démarrage (N8N_INSTANCE_OWNER_MANAGED_BY_ENV) :\n    # sinon le premier visiteur de n8n choisirait le compte propriétaire. n8n\n    # attend une empreinte bcrypt : elle est calculée ici, avec la\n    # bibliothèque bcryptjs livrée dans l'image, puis le mot de passe en clair\n    # est retiré de l'environnement de n8n.\n    entrypoint:\n      - tini\n      - --\n      - sh\n      - -c\n      - \u003e-\n        N8N_INSTANCE_OWNER_PASSWORD_HASH=\"$$(node -e 'process.stdout.write(require(\"n8n/node_modules/bcryptjs\").hashSync(process.env.N8N_ADMIN_PASSWORD, 10))')\" \u0026\u0026\n        export N8N_INSTANCE_OWNER_PASSWORD_HASH \u0026\u0026\n        unset N8N_ADMIN_PASSWORD \u0026\u0026\n        exec /docker-entrypoint.sh\n    environment:\n      N8N_ADMIN_PASSWORD: ${N8N_ADMIN_PASSWORD}\n      N8N_INSTANCE_OWNER_MANAGED_BY_ENV: \"true\"\n      N8N_INSTANCE_OWNER_EMAIL: admin@pi-appliance.local\n      N8N_INSTANCE_OWNER_FIRST_NAME: Admin\n      N8N_INSTANCE_OWNER_LAST_NAME: pi-appliance\n      # Clé qui chiffre les identifiants rangés dans n8n (mots de passe des\n      # services reliés) : tirée au hasard sur le Pi, gardée dans le .env du\n      # service et réutilisée à chaque mise à jour.\n      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}\n      # Adresse du service (PI_HOST, réécrite par la console quand le nom du\n      # Pi change) : liens de l'éditeur et adresses des webhooks.\n      N8N_HOST: ${PI_HOST}\n      N8N_PORT: \"5678\"\n      # Écoute en IPv4 : Traefik joint le service par le réseau Docker, et\n      # l'adresse par défaut (« :: », IPv6) manque sur certains systèmes.\n      N8N_LISTEN_ADDRESS: 0.0.0.0\n      N8N_PROTOCOL: https\n      N8N_EDITOR_BASE_URL: https://${PI_HOST}/\n      WEBHOOK_URL: https://${PI_HOST}/\n      # Derrière Traefik, en HTTPS : cookie de connexion « Secure ».\n      N8N_PROXY_HOPS: \"1\"\n      N8N_SECURE_COOKIE: \"true\"\n      GENERIC_TIMEZONE: Europe/Paris\n      TZ: Europe/Paris\n      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: \"true\"\n      # Statistiques d'usage envoyées à n8n, questionnaire et bandeaux\n      # coupés ; les mises à jour passent par la console.\n      N8N_DIAGNOSTICS_ENABLED: \"false\"\n      N8N_PERSONALIZATION_ENABLED: \"false\"\n      N8N_VERSION_NOTIFICATIONS_ENABLED: \"false\"\n      N8N_HIRING_BANNER_ENABLED: \"false\"\n    # Base SQLite, clés et réglages de n8n.\n    volumes:\n      - data:/home/node/.n8n\n\nvolumes:\n  data:\n"
     }
   ],
   "planned": [

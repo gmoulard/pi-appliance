@@ -1,0 +1,79 @@
+x-pi-appliance:
+  name: n8n
+  description: Automatiser des tâches entre vos services et sites (recevoir un message, ranger un fichier, prévenir par e-mail…) en reliant des blocs dans un éditeur visuel, en anglais. Licence « Sustainable Use License » de n8n, gratuite pour un usage personnel ou interne, mais pas une licence libre.
+  icon: M3 9h5v6H3zM16 4h5v6h-5zM16 14h5v6h-5zM8 12h4M12 7v10M12 7h4M12 17h4
+  category: Automatisation
+  tags: [administration, maison]
+  license: Sustainable Use License
+  subdomain: n8n
+  service: n8n
+  port: 5678
+  memory_mb: 1024
+  disk_mb: 3072
+  login: application
+  access: users
+  parameters:
+    - name: N8N_ADMIN_PASSWORD
+      label: Mot de passe du propriétaire de n8n (adresse e-mail admin@pi-appliance.local)
+      generate: true
+    - name: N8N_ENCRYPTION_KEY
+      generate: true
+
+services:
+  n8n:
+    image: n8nio/n8n:2.48.7
+    restart: unless-stopped
+    # Compte propriétaire créé au premier démarrage, et remis au mot de passe
+    # tiré au hasard à chaque démarrage (N8N_INSTANCE_OWNER_MANAGED_BY_ENV) :
+    # sinon le premier visiteur de n8n choisirait le compte propriétaire. n8n
+    # attend une empreinte bcrypt : elle est calculée ici, avec la
+    # bibliothèque bcryptjs livrée dans l'image, puis le mot de passe en clair
+    # est retiré de l'environnement de n8n.
+    entrypoint:
+      - tini
+      - --
+      - sh
+      - -c
+      - >-
+        N8N_INSTANCE_OWNER_PASSWORD_HASH="$$(node -e 'process.stdout.write(require("n8n/node_modules/bcryptjs").hashSync(process.env.N8N_ADMIN_PASSWORD, 10))')" &&
+        export N8N_INSTANCE_OWNER_PASSWORD_HASH &&
+        unset N8N_ADMIN_PASSWORD &&
+        exec /docker-entrypoint.sh
+    environment:
+      N8N_ADMIN_PASSWORD: ${N8N_ADMIN_PASSWORD}
+      N8N_INSTANCE_OWNER_MANAGED_BY_ENV: "true"
+      N8N_INSTANCE_OWNER_EMAIL: admin@pi-appliance.local
+      N8N_INSTANCE_OWNER_FIRST_NAME: Admin
+      N8N_INSTANCE_OWNER_LAST_NAME: pi-appliance
+      # Clé qui chiffre les identifiants rangés dans n8n (mots de passe des
+      # services reliés) : tirée au hasard sur le Pi, gardée dans le .env du
+      # service et réutilisée à chaque mise à jour.
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      # Adresse du service (PI_HOST, réécrite par la console quand le nom du
+      # Pi change) : liens de l'éditeur et adresses des webhooks.
+      N8N_HOST: ${PI_HOST}
+      N8N_PORT: "5678"
+      # Écoute en IPv4 : Traefik joint le service par le réseau Docker, et
+      # l'adresse par défaut (« :: », IPv6) manque sur certains systèmes.
+      N8N_LISTEN_ADDRESS: 0.0.0.0
+      N8N_PROTOCOL: https
+      N8N_EDITOR_BASE_URL: https://${PI_HOST}/
+      WEBHOOK_URL: https://${PI_HOST}/
+      # Derrière Traefik, en HTTPS : cookie de connexion « Secure ».
+      N8N_PROXY_HOPS: "1"
+      N8N_SECURE_COOKIE: "true"
+      GENERIC_TIMEZONE: Europe/Paris
+      TZ: Europe/Paris
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
+      # Statistiques d'usage envoyées à n8n, questionnaire et bandeaux
+      # coupés ; les mises à jour passent par la console.
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_HIRING_BANNER_ENABLED: "false"
+    # Base SQLite, clés et réglages de n8n.
+    volumes:
+      - data:/home/node/.n8n
+
+volumes:
+  data:
