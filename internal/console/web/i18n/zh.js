@@ -742,5 +742,8 @@ piTranslations("zh", {
   "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "此服务不能从互联网打开：它的名称保留给控制台使用。请用另一个名称重新安装。",
   "Depuis internet : {0}": "从互联网：{0}",
   "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "在互联网上，此服务与控制台共用地址：只安装您信任的服务，因为此服务的页面可能以已登录用户的名义在控制台中操作。",
-  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "您设为“所有人（互联网上）”的服务也可以从互联网打开，地址是 Pi 的地址加上服务名称（例如 https://home.example.com/hugo/），无需在域名服务商处创建任何内容；面向有账户的人的服务，只有在控制台于互联网上开放时才能打开。"
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "您设为“所有人（互联网上）”的服务也可以从互联网打开，地址是 Pi 的地址加上服务名称（例如 https://home.example.com/hugo/），无需在域名服务商处创建任何内容；面向有账户的人的服务，只有在控制台于互联网上开放时才能打开。",
+  "CPU {0} %": "CPU {0}%",
+  "RAM {0} %": "内存 {0}%",
+  "Disque {0} / {1}": "磁盘 {0} / {1}"
 });

@@ -742,5 +742,8 @@ piTranslations("tr", {
   "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "Bu hizmet internetten açılmaz: adı konsola ayrılmıştır. Başka bir adla yeniden kurun.",
   "Depuis internet : {0}": "İnternetten: {0}",
   "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "İnternette bu hizmet konsolun adresini paylaşır: yalnızca güvendiğiniz hizmetleri kurun, çünkü bu hizmetin bir sayfası oturum açmış bir kişi adına konsolda işlem yapabilir.",
-  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "“Herkes, internette” hizmetleriniz internetten de açılır; adresleri Pi'nin adresi ve ardından adlarıdır (örneğin https://ev.ornek.com.tr/hugo/), alan adı sağlayıcınızda bir şey oluşturmanız gerekmez; hesabı olan kişilere ait olanlar yalnızca konsol internette açıkken açılır."
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "“Herkes, internette” hizmetleriniz internetten de açılır; adresleri Pi'nin adresi ve ardından adlarıdır (örneğin https://ev.ornek.com.tr/hugo/), alan adı sağlayıcınızda bir şey oluşturmanız gerekmez; hesabı olan kişilere ait olanlar yalnızca konsol internette açıkken açılır.",
+  "CPU {0} %": "CPU %{0}",
+  "RAM {0} %": "RAM %{0}",
+  "Disque {0} / {1}": "Disk {0} / {1}"
 });

@@ -348,6 +348,7 @@ function gauges(memoryMB, diskMB) {
 
 async function loadResources() {
   resources = await api("system").catch(() => ({ memory: null, disk: null, usb_disk: null }));
+  showHeroLoad();
   const list = gauges(0, 0);
   piGauges.replaceChildren(...list);
   const tiles = nowTiles();
@@ -457,6 +458,21 @@ function nowTiles() {
     }
   }
   return tiles;
+}
+
+// showHeroLoad : charge du Pi dans la barre du haut, à côté de « Appliance en
+// service. » (administrateur, api/system) : processeur, mémoire, et disque des
+// données (le disque USB s'il y en a un, sinon la carte SD).
+const heroLoad = document.getElementById("heroLoad");
+function showHeroLoad() {
+  const parts = [];
+  if (known(resources.cpu_percent)) parts.push(t("CPU {0} %", number(resources.cpu_percent)));
+  const memory = resources.memory;
+  if (memory && memory.total_mb > 0) parts.push(t("RAM {0} %", number((100 * memory.used_mb) / memory.total_mb)));
+  const disk = resources.usb_disk || resources.disk;
+  if (disk && disk.total_mb > 0) parts.push(t("Disque {0} / {1}", sizeText(disk.used_mb), sizeText(disk.total_mb)));
+  heroLoad.textContent = parts.join(" · ");
+  heroLoad.hidden = parts.length === 0;
 }
 
 function plural(n, one, many) {
@@ -716,7 +732,8 @@ const tileChoice = { kinds: new Set(), tags: new Set() };
 (function readTileChoice() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(TILES_KEY) || "{}");
-    for (const kind of saved.kinds || []) tileChoice.kinds.add(String(kind));
+    // Un seul type à la fois (Mon Pi, Mes services ou Marketplace).
+    for (const kind of (saved.kinds || []).slice(0, 1)) tileChoice.kinds.add(String(kind));
     for (const tag of saved.tags || []) tileChoice.tags.add(String(tag));
   } catch {
     // Stockage indisponible ou illisible : tout est affiché.
@@ -735,13 +752,21 @@ function setHidden(node, hidden) {
   if (node.hidden !== hidden) node.hidden = hidden;
 }
 
-function filterButton(id, label, chosen, onChoose) {
+// filterButton : bouton de la barre du haut. single : un seul choix à la fois
+// (types Mon Pi, Mes services, Marketplace, qui ne se cumulent pas) ; toucher
+// le type choisi le retire et réaffiche tout. Les étiquettes, elles, se cumulent.
+// onChoose : appelé quand le bouton vient d'être choisi (Marketplace : relecture
+// du catalogue en ligne).
+function filterButton(id, label, chosen, single = false, onChoose = undefined) {
   const button = element("button", label, "secondary");
   button.type = "button";
   button.setAttribute("aria-pressed", String(chosen.has(id)));
   button.addEventListener("click", () => {
     if (chosen.has(id)) chosen.delete(id);
-    else chosen.add(id);
+    else {
+      if (single) chosen.clear();
+      chosen.add(id);
+    }
     saveTileChoice();
     applyTiles();
     if (chosen.has(id) && onChoose) onChoose();
@@ -779,7 +804,7 @@ function applyTiles() {
   // Un type choisi mais absent de l'écran (autre compte) ne compte pas.
   const chosenKinds = kinds.map(([kind]) => kind).filter((kind) => tileChoice.kinds.has(kind));
   const kindOn = (kind) => chosenKinds.length === 0 || chosenKinds.includes(kind);
-  tileKinds.replaceChildren(...kinds.map(([kind, label]) => filterButton(kind, label, tileChoice.kinds, kind === "catalog" ? refreshOnlineCatalog : undefined)));
+  tileKinds.replaceChildren(...kinds.map(([kind, label]) => filterButton(kind, label, tileChoice.kinds, true, kind === "catalog" ? refreshOnlineCatalog : undefined)));
   // Étiquettes proposées : celles des types choisis, présentes à l'écran.
   const sections = (kind) => (chosenKinds.includes(kind) ? byKind.get(kind) || [] : []);
   const themes = new Set(sections("pi").flatMap((section) => [section, ...section.querySelectorAll("[data-theme]")])
@@ -4079,6 +4104,7 @@ function showAuth(mode) {
   authSection.hidden = false;
   servicesSection.hidden = true;
   catalogSection.hidden = true;
+  heroLoad.hidden = true;
   logoutButton.hidden = true;
   emailReminder.hidden = true;
   networkSection.hidden = true;
@@ -4517,7 +4543,13 @@ async function showConsole(account, wizard) {
     await startWizard();
     return;
   }
+  // État du Pi (barre du haut, « Mon Pi ») lu en parallèle du reste, sans
+  // retarder l'ouverture de la page ; attendu seulement avant le catalogue, dont
+  // les jauges d'installation s'en servent.
+  let resourcesReady = Promise.resolve();
   if (account.role === "admin") {
+    resourcesReady = loadResources().catch(() => null);
+    startDashboard();
     duckDNSSection.hidden = false;
     await loadDuckDNS();
     await loadAddress();
@@ -4525,12 +4557,11 @@ async function showConsole(account, wizard) {
     duckDNSTimer = setInterval(loadDuckDNS, 15000);
     await loadStats();
     await loadNetwork();
-    await loadResources();
-    startDashboard();
     accountsSection.hidden = false;
     await loadAccounts();
     await loadMail();
   }
+  await resourcesReady;
   await loadCatalog();
   await loadServices();
 }
