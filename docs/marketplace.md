@@ -82,9 +82,9 @@ volumes:
 
 - Choisissez une image Docker avec une **version précise** (pas `latest` ou `stable`) et compatible avec `linux/arm64`, l'architecture des Raspberry Pi visés.
 - Déclarez le service publié dans `service`, son port interne dans `port`, ainsi que des estimations réalistes en Mo pour `memory_mb` et `disk_mb`.
-- Le champ `icon` est un tracé SVG (`d`) sur une grille 24 × 24. Les champs `login` acceptent `application` ou `console` ; `access` accepte `public`, `users`, `home` ou `admins` (administrateurs, à la maison : réservé aux applications qui ont la main sur tout le Pi, comme Portainer).
+- Le champ `icon` est un tracé SVG (`d`) sur une grille 24 × 24. Les champs `login` acceptent `application` ou `console` ; `access` accepte `public`, `users`, `home` ou `admins` (administrateurs, à la maison : réservé aux applications qui ont la main sur tout le Pi, comme Portainer ou Claude Code).
 - Déclarez les paramètres en majuscules dans `parameters`. Pour les secrets, utilisez `generate: true` plutôt que de mettre un mot de passe dans le manifeste ou dans une image.
-- Stockez les données persistantes dans des volumes Docker nommés. Ne mettez ni secret, ni donnée personnelle, ni configuration propre à un utilisateur dans le dépôt.
+- Stockez les données persistantes dans des volumes Docker nommés. Ne mettez ni secret, ni donnée personnelle, ni configuration propre à un utilisateur dans le dépôt. Un volume qui ne doit jamais être sauvegardé (jeton d'un compte) porte l'étiquette `pi-appliance.backup: "false"` (`labels` du volume, comme Claude Code).
 - Renseignez la licence de l'application et vérifiez que sa redistribution est compatible avec le projet.
 - N'utilisez que les clés documentées dans `x-pi-appliance` : une clé inconnue fait refuser le manifeste.
 - Évitez les options qui donnent la main sur tout le Pi (conteneur privilégié, accès à Docker, dossier du Pi, réseau de l'hôte, droits ajoutés) : une nouvelle application qui en a ne sera pas installable depuis le catalogue en ligne, seulement après une nouvelle version de pi-appliance. Une application qui a accès à Docker ou qui est un conteneur privilégié doit en plus déclarer `access: admins`, et la console fait confirmer son installation.

@@ -932,6 +932,9 @@ async function loadCatalog() {
     if (app.web) {
       form.append(accessField(app.access));
     }
+    if (APP_WARNINGS[app.id]) {
+      form.append(element("p", APP_WARNINGS[app.id], "note"));
+    }
     const button = element("button", t("Installer"));
     const fit = gauges(app.memory_mb, app.disk_mb);
     if (fit.length > 0) {
@@ -1075,6 +1078,11 @@ const ACCESS_LABELS = {
 const ADMINS_ACCESS = "admins";
 const ADMINS_LABEL = t("Les administrateurs de ce Pi, à la maison seulement (et le VPN)");
 const ADMINS_WARNING = t("Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.");
+
+// Avertissement propre à une application, montré avant de l'installer.
+const APP_WARNINGS = {
+  "claude-code": t("Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude."),
+};
 
 function accessLabel(access) {
   return access === ADMINS_ACCESS ? ADMINS_LABEL : ACCESS_LABELS[access] || ACCESS_LABELS.public;

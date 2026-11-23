@@ -30,7 +30,16 @@ type Volume struct {
 	Path string `json:"path"`
 }
 
-// Volumes rend les volumes du service, avec leur dossier.
+// NoBackupLabel : étiquette Docker d'un volume qui n'est jamais sauvegardé,
+// posée par le manifeste (section volumes du fichier Compose) avec la valeur
+// « false » : par exemple le volume de Claude Code, qui garde le jeton du
+// compte Claude (spécification 6.3, 9.1). Une étiquette du fichier Compose
+// plutôt qu'une clé de x-pi-appliance : les consoles déjà publiées la lisent
+// sans la refuser (règle de compatibilité, spécification 6.5).
+const NoBackupLabel = "pi-appliance.backup"
+
+// Volumes rend les volumes du service à sauvegarder, avec leur dossier : sans
+// ceux marqués NoBackupLabel=false.
 func (m *Manager) Volumes(ctx context.Context, name string) ([]Volume, error) {
 	if err := m.installed(name); err != nil {
 		return nil, err
@@ -39,9 +48,22 @@ func (m *Manager) Volumes(ctx context.Context, name string) ([]Volume, error) {
 	if err != nil {
 		return nil, err
 	}
+	dir := m.serviceDir(name)
+	output, err := m.Runner.Run(ctx, dir, "volume", "ls", "--quiet",
+		"--filter", "label=com.docker.compose.project=pi-"+name,
+		"--filter", "label="+NoBackupLabel+"=false")
+	if err != nil {
+		return nil, fmt.Errorf("les données de %s sont illisibles : %s", name, trimOutput(output, err))
+	}
+	excluded := map[string]bool{}
+	for _, volume := range strings.Fields(string(output)) {
+		excluded[volume] = true
+	}
 	volumes := make([]Volume, 0, len(copies))
 	for _, c := range copies {
-		volumes = append(volumes, Volume{Name: c.volume, Path: c.source})
+		if !excluded[c.volume] {
+			volumes = append(volumes, Volume{Name: c.volume, Path: c.source})
+		}
 	}
 	return volumes, nil
 }

@@ -167,7 +167,8 @@ func TestNoWebPageHasNoAccess(t *testing.T) {
 	}
 }
 
-// Seul Portainer, réservé aux administrateurs à la maison, a tous les droits
+// Seuls Portainer (accès à Docker) et Claude Code (conteneur privilégié,
+// pid: host), réservés aux administrateurs à la maison, ont tous les droits
 // sur le Pi parmi les applications livrées.
 func TestMarketplaceRisks(t *testing.T) {
 	catalog, err := marketplace.Builtin()
@@ -179,9 +180,22 @@ func TestMarketplaceRisks(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s : %v", app.ID, err)
 		}
-		if (len(risks) > 0) != (app.ID == "portainer") {
+		if (len(risks) > 0) != (app.ID == "portainer" || app.ID == "claude-code") {
 			t.Errorf("%s : options dangereuses %v", app.ID, risks)
 		}
+	}
+	claude, _ := catalog.Get("claude-code")
+	risks, _ := MarketplaceRisks(claude)
+	codes := []string{}
+	for _, risk := range risks {
+		codes = append(codes, risk.Code)
+	}
+	if strings.Join(codes, ",") != "privileged,host-pid" {
+		t.Errorf("Claude Code : options dangereuses %v", codes)
+	}
+	claude.Access = AccessHome
+	if _, err := MarketplaceRisks(claude); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("Claude Code sans accès admins : %v", err)
 	}
 	portainer, _ := catalog.Get("portainer")
 	portainer.Access = AccessHome
