@@ -1,0 +1,68 @@
+x-pi-appliance:
+  name: FileBrowser Quantum
+  description: Ranger, envoyer, télécharger, prévisualiser et partager ses fichiers depuis le navigateur, plus simple et plus léger que Nextcloud.
+  icon: M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 10v6M9 13l3-3l3 3
+  category: Fichiers
+  tags: [fichiers]
+  license: Apache-2.0
+  subdomain: fichiers
+  service: filebrowser
+  port: 80
+  memory_mb: 128
+  disk_mb: 1024
+  login: application
+  access: users
+  parameters:
+    - name: FILEBROWSER_ADMIN_PASSWORD
+      label: Mot de passe de l'administrateur de FileBrowser Quantum (identifiant admin)
+      generate: true
+
+services:
+  # Branche maintenue de File Browser (gtsteffaniak/filebrowser) : le projet
+  # d'origine est archivé depuis le 2026-09-01, sans correctifs de sécurité.
+  # Image « slim » : sans les aperçus vidéo et bureautique, plus légère pour
+  # le Pi. Statistiques d'usage envoyées au projet : coupées par défaut, on
+  # ne les active pas.
+  filebrowser:
+    image: gtstef/filebrowser:2.0.2-stable-slim
+    restart: unless-stopped
+    environment:
+      FILEBROWSER_CONFIG: /run/pi-appliance/config.yaml
+      # Compte « admin » créé au premier démarrage avec ce mot de passe tiré
+      # au hasard, à la place d'un mot de passe écrit dans le journal.
+      FILEBROWSER_ADMIN_PASSWORD: ${FILEBROWSER_ADMIN_PASSWORD}
+    # Les fichiers sont rangés dans le volume de l'application (sous-dossier
+    # « fichiers », créé au démarrage), à côté de sa base : un volume neuf
+    # monté sur /srv appartiendrait à root, et l'application, qui ne tourne
+    # pas en root, ne pourrait rien y écrire.
+    entrypoint: ["sh", "-c", "mkdir -p /home/filebrowser/data/fichiers && exec ./filebrowser"]
+    configs:
+      - source: config
+        target: /run/pi-appliance/config.yaml
+    volumes:
+      - data:/home/filebrowser/data
+
+# Interface en français, pas d'inscription libre : l'administrateur crée les
+# comptes dans FileBrowser Quantum.
+configs:
+  config:
+    content: |
+      http:
+        port: 80
+      server:
+        sources:
+          - path: /home/filebrowser/data/fichiers
+            name: Fichiers
+      auth:
+        adminUsername: admin
+        methods:
+          password:
+            enabled: true
+            minLength: 10
+            signup: false
+      userDefaults:
+        ui:
+          locale: fr
+
+volumes:
+  data:

@@ -111,6 +111,32 @@
       "compose": "x-pi-appliance:\n  name: Etherpad\n  description: Écrire un texte à plusieurs, en même temps, chacun depuis son appareil.\n  icon: M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M8 13h8M8 17h5\n  category: Documents\n  license: Apache-2.0\n  subdomain: pad\n  service: pad\n  port: 9001\n  memory_mb: 384\n  disk_mb: 1024\n  login: application\n  access: users\n  parameters:\n    - name: ETHERPAD_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur d'Etherpad\n      generate: true\n    - name: ADMIN_SECRET\n      generate: true\n    - name: USER_SECRET\n      generate: true\n    - name: ETHERPAD_USER_PASSWORD\n      generate: true\n\nservices:\n  pad:\n    image: etherpad/etherpad:3\n    restart: unless-stopped\n    # ADMIN_SECRET et USER_SECRET remplacent les secrets par défaut\n    # (« admin », « user ») de la connexion interne d'Etherpad.\n    # USER_PASSWORD : compte interne « user », que la console donne à Etherpad\n    # par Traefik quand il est réservé aux personnes qui ont un compte (liens\n    # de partage, REQUIRE_AUTHENTICATION posé par la console).\n    # Les mises à jour passent par la console (UPDATES_TIER off).\n    environment:\n      TITLE: Etherpad\n      ADMIN_PASSWORD: ${ETHERPAD_ADMIN_PASSWORD}\n      DB_TYPE: sqlite\n      DB_FILENAME: var/etherpad.db\n      TRUST_PROXY: \"true\"\n      PAD_OPTIONS_LANG: fr\n      SSO_ISSUER: https://${PI_HOST}\n      ADMIN_SECRET: ${ADMIN_SECRET}\n      ADMIN_REDIRECT: https://${PI_HOST}/admin/\n      USER_SECRET: ${USER_SECRET}\n      USER_REDIRECT: https://${PI_HOST}/\n      USER_PASSWORD: ${ETHERPAD_USER_PASSWORD}\n      UPDATES_TIER: \"off\"\n      PRIVACY_UPDATE_CHECK: \"false\"\n      PRIVACY_PLUGIN_CATALOG: \"false\"\n    volumes:\n      - var:/opt/etherpad-lite/var\n\nvolumes:\n  var:\n"
     },
     {
+      "id": "filebrowser",
+      "name": "FileBrowser Quantum",
+      "description": "Ranger, envoyer, télécharger, prévisualiser et partager ses fichiers depuis le navigateur, plus simple et plus léger que Nextcloud.",
+      "icon": "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 10v6M9 13l3-3l3 3",
+      "category": "Fichiers",
+      "tags": [
+        "fichiers"
+      ],
+      "license": "Apache-2.0",
+      "subdomain": "fichiers",
+      "memory_mb": 128,
+      "disk_mb": 1024,
+      "login": "application",
+      "access": "users",
+      "parameters": [
+        {
+          "name": "FILEBROWSER_ADMIN_PASSWORD",
+          "label": "Mot de passe de l'administrateur de FileBrowser Quantum (identifiant admin)",
+          "generate": true
+        }
+      ],
+      "site_files": false,
+      "web": true,
+      "compose": "x-pi-appliance:\n  name: FileBrowser Quantum\n  description: Ranger, envoyer, télécharger, prévisualiser et partager ses fichiers depuis le navigateur, plus simple et plus léger que Nextcloud.\n  icon: M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM12 10v6M9 13l3-3l3 3\n  category: Fichiers\n  license: Apache-2.0\n  subdomain: fichiers\n  service: filebrowser\n  port: 80\n  memory_mb: 128\n  disk_mb: 1024\n  login: application\n  access: users\n  parameters:\n    - name: FILEBROWSER_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur de FileBrowser Quantum (identifiant admin)\n      generate: true\n\nservices:\n  # Branche maintenue de File Browser (gtsteffaniak/filebrowser) : le projet\n  # d'origine est archivé depuis le 2026-09-01, sans correctifs de sécurité.\n  # Image « slim » : sans les aperçus vidéo et bureautique, plus légère pour\n  # le Pi. Statistiques d'usage envoyées au projet : coupées par défaut, on\n  # ne les active pas.\n  filebrowser:\n    image: gtstef/filebrowser:2.0.2-stable-slim\n    restart: unless-stopped\n    environment:\n      FILEBROWSER_CONFIG: /run/pi-appliance/config.yaml\n      # Compte « admin » créé au premier démarrage avec ce mot de passe tiré\n      # au hasard, à la place d'un mot de passe écrit dans le journal.\n      FILEBROWSER_ADMIN_PASSWORD: ${FILEBROWSER_ADMIN_PASSWORD}\n    # Les fichiers sont rangés dans le volume de l'application (sous-dossier\n    # « fichiers », créé au démarrage), à côté de sa base : un volume neuf\n    # monté sur /srv appartiendrait à root, et l'application, qui ne tourne\n    # pas en root, ne pourrait rien y écrire.\n    entrypoint: [\"sh\", \"-c\", \"mkdir -p /home/filebrowser/data/fichiers \u0026\u0026 exec ./filebrowser\"]\n    configs:\n      - source: config\n        target: /run/pi-appliance/config.yaml\n    volumes:\n      - data:/home/filebrowser/data\n\n# Interface en français, pas d'inscription libre : l'administrateur crée les\n# comptes dans FileBrowser Quantum.\nconfigs:\n  config:\n    content: |\n      http:\n        port: 80\n      server:\n        sources:\n          - path: /home/filebrowser/data/fichiers\n            name: Fichiers\n      auth:\n        adminUsername: admin\n        methods:\n          password:\n            enabled: true\n            minLength: 10\n            signup: false\n      userDefaults:\n        ui:\n          locale: fr\n\nvolumes:\n  data:\n"
+    },
+    {
       "id": "nextcloud",
       "name": "Nextcloud",
       "description": "Vos fichiers, photos, agenda et contacts, chez vous, sur tous vos appareils.",
