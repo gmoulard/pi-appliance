@@ -45,6 +45,8 @@ services:
       # Chemin du service sous l'adresse internet du Pi.
       SITE_PATH: /${PI_INSTANCE}/
       SITE_GENERATOR: Hugo
+      # Dossier Nextcloud du site, nommé dans la page d'attente.
+      SITE_FOLDER: Site ${PI_INSTANCE}
     entrypoint:
       - sh
       - -c
@@ -68,7 +70,78 @@ services:
         placeholder() {
           rm -rf /public/next
           mkdir -p /public/next
-          printf '%s\n' '<!doctype html>' '<html lang="fr"><meta charset="utf-8"><title>Site en construction</title>' '<body style="font-family:sans-serif;text-align:center;margin-top:20vh">' "<h1>Site en construction</h1><p>Déposez les fichiers source de votre site $$SITE_GENERATOR.</p></body></html>" > /public/next/index.html
+          # Page d'attente : explique comment publier la première page
+          # (dossier Nextcloud, site minimal en trois fichiers, journal).
+          cat > /public/next/index.html <<EOF
+        <!doctype html>
+        <html lang="fr">
+        <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Site en construction</title>
+        <style>
+        body { margin: 0; background: #FFF5F7; color: #33141F; font: 16px/1.55 system-ui, sans-serif; }
+        main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 1rem 3rem; }
+        h1 { margin: 0 0 .3rem; font-size: 2rem; text-align: center; }
+        .lead { margin: 0 0 2rem; text-align: center; }
+        section { background: #fff; border-radius: 12px; box-shadow: 0 2px 0 #F0D3DC; padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; }
+        h2 { margin-top: 0; font-size: 1.25rem; color: #A8174E; }
+        h3 { font-size: 1.05rem; margin: 1.4rem 0 .4rem; }
+        li { margin-bottom: .6rem; }
+        code { background: #FCE4EC; border-radius: 4px; padding: 0 .25rem; }
+        pre { background: #33141F; color: #FFF5F7; border-radius: 8px; padding: .7rem .9rem; overflow-x: auto; }
+        pre code { background: none; padding: 0; }
+        .name { margin: .8rem 0 .2rem; font-weight: 600; }
+        </style>
+        </head>
+        <body>
+        <main>
+        <h1>Site en construction</h1>
+        <p class="lead">Ce site sera bientôt en ligne. Il est hébergé sur un pi-appliance.</p>
+
+        <section>
+        <h2>Vous gérez ce site ? Publiez la première page en 4 étapes</h2>
+        <ol>
+        <li><strong>Ouvrez Nextcloud</strong> sur votre Pi, avec un compte administrateur de Nextcloud. Pas encore de Nextcloud ? Installez-le depuis la marketplace de la console : le dossier du site y apparaît tout seul après quelques minutes.</li>
+        <li><strong>Ouvrez le dossier « $$SITE_FOLDER »</strong>. C'est le dossier de ce site : ce que vous y mettez est publié ici.</li>
+        <li><strong>Déposez-y les fichiers de votre site Hugo</strong>, tels qu'ils sont sur votre ordinateur : le fichier <code>hugo.toml</code> et les dossiers <code>content</code>, <code>layouts</code>, <code>themes</code>… Déposez le contenu du dossier, pas une archive ZIP (décompressez-la d'abord).</li>
+        <li><strong>Attendez une minute</strong>, puis rechargez cette page : le site se construit tout seul. Pour le changer ensuite, modifiez les fichiers dans le même dossier : il est reconstruit à chaque changement.</li>
+        </ol>
+        </section>
+
+        <section>
+        <h2>Pas encore de site ? Une première page en trois fichiers</h2>
+        <p>Dans le dossier « $$SITE_FOLDER » de Nextcloud, le bouton « + Nouveau » crée un dossier ou un fichier texte. Créez ces trois fichiers, avec exactement ces noms :</p>
+        <p class="name">1. <code>hugo.toml</code> (le réglage du site)</p>
+        <pre><code>title = "Mon site"</code></pre>
+        <p class="name">2. <code>content/_index.md</code> (le texte de la page, dans un dossier <code>content</code>)</p>
+        <pre><code>---
+        title: "Bienvenue"
+        ---
+        Ma première page, publiée depuis mon Raspberry Pi.</code></pre>
+        <p class="name">3. <code>layouts/index.html</code> (la mise en page, dans un dossier <code>layouts</code>)</p>
+        <pre><code>&lt;!doctype html&gt;
+        &lt;html lang="fr"&gt;
+        &lt;head&gt;&lt;meta charset="utf-8"&gt;&lt;title&gt;{{ .Site.Title }}&lt;/title&gt;&lt;/head&gt;
+        &lt;body&gt;&lt;h1&gt;{{ .Title }}&lt;/h1&gt;{{ .Content }}&lt;/body&gt;
+        &lt;/html&gt;</code></pre>
+        <p>Rechargez cette page une minute plus tard : « Bienvenue » s'affiche à la place de ce texte.</p>
+        <h3>Avec un thème</h3>
+        <p>Copiez le dossier du thème dans <code>themes</code> (par exemple <code>themes/mon-theme</code>) et ajoutez la ligne <code>theme = "mon-theme"</code> dans <code>hugo.toml</code>. Les thèmes installés comme « modules Hugo » (fichier <code>go.mod</code>) ne sont pas pris en charge : prenez la version à copier dans <code>themes</code>.</p>
+        </section>
+
+        <section>
+        <h2>Cette page ne change pas ?</h2>
+        <ul>
+        <li>La console du Pi, sur la fiche de ce site, dit si le site est construit, en cours de construction ou si la construction a échoué.</li>
+        <li>En cas d'échec, le fichier <code>.pi-appliance-build.log</code>, dans le même dossier, explique ce qui ne va pas. C'est un fichier caché : dans Nextcloud, ouvrez « Paramètres des fichiers » et cochez « Afficher les fichiers cachés ».</li>
+        <li>Une fois le site en ligne, une erreur dans une modification ne le casse pas : la version précédente reste affichée tant que la nouvelle ne se construit pas.</li>
+        </ul>
+        </section>
+        </main>
+        </body>
+        </html>
+        EOF
           mkdir -p /public/next/.pi-path
           cp /public/next/index.html /public/next/.pi-path/index.html
           publish
