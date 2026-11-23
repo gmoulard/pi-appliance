@@ -37,7 +37,7 @@ Les liens publics de partage Etherpad sont aussi une amélioration prévue. Cons
 
 ## Ajouter une application : tout le monde peut contribuer
 
-Les contributions sont ouvertes. Vous pouvez proposer une application libre utile à la maison, améliorer un manifeste existant, ou signaler un problème. Une proposition passe par une pull request ; elle sera relue et testée avant d'être intégrée.
+Les contributions sont ouvertes. Vous pouvez proposer une application libre utile à la maison (seule exception pour l'instant : n8n, sous licence *fair-code* « Sustainable Use License », retenue par choix du projet et signalée sur sa fiche), améliorer un manifeste existant, ou signaler un problème. Une proposition passe par une pull request ; elle sera relue et testée avant d'être intégrée.
 
 ### 1. Créer un manifeste Docker Compose
 

@@ -1,0 +1,130 @@
+x-pi-appliance:
+  name: WordPress
+  description: Créer un site ou un blog et écrire ses pages et articles depuis le navigateur, avec des thèmes et des extensions.
+  icon: M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM6.5 9l3 8l2.5-6l2.5 6l3-8M5 9h3M16 9h3
+  category: Site web
+  tags: [site-web, documents]
+  license: GPL-2.0-or-later
+  subdomain: wordpress
+  service: app
+  port: 80
+  memory_mb: 1024
+  disk_mb: 2048
+  login: application
+  access: public
+  parameters:
+    - name: WORDPRESS_ADMIN_PASSWORD
+      label: Mot de passe de l'administrateur de WordPress (identifiant admin)
+      generate: true
+    - name: DB_PASSWORD
+      generate: true
+    - name: DB_ROOT_PASSWORD
+      generate: true
+
+services:
+  # Même image MariaDB que Nextcloud : ses couches ne sont qu'une fois sur
+  # le Pi.
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  app:
+    image: wordpress:7.1-php8.4-apache
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      WORDPRESS_ADMIN_PASSWORD: ${WORDPRESS_ADMIN_PASSWORD}
+      # Adresse du site : celle du service (PI_HOST), relue à chaque page
+      # (wp-config.php de l'image évalue WORDPRESS_CONFIG_EXTRA) ; la console
+      # la réécrit quand le nom du Pi change, et WordPress suit sans réglage.
+      # Les liens déjà écrits dans les articles gardent l'ancienne adresse.
+      # HTTPS : posé par l'image d'après l'en-tête X-Forwarded-Proto de Traefik.
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', 'https://${PI_HOST}');
+        define('WP_SITEURL', 'https://${PI_HOST}');
+    # Installation faite au premier démarrage, avec le compte « admin » et le
+    # mot de passe tiré au hasard : sinon le premier visiteur du site
+    # choisirait le compte administrateur dans l'assistant de WordPress. La
+    # traduction française est téléchargée depuis wordpress.org si le Pi a
+    # internet ; sinon WordPress reste en anglais (Réglages, Général, pour la
+    # changer plus tard). Le service n'est prêt (contrôle de santé) qu'une
+    # fois l'installation faite.
+    entrypoint:
+      - sh
+      - -c
+      - |
+        (
+          until su -s /bin/sh www-data -c 'php /usr/local/share/pi-appliance/install.php' | grep -q '^pi-appliance: installed$$'; do
+            sleep 3
+          done
+          touch /tmp/pi-appliance-installed
+        ) &
+        exec docker-entrypoint.sh apache2-foreground
+    configs:
+      - source: install
+        target: /usr/local/share/pi-appliance/install.php
+      - source: php
+        target: /usr/local/etc/php/conf.d/pi-appliance.ini
+    healthcheck:
+      test: ["CMD", "test", "-f", "/tmp/pi-appliance-installed"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 15m
+      start_interval: 5s
+    volumes:
+      - html:/var/www/html
+
+configs:
+  # Photos et documents jusqu'à 64 Mo (2 Mo par défaut dans PHP).
+  php:
+    content: |
+      upload_max_filesize = 64M
+      post_max_size = 64M
+      memory_limit = 256M
+  install:
+    content: |
+      <?php
+      // Installation de WordPress au premier démarrage (pi-appliance).
+      if (!is_file('/var/www/html/wp-config.php')) {
+          exit(1);
+      }
+      $$_SERVER['HTTP_HOST'] = 'localhost';
+      $$_SERVER['HTTPS'] = 'on';
+      define('WP_INSTALLING', true);
+      require '/var/www/html/wp-load.php';
+      require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+      require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+      if (!is_blog_installed()) {
+          $$language = '';
+          if (wp_can_install_language_pack()) {
+              $$language = wp_download_language_pack('fr_FR') ?: '';
+          }
+          $$host = parse_url(WP_HOME, PHP_URL_HOST);
+          wp_install('Mon site', 'admin', 'admin@' . $$host, true, '', getenv('WORDPRESS_ADMIN_PASSWORD'), $$language);
+      }
+      if (is_blog_installed()) {
+          echo "pi-appliance: installed\n";
+      }
+
+volumes:
+  db:
+  html:
