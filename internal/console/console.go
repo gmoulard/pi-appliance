@@ -269,6 +269,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiList))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi/scan", c.adminOnly(c.wifiScan))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wifi", c.adminOnly(c.wifiJoin))
+	mux.HandleFunc("POST "+BasePath+"/api/network/wifi/wps", c.adminOnly(c.wifiWPS))
 	mux.HandleFunc("POST "+BasePath+"/api/network/wired", c.adminOnly(c.wired))
 	mux.HandleFunc("POST "+BasePath+"/api/network/country", c.adminOnly(c.country))
 	mux.HandleFunc("POST "+BasePath+"/api/network/name", c.adminOnly(c.setName))
@@ -1195,6 +1196,17 @@ func (c *console) wifiJoin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusAccepted, map[string]string{"ssid": request.SSID})
+}
+
+// wifiWPS répond 202 avant de lancer l'association par le bouton WPS de la box,
+// pour la même raison que wifiJoin.
+func (c *console) wifiWPS(w http.ResponseWriter, r *http.Request) {
+	if c.Network == nil {
+		writeError(w, http.StatusServiceUnavailable, "Le réseau ne se règle pas depuis cette console.")
+		return
+	}
+	c.Network.WPS()
+	writeJSON(w, http.StatusAccepted, map[string]bool{"started": true})
 }
 
 func writeNetworkError(w http.ResponseWriter, err error) {

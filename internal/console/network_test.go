@@ -61,7 +61,7 @@ func (f *fakeNetwork) Run(_ context.Context, stdin []byte, args ...string) ([]by
 			return []byte(`{"ok": false, "error": "failed", "message": "Le Pi n'a pas pu redémarrer. Débranchez-le puis rebranchez-le."}`), errors.New("exit status 1")
 		}
 		return []byte(`{"ok": true, "inSeconds": 5}`), nil
-	case "wifi-join":
+	case "wifi-join", "wifi-wps":
 		f.stdin = string(stdin)
 		close(f.joined)
 		return []byte(`{"ok": true, "ssid": "maison"}`), nil
@@ -93,6 +93,7 @@ func TestNetworkAdminOnly(t *testing.T) {
 		{http.MethodGet, "/pi-appliance/api/network/wifi"},
 		{http.MethodPost, "/pi-appliance/api/network/wifi/scan"},
 		{http.MethodPost, "/pi-appliance/api/network/wired"},
+		{http.MethodPost, "/pi-appliance/api/network/wifi/wps"},
 	} {
 		if response := f.do(route[0], route[1], "", "", nil); response.Code != http.StatusUnauthorized {
 			t.Errorf("%s %s sans session : code %d", route[0], route[1], response.Code)
@@ -154,6 +155,20 @@ func TestNetworkJoin(t *testing.T) {
 	defer fake.mu.Unlock()
 	if !strings.Contains(fake.stdin, `"password":"mot de passe"`) {
 		t.Fatalf("entrée standard %s", fake.stdin)
+	}
+}
+
+func TestNetworkWPS(t *testing.T) {
+	f, fake := newNetworkFixture(t)
+	response := f.do(http.MethodPost, "/pi-appliance/api/network/wifi/wps", "", "", f.admin(t))
+	if response.Code != http.StatusAccepted {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+	<-fake.joined
+	fake.mu.Lock()
+	defer fake.mu.Unlock()
+	if got := fake.calls[len(fake.calls)-1]; got != "wifi-wps" {
+		t.Fatalf("commande %s", got)
 	}
 }
 

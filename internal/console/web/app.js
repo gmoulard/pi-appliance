@@ -2316,6 +2316,7 @@ const wifiForm = document.getElementById("wifiForm");
 const wifiPasswordField = document.getElementById("wifiPasswordField");
 const wifiScanButton = document.getElementById("wifiScan");
 const wifiOtherButton = document.getElementById("wifiOther");
+const wifiWpsButton = document.getElementById("wifiWps");
 const wiredButton = document.getElementById("wired");
 const wifiCountry = document.getElementById("wifiCountry");
 // Pays proposés : ceux des langues de l'interface (spécification 5.3) et les voisins
@@ -2336,6 +2337,8 @@ const LAST_ERRORS = {
   "not-found": t("La dernière connexion a échoué : ce Wi-Fi est introuvable. Est-il allumé et assez proche ?"),
   timeout: t("La dernière connexion a échoué : le Wi-Fi ne répond pas."),
   failed: t("La dernière connexion a échoué."),
+  "wps-timeout": t("La dernière association a échoué : aucune box n'a répondu. Appuyez sur le bouton WPS de la box dans les 2 minutes, ou entrez le nom et le mot de passe du Wi-Fi."),
+  "wps-failed": t("L'association par le bouton de la box a échoué : entrez le nom et le mot de passe du Wi-Fi."),
 };
 const SECURITY = { open: t("ouvert"), wpa: t("protégé"), wpa3: t("protégé"), enterprise: t("entreprise") };
 let apClosesAt = 0;
@@ -2571,6 +2574,27 @@ wifiScanButton.addEventListener("click", async () => {
 });
 
 wifiOtherButton.addEventListener("click", () => chooseWifi(null, null));
+
+wifiWpsButton.addEventListener("click", async () => {
+  if (!window.confirm(t("Après avoir validé, appuyez dans les 2 minutes sur le bouton WPS de votre box (souvent marqué « WPS » ou de deux flèches en rond). Pendant ce temps, le Pi n'est plus joignable par cette page. Continuer ?"))) {
+    return;
+  }
+  wifiWpsButton.disabled = true;
+  try {
+    await api("network/wifi/wps", { method: "POST" });
+    wifiForm.hidden = true;
+    showMessage(apClosesAt ? [
+      named(t("Appuyez maintenant sur le bouton WPS de votre box, dans les 2 minutes. Le Wi-Fi « pi-appliance » va se fermer.")),
+      named(t("Reconnectez ensuite votre téléphone ou votre ordinateur au Wi-Fi de votre box, puis ouvrez https://pi-appliance.local/pi-appliance")),
+      named(t("Si cette adresse ne s'ouvre pas (certains téléphones Android et ordinateurs Windows ne trouvent pas les adresses en .local), cherchez l'appareil « pi-appliance » dans la liste des appareils de votre box et ouvrez https://<son adresse>/pi-appliance. Le navigateur affichera une alerte sur le certificat : vous pouvez continuer.")),
+      named(t("Si le Wi-Fi « pi-appliance » réapparaît dans quelques minutes, l'association a échoué : reconnectez-vous-y pour réessayer, ou entrez le nom et le mot de passe du Wi-Fi.")),
+    ] : [named(t("Appuyez maintenant sur le bouton WPS de votre box, dans les 2 minutes. Si cette page ne répond plus, ouvrez https://pi-appliance.local/pi-appliance"))], "info");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    wifiWpsButton.disabled = false;
+  }
+});
 
 wifiForm.addEventListener("submit", async (event) => {
   event.preventDefault();

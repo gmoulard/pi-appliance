@@ -112,6 +112,7 @@ const (
 	shortTimeout = 15 * time.Second
 	scanTimeout  = 60 * time.Second
 	joinTimeout  = 3 * time.Minute
+	wpsTimeout   = 5 * time.Minute
 )
 
 func (c *Client) run(ctx context.Context, timeout time.Duration, stdin []byte, args ...string) (json.RawMessage, error) {
@@ -206,6 +207,26 @@ func (c *Client) Join(request JoinRequest) error {
 		}
 	}()
 	return nil
+}
+
+// WPS lance en arrière-plan, après JoinDelay, l'association par le bouton WPS
+// de la box (2 minutes pour appuyer), comme Join : le point d'accès se ferme et
+// le résultat se lit ensuite dans Status (lastError).
+func (c *Client) WPS() {
+	go func() {
+		time.Sleep(c.JoinDelay)
+		out, err := c.run(context.Background(), wpsTimeout, nil, "wifi-wps")
+		switch {
+		case err != nil:
+			c.logf("association par le bouton WPS : %v", err)
+		default:
+			var result struct {
+				SSID string `json:"ssid"`
+			}
+			_ = json.Unmarshal(out, &result)
+			c.logf("connecté au Wi-Fi %q par le bouton WPS", result.SSID)
+		}
+	}()
 }
 
 func (c *Client) logf(format string, args ...any) {
