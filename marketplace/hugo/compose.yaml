@@ -21,12 +21,14 @@ services:
   web:
     image: nginx:1.30-alpine
     restart: unless-stopped
-    # Sert le dernier site construit sans erreur (volume public, dossier site).
+    # Sert le dernier site construit sans erreur (volume public, dossier site) ;
+    # sous l'adresse internet du Pi (https://<adresse>/<nom>/, Traefik pose
+    # X-Forwarded-Prefix), la copie construite pour ce chemin (site/.pi-path).
     command:
       - sh
       - -c
       - |
-        printf '%s\n' 'server {' '  listen 80;' '  absolute_redirect off;' '  root /srv/site;' '  index index.html;' '  location / { try_files $$uri $$uri/ $$uri.html =404; }' '  error_page 404 /404.html;' '}' > /etc/nginx/conf.d/default.conf
+        printf '%s\n' 'server {' '  listen 80;' '  absolute_redirect off;' '  set $$site /srv/site;' '  if ($$http_x_forwarded_prefix) { set $$site /srv/site/.pi-path; }' '  root $$site;' '  index index.html;' '  location / { try_files $$uri $$uri/ $$uri.html =404; }' '  error_page 404 /404.html;' '}' > /etc/nginx/conf.d/default.conf
         exec nginx -g 'daemon off;'
     volumes:
       - public:/srv:ro
@@ -40,13 +42,16 @@ services:
     restart: unless-stopped
     environment:
       SITE_URL: https://${PI_HOST}/
+      # Chemin du service sous l'adresse internet du Pi.
+      SITE_PATH: /${PI_INSTANCE}/
       SITE_GENERATOR: Hugo
     entrypoint:
       - sh
       - -c
       - |
         build() {
-          hugo --source /work --destination /public/next --baseURL "$$SITE_URL" --minify
+          hugo --source /work --destination /public/next --baseURL "$$SITE_URL" --minify &&
+            hugo --source /work --destination /public/next/.pi-path --baseURL "$$SITE_PATH" --minify
         }
         signature() {
           find /src \( -name node_modules -o -name .git -o -name '.pi-appliance-build*' \) -prune -o -type f -exec stat -c '%n %s %Y' {} + 2>/dev/null | md5sum
@@ -64,6 +69,8 @@ services:
           rm -rf /public/next
           mkdir -p /public/next
           printf '%s\n' '<!doctype html>' '<html lang="fr"><meta charset="utf-8"><title>Site en construction</title>' '<body style="font-family:sans-serif;text-align:center;margin-top:20vh">' "<h1>Site en construction</h1><p>Déposez les fichiers source de votre site $$SITE_GENERATOR.</p></body></html>" > /public/next/index.html
+          mkdir -p /public/next/.pi-path
+          cp /public/next/index.html /public/next/.pi-path/index.html
           publish
         }
         mkdir -p /src /work /public /cache

@@ -1,2 +1,0 @@
-- vois pourquoi sa faild :https://github.com/gmoulard/pi-appliance/actions/runs/45064995678
-- purge le doudou des actions réalisées et mets-le dans le fichier Todo-done.MD

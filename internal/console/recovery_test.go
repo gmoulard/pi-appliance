@@ -63,6 +63,7 @@ func (m *fakeMailer) take() []sentMail {
 // forgot : POST api/password/forgot arrivé à l'adresse host.
 func (f fixture) forgot(host, body string) *httptest.ResponseRecorder {
 	request := httptest.NewRequest(http.MethodPost, "/pi-appliance/api/password/forgot", strings.NewReader(body))
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "192.168.1.20:5000"
 	request.Host = host
 	request.Header.Set("Content-Type", "application/json")

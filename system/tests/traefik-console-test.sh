@@ -125,12 +125,22 @@ import sys
 import urllib.error
 import urllib.request
 
+
+# Redirection non suivie : son code et son adresse (Location) sont vérifiés.
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args):
+        return None
+
+
+opener = urllib.request.build_opener(NoRedirect, urllib.request.HTTPSHandler(context=ssl._create_unverified_context()))
 request = urllib.request.Request(sys.argv[1], headers={"Host": sys.argv[2]})
 try:
-    response = urllib.request.urlopen(request, context=ssl._create_unverified_context())
+    response = opener.open(request)
     status, body = response.status, response.read()
 except urllib.error.HTTPError as error:
     status, body = error.code, error.read()
+    if 300 <= status < 400:
+        body = (error.headers.get("Location") or "").encode()
 
 expected = int(sys.argv[3])
 if status != expected:
@@ -141,7 +151,7 @@ print(status)
 EOF
 
 docker run -d --name "$BACKEND" --network "$NET10" --network-alias "$BACKEND" "$PYTHON_IMAGE" \
-	python -c 'from http.server import BaseHTTPRequestHandler,HTTPServer; H=type("H",(BaseHTTPRequestHandler,),{"do_GET":lambda s:(s.send_response(200),s.end_headers(),s.wfile.write(b"service backend "+s.path.encode()))}); HTTPServer(("0.0.0.0",80),H).serve_forever()' >/dev/null
+	python -c 'from http.server import BaseHTTPRequestHandler,HTTPServer; H=type("H",(BaseHTTPRequestHandler,),{"do_GET":lambda s:(s.send_response(200),s.end_headers(),s.wfile.write(b"service backend "+s.path.encode()+b" prefix="+(s.headers.get("X-Forwarded-Prefix") or "").encode()))}); HTTPServer(("0.0.0.0",80),H).serve_forever()' >/dev/null
 docker run -d --name "$PROXY" --network "$NET10" --network-alias "$PROXY" \
 	-v "$VOLUME_TMP/traefik.yml:/etc/traefik/traefik.yml:ro" \
 	-v "$VOLUME_TMP/dynamic:/etc/traefik/dynamic:ro" \
@@ -225,6 +235,67 @@ request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /pi-appliance/
 request "$NET_PUBLIC" autre.test 200 "/pi-appliance/erreur/404" >/dev/null
 request "$NET_PUBLIC" service.test 200 "service backend" >/dev/null
 request "$NET10" console.test 502 >/dev/null
+
+# Services sur internet sous un chemin de l'adresse du Pi (spécification 8.2,
+# TODO-3.17) : fichier écrit par la console (services_internet.go,
+# traefikServices), ici avec les services de test au lieu de pi-<nom>@docker.
+cat >"$TMP/dynamic/services-internet.yml" <<'EOF'
+http:
+  routers:
+    pi-hugo-internet:
+      entryPoints: [websecure]
+      rule: "(Host(`console.test`)) && (Path(`/hugo`) || PathPrefix(`/hugo/`))"
+      priority: 10
+      middlewares: [pi-hugo-internet-slash@file, pi-appliance-errors@file, pi-hugo-internet-strip@file]
+      service: test-service@file
+      tls:
+        certResolver: letsencrypt
+    pi-panne-internet:
+      entryPoints: [websecure]
+      rule: "(Host(`console.test`)) && (Path(`/panne`) || PathPrefix(`/panne/`))"
+      priority: 10
+      middlewares: [pi-panne-internet-slash@file, pi-appliance-errors@file, pi-panne-internet-strip@file]
+      service: test-down@file
+      tls:
+        certResolver: letsencrypt
+  middlewares:
+    pi-hugo-internet-slash:
+      redirectRegex:
+        regex: '^(https?://[^/]+/hugo)(\?.*)?$'
+        replacement: '${1}/${2}'
+    pi-hugo-internet-strip:
+      stripPrefix:
+        prefixes: ["/hugo"]
+    pi-panne-internet-slash:
+      redirectRegex:
+        regex: '^(https?://[^/]+/panne)(\?.*)?$'
+        replacement: '${1}/${2}'
+    pi-panne-internet-strip:
+      stripPrefix:
+        prefixes: ["/panne"]
+EOF
+attempt=0
+until request "$NET_PUBLIC" console.test 200 "service backend /page prefix=/hugo" /hugo/page >/dev/null 2>&1; do
+	attempt=$((attempt + 1))
+	if [ "$attempt" -ge 30 ]; then
+		docker logs "$PROXY" >&2 || true
+		echo "Traefik n'a pas pris les services sur internet" >&2
+		exit 1
+	fi
+	sleep 1
+done
+request "$NET_PUBLIC" console.test 200 "service backend / prefix=/hugo" /hugo/ >/dev/null
+request "$NET_PUBLIC" console.test 302 "/hugo/" /hugo >/dev/null
+request "$NET_PUBLIC" console.test 502 "/pi-appliance/erreur/502" /panne/ >/dev/null
+# Jamais /hugo2, ni la console, api/hello, l'authentification déléguée.
+request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /hugo2/ >/dev/null
+request "$NET_PUBLIC" console.test 502 "" /pi-appliance/ >/dev/null
+request "$NET_PUBLIC" console.test 502 "" /pi-appliance/api/hello >/dev/null
+request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /pi-appliance/api/auth/forward >/dev/null
+# Sous une autre adresse, le chemin n'est pas publié.
+request "$NET_PUBLIC" autre.test 200 "/pi-appliance/erreur/404" /hugo/ >/dev/null
+rm "$TMP/dynamic/services-internet.yml"
+
 # Refermée : fichier retiré, la console redevient inaccessible depuis internet.
 rm "$TMP/dynamic/console-internet.yml"
 wait_for 200 console.test

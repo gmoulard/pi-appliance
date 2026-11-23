@@ -336,6 +336,8 @@ func call(ctx context.Context, env Env, method, path string, body, out any) erro
 		return err
 	}
 	request.Header.Set("Authorization", "Bearer "+strings.TrimSpace(string(token)))
+	// Exigé par la console sur ce qui modifie (apiHeaderGuard).
+	request.Header.Set("X-Pi-Appliance", "1")
 	if body != nil {
 		request.Header.Set("Content-Type", "application/json")
 	}

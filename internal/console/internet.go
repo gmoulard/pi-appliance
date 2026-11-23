@@ -163,33 +163,55 @@ func traefikInternet(enabled bool, hosts []string) string {
 	return b.String()
 }
 
-// syncTraefik écrit ou retire console-internet.yml selon le réglage et les
-// adresses du moment ; rien n'est réécrit si le contenu ne change pas.
+// syncTraefik écrit ou retire console-internet.yml et services-internet.yml
+// selon les réglages, les adresses et les services du moment ; rien n'est
+// réécrit si le contenu ne change pas.
 func (c *console) syncTraefik() error {
-	if c.TraefikInternetFile == "" {
+	if c.TraefikInternetFile == "" && c.ServicesInternetFile == "" {
 		return nil
 	}
 	internetMu.Lock()
 	defer internetMu.Unlock()
-	content := traefikInternet(c.internetEnabled(), c.internetHosts())
+	hosts := c.internetHosts()
+	if err := writeDynamic(c.TraefikInternetFile, traefikInternet(c.internetEnabled(), hosts)); err != nil {
+		return err
+	}
+	return writeDynamic(c.ServicesInternetFile, traefikServices(hosts, c.publications()))
+}
+
+// syncTraefikNow : après un changement (accès d'un service, installation,
+// désinstallation), sans attendre la vérification de chaque minute.
+func (c *console) syncTraefikNow() {
+	if err := c.syncTraefik(); err != nil {
+		log.Printf("services sur internet, Traefik : %v", err)
+	}
+}
+
+// writeDynamic écrit un fichier de la configuration dynamique de Traefik, ou
+// le retire quand content est vide ; rien sans chemin.
+func writeDynamic(path, content string) error {
+	if path == "" {
+		return nil
+	}
 	if content == "" {
-		if err := os.Remove(c.TraefikInternetFile); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		if err := os.Remove(path); err != nil && !errors.Is(err, fs.ErrNotExist) {
 			return err
 		}
 		return nil
 	}
-	if current, err := os.ReadFile(c.TraefikInternetFile); err == nil && string(current) == content {
+	if current, err := os.ReadFile(path); err == nil && string(current) == content {
 		return nil
 	}
-	temporary := c.TraefikInternetFile + ".tmp"
+	temporary := path + ".tmp"
 	if err := os.WriteFile(temporary, []byte(content), 0o644); err != nil {
 		return err
 	}
-	return os.Rename(temporary, c.TraefikInternetFile)
+	return os.Rename(temporary, path)
 }
 
-// RunInternet tient console-internet.yml à jour (adresse DuckDNS ou
-// pi-appliance.com réglée après l'ouverture, réglage changé) jusqu'à la fin de ctx.
+// RunInternet tient console-internet.yml et services-internet.yml à jour
+// (adresse DuckDNS ou pi-appliance.com réglée après l'ouverture, réglage
+// changé, service mis à jour) jusqu'à la fin de ctx.
 func RunInternet(ctx context.Context, config Config, every time.Duration) {
 	c := &console{Config: config}
 	for {

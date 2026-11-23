@@ -421,7 +421,6 @@ piTranslations("es", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "Los administradores de este Pi, solo en casa (y por la VPN)",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "Atención: esta aplicación tiene el control de todo el Pi. Solo está abierta a los administradores, desde casa. No modifique en esta aplicación los servicios instalados por la consola: sus actualizaciones y copias de seguridad podrían dejar de funcionar.",
   "Qui peut l'ouvrir": "Quién puede abrirlo",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Fuera de casa, inicie sesión primero aquí, en casa: la página de inicio de sesión de la consola aún no se abre desde internet.",
   "Changement de l'accès à {0}… Le service redémarre.": "Cambiando el acceso a {0}… El servicio se reinicia.",
   "{0} : accès changé.": "{0}: acceso cambiado.",
   "Administration du système": "Administración del sistema",
@@ -734,5 +733,14 @@ piTranslations("es", {
   "Valider": "Validar",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "Su dirección de correo está verificada: en cada conexión, la consola le enviará un código.",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "Su dirección {0} aún no está verificada: verifíquela en «Mi cuenta», se le enviará un código.",
-  "Vérifier mon adresse e-mail": "Verificar mi dirección de correo"
+  "Vérifier mon adresse e-mail": "Verificar mi dirección de correo",
+  "Ce service ne s'ouvre qu'à la maison.": "Este servicio solo se abre en casa.",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "Desde internet, este servicio se abrirá cuando la consola esté abierta en internet (Dirección en Internet): el inicio de sesión pasa por ella.",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "Este servicio aún no se abre desde internet: la Pi no tiene dirección en internet (Dirección en Internet).",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "Este servicio solo se abre en casa: no funciona bajo una dirección compartida con la consola.",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "Actualice este servicio para abrirlo desde internet.",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "Este servicio no se abre desde internet: su nombre está reservado a la consola. Reinstálelo con otro nombre.",
+  "Depuis internet : {0}": "Desde internet: {0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "En internet, este servicio comparte la dirección de la consola: instale solo servicios de confianza, porque una página de este servicio podría actuar en la consola en nombre de una persona conectada.",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "Sus servicios «Todo el mundo, en internet» también se abren desde internet, en la dirección de la Pi seguida de su nombre (por ejemplo https://casa.ejemplo.es/hugo/), sin nada que crear en su proveedor de nombre de dominio; los de las personas con cuenta, solo cuando la consola está abierta en internet."
 });

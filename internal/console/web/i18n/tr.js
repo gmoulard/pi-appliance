@@ -421,7 +421,6 @@ piTranslations("tr", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "Bu Pi'nin yöneticileri, yalnızca evde (ve VPN üzerinden)",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "Dikkat: bu uygulama Pi'nin tamamını kontrol eder. Yalnızca yöneticilere, evden açıktır. Konsolun kurduğu hizmetleri bu uygulamada değiştirmeyin: güncellemeleri ve yedekleri artık çalışmayabilir.",
   "Qui peut l'ouvrir": "Kim açabilir",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Ev dışındayken önce burada, evde oturum açın: konsolun oturum açma sayfası henüz internetten açılmıyor.",
   "Changement de l'accès à {0}… Le service redémarre.": "{0} erişimi değiştiriliyor… Hizmet yeniden başlıyor.",
   "{0} : accès changé.": "{0}: erişim değiştirildi.",
   "Administration du système": "Sistem yönetimi",
@@ -734,5 +733,14 @@ piTranslations("tr", {
   "Valider": "Onayla",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "E-posta adresiniz doğrulandı: her girişte konsol size bir kod gönderecek.",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "{0} adresiniz henüz doğrulanmadı: «Hesabım» bölümünden doğrulayın, size bir kod gönderilecek.",
-  "Vérifier mon adresse e-mail": "E-posta adresimi doğrula"
+  "Vérifier mon adresse e-mail": "E-posta adresimi doğrula",
+  "Ce service ne s'ouvre qu'à la maison.": "Bu hizmet yalnızca evde açılır.",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "İnternetten bu hizmet, konsol internette açıldığında açılacak (İnternet adresi): oturum açma konsoldan geçer.",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "Bu hizmet henüz internetten açılmıyor: Pi'nin internet adresi yok (İnternet adresi).",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "Bu hizmet yalnızca evde açılır: konsolla paylaşılan bir adres altında çalışmaz.",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "İnternetten açmak için bu hizmeti güncelleyin.",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "Bu hizmet internetten açılmaz: adı konsola ayrılmıştır. Başka bir adla yeniden kurun.",
+  "Depuis internet : {0}": "İnternetten: {0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "İnternette bu hizmet konsolun adresini paylaşır: yalnızca güvendiğiniz hizmetleri kurun, çünkü bu hizmetin bir sayfası oturum açmış bir kişi adına konsolda işlem yapabilir.",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "“Herkes, internette” hizmetleriniz internetten de açılır; adresleri Pi'nin adresi ve ardından adlarıdır (örneğin https://ev.ornek.com.tr/hugo/), alan adı sağlayıcınızda bir şey oluşturmanız gerekmez; hesabı olan kişilere ait olanlar yalnızca konsol internette açıkken açılır."
 });

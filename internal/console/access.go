@@ -31,6 +31,8 @@ func (c *console) setAccess(w http.ResponseWriter, r *http.Request) {
 		writeServiceError(w, err)
 		return
 	}
+	// Publication sur internet selon le nouvel accès (services_internet.go).
+	c.syncTraefikNow()
 	writeJSON(w, http.StatusOK, instance)
 }
 

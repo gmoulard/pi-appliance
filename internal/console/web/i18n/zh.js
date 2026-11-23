@@ -421,7 +421,6 @@ piTranslations("zh", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "此 Pi 的管理员，仅限在家（及通过 VPN）",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "注意：此应用可以完全控制整个 Pi。只有管理员可以在家中打开它。请不要在此应用中修改由控制台安装的服务，否则它们的更新和备份可能会失效。",
   "Qui peut l'ouvrir": "谁可以打开",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "在外面使用前，请先在家里在这里登录：控制台的登录页面暂时还不能从互联网打开。",
   "Changement de l'accès à {0}… Le service redémarre.": "正在更改 {0} 的访问权限… 服务正在重启。",
   "{0} : accès changé.": "{0}：访问权限已更改。",
   "Administration du système": "系统管理",
@@ -734,5 +733,14 @@ piTranslations("zh", {
   "Valider": "确认",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "您的电子邮件地址已验证：每次登录时，控制台都会向您发送验证码。",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "您的地址 {0} 尚未验证：请在“我的账户”中验证，我们会向您发送验证码。",
-  "Vérifier mon adresse e-mail": "验证我的电子邮件地址"
+  "Vérifier mon adresse e-mail": "验证我的电子邮件地址",
+  "Ce service ne s'ouvre qu'à la maison.": "此服务只能在家中打开。",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "从互联网打开此服务，需要先在互联网上开放控制台（互联网地址）：登录要经过控制台。",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "此服务还不能从互联网打开：Pi 还没有互联网地址（互联网地址）。",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "此服务只能在家中打开：它无法在与控制台共用的地址下运行。",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "请更新此服务，以便从互联网打开它。",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "此服务不能从互联网打开：它的名称保留给控制台使用。请用另一个名称重新安装。",
+  "Depuis internet : {0}": "从互联网：{0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "在互联网上，此服务与控制台共用地址：只安装您信任的服务，因为此服务的页面可能以已登录用户的名义在控制台中操作。",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "您设为“所有人（互联网上）”的服务也可以从互联网打开，地址是 Pi 的地址加上服务名称（例如 https://home.example.com/hugo/），无需在域名服务商处创建任何内容；面向有账户的人的服务，只有在控制台于互联网上开放时才能打开。"
 });

@@ -41,7 +41,10 @@ const CONTROLS = [
 ];
 
 async function api(path, options = {}) {
-  const response = await fetch(`api/${path}`, options);
+  // X-Pi-Appliance : exigé par la console sur ce qui modifie (apiHeaderGuard) ;
+  // un formulaire d'une autre page ne sait pas le poser.
+  const headers = { ...(options.headers || {}), "X-Pi-Appliance": "1" };
+  const response = await fetch(`api/${path}`, { ...options, headers });
   if (response.status === 204) {
     return null;
   }
@@ -133,8 +136,33 @@ function showMessage(lines, kind) {
   message.hidden = false;
 }
 
+// Adresse de la maison : nom en .local, localhost, adresse IP privée ou locale.
+function homeAddress(host) {
+  const name = host.toLowerCase().replace(/^\[|\]$/g, "");
+  if (name.endsWith(".local") || name === "localhost") return true;
+  const ipv4 = name.match(/^(\d+)\.(\d+)\.\d+\.\d+$/);
+  if (ipv4) {
+    const [a, b] = [Number(ipv4[1]), Number(ipv4[2])];
+    return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254);
+  }
+  return name === "::1" || /^(fc|fd|fe8|fe9|fea|feb)/.test(name);
+}
+
+// Adresse d'un service sur internet (spécification 8.2, TODO-3.17) :
+// https://<adresse internet du Pi>/<nom>/, ou pourquoi il n'en a pas.
+const INTERNET_REASONS = {
+  home: () => t("Ce service ne s'ouvre qu'à la maison."),
+  console: () => t("Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle."),
+  no_address: () => t("Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet)."),
+  subpath: () => t("Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console."),
+  update: () => t("Mettez ce service à jour pour l'ouvrir depuis internet."),
+  reserved: () => t("Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom."),
+};
+
 async function loadServices() {
-  const { services } = await api("services");
+  const { services, internet } = await api("services");
+  // Console ouverte depuis internet : « Ouvrir » mène à l'adresse internet.
+  const outside = Boolean(internet) || !homeAddress(window.location.hostname);
   noServices.hidden = services.length > 0;
   showServicesSummary(services);
   serviceUpdates = services.filter((service) => service.update_available).length;
@@ -149,9 +177,15 @@ async function loadServices() {
     // Un service sans page web (VPN) n'a pas d'adresse à ouvrir.
     if (!service.no_web_page) {
       const open = element("a", t("Ouvrir"), "button-outline");
-      open.href = `https://${service.address}`;
-      open.target = "_blank";
-      open.rel = "noopener";
+      const href = outside ? service.internet_address : `https://${service.address}`;
+      if (href) {
+        open.href = href;
+        open.target = "_blank";
+        open.rel = "noopener";
+      } else {
+        open.classList.add("disabled");
+        open.setAttribute("aria-disabled", "true");
+      }
       actions.append(open);
     }
     // Liens de partage d'Etherpad : pour toute personne connectée.
@@ -195,8 +229,16 @@ async function loadServices() {
     detail.append(element("p", where, "address"), state);
     if (!service.no_web_page) {
       // Adresse <service>-<nom>.local, certificat propre à ce service (mdns.sh).
-      if (service.address.endsWith(".local")) {
+      if (service.address.endsWith(".local") && !outside) {
         detail.append(element("p", t("La première fois, le navigateur affiche une alerte de sécurité pour cette adresse : c'est normal à la maison, vous pouvez continuer."), "meta"));
+      }
+      if (service.internet_address) {
+        detail.append(element("p", t("Depuis internet : {0}", service.internet_address), "address"));
+        if (currentAccount && currentAccount.role === "admin") {
+          detail.append(element("p", t("Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée."), "note"));
+        }
+      } else if (INTERNET_REASONS[service.internet_reason] && (outside || !["home", "no_address"].includes(service.internet_reason))) {
+        detail.append(element("p", INTERNET_REASONS[service.internet_reason](), outside ? "warning" : "meta"));
       }
       detail.append(accessChooser(service));
     }
@@ -1033,14 +1075,12 @@ function accessField(value) {
 // change, le service redémarre.
 function accessChooser(service) {
   const box = element("div", undefined, "access");
-  const hint = element("p", t("Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet."), "meta");
-  hint.hidden = service.access !== "users";
   if (service.access === ADMINS_ACCESS) {
     box.append(element("p", `${t("Qui peut l'ouvrir")} : ${ADMINS_LABEL}`, "meta"), element("p", ADMINS_WARNING, "note"));
     return box;
   }
   if (!currentAccount || currentAccount.role !== "admin") {
-    box.append(element("p", `${t("Qui peut l'ouvrir")} : ${accessLabel(service.access)}`, "meta"), hint);
+    box.append(element("p", `${t("Qui peut l'ouvrir")} : ${accessLabel(service.access)}`, "meta"));
     return box;
   }
   const label = element("label", t("Qui peut l'ouvrir"));
@@ -1057,8 +1097,9 @@ function accessChooser(service) {
         body: JSON.stringify({ access: select.value }),
       });
       service.access = instance.access;
-      hint.hidden = service.access !== "users";
       showMessage([t("{0} : accès changé.", service.name)], "success");
+      // Adresse sur internet selon le nouvel accès.
+      loadServices().catch(() => {});
     } catch (error) {
       select.value = previous || "public";
       showMessage([error.message], "error");
@@ -1066,7 +1107,7 @@ function accessChooser(service) {
       select.disabled = false;
     }
   });
-  box.append(label, hint);
+  box.append(label);
   return box;
 }
 

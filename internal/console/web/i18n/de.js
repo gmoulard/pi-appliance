@@ -421,7 +421,6 @@ piTranslations("de", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "Die Administratoren dieses Pi, nur zu Hause (und über das VPN)",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "Achtung: Diese Anwendung hat die volle Kontrolle über den ganzen Pi. Sie ist nur für Administratoren und nur von zu Hause aus erreichbar. Ändern Sie in dieser Anwendung keine Dienste, die von der Konsole installiert wurden: Deren Updates und Sicherungen könnten sonst nicht mehr funktionieren.",
   "Qui peut l'ouvrir": "Wer darf es öffnen",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Unterwegs: Melden Sie sich zuerst hier zu Hause an, die Anmeldeseite der Konsole lässt sich noch nicht aus dem Internet öffnen.",
   "Changement de l'accès à {0}… Le service redémarre.": "Zugriff auf {0} wird geändert… Der Dienst startet neu.",
   "{0} : accès changé.": "{0}: Zugriff geändert.",
   "Administration du système": "Systemverwaltung",
@@ -734,5 +733,14 @@ piTranslations("de", {
   "Valider": "Bestätigen",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "Ihre E-Mail-Adresse ist bestätigt: Bei jeder Anmeldung sendet Ihnen die Konsole einen Code.",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "Ihre Adresse {0} ist noch nicht bestätigt: Bestätigen Sie sie unter „Mein Konto“, Sie erhalten einen Code.",
-  "Vérifier mon adresse e-mail": "Meine E-Mail-Adresse bestätigen"
+  "Vérifier mon adresse e-mail": "Meine E-Mail-Adresse bestätigen",
+  "Ce service ne s'ouvre qu'à la maison.": "Dieser Dienst öffnet sich nur zu Hause.",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "Aus dem Internet öffnet sich dieser Dienst, sobald die Konsole im Internet geöffnet ist (Internetadresse): Die Anmeldung läuft über sie.",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "Dieser Dienst lässt sich noch nicht aus dem Internet öffnen: Der Pi hat keine Internetadresse (Internetadresse).",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "Dieser Dienst öffnet sich nur zu Hause: Er funktioniert nicht unter einer Adresse, die er mit der Konsole teilt.",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "Aktualisieren Sie diesen Dienst, um ihn aus dem Internet zu öffnen.",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "Dieser Dienst lässt sich nicht aus dem Internet öffnen: Sein Name ist der Konsole vorbehalten. Installieren Sie ihn unter einem anderen Namen neu.",
+  "Depuis internet : {0}": "Aus dem Internet: {0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "Im Internet teilt dieser Dienst die Adresse der Konsole: Installieren Sie nur vertrauenswürdige Dienste, denn eine Seite dieses Dienstes könnte in der Konsole im Namen einer angemeldeten Person handeln.",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "Ihre Dienste „Alle, im Internet“ öffnen sich auch aus dem Internet, unter der Adresse des Pi gefolgt von ihrem Namen (zum Beispiel https://zuhause.beispiel.de/hugo/), ohne etwas bei Ihrem Domain-Anbieter einzurichten; die für Personen mit Konto nur, wenn die Konsole im Internet geöffnet ist."
 });

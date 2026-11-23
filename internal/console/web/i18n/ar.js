@@ -421,7 +421,6 @@ piTranslations("ar", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "مسؤولو هذا الـ Pi، من المنزل فقط (وعبر VPN)",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "تنبيه: هذا التطبيق يتحكم في الـ Pi بالكامل. لا يُفتح إلا للمسؤولين، من المنزل. لا تعدّل في هذا التطبيق الخدمات التي ثبّتتها وحدة التحكم: فقد تتوقف تحديثاتها ونسخها الاحتياطية عن العمل.",
   "Qui peut l'ouvrir": "من يمكنه فتحه",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "خارج المنزل، سجّل الدخول أولًا هنا في المنزل: صفحة تسجيل الدخول إلى وحدة التحكم لا تُفتح من الإنترنت بعد.",
   "Changement de l'accès à {0}… Le service redémarre.": "جارٍ تغيير الوصول إلى {0}… تتم إعادة تشغيل الخدمة.",
   "{0} : accès changé.": "{0}: تم تغيير الوصول.",
   "Administration du système": "إدارة النظام",
@@ -734,5 +733,14 @@ piTranslations("ar", {
   "Valider": "تأكيد",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "تم التحقق من عنوان بريدك الإلكتروني: عند كل تسجيل دخول، سترسل لك وحدة التحكم رمزًا.",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "لم يتم التحقق من عنوانك {0} بعد: تحقق منه في «حسابي»، وسيُرسل إليك رمز.",
-  "Vérifier mon adresse e-mail": "التحقق من عنوان بريدي الإلكتروني"
+  "Vérifier mon adresse e-mail": "التحقق من عنوان بريدي الإلكتروني",
+  "Ce service ne s'ouvre qu'à la maison.": "هذه الخدمة لا تُفتح إلا في المنزل.",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "من الإنترنت، ستُفتح هذه الخدمة عندما تكون وحدة التحكم مفتوحة على الإنترنت (عنوان الإنترنت): تسجيل الدخول يمر عبرها.",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "لا تُفتح هذه الخدمة من الإنترنت بعد: ليس لجهاز Pi عنوان على الإنترنت (عنوان الإنترنت).",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "هذه الخدمة لا تُفتح إلا في المنزل: فهي لا تعمل تحت عنوان مشترك مع وحدة التحكم.",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "حدّث هذه الخدمة لفتحها من الإنترنت.",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "لا تُفتح هذه الخدمة من الإنترنت: اسمها محجوز لوحدة التحكم. أعد تثبيتها باسم آخر.",
+  "Depuis internet : {0}": "من الإنترنت: {0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "على الإنترنت، تتشارك هذه الخدمة عنوان وحدة التحكم: لا تثبّت إلا الخدمات الموثوقة، لأن صفحة من هذه الخدمة قد تتصرف في وحدة التحكم باسم شخص مسجّل الدخول.",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "خدماتك «الجميع، على الإنترنت» تُفتح أيضًا من الإنترنت، على عنوان جهاز Pi متبوعًا باسمها (مثلًا https://home.example.com/hugo/)، دون إنشاء أي شيء لدى مزوّد اسم النطاق؛ أما خدمات الأشخاص الذين لديهم حساب، فلا تُفتح إلا عندما تكون وحدة التحكم مفتوحة على الإنترنت."
 });

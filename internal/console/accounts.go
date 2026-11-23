@@ -350,9 +350,15 @@ func (c *console) forwardReturn(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "Cette adresse n'est pas celle d'un service de l'appliance.")
 		return
 	}
+	// Service sous un chemin de l'adresse internet du Pi : sa propre clé
+	// (<adresse>/<nom>), un code seulement s'il demande une connexion.
+	key, _, service, serviceProtected := c.forwardTarget(target.Host, target.EscapedPath())
+	if service {
+		protected = serviceProtected
+	}
 	cookie, err := r.Cookie(cookieName)
 	if protected && err == nil && statePattern.MatchString(request.State) {
-		if code, ok := c.Accounts.StartLoginCode(cookie.Value, hostOf(target), request.State); ok {
+		if code, ok := c.Accounts.StartLoginCode(cookie.Value, key, request.State); ok {
 			if target.RawQuery != "" {
 				target.RawQuery += "&"
 			}
@@ -409,12 +415,12 @@ func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly, 
 // pour tout <nom>.local (versions d'avant TODO-2.61) passe avant celui de
 // l'adresse.
 func (c *console) forwardAccount(r *http.Request) (auth.Account, bool) {
-	host := requestHostOf(r.Header.Get("X-Forwarded-Host"))
-	if host == "" {
+	key, _, _, _ := c.forwardTarget(r.Header.Get("X-Forwarded-Host"), r.Header.Get("X-Forwarded-Uri"))
+	if key == "" {
 		return auth.Account{}, false
 	}
 	for _, cookie := range r.CookiesNamed(forwardCookie) {
-		if account, ok := c.Accounts.ForwardSession(cookie.Value, host); ok {
+		if account, ok := c.Accounts.ForwardSession(cookie.Value, key); ok {
 			return account, true
 		}
 	}
@@ -434,7 +440,7 @@ func (c *console) loginCallback(w http.ResponseWriter, r *http.Request) bool {
 	path, rawQuery, _ := strings.Cut(r.Header.Get("X-Forwarded-Uri"), "?")
 	code, rest, found := takeParam(rawQuery, loginParam)
 	forwardedHost := r.Header.Get("X-Forwarded-Host")
-	host := requestHostOf(forwardedHost)
+	host, cookiePath, _, _ := c.forwardTarget(forwardedHost, path)
 	if !found || host == "" {
 		return false
 	}
@@ -459,14 +465,14 @@ func (c *console) loginCallback(w http.ResponseWriter, r *http.Request) bool {
 		http.SetCookie(w, &http.Cookie{
 			Name:     forwardCookie,
 			Value:    token,
-			Path:     "/",
+			Path:     cookiePath,
 			MaxAge:   int(auth.SessionLifetime / time.Second),
 			HttpOnly: true,
 			Secure:   scheme == "https",
 			// Lax : le cookie suit un lien venu d'un autre site vers le service.
 			SameSite: http.SameSiteLaxMode,
 		})
-		http.SetCookie(w, &http.Cookie{Name: stateCookie, Value: "", Path: "/", MaxAge: -1, HttpOnly: true, Secure: scheme == "https", SameSite: http.SameSiteLaxMode})
+		http.SetCookie(w, &http.Cookie{Name: stateCookie, Value: "", Path: cookiePath, MaxAge: -1, HttpOnly: true, Secure: scheme == "https", SameSite: http.SameSiteLaxMode})
 		// NE PAS renvoyer une adresse relative : Traefik la lirait par rapport à l'adresse de la console.
 		http.Redirect(w, r, target, http.StatusFound)
 		return true
@@ -524,13 +530,15 @@ func (c *console) forwardLogin(w http.ResponseWriter, r *http.Request, onConsole
 		uri = "/"
 	}
 	original := scheme + "://" + host + uri
-	// Cockpit (onConsoleHost) est servi sous l'adresse même de la console.
+	// Cockpit (onConsoleHost) et un service sous un chemin de l'adresse
+	// internet du Pi sont servis sous l'adresse même de la console.
+	_, cookiePath, service, _ := c.forwardTarget(host, uri)
 	consoleHost := host
-	if !onConsoleHost {
+	if !onConsoleHost && !service {
 		consoleHost = c.consoleHost(host)
 	}
 	state := randomState()
-	http.SetCookie(w, &http.Cookie{Name: stateCookie, Value: state, Path: "/", MaxAge: stateLifetime, HttpOnly: true, Secure: scheme == "https", SameSite: http.SameSiteLaxMode})
+	http.SetCookie(w, &http.Cookie{Name: stateCookie, Value: state, Path: cookiePath, MaxAge: stateLifetime, HttpOnly: true, Secure: scheme == "https", SameSite: http.SameSiteLaxMode})
 	login := scheme + "://" + consoleHost + BasePath + "/?return=" + url.QueryEscape(original) + "&state=" + state
 	w.Header().Set("Cache-Control", "no-store")
 	http.Redirect(w, r, login, http.StatusFound)
