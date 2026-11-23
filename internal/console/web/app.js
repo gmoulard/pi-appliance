@@ -460,8 +460,8 @@ function nowTiles() {
   return tiles;
 }
 
-// showHeroLoad : charge du Pi dans la barre du haut, à côté de « Appliance en
-// service. » (administrateur, api/system) : processeur, mémoire, et disque des
+// showHeroLoad : charge du Pi dans la barre du haut, sur la même ligne que
+// « Appliance en service. » (administrateur, api/system) : processeur, mémoire, et disque des
 // données (le disque USB s'il y en a un, sinon la carte SD).
 const heroLoad = document.getElementById("heroLoad");
 function showHeroLoad() {
