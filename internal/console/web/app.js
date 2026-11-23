@@ -1993,17 +1993,13 @@ async function loadBackups() {
 // décide. Les correctifs de sécurité du système passent en premier, en rouge ;
 // une nouvelle version de pi-appliance s'installe à la demande, avec retour
 // automatique à l'ancienne si elle ne démarre pas.
-// Administration du système par Cockpit (spécification 6.4) : installée à la
-// demande, avec le compte système pi-admin dont l'administrateur choisit le
-// mot de passe ; ouverte sous /cockpit/, depuis la maison seulement.
+// Cockpit (spécification 6.4) : installé à la demande ; ouvert sous
+// /cockpit/, depuis la maison seulement, aux administrateurs, avec leur compte
+// de la console (connexion unique, compte système créé par la console).
 const cockpitBox = document.getElementById("cockpitBox");
 const cockpitState = document.getElementById("cockpitState");
-const cockpitForm = document.getElementById("cockpitForm");
-const cockpitSubmit = document.getElementById("cockpitSubmit");
-const cockpitCancel = document.getElementById("cockpitCancel");
-const cockpitActions = document.getElementById("cockpitActions");
+const cockpitInstall = document.getElementById("cockpitInstall");
 const cockpitOpen = document.getElementById("cockpitOpen");
-const cockpitPassword = document.getElementById("cockpitPassword");
 const cockpitRemove = document.getElementById("cockpitRemove");
 let cockpitStatus = null;
 let cockpitTimer = null;
@@ -2013,8 +2009,6 @@ icons.cockpit = "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 12l4-4M12 7v1M7 12h1M16
 tint(cockpitBox, "cockpit");
 cockpitBox.querySelector(".card-head").prepend(tile("cockpit"));
 cockpitBox.append(element("p", t("{0} · licence {1}", t("Administration"), "LGPL-2.1"), "meta"), tagList(["administration"]));
-// Changement du mot de passe demandé (formulaire ouvert sur Cockpit installé).
-let cockpitNewPassword = false;
 
 function cockpitBusy(status) {
   return Boolean(status && status.job && (status.job.state === "starting" || status.job.state === "running"));
@@ -2032,23 +2026,24 @@ function showCockpit() {
       ? t("Désinstallation en cours…")
       : t("Installation en cours… Cela prend quelques minutes.");
   } else if (status.installed && status.active) {
-    state = t("Installée. Pour vous y connecter : identifiant {0}, avec le mot de passe choisi à l'installation.", status.user);
+    state = status.user
+      ? t("Installé. Vous y entrez avec votre compte pi-appliance (compte {0} sur le Pi).", status.user)
+      : t("Installé. Vous y entrez avec votre compte pi-appliance : votre compte sur le Pi est créé à la première ouverture.");
   } else if (status.installed) {
     color = "red";
-    state = t("Installée, mais elle ne répond pas. Redémarrez le Pi.");
+    state = t("Installé, mais il ne répond pas. Redémarrez le Pi.");
   } else if (job && job.state === "failed") {
     color = "red";
     state = job.message || t("L'opération a échoué. Réessayez plus tard.");
   } else {
     color = "";
-    state = t("Pas installée. Choisissez un mot de passe d'au moins 12 caractères : il servira à vous y connecter, avec l'identifiant {0}.", status.user);
+    state = t("Pas installé.");
   }
   cockpitState.replaceChildren(element("span", undefined, `dot ${color}`), element("span", state));
   const installed = status.installed && !busy;
-  cockpitForm.hidden = busy || (installed && !cockpitNewPassword);
-  cockpitSubmit.textContent = installed ? t("Changer le mot de passe") : t("Installer l'administration du système");
-  cockpitCancel.hidden = !installed;
-  cockpitActions.hidden = !installed || cockpitNewPassword;
+  cockpitInstall.hidden = busy || installed;
+  cockpitOpen.hidden = !installed;
+  cockpitRemove.hidden = !installed;
   cockpitOpen.disabled = !status.active;
 }
 
@@ -2067,8 +2062,9 @@ async function loadCockpit() {
     }
     cockpitBox.hidden = false;
     cockpitState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
-    cockpitForm.hidden = true;
-    cockpitActions.hidden = true;
+    cockpitInstall.hidden = true;
+    cockpitOpen.hidden = true;
+    cockpitRemove.hidden = true;
     return true;
   }
   cockpitBox.hidden = false;
@@ -2086,47 +2082,26 @@ function watchCockpit() {
     cockpitTimer = null;
     const job = cockpitStatus && cockpitStatus.job;
     if (job && job.state === "done") {
-      showMessage([action === "remove" ? t("L'administration du système est désinstallée.") : t("L'administration du système est installée.")], "success");
+      showMessage([action === "remove" ? t("Cockpit est désinstallé.") : t("Cockpit est installé.")], "success");
     } else if (job && job.state === "failed") {
       showMessage([job.message || t("L'opération a échoué. Réessayez plus tard.")], "error");
     }
   }, 5000);
 }
 
-cockpitForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const data = new FormData(cockpitForm);
-  if (data.get("password") !== data.get("confirm")) {
-    showMessage([t("Les deux mots de passe ne sont pas identiques.")], "error");
-    return;
-  }
-  const change = cockpitNewPassword;
-  if (!change && !window.confirm(t("Installer l'administration du système ? Elle donne la main sur tout le Pi, à vous seulement, depuis la maison."))) return;
-  cockpitSubmit.disabled = true;
+cockpitInstall.addEventListener("click", async () => {
+  if (!window.confirm(t("Installer Cockpit ? Il donne la main sur tout le Pi aux administrateurs de la console, depuis la maison."))) return;
+  cockpitInstall.disabled = true;
   try {
-    await api(change ? "cockpit/password" : "cockpit/install", jsonBody("POST", { password: data.get("password") }));
-    cockpitForm.reset();
-    cockpitNewPassword = false;
-    showMessage([change ? t("Le mot de passe de l'administration du système est changé.") : t("Installation lancée : elle prend quelques minutes.")], "success");
+    await api("cockpit/install", { method: "POST" });
+    showMessage([t("Installation lancée : elle prend quelques minutes.")], "success");
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
-    cockpitSubmit.disabled = false;
+    cockpitInstall.disabled = false;
   }
   await loadCockpit();
-  if (!change) watchCockpit();
-});
-
-cockpitPassword.addEventListener("click", () => {
-  cockpitNewPassword = true;
-  showCockpit();
-  cockpitForm.elements.password.focus();
-});
-
-cockpitCancel.addEventListener("click", () => {
-  cockpitNewPassword = false;
-  cockpitForm.reset();
-  showCockpit();
+  watchCockpit();
 });
 
 // Ouvre Cockpit dans un nouvel onglet, avec le cookie délégué de la console
@@ -2148,7 +2123,7 @@ cockpitOpen.addEventListener("click", async () => {
 });
 
 cockpitRemove.addEventListener("click", async () => {
-  if (!window.confirm(t("Désinstaller l'administration du système ? Le compte {0} sera supprimé.", cockpitStatus.user))) return;
+  if (!window.confirm(t("Désinstaller Cockpit ? Les comptes du Pi créés pour Cockpit seront supprimés."))) return;
   cockpitRemove.disabled = true;
   try {
     await api("cockpit", { method: "DELETE" });
@@ -4173,7 +4148,6 @@ function showAuth(mode) {
   clearInterval(cockpitTimer);
   cockpitTimer = null;
   cockpitStatus = null;
-  cockpitNewPassword = false;
 }
 
 authForm.addEventListener("submit", async (event) => {

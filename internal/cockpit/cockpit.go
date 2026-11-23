@@ -16,9 +16,9 @@
 // Package cockpit installe, à la demande de l'administrateur, Cockpit, qui
 // administre le système du Pi depuis le navigateur (spécification 6.4), par
 // le script cockpit.sh de l'image. Cockpit est servi par Traefik sous
-// /cockpit/, maison seulement, réservé aux administrateurs ; on s'y connecte
-// avec le compte système pi-admin, dont le mot de passe est choisi dans la
-// console et jamais gardé par elle.
+// /cockpit/, maison seulement, réservé aux administrateurs. Connexion
+// unique : chaque administrateur de la console a son compte système
+// (Logins), dont la console donne elle-même le mot de passe à Cockpit.
 package cockpit
 
 import (
@@ -30,18 +30,10 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	"unicode"
 )
 
 // DefaultScript est le script installé par l'image.
 const DefaultScript = "/usr/local/lib/pi-appliance/cockpit.sh"
-
-// Longueur du mot de passe du compte pi-admin : celle du mot de passe
-// administrateur de la console (auth.AdminPasswordMin).
-const (
-	PasswordMin = 12
-	PasswordMax = 128
-)
 
 // Runner lance cockpit.sh avec ses arguments (network.Script convient).
 type Runner interface {
@@ -70,12 +62,14 @@ type Job struct {
 
 // Status : réponse de « cockpit.sh status ».
 type Status struct {
-	Installed bool   `json:"installed"`
-	Active    bool   `json:"active"`
-	Account   bool   `json:"account"`
-	User      string `json:"user"`
-	Path      string `json:"path"`
-	Job       *Job   `json:"job"`
+	Installed bool     `json:"installed"`
+	Active    bool     `json:"active"`
+	Accounts  []string `json:"accounts"`
+	Path      string   `json:"path"`
+	Job       *Job     `json:"job"`
+	// User : compte système de l'administrateur qui demande, rempli par la
+	// console (vide tant qu'il n'est pas créé).
+	User string `json:"user"`
 }
 
 // Busy dit si une installation ou un retrait est en cours.
@@ -90,9 +84,6 @@ type Client struct {
 }
 
 const timeout = time.Minute
-
-// ErrPassword : mot de passe refusé avant même d'appeler le script.
-var ErrPassword = errors.New("mot de passe refusé")
 
 func (c *Client) logf(format string, args ...any) {
 	if c.Logf != nil {
@@ -109,7 +100,7 @@ func (c *Client) run(ctx context.Context, stdin []byte, args ...string) ([]byte,
 		if json.Unmarshal(out, &failure) == nil && failure.Code != "" {
 			return nil, failure
 		}
-		// Jamais le mot de passe dans l'erreur : seulement la commande.
+		// Jamais un mot de passe dans l'erreur : seulement la commande.
 		return nil, fmt.Errorf("cockpit.sh %s : %w", strings.Join(args, " "), err)
 	}
 	return out, nil
@@ -128,96 +119,70 @@ func (c *Client) Status(ctx context.Context) (Status, error) {
 	return status, nil
 }
 
-// CheckPassword : 12 à 128 caractères, sur une seule ligne (cockpit.sh lit une ligne).
-func CheckPassword(password string) error {
-	n := len([]rune(password))
-	if n < PasswordMin || len(password) > PasswordMax {
-		return ErrPassword
-	}
-	if strings.ContainsFunc(password, unicode.IsControl) {
-		return ErrPassword
-	}
-	return nil
-}
-
-// Install crée le compte pi-admin avec ce mot de passe et lance
-// l'installation, qui se poursuit après la réponse.
-func (c *Client) Install(ctx context.Context, password string) error {
-	if err := CheckPassword(password); err != nil {
-		return err
-	}
-	_, err := c.run(ctx, []byte(password+"\n"), "install")
+// Install lance l'installation, qui se poursuit après la réponse.
+func (c *Client) Install(ctx context.Context) error {
+	_, err := c.run(ctx, nil, "install")
 	return err
 }
 
-// SetPassword change le mot de passe du compte pi-admin.
-func (c *Client) SetPassword(ctx context.Context, password string) error {
-	if err := CheckPassword(password); err != nil {
-		return err
-	}
-	_, err := c.run(ctx, []byte(password+"\n"), "password")
-	return err
+// SyncResult : réponse de « cockpit.sh sync ».
+type SyncResult struct {
+	// Accounts : compte système de chaque administrateur de la console.
+	Accounts map[string]string `json:"accounts"`
+	// Conflicts : administrateurs sans compte système possible (nom déjà pris).
+	Conflicts []string `json:"conflicts"`
 }
 
-// Remove lance le retrait de Cockpit et du compte pi-admin.
+// Sync crée, met à jour ou supprime les comptes système de Cockpit : un par
+// administrateur (nom → mot de passe).
+func (c *Client) Sync(ctx context.Context, passwords map[string]string) (SyncResult, error) {
+	var stdin strings.Builder
+	for name, password := range passwords {
+		fmt.Fprintf(&stdin, "%s %s\n", name, password)
+	}
+	out, err := c.run(ctx, []byte(stdin.String()), "sync")
+	if err != nil {
+		return SyncResult{}, err
+	}
+	var result SyncResult
+	if err := json.Unmarshal(out, &result); err != nil {
+		return SyncResult{}, fmt.Errorf("cockpit.sh sync : réponse illisible : %w", err)
+	}
+	return result, nil
+}
+
+// Remove lance le retrait de Cockpit et de ses comptes système.
 func (c *Client) Remove(ctx context.Context) error {
 	_, err := c.run(ctx, nil, "remove")
 	return err
 }
 
-// PasswordRequest : corps de POST …/install et POST …/password.
-type PasswordRequest struct {
-	Password string `json:"password"`
-}
-
 // Routes branche l'API sous prefix (…/api/cockpit) ; wrap réserve chaque
-// route à l'administrateur.
+// route à l'administrateur ; user donne le compte système de l'administrateur
+// qui demande (vide s'il n'existe pas encore).
 //
 //	GET    prefix           état (Status)
-//	POST   prefix/install   {"password"} : compte pi-admin, puis installation
-//	POST   prefix/password  {"password"} : nouveau mot de passe de pi-admin
-//	DELETE prefix           retrait de Cockpit et du compte pi-admin
-func (c *Client) Routes(mux *http.ServeMux, prefix string, wrap func(http.HandlerFunc) http.HandlerFunc) {
-	mux.HandleFunc("GET "+prefix, wrap(c.serveStatus))
+//	POST   prefix/install   installation
+//	DELETE prefix           retrait de Cockpit et de ses comptes système
+func (c *Client) Routes(mux *http.ServeMux, prefix string, wrap func(http.HandlerFunc) http.HandlerFunc, user func(*http.Request) string) {
+	mux.HandleFunc("GET "+prefix, wrap(func(w http.ResponseWriter, r *http.Request) {
+		status, err := c.Status(r.Context())
+		if err != nil {
+			c.logf("Cockpit : %v", err)
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "L'état de Cockpit est illisible pour l'instant."})
+			return
+		}
+		if user != nil {
+			status.User = user(r)
+		}
+		writeJSON(w, http.StatusOK, status)
+	}))
 	mux.HandleFunc("POST "+prefix+"/install", wrap(c.serveInstall))
-	mux.HandleFunc("POST "+prefix+"/password", wrap(c.servePassword))
 	mux.HandleFunc("DELETE "+prefix, wrap(c.serveRemove))
 }
 
-func (c *Client) serveStatus(w http.ResponseWriter, r *http.Request) {
-	status, err := c.Status(r.Context())
-	if err != nil {
-		c.logf("administration du système : %v", err)
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": "L'état de l'administration du système est illisible pour l'instant."})
-		return
-	}
-	writeJSON(w, http.StatusOK, status)
-}
-
-func readPassword(w http.ResponseWriter, r *http.Request) (string, bool) {
-	var request PasswordRequest
-	r.Body = http.MaxBytesReader(w, r.Body, 4096)
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "Demande illisible."})
-		return "", false
-	}
-	return request.Password, true
-}
-
 func (c *Client) serveInstall(w http.ResponseWriter, r *http.Request) {
-	password, ok := readPassword(w, r)
-	if !ok {
-		return
-	}
-	c.reply(w, c.Install(r.Context(), password), http.StatusAccepted, "L'installation n'a pas pu démarrer.")
-}
-
-func (c *Client) servePassword(w http.ResponseWriter, r *http.Request) {
-	password, ok := readPassword(w, r)
-	if !ok {
-		return
-	}
-	c.reply(w, c.SetPassword(r.Context(), password), http.StatusOK, "Le mot de passe n'a pas pu être changé.")
+	c.reply(w, c.Install(r.Context()), http.StatusAccepted, "L'installation n'a pas pu démarrer.")
 }
 
 func (c *Client) serveRemove(w http.ResponseWriter, r *http.Request) {
@@ -229,8 +194,6 @@ func (c *Client) reply(w http.ResponseWriter, err error, success int, message st
 	switch {
 	case err == nil:
 		writeJSON(w, success, map[string]bool{"ok": true})
-	case errors.Is(err, ErrPassword):
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": fmt.Sprintf("Le mot de passe doit faire entre %d et %d caractères.", PasswordMin, PasswordMax), "code": "invalid"})
 	case errors.As(err, &failure):
 		status := http.StatusConflict
 		if failure.Code == "invalid" {
@@ -238,7 +201,7 @@ func (c *Client) reply(w http.ResponseWriter, err error, success int, message st
 		}
 		writeJSON(w, status, map[string]string{"error": failure.Message, "code": failure.Code})
 	default:
-		c.logf("administration du système : %v", err)
+		c.logf("Cockpit : %v", err)
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"error": message})
 	}
 }

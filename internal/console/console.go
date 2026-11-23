@@ -193,6 +193,9 @@ type Config struct {
 	Updates *updates.Checker
 	// Cockpit : administration du système (spécification 6.4) ; nil : non installable ici.
 	Cockpit *cockpit.Client
+	// CockpitLogins : comptes système de Cockpit, un par administrateur
+	// (connexion unique) ; nil : pas de connexion unique.
+	CockpitLogins *cockpit.Logins
 	// Stats : statistiques anonymes (spécification 8.4) ; nil : non réglables ici.
 	Stats *stats.Reporter
 	// Diagnostic : état du système et journaux (spécification 8.5) ; nil : pas de diagnostic ici.
@@ -305,7 +308,13 @@ func Handler(config Config) http.Handler {
 		c.Updates.Routes(mux, BasePath+"/api/updates", c.adminOnly)
 	}
 	if c.Cockpit != nil {
-		c.Cockpit.Routes(mux, BasePath+"/api/cockpit", c.adminOnly)
+		c.Cockpit.Routes(mux, BasePath+"/api/cockpit", c.adminOnly, func(r *http.Request) string {
+			account, ok := c.account(r)
+			if !ok || c.CockpitLogins == nil {
+				return ""
+			}
+			return c.CockpitLogins.User(account.Name)
+		})
 	}
 	if c.Diagnostic != nil {
 		mux.HandleFunc("GET "+BasePath+"/api/diagnostic", c.diagnosticStatus)

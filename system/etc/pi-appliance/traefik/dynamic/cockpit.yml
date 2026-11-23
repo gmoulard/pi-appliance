@@ -14,11 +14,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# Administration du système par Cockpit (spécification 6.4), sous /cockpit/ :
+# Cockpit, administration du système du Pi (spécification 6.4), sous /cockpit/ :
 # maison seulement (mêmes plages que la console, dynamic/console.yml) et
 # réservée aux administrateurs connectés à la console (forward auth
-# api/auth/forward-admin), puis connexion à Cockpit avec le compte système
-# pi-admin. Tant que Cockpit n'est pas installé (cockpit.sh install), rien
+# api/auth/forward-cockpit), avec connexion unique : la console donne à
+# Cockpit le compte système de l'administrateur (en-tête Authorization) et ses
+# droits sur le Pi (X-Superuser), sans second mot de passe. Tant que Cockpit n'est pas installé (cockpit.sh install), rien
 # n'écoute sur 127.0.0.1:9090 : la console sert sa page « service
 # indisponible » (pi-appliance-errors, dynamic/console.yml).
 
@@ -38,13 +39,21 @@ http:
         ClientIP(`fc00::/7`) ||
         ClientIP(`fe80::/10`))
       priority: 2
-      middlewares: [pi-appliance-errors, pi-appliance-admin]
+      middlewares: [pi-appliance-errors, pi-appliance-cockpit]
       service: pi-appliance-cockpit
       tls: {}
 
   middlewares:
     # Comme pi-appliance-auth (dynamic/console.yml), réservé aux administrateurs :
-    # une autre personne connectée reçoit « 403 ».
+    # une autre personne connectée reçoit « 403 ». Authorization et X-Superuser
+    # sont toujours remplacés, ou retirés si la console ne les donne pas : un
+    # visiteur ne peut pas les forger.
+    pi-appliance-cockpit:
+      forwardAuth:
+        address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward-cockpit"
+        authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups, Authorization, X-Superuser]
+    # Ancien nom (versions 0.1.25 et avant), gardé pour une configuration
+    # copiée à la main ; plus utilisé ici.
     pi-appliance-admin:
       forwardAuth:
         address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward-admin"

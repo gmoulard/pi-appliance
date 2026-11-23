@@ -420,24 +420,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <h2>Marketplace</h2>
 <p id="catalogSource" class="meta" hidden></p>
 <ul id="catalog" class="cards">
-<!-- Administration du système (Cockpit, spécification 6.4) : installée sur le système, pas dans un conteneur ; carte remise par loadCatalog avant le Docker Compose libre, montrée seulement à l'administrateur. -->
+<!-- Cockpit (spécification 6.4) : installée sur le système, pas dans un conteneur ; carte remise par loadCatalog avant le Docker Compose libre, montrée seulement à l'administrateur. -->
 <li id="cockpitBox" class="card app" data-tags="administration" hidden>
-<div class="card-head"><div><h3>Administration du système</h3>
-<p>Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur (logiciel Cockpit). Ouverte seulement depuis la maison, aux administrateurs.</p></div></div>
+<div class="card-head"><div><h3>Cockpit</h3>
+<p>Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.</p></div></div>
 <p id="cockpitState" class="state" aria-live="polite"></p>
 <p class="note">Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.</p>
-<form id="cockpitForm" hidden>
-<label>Mot de passe de l'administration du système<input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
-<label>Mot de passe, encore une fois<input name="confirm" type="password" minlength="12" maxlength="128" autocomplete="new-password" required></label>
 <div class="controls">
-<button id="cockpitSubmit">Installer l'administration du système</button>
-<button id="cockpitCancel" class="secondary" type="button" hidden>Annuler</button>
-</div>
-</form>
-<div id="cockpitActions" class="controls" hidden>
-<button id="cockpitOpen" type="button">Ouvrir l'administration du système</button>
-<button id="cockpitPassword" class="secondary" type="button">Changer le mot de passe</button>
-<button id="cockpitRemove" class="secondary" type="button">Désinstaller</button>
+<button id="cockpitInstall" type="button" hidden>Installer Cockpit</button>
+<button id="cockpitOpen" type="button" hidden>Ouvrir Cockpit</button>
+<button id="cockpitRemove" class="secondary" type="button" hidden>Désinstaller</button>
 </div>
 </li>
 </ul>

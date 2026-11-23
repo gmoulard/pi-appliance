@@ -57,6 +57,8 @@ var pageKeys = []string{
 	"Page introuvable",
 	"Cette page n'existe pas, ou le service qui la donne est arrêté ou désinstallé.",
 	"Service indisponible",
+	"Cockpit n'est pas prêt pour l'instant. Réessayez dans une minute.",
+	"Activez d'abord dans la console la double authentification, exigée pour ce compte.",
 	"Ce service ne répond pas pour l'instant : il est peut-être en train de démarrer. Réessayez dans une minute ; s'il ne répond toujours pas, regardez son état dans la console.",
 	"Réessayer",
 	"Ouvrir la console",

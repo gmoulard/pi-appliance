@@ -223,10 +223,27 @@ func main() {
 	if *releaseRepo != "" {
 		checker.Releases = updates.GitHub{Repo: *releaseRepo}
 	}
-	// Administration du système par Cockpit, installée à la demande (spécification 6.4).
+	// Cockpit, installé à la demande, avec connexion unique (spécification 6.4).
 	var admin *cockpit.Client
+	var cockpitLogins *cockpit.Logins
 	if *cockpitScript != "" {
 		admin = &cockpit.Client{Runner: network.Script(*cockpitScript), Logf: log.Printf}
+		// Connexion unique : un compte système par administrateur de la console.
+		cockpitLogins = &cockpit.Logins{
+			Client: admin,
+			File:   filepath.Join(*data, "system", "cockpit-accounts.json"),
+			Admins: func() []string {
+				var names []string
+				for _, account := range accounts.List() {
+					if account.Role == auth.RoleAdmin && !account.Invited {
+						names = append(names, account.Name)
+					}
+				}
+				return names
+			},
+			Logf: log.Printf,
+		}
+		go cockpitLogins.Run(context.Background())
 	}
 	// Statistiques anonymes : désactivées tant que l'administrateur ne les accepte pas.
 	reporter, err := stats.Open(filepath.Join(*data, "stats.json"))
@@ -285,6 +302,7 @@ func main() {
 		Backups:          backups,
 		Updates:          checker,
 		Cockpit:          admin,
+		CockpitLogins:    cockpitLogins,
 		Stats:            statsConsole(reporter),
 		WizardFile:       filepath.Join(*data, "wizard-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),

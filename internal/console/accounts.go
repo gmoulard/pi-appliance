@@ -128,6 +128,7 @@ func (c *console) accountRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward", c.forward)
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-admin", c.forwardAdmin)
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-service-admin", c.forwardServiceAdmin)
+	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-cockpit", c.forwardCockpit)
 	mux.HandleFunc("GET "+BasePath+"/api/auth/forward-pad", c.forwardPad)
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/shares", c.signedIn(c.listShares))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/shares", c.signedIn(c.createShare))
@@ -390,7 +391,47 @@ func (c *console) forwardServiceAdmin(w http.ResponseWriter, r *http.Request) {
 	c.forwardFor(w, r, true, false)
 }
 
+// forwardCockpit : comme forwardAdmin, pour Cockpit (middleware
+// pi-appliance-cockpit, dynamic/cockpit.yml), avec la connexion unique
+// (spécification 6.4) : Traefik remplace l'en-tête Authorization par le
+// compte système de cet administrateur et son mot de passe, que Cockpit
+// accepte à sa connexion automatique ; X-Superuser lui fait reprendre ce mot de
+// passe pour les droits d'administrateur du Pi (sudo). Traefik retire ces
+// en-têtes de la demande du visiteur quand la console ne les donne pas : ils ne
+// peuvent pas être forgés.
+func (c *console) forwardCockpit(w http.ResponseWriter, r *http.Request) {
+	c.forwardWith(w, r, true, true, c.cockpitLogin)
+}
+
+func (c *console) cockpitLogin(w http.ResponseWriter, r *http.Request, account auth.Account) bool {
+	lang := pageLanguage(r)
+	if account.NeedsTwoFactorSetup() {
+		c.messagePage(w, r, http.StatusForbidden, "Cockpit", pageT(lang, "Activez d'abord dans la console la double authentification, exigée pour ce compte."))
+		return false
+	}
+	if c.CockpitLogins == nil {
+		c.messagePage(w, r, http.StatusServiceUnavailable, "Cockpit", pageT(lang, "Cockpit n'est pas prêt pour l'instant. Réessayez dans une minute."))
+		return false
+	}
+	user, password, err := c.CockpitLogins.Credentials(r.Context(), account.Name)
+	if err != nil {
+		log.Printf("Cockpit, connexion de %s : %v", account.Name, err)
+		c.messagePage(w, r, http.StatusServiceUnavailable, "Cockpit", pageT(lang, "Cockpit n'est pas prêt pour l'instant. Réessayez dans une minute."))
+		return false
+	}
+	w.Header().Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(user+":"+password)))
+	w.Header().Set("X-Superuser", "any")
+	w.Header().Set("Cache-Control", "no-store")
+	return true
+}
+
 func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly, onConsoleHost bool) {
+	c.forwardWith(w, r, adminOnly, onConsoleHost, nil)
+}
+
+// forwardWith : authentification déléguée ; extra, s'il y en a, ajoute ses
+// en-têtes pour le compte admis, ou répond lui-même et rend faux.
+func (c *console) forwardWith(w http.ResponseWriter, r *http.Request, adminOnly, onConsoleHost bool, extra func(http.ResponseWriter, *http.Request, auth.Account) bool) {
 	if !trustedProxy(r) {
 		writeError(w, http.StatusForbidden, "Réservé à Traefik.")
 		return
@@ -401,6 +442,9 @@ func (c *console) forwardFor(w http.ResponseWriter, r *http.Request, adminOnly, 
 	if account, ok := c.forwardAccount(r); ok {
 		if adminOnly && account.Role != auth.RoleAdmin {
 			writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
+			return
+		}
+		if extra != nil && !extra(w, r, account) {
 			return
 		}
 		remoteHeaders(w, account)
