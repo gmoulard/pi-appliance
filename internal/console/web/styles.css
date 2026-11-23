@@ -258,6 +258,13 @@ section > .card:not([hidden]) ~ .card {
   box-shadow: 0 3px 0 var(--ink);
 }
 
+/* « Ouvrir » d'un service qui ne s'ouvre pas d'ici (depuis internet). */
+.button-outline.disabled {
+  opacity: 0.45;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
 .button-outline:active {
   transform: translateY(2px);
   box-shadow: 0 1px 0 var(--ink);

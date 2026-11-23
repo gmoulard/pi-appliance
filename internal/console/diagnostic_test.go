@@ -117,6 +117,7 @@ func TestRescueHandler(t *testing.T) {
 	rescue := RescueHandler(f.handler)
 	serve := func(method, path, remote string, headers ...string) *httptest.ResponseRecorder {
 		request := httptest.NewRequest(method, path, nil)
+		request.Header.Set("X-Pi-Appliance", "1")
 		request.RemoteAddr = remote
 		for i := 0; i+1 < len(headers); i += 2 {
 			request.Header.Set(headers[i], headers[i+1])
@@ -152,6 +153,7 @@ func TestRescueHandler(t *testing.T) {
 		forwarded = r.Header.Get("X-Forwarded-For") + r.Header.Get("X-Forwarded-Proto")
 	}))
 	request := httptest.NewRequest(http.MethodPost, "/pi-appliance/api/login", nil)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "127.0.0.1:4000"
 	request.Header.Set("X-Forwarded-For", "192.168.1.99")
 	request.Header.Set("X-Forwarded-Proto", "https")

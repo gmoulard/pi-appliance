@@ -45,7 +45,7 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 ## Ce qui n'est pas encore disponible {#pas-encore-disponible}
 
 - Une version stable de l'image, et des essais sur Pi 5 et Pi Zero 2 W.
-- L'accès aux services depuis internet et la réservation d'une adresse `*.pi-appliance.com`.
+- La réservation d'une adresse `*.pi-appliance.com`. Les services s'ouvrent déjà depuis internet sous l'adresse du Pi (voir [Ouvrir ses services depuis internet](#services-sur-internet)), pas encore essayé sur un vrai Pi.
 - Les sauvegardes en ligne ou sur un autre pi-appliance et la restauration de l'appliance entière ou d'un seul fichier.
 
 ## Télécharger et installer l'image {#telecharger-limage-experimentale}
@@ -153,6 +153,18 @@ La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir
 
 Depuis internet, la console demande votre mot de passe, puis le code reçu par e-mail ou celui de votre application si vous avez activé la double authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 
+## Ouvrir ses services depuis internet {#services-sur-internet}
+
+Un service s'ouvre depuis internet à l'adresse internet du Pi suivie de son nom : par exemple `https://maison.exemple.fr/hugo/` pour le service `hugo`, ou `https://monpi.pi-appliance.com/hugo/`. Il n'y a **rien à créer** chez votre fournisseur de nom de domaine : c'est la même adresse que la console, qui doit déjà exister (voir [Administrer le Pi depuis internet](#console-sur-internet), étapes 2 et 3).
+
+- **« Tout le monde, sur internet »** : le service s'ouvre depuis internet dès que le Pi a une adresse internet, même console fermée.
+- **« Les personnes qui ont un compte sur ce Pi »** : seulement quand la console est ouverte sur internet, car la connexion passe par elle.
+- **« La maison seulement »** : jamais depuis internet.
+
+Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, Etherpad, DokuWiki, Astro, Next.js, Docker Compose libre) : elles restent à la maison, la fiche le dit. Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`).
+
+**À savoir :** sous internet, le service partage l'adresse de la console. Une page de ce service pourrait donc agir dans la console au nom d'une personne connectée. N'ouvrez sur internet que des services de confiance, dont vous connaissez le contenu.
+
 ## Ligne de commande du Pi (SSH) {#ligne-de-commande}
 
 Pour les personnes à l'aise avec SSH, le Pi a une commande `pia` (nom long : `pi-appliance`). Tout ce qu'elle fait se fait aussi dans la console. Connectez-vous au Pi (`ssh <compte>@<nom-du-pi>.local`), puis :
@@ -219,7 +231,7 @@ Si vous avez choisi un compte et activé SSH dans les réglages de Raspberry Pi 
 
 ## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
 
-> **Cette option n'est pas encore disponible pour les services.** Pour la console seule, un nom de votre domaine peut déjà servir d'adresse sur internet : voir [Administrer le Pi depuis internet](#console-sur-internet). Pour les services, la console ne permet pas encore de choisir un domaine personnel et ne fournit pas le nom vers lequel le faire pointer. Ne modifiez pas encore la zone DNS de votre domaine pour pi-appliance.
+> Un nom de votre domaine peut servir d'adresse sur internet à la console et aux services : voir [Administrer le Pi depuis internet](#console-sur-internet) (une seule entrée, un alias CNAME vers la cible affichée par la console) et [Ouvrir ses services depuis internet](#services-sur-internet) (les services s'ouvrent sous cette adresse, `https://maison.exemple.fr/<service>/`, sans autre entrée). La suite de cette section décrit l'ancien projet d'une adresse par service, abandonné le 2026-11-22.
 
 Quand cette option sera disponible, la configuration se fera en deux endroits :
 

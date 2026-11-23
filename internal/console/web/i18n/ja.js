@@ -412,7 +412,6 @@ piTranslations("ja", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "このPiの管理者のみ、自宅からのみ（とVPN）",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "注意：このアプリはPi全体を操作できます。管理者だけが、自宅からのみ開けます。コンソールがインストールしたサービスをこのアプリで変更しないでください。更新やバックアップが動かなくなるおそれがあります。",
   "Qui peut l'ouvrir": "開ける人",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "外出先から使うには、まず自宅でここにログインしてください。コンソールのログインページはまだインターネットからは開けません。",
   "Changement de l'accès à {0}… Le service redémarre.": "{0} のアクセスを変更しています… サービスを再起動します。",
   "{0} : accès changé.": "{0}：アクセスを変更しました。",
   "Administration du système": "システム管理",
@@ -725,5 +724,14 @@ piTranslations("ja", {
   "Valider": "確認",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "メールアドレスを確認しました：サインインのたびに、コンソールがコードを送ります。",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "アドレス {0} はまだ確認されていません：「マイアカウント」で確認してください。コードが送られます。",
-  "Vérifier mon adresse e-mail": "メールアドレスを確認する"
+  "Vérifier mon adresse e-mail": "メールアドレスを確認する",
+  "Ce service ne s'ouvre qu'à la maison.": "このサービスは自宅でのみ開けます。",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "インターネットからは、コンソールがインターネットで開かれるとこのサービスも開けるようになります（インターネットアドレス）。ログインはコンソールを通ります。",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "このサービスはまだインターネットから開けません。Pi にインターネットアドレスがありません（インターネットアドレス）。",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "このサービスは自宅でのみ開けます。コンソールと共有するアドレスの下では動作しません。",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "インターネットから開くには、このサービスを更新してください。",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "このサービスはインターネットから開けません。名前がコンソール用に予約されています。別の名前で再インストールしてください。",
+  "Depuis internet : {0}": "インターネットから：{0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "インターネットでは、このサービスはコンソールとアドレスを共有します。信頼できるサービスだけをインストールしてください。このサービスのページが、ログイン中の人に代わってコンソールで操作できてしまうおそれがあります。",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "「誰でも（インターネット上）」のサービスは、Pi のアドレスの後に名前を付けたアドレス（例：https://home.example.com/hugo/）でインターネットからも開けます。ドメイン名のプロバイダーで何かを作る必要はありません。アカウントを持つ人向けのサービスは、コンソールがインターネットで開かれているときだけ開けます。"
 });

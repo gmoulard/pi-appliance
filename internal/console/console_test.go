@@ -105,6 +105,7 @@ func (f fixture) do(method, path, contentType, body string, cookie *http.Cookie,
 		reader = strings.NewReader(body)
 	}
 	request := httptest.NewRequest(method, path, reader)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "192.168.1.20:5000"
 	if contentType != "" {
 		request.Header.Set("Content-Type", contentType)
@@ -249,6 +250,7 @@ func TestSecureCookieBehindTraefik(t *testing.T) {
 		t.Fatal("en-tête X-Forwarded-Proto d'un client du réseau pris en compte")
 	}
 	request := httptest.NewRequest(http.MethodPost, "/pi-appliance/api/login", strings.NewReader(`{"name": "marie", "password": "`+adminPassword+`"}`))
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "172.18.0.2:4000"
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("X-Forwarded-Proto", "https")

@@ -113,6 +113,7 @@ func main() {
 	releaseRepo := flag.String("release-repo", updates.DefaultRepo, "dépôt GitHub des versions publiées de pi-appliance (vide : pas de comparaison)")
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
 	cliTokenFile := flag.String("cli-token-file", cli.DefaultTokenFile, "jeton de la ligne de commande du Pi, lisible par root seul (vide : pas de ligne de commande)")
+	traefikServices := flag.String("traefik-services", "/etc/pi-appliance/traefik/dynamic/services-internet.yml", "configuration dynamique de Traefik des services ouverts sur internet, sous un chemin de l'adresse internet du Pi (vide : aucun)")
 	traefikInternet := flag.String("traefik-internet", "/etc/pi-appliance/traefik/dynamic/console-internet.yml", "configuration dynamique de Traefik écrite quand la console est ouverte sur internet (vide : jamais ouverte)")
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
 	mailURL := flag.String("mail-url", mail.DefaultServiceURL, "service d'envoi d'e-mails du projet, pour « mot de passe oublié » et les invitations (vide : pas d'e-mail)")
@@ -304,6 +305,9 @@ func main() {
 	if *traefikInternet != "" {
 		config.InternetFile = filepath.Join(*data, "internet-console.json")
 		config.TraefikInternetFile = *traefikInternet
+	}
+	config.ServicesInternetFile = *traefikServices
+	if config.TraefikInternetFile != "" || config.ServicesInternetFile != "" {
 		go console.RunInternet(ctx, config, time.Minute)
 	}
 	handler := console.Handler(config)

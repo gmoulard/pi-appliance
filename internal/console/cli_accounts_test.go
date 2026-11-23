@@ -49,6 +49,7 @@ func (f fixture) cli(method, path, body string) *httptest.ResponseRecorder {
 		reader = strings.NewReader(body)
 	}
 	request := httptest.NewRequest(method, "http://127.0.0.1:8080/pi-appliance/api/"+path, reader)
+	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "127.0.0.1:40000"
 	request.Header.Set("Authorization", "Bearer jeton")
 	request.Header.Set("Content-Type", "application/json")
@@ -60,6 +61,7 @@ func (f fixture) cli(method, path, body string) *httptest.ResponseRecorder {
 // Sans langue de navigateur (pia), les e-mails partent en anglais.
 func TestCLIMailLanguage(t *testing.T) {
 	request := httptest.NewRequest(http.MethodPost, "http://127.0.0.1:8080/pi-appliance/api/accounts", nil)
+	request.Header.Set("X-Pi-Appliance", "1")
 	if lang := requestLanguage(request, ""); lang != "en" {
 		t.Fatalf("sans Accept-Language : %q", lang)
 	}

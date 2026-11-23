@@ -177,6 +177,10 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 	if !marketplace.ValidLabel(name) {
 		return Result{}, fmt.Errorf("%w : le nom « %s » ne convient pas, utilisez des lettres minuscules, des chiffres et des tirets", ErrInvalid, name)
 	}
+	// Adresse sur internet https://<adresse du Pi>/<nom>/ (internet.go).
+	if slices.Contains(ReservedNames, name) {
+		return Result{}, fmt.Errorf("%w : le nom « %s » est réservé à la console, choisissez un autre nom", ErrInvalid, name)
+	}
 	dir := m.serviceDir(name)
 	if _, err := os.Stat(filepath.Join(dir, stateName)); err == nil {
 		return Result{}, fmt.Errorf("%w : un service s'appelle déjà « %s », choisissez un autre nom", ErrExists, name)

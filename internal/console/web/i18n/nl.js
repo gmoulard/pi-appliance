@@ -412,7 +412,6 @@ piTranslations("nl", {
   "Les administrateurs de ce Pi, à la maison seulement (et le VPN)": "De beheerders van deze Pi, alleen thuis (en via de VPN)",
   "Attention : cette application a la main sur tout le Pi. Elle n'est ouverte qu'aux administrateurs, depuis la maison. Ne modifiez pas dans cette application les services installés par la console : leurs mises à jour et leurs sauvegardes pourraient ne plus marcher.": "Let op: deze toepassing heeft volledige controle over de hele Pi. Ze is alleen open voor beheerders, vanuit huis. Wijzig in deze toepassing geen diensten die door de console zijn geïnstalleerd: hun updates en back-ups zouden dan niet meer kunnen werken.",
   "Qui peut l'ouvrir": "Wie mag het openen",
-  "Hors de la maison, connectez-vous d'abord ici, à la maison : la page de connexion de la console ne s'ouvre pas encore depuis internet.": "Buitenshuis: meld u eerst hier thuis aan, de aanmeldpagina van de console opent nog niet vanaf internet.",
   "Changement de l'accès à {0}… Le service redémarre.": "Toegang tot {0} wordt gewijzigd… De dienst start opnieuw.",
   "{0} : accès changé.": "{0}: toegang gewijzigd.",
   "Administration du système": "Systeembeheer",
@@ -725,5 +724,14 @@ piTranslations("nl", {
   "Valider": "Bevestigen",
   "Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.": "Uw e-mailadres is geverifieerd: bij elke aanmelding stuurt de console u een code.",
   "Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.": "Uw adres {0} is nog niet geverifieerd: verifieer het in „Mijn account”, u krijgt een code.",
-  "Vérifier mon adresse e-mail": "Mijn e-mailadres verifiëren"
+  "Vérifier mon adresse e-mail": "Mijn e-mailadres verifiëren",
+  "Ce service ne s'ouvre qu'à la maison.": "Deze dienst opent alleen thuis.",
+  "Depuis internet, ce service s'ouvrira quand la console sera ouverte sur internet (Adresse sur internet) : la connexion passe par elle.": "Vanaf internet opent deze dienst zodra de console op internet open is (Internetadres): het inloggen loopt via de console.",
+  "Ce service ne s'ouvre pas encore depuis internet : le Pi n'a pas d'adresse sur internet (Adresse sur internet).": "Deze dienst opent nog niet vanaf internet: de Pi heeft geen internetadres (Internetadres).",
+  "Ce service ne s'ouvre qu'à la maison : il ne marche pas sous une adresse partagée avec la console.": "Deze dienst opent alleen thuis: hij werkt niet onder een adres dat hij met de console deelt.",
+  "Mettez ce service à jour pour l'ouvrir depuis internet.": "Werk deze dienst bij om hem vanaf internet te openen.",
+  "Ce service ne s'ouvre pas depuis internet : son nom est réservé à la console. Réinstallez-le sous un autre nom.": "Deze dienst opent niet vanaf internet: zijn naam is voorbehouden aan de console. Installeer hem opnieuw onder een andere naam.",
+  "Depuis internet : {0}": "Vanaf internet: {0}",
+  "Sur internet, ce service partage l'adresse de la console : installez seulement des services de confiance, car une page de ce service pourrait agir dans la console au nom d'une personne connectée.": "Op internet deelt deze dienst het adres van de console: installeer alleen diensten die u vertrouwt, want een pagina van deze dienst zou in de console kunnen handelen namens een ingelogde persoon.",
+  "Vos services « Tout le monde, sur internet » s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple https://maison.exemple.fr/hugo/), sans rien à créer chez votre fournisseur de nom de domaine ; ceux des personnes qui ont un compte, seulement quand la console est ouverte sur internet.": "Uw diensten „Iedereen, op internet” openen ook vanaf internet, op het adres van de Pi gevolgd door hun naam (bijvoorbeeld https://thuis.voorbeeld.nl/hugo/), zonder iets aan te maken bij uw domeinnaamprovider; die voor mensen met een account alleen als de console op internet open is."
 });
