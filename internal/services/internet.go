@@ -59,6 +59,8 @@ var pathApps = map[string]string{
 	"mkdocs":   "relative",
 	"hugo":     "build",
 	"jekyll":   "build",
+	// Page et appels du serveur en adresses relatives (TODO-2.69).
+	"wordpress-markdown": "relative",
 }
 
 // InternetPath dit si le service s'ouvre sous le chemin /<nom>/ de l'adresse
