@@ -71,7 +71,7 @@ services:
           rm -rf /public/next
           mkdir -p /public/next
           # Page d'attente : explique comment publier la première page
-          # (dossier Nextcloud, site minimal en trois fichiers, journal).
+          # (dossier Nextcloud, site minimal, que faire si rien ne change).
           cat > /public/next/index.html <<EOF
         <!doctype html>
         <html lang="fr">
@@ -111,7 +111,7 @@ services:
 
         <section>
         <h2>Pas encore de site ? Une première page en trois fichiers</h2>
-        <p>Dans le dossier « $$SITE_FOLDER » de Nextcloud, le bouton « + Nouveau » crée un dossier ou un fichier texte. Créez ces trois fichiers, avec exactement ces noms :</p>
+        <p>Dans le dossier « $$SITE_FOLDER » de Nextcloud, le bouton « + Nouveau » crée un dossier ou un fichier texte. Créez ces fichiers, avec exactement ces noms :</p>
         <p class="name">1. <code>hugo.toml</code> (le réglage du site)</p>
         <pre><code>title = "Mon site"</code></pre>
         <p class="name">2. <code>content/_index.md</code> (le texte de la page, dans un dossier <code>content</code>)</p>
