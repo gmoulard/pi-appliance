@@ -44,6 +44,13 @@ import (
 	"time"
 )
 
+// Available dit si les statistiques anonymes sont proposées par la console.
+// Fonction désactivée le 2026-11-22 à la demande de l'utilisateur (TODO-4.7) :
+// le code reste en place ; rien n'est envoyé et l'écran est caché. Pour la
+// réactiver, passer Available à true (la console reprend alors le réglage
+// enregistré par l'administrateur).
+const Available = false
+
 const (
 	// DefaultURL : service de réception du projet (cmd/pi-appliance-stats).
 	DefaultURL = "https://stats.pi-appliance.com/api/report"

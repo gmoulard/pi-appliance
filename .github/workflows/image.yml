@@ -113,10 +113,14 @@ jobs:
             # Socle seul : la dernière version qui a une image, pour le flashage.
             last=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=30" \
               --jq '[.[] | select(any(.assets[]; .name | endswith(".img.xz")))][0].tag_name // empty')
+            notes=$(printf '%s %s\n%s %s' \
+              "Mise à jour du socle seulement, sans nouvelle image : les Pi déjà installés proposent cette version" \
+              "dans la console (Mon Pi, Mises à jour) : archive pi-appliance-${GITHUB_REF_NAME}-arm64.tar.gz." \
+              "Pour flasher une carte SD, prenez l'image de la version ${last:-précédente}" \
+              "(https://github.com/${GITHUB_REPOSITORY}/releases/tag/${last}), puis mettez le Pi à jour depuis la console.")
             # shellcheck disable=SC2086
             gh release create "${GITHUB_REF_NAME}" $prerelease \
               deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
               --title "pi-appliance ${GITHUB_REF_NAME}" \
-              --notes "Mise à jour du socle seulement, sans nouvelle image : les Pi déjà installés proposent cette version dans la console (Mon Pi, Mises à jour) : archive pi-appliance-${GITHUB_REF_NAME}-arm64.tar.gz.
-          Pour flasher une carte SD, prenez l'image de la version ${last:-précédente} (https://github.com/${GITHUB_REPOSITORY}/releases/tag/${last}), puis mettez le Pi à jour depuis la console."
+              --notes "$notes"
           fi
