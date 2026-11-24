@@ -226,22 +226,17 @@ func main() {
 	// Cockpit, installé à la demande, avec connexion unique (spécification 6.4).
 	var admin *cockpit.Client
 	var cockpitLogins *cockpit.Logins
+	// Qui ouvre Cockpit : aussi depuis internet, aussi les utilisateurs (TODO-3.4).
+	cockpitAccess := &cockpit.AccessFile{Path: filepath.Join(*data, "cockpit-access.json"), Logf: log.Printf}
 	if *cockpitScript != "" {
 		admin = &cockpit.Client{Runner: network.Script(*cockpitScript), Logf: log.Printf}
 		// Connexion unique : un compte système par administrateur de la console.
 		cockpitLogins = &cockpit.Logins{
 			Client: admin,
 			File:   filepath.Join(*data, "system", "cockpit-accounts.json"),
-			Admins: func() []string {
-				var names []string
-				for _, account := range accounts.List() {
-					if account.Role == auth.RoleAdmin && !account.Invited {
-						names = append(names, account.Name)
-					}
-				}
-				return names
-			},
-			Logf: log.Printf,
+			// Un compte système par administrateur, et par utilisateur si l'accès le permet.
+			Admins: console.CockpitAccounts(accounts, cockpitAccess),
+			Logf:   log.Printf,
 		}
 		go cockpitLogins.Run(context.Background())
 	}
@@ -303,6 +298,7 @@ func main() {
 		Updates:          checker,
 		Cockpit:          admin,
 		CockpitLogins:    cockpitLogins,
+		CockpitAccess:    cockpitAccess,
 		Stats:            statsConsole(reporter),
 		WizardFile:       filepath.Join(*data, "wizard-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),

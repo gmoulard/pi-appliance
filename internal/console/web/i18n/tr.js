@@ -425,7 +425,6 @@ piTranslations("tr", {
   "{0} : accès changé.": "{0}: erişim değiştirildi.",
   "Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.": "Orada her şey serbest, Pi'ye zarar vermek bile. Orada Pi'nin Wi-Fi'sini (\"pi-appliance-ap\") ve veri ile yedekleme USB disklerini değiştirmeyin: bunları bu konsoldan ayarlayın.",
   "Cockpit": "Cockpit",
-  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.": "Bilgisayardan anlayanlar için: Pi'nin günlükleri, programları, ağı, diskleri ve bir terminal, tarayıcıda. pi-appliance hesabınızla, başka bir parola olmadan, Pi üzerinde tüm haklarla girersiniz. Yalnızca yöneticiler için, evden.",
   "Installer Cockpit": "Cockpit'i kur",
   "Ouvrir Cockpit": "Cockpit'i aç",
   "Pas installé.": "Kurulu değil.",
@@ -746,5 +745,17 @@ piTranslations("tr", {
   "CPU {0} %": "CPU %{0}",
   "RAM {0} %": "RAM %{0}",
   "Disque {0} / {1}": "Disk {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude, Pi'niz üzerinde tüm haklara sahip olacak: her şeyi okuyabilir, değiştirebilir, silebilir; her işlem, kabul edip reddettiğiniz Claude uygulamanızdan geçer. Bir Claude aboneliği (Pro veya Max) gerekir. Kurulumdan sonra, Claude hesabınıza bir kez bağlanmak için hizmeti açın."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude, Pi'niz üzerinde tüm haklara sahip olacak: her şeyi okuyabilir, değiştirebilir, silebilir; her işlem, kabul edip reddettiğiniz Claude uygulamanızdan geçer. Bir Claude aboneliği (Pro veya Max) gerekir. Kurulumdan sonra, Claude hesabınıza bir kez bağlanmak için hizmeti açın.",
+  "Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.": "Konsolun tüm hesaplarına açık (konuklar hariç), internetten de.",
+  "Ouvert à tous les comptes de la console (sauf les invités), depuis la maison.": "Konsolun tüm hesaplarına açık (konuklar hariç), evden.",
+  "Ouvert aux administrateurs, aussi depuis internet.": "Yöneticilere açık, internetten de.",
+  "Ouvert aux administrateurs, depuis la maison.": "Yöneticilere açık, evden.",
+  "La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet ».": "Konsol internette açık değil, bu yüzden Cockpit de açık değil. Onu «İnternette konsol» bölümünden açın.",
+  "Accès à Cockpit enregistré.": "Cockpit erişimi kaydedildi.",
+  "Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.": "Cockpit konsol kullanıcılarına da açılsın mı? Hesabı olan herkes Pi üzerinde tüm haklara sahip olacak: her şeyi okuyabilir, değiştirebilir, silebilir; Cockpit internette açıksa internetten bile. Çalınmış bir parola yeterli.",
+  "Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.": "Cockpit internetten de açılsın mı? İçeri girebilen herkes Pi üzerinde tüm haklara sahip olacak, internetten bile: çalınmış bir parola yeterli. İki adımlı doğrulama zorunlu değil: her hesaba önerin.",
+  "Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.": "Pi'nin günlükleri, programları, ağı, diskleri ve bir terminal, tarayıcıda, Pi üzerinde tüm haklarla. Bir yönetici bunu sizin için açtı.",
+  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.": "Bilgisayarla rahat olanlar için: Pi'nin günlükleri, programları, ağı, diskleri ve bir terminal, tarayıcıda. pi-appliance hesabınızla, başka parola olmadan, Pi üzerinde tüm haklarla girersiniz.",
+  "Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)": "Konsol kullanıcılarına da aç (yalnızca yöneticilere değil)",
+  "Ouvrir aussi depuis internet": "İnternetten de aç"
 });

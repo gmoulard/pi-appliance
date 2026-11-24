@@ -425,7 +425,6 @@ piTranslations("fa", {
   "{0} : accès changé.": "{0}: دسترسی تغییر کرد.",
   "Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.": "آنجا همه‌چیز مجاز است، حتی آسیب زدن به Pi. آنجا Wi-Fi خود Pi («pi-appliance-ap») و دیسک‌های USB داده‌ها و پشتیبان‌ها را تغییر ندهید: آن‌ها را در همین کنسول تنظیم کنید.",
   "Cockpit": "Cockpit",
-  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.": "برای کسانی که با رایانه آشنا هستند: گزارش‌ها، برنامه‌ها، شبکه و دیسک‌های Pi و یک ترمینال، در مرورگر. با حساب pi-appliance خود، بدون گذرواژهٔ دیگر و با همهٔ اختیارات روی Pi وارد می‌شوید. فقط برای مدیران، از خانه.",
   "Installer Cockpit": "نصب Cockpit",
   "Ouvrir Cockpit": "باز کردن Cockpit",
   "Pas installé.": "نصب نشده است.",
@@ -746,5 +745,17 @@ piTranslations("fa", {
   "CPU {0} %": "پردازنده {0}٪",
   "RAM {0} %": "حافظه {0}٪",
   "Disque {0} / {1}": "دیسک {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude همهٔ دسترسی‌ها را روی Pi شما خواهد داشت: می‌تواند همه چیز را بخواند، تغییر دهد و پاک کند؛ هر کار از برنامهٔ Claude شما می‌گذرد و شما آن را می‌پذیرید یا رد می‌کنید. اشتراک Claude ‏(Pro یا Max) لازم است. پس از نصب، سرویس را باز کنید تا یک بار وارد حساب Claude خود شوید."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude همهٔ دسترسی‌ها را روی Pi شما خواهد داشت: می‌تواند همه چیز را بخواند، تغییر دهد و پاک کند؛ هر کار از برنامهٔ Claude شما می‌گذرد و شما آن را می‌پذیرید یا رد می‌کنید. اشتراک Claude ‏(Pro یا Max) لازم است. پس از نصب، سرویس را باز کنید تا یک بار وارد حساب Claude خود شوید.",
+  "Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.": "باز برای همهٔ حساب‌های کنسول (به‌جز مهمانان)، از اینترنت هم.",
+  "Ouvert à tous les comptes de la console (sauf les invités), depuis la maison.": "باز برای همهٔ حساب‌های کنسول (به‌جز مهمانان)، از خانه.",
+  "Ouvert aux administrateurs, aussi depuis internet.": "باز برای مدیران، از اینترنت هم.",
+  "Ouvert aux administrateurs, depuis la maison.": "باز برای مدیران، از خانه.",
+  "La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet ».": "کنسول روی اینترنت باز نیست، پس Cockpit هم باز نیست. آن را در «کنسول روی اینترنت» باز کنید.",
+  "Accès à Cockpit enregistré.": "دسترسی به Cockpit ذخیره شد.",
+  "Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.": "Cockpit برای کاربران کنسول هم باز شود؟ هر کس حسابی دارد همهٔ اختیارات Pi را خواهد داشت: می‌تواند همه‌چیز را بخواند، تغییر دهد و پاک کند، حتی از اینترنت اگر Cockpit آنجا باز باشد. یک گذرواژهٔ دزدیده‌شده کافی است.",
+  "Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.": "Cockpit از اینترنت هم باز شود؟ هر کس بتواند وارد شود همهٔ اختیارات Pi را خواهد داشت، حتی از اینترنت: یک گذرواژهٔ دزدیده‌شده کافی است. تأیید دومرحله‌ای الزامی نیست: آن را به هر حساب توصیه کنید.",
+  "Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.": "گزارش‌های Pi، برنامه‌ها، شبکه، دیسک‌ها و یک ترمینال، در مرورگر، با همهٔ اختیارات Pi. یک مدیر آن را برای شما باز کرده است.",
+  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.": "برای کسانی که با رایانه راحت‌اند: گزارش‌های Pi، برنامه‌ها، شبکه، دیسک‌ها و یک ترمینال، در مرورگر. با حساب pi-appliance خود وارد می‌شوید، بدون گذرواژهٔ دیگر، با همهٔ اختیارات Pi.",
+  "Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)": "برای کاربران کنسول هم باز شود (نه فقط مدیران)",
+  "Ouvrir aussi depuis internet": "از اینترنت هم باز شود"
 });

@@ -154,6 +154,8 @@ La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir
 
 Depuis internet, la console demande votre mot de passe, puis le code reçu par e-mail ou celui de votre application si vous avez activé la double authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 
+**Cockpit depuis internet, et pour les utilisateurs** : Cockpit (l'administration du système du Pi, dans la Marketplace) n'est ouvert qu'aux administrateurs, à la maison. Sur sa carte, une fois installé, un administrateur peut cocher, à la maison, **Ouvrir aussi depuis internet** (il faut que la console y soit ouverte ; il s'ouvre alors à `https://<adresse>/cockpit/`) et **Ouvrir aussi aux utilisateurs de la console** (pas aux invités ; ils le trouvent dans « Mes services »). Attention : toute personne qui y entre a **tous les droits sur le Pi**, même depuis internet, et la double authentification n'est pas exigée : un mot de passe volé suffit. Décochez pour refermer, même depuis internet.
+
 ## Ouvrir ses services depuis internet {#services-sur-internet}
 
 Un service s'ouvre depuis internet à l'adresse internet du Pi suivie de son nom : par exemple `https://maison.exemple.fr/hugo/` pour le service `hugo`, ou `https://monpi.pi-appliance.com/hugo/`. Il n'y a **rien à créer** chez votre fournisseur de nom de domaine : c'est la même adresse que la console, qui doit déjà exister (voir [Administrer le Pi depuis internet](#console-sur-internet), étapes 2 et 3).

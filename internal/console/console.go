@@ -196,6 +196,9 @@ type Config struct {
 	// CockpitLogins : comptes système de Cockpit, un par administrateur
 	// (connexion unique) ; nil : pas de connexion unique.
 	CockpitLogins *cockpit.Logins
+	// CockpitAccess : qui ouvre Cockpit (aussi depuis internet, aussi les
+	// utilisateurs ; TODO-3.4) ; nil : administrateurs, maison seulement.
+	CockpitAccess *cockpit.AccessFile
 	// Stats : statistiques anonymes (spécification 8.4) ; nil : non réglables ici.
 	Stats *stats.Reporter
 	// Diagnostic : état du système et journaux (spécification 8.5) ; nil : pas de diagnostic ici.
@@ -315,6 +318,9 @@ func Handler(config Config) http.Handler {
 			}
 			return c.CockpitLogins.User(account.Name)
 		})
+	}
+	if c.Cockpit != nil {
+		c.cockpitAccessRoutes(mux)
 	}
 	if c.Diagnostic != nil {
 		mux.HandleFunc("GET "+BasePath+"/api/diagnostic", c.diagnosticStatus)

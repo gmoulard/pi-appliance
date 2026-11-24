@@ -23,7 +23,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 )
 
@@ -50,20 +49,16 @@ func cockpitFixture(t *testing.T, script cockpitScript) fixture {
 	t.Helper()
 	f := newFixture(t)
 	client := &cockpit.Client{Runner: script}
+	dir := t.TempDir()
+	access := &cockpit.AccessFile{Path: filepath.Join(dir, "cockpit-access.json")}
 	logins := &cockpit.Logins{
 		Client: client,
-		File:   filepath.Join(t.TempDir(), "cockpit-accounts.json"),
-		Admins: func() []string {
-			var names []string
-			for _, account := range f.accounts.List() {
-				if account.Role == auth.RoleAdmin {
-					names = append(names, account.Name)
-				}
-			}
-			return names
-		},
+		File:   filepath.Join(dir, "cockpit-accounts.json"),
+		Admins: CockpitAccounts(f.accounts, access),
 	}
-	f.handler = Handler(Config{Version: "1.2.3", Services: f.manager, Accounts: f.accounts, ACMEEmailFile: f.acmeEmailFile, Cockpit: client, CockpitLogins: logins})
+	f.handler = Handler(Config{Version: "1.2.3", Services: f.manager, Accounts: f.accounts, ACMEEmailFile: f.acmeEmailFile,
+		Cockpit: client, CockpitLogins: logins, CockpitAccess: access,
+		InternetFile: filepath.Join(dir, "internet-console.json"), TraefikInternetFile: filepath.Join(dir, "console-internet.yml")})
 	f.manager.Domain = "maison.local"
 	return f
 }
@@ -118,5 +113,79 @@ func TestForwardCockpitNotReady(t *testing.T) {
 	response := forwardTo(f, path, "127.0.0.1:5000", forwardCookieFor(t, f, admin, path, headers), headers)
 	if response.Code != http.StatusServiceUnavailable || response.Header().Get("Authorization") != "" || !strings.Contains(response.Body.String(), "Cockpit") {
 		t.Fatalf("pas prêt : %d %v", response.Code, response.Header())
+	}
+}
+
+// Accès à Cockpit (TODO-3.4) : les utilisateurs passent quand un
+// administrateur le permet, jamais les invités ; depuis internet, seulement
+// si la console et Cockpit y sont ouverts, et l'ouvrir se fait depuis la maison.
+func TestCockpitAccess(t *testing.T) {
+	f := cockpitFixture(t, cockpitScript{})
+	admin := f.admin(t)
+	headers := map[string]string{"X-Forwarded-Proto": "https", "X-Forwarded-Host": "maison.local", "X-Forwarded-Uri": "/cockpit/", "X-Forwarded-Method": "GET"}
+	const path = "/pi-appliance/api/auth/forward-cockpit"
+	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
+	paul := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil))
+	guestToken := f.invite(t, admin, `{"name": "ines", "email": "ines@example.org", "role": "guest", "expires": "2099-12-31T00:00:00Z"}`)
+	ines := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+guestToken+`", "password": "huit car"}`, nil))
+	paulForward := forwardCookieFor(t, f, paul, path, headers)
+	inesForward := forwardCookieFor(t, f, ines, path, headers)
+
+	if response := forwardTo(f, path, "127.0.0.1:5000", paulForward, headers); response.Code != http.StatusForbidden {
+		t.Fatalf("utilisateur, par défaut : %d", response.Code)
+	}
+	if status := f.do(http.MethodGet, "/pi-appliance/api/cockpit/access", "", "", paul); !strings.Contains(status.Body.String(), `"allowed":false`) {
+		t.Fatalf("état pour l'utilisateur : %s", status.Body)
+	}
+	// Réglage réservé à l'administrateur.
+	if response := f.do(http.MethodPut, "/pi-appliance/api/cockpit/access", "application/json", `{"users": true}`, paul); response.Code != http.StatusForbidden {
+		t.Fatalf("réglage par un utilisateur : %d", response.Code)
+	}
+	if response := f.do(http.MethodPut, "/pi-appliance/api/cockpit/access", "application/json", `{"users": true}`, admin); response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"users":true`) {
+		t.Fatalf("ouvert aux utilisateurs : %d %s", response.Code, response.Body)
+	}
+	response := forwardTo(f, path, "127.0.0.1:5000", paulForward, headers)
+	raw, _ := base64.StdEncoding.DecodeString(strings.TrimPrefix(response.Header().Get("Authorization"), "Basic "))
+	if response.Code != http.StatusOK || !strings.HasPrefix(string(raw), "paul:") || response.Header().Get("X-Superuser") != "any" {
+		t.Fatalf("utilisateur admis : %d %q", response.Code, raw)
+	}
+	if status := f.do(http.MethodGet, "/pi-appliance/api/cockpit/access", "", "", paul); !strings.Contains(status.Body.String(), `"allowed":true`) || !strings.Contains(status.Body.String(), `"installed":true`) {
+		t.Fatalf("état pour l'utilisateur admis : %s", status.Body)
+	}
+	if response := forwardTo(f, path, "127.0.0.1:5000", inesForward, headers); response.Code != http.StatusForbidden || response.Header().Get("Authorization") != "" {
+		t.Fatalf("invitée : %d", response.Code)
+	}
+
+	// Depuis internet : refusé tant que Cockpit n'y est pas ouvert.
+	outside := map[string]string{"X-Forwarded-For": "203.0.113.9"}
+	for key, value := range headers {
+		outside[key] = value
+	}
+	if response := forwardTo(f, path, "127.0.0.1:5000", paulForward, outside); response.Code != http.StatusForbidden || response.Header().Get("Authorization") != "" {
+		t.Fatalf("depuis internet, fermé : %d", response.Code)
+	}
+	// L'ouvrir sur internet depuis internet : refusé ; depuis la maison : permis.
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/cockpit/access", `{"users": true, "internet": true}`, admin); response.Code == http.StatusOK {
+		t.Fatalf("ouvert depuis internet : %d", response.Code)
+	}
+	if response := f.do(http.MethodPut, "/pi-appliance/api/cockpit/access", "application/json", `{"users": true, "internet": true}`, admin); response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"console_internet":false`) {
+		t.Fatalf("ouvert sur internet : %d %s", response.Code, response.Body)
+	}
+	// Console fermée sur internet : Cockpit ne l'est pas davantage.
+	if response := forwardTo(f, path, "127.0.0.1:5000", paulForward, outside); response.Code != http.StatusForbidden {
+		t.Fatalf("console fermée sur internet : %d", response.Code)
+	}
+	if response := f.do(http.MethodPut, "/pi-appliance/api/internet-console?enabled=true", "", "", admin); response.Code != http.StatusOK {
+		t.Fatalf("console ouverte : %d %s", response.Code, response.Body)
+	}
+	if response := forwardTo(f, path, "127.0.0.1:5000", paulForward, outside); response.Code != http.StatusOK || response.Header().Get("Authorization") == "" {
+		t.Fatalf("depuis internet, ouvert : %d", response.Code)
+	}
+	// Refermer depuis internet est permis ; l'accès est alors coupé tout de suite.
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/cockpit/access", `{"users": false, "internet": false}`, admin); response.Code != http.StatusOK {
+		t.Fatalf("refermé depuis internet : %d %s", response.Code, response.Body)
+	}
+	if response := forwardTo(f, path, "127.0.0.1:5000", paulForward, headers); response.Code != http.StatusForbidden {
+		t.Fatalf("utilisateur après fermeture : %d", response.Code)
 	}
 }

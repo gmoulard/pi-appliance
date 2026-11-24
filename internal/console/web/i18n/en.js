@@ -425,7 +425,6 @@ piTranslations("en", {
   "{0} : accès changé.": "{0}: access changed.",
   "Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.": "Anything goes there, including damaging the Pi. Do not change the Pi's Wi-Fi (“pi-appliance-ap”) or the USB disks for data and backups there: set them up in this console.",
   "Cockpit": "Cockpit",
-  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.": "For people comfortable with computers: the Pi's logs, programs, network, disks and a terminal, in the browser. You enter with your pi-appliance account, with no other password, with full rights on the Pi. Administrators only, from home.",
   "Installer Cockpit": "Install Cockpit",
   "Ouvrir Cockpit": "Open Cockpit",
   "Pas installé.": "Not installed.",
@@ -746,5 +745,17 @@ piTranslations("en", {
   "CPU {0} %": "CPU {0}%",
   "RAM {0} %": "RAM {0}%",
   "Disque {0} / {1}": "Disk {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude will have full rights over your Pi: it can read, change and delete everything; every action goes through your Claude app, where you accept or refuse it. A Claude subscription (Pro or Max) is required. After installing, open the service to sign in to your Claude account once."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude will have full rights over your Pi: it can read, change and delete everything; every action goes through your Claude app, where you accept or refuse it. A Claude subscription (Pro or Max) is required. After installing, open the service to sign in to your Claude account once.",
+  "Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.": "Open to every console account (except guests), also from the internet.",
+  "Ouvert à tous les comptes de la console (sauf les invités), depuis la maison.": "Open to every console account (except guests), from home.",
+  "Ouvert aux administrateurs, aussi depuis internet.": "Open to administrators, also from the internet.",
+  "Ouvert aux administrateurs, depuis la maison.": "Open to administrators, from home.",
+  "La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet ».": "The console is not open on the internet, so Cockpit is not either. Open it in “Console on the internet”.",
+  "Accès à Cockpit enregistré.": "Cockpit access saved.",
+  "Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.": "Also open Cockpit to console users? Anyone with an account will have full rights over the Pi: they can read, change and delete everything, even from the internet if Cockpit is open there. A stolen password is enough.",
+  "Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.": "Also open Cockpit from the internet? Anyone who can get in will have full rights over the Pi, even from the internet: a stolen password is enough. Two-step verification is not required: recommend it to every account.",
+  "Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.": "The Pi's logs, programs, network, disks and a terminal, in the browser, with full rights over the Pi. An administrator opened it for you.",
+  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.": "For people comfortable with computers: the Pi's logs, programs, network, disks and a terminal, in the browser. You sign in with your pi-appliance account, with no other password, with full rights over the Pi.",
+  "Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)": "Also open to console users (not only administrators)",
+  "Ouvrir aussi depuis internet": "Also open from the internet"
 });
