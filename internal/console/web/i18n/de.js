@@ -811,5 +811,17 @@ piTranslations("de", {
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "Zu pi-appliance {0} zurückkehren, einer früheren Version?\n\nSeitdem vorgenommene Einstellungen versteht die ältere Version möglicherweise nicht. Die Dienste und ihre Daten bleiben erhalten.\n\nDie Konsole und der Zugang zu den Diensten sind ein bis zwei Minuten unterbrochen. Startet diese Version nicht, kehrt die heutige von selbst zurück.",
   "Versions de la console": "Versionen der Konsole",
   "Voir les versions publiées": "Veröffentlichte Versionen anzeigen",
-  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Sie können eine neuere Version installieren oder zu einer früheren Version zurückkehren, wenn die neueste Sie stört. Ihre Dienste und ihre Daten bleiben erhalten."
+  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Sie können eine neuere Version installieren oder zu einer früheren Version zurückkehren, wenn die neueste Sie stört. Ihre Dienste und ihre Daten bleiben erhalten.",
+  "Alertes par e-mail": "E-Mail-Warnungen",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "Der Pi benachrichtigt die Administratoren mit bestätigter Adresse per E-Mail, wenn etwas nicht stimmt. Keine Flut: höchstens eine E-Mail pro Warnungsart und Tag, dann eine weitere, wenn alles wieder in Ordnung ist.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "Speicher fast voll (SD-Karte oder USB-Festplatte zu 90 % belegt)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "Dienst seit mehr als 10 Minuten gestoppt, ohne dass ihn jemand in der Konsole gestoppt hat",
+  "Le Pi manque de courant (alimentation trop faible)": "Der Pi bekommt zu wenig Strom (Netzteil zu schwach)",
+  "La sauvegarde de la nuit a échoué": "Die nächtliche Sicherung ist fehlgeschlagen",
+  "Correctifs de sécurité à installer": "Sicherheitsupdates zu installieren",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Zertifikat einer Internetadresse des Pi läuft bald ab",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Warnungen werden gesendet, sobald der E-Mail-Versand eingerichtet ist, direkt darüber.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Noch kein Administrator hat seine E-Mail-Adresse bestätigt: Bestätigen Sie Ihre unter „Mein Konto“, um Warnungen zu erhalten.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Warnungen gehen an {0} Administrator(en). Bestätigen Sie Ihre Adresse unter „Mein Konto“, um sie auch zu erhalten.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Warnungen gehen an {0} Administrator(en), Sie eingeschlossen."
 });

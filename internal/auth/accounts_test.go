@@ -341,3 +341,45 @@ func TestFirstAdmin(t *testing.T) {
 		t.Fatal("premier administrateur mal reconnu")
 	}
 }
+
+// Services autorisés par compte (spécification 8.1, TODO-4.1).
+func TestAllowedServices(t *testing.T) {
+	store, _ := withAdmin(t)
+	if _, _, err := store.Create("paul", "paul@example.org", RoleUser, nil); err != nil {
+		t.Fatal(err)
+	}
+	paul, _ := store.Get("paul")
+	if !paul.MayOpen("wiki") {
+		t.Fatal("par défaut, tous les services")
+	}
+	if _, err := store.SetServices("paul", true, []string{"wiki", "cloud", "wiki"}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.SetServices("paul", true, []string{"../x"}); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("nom de service invalide : %v", err)
+	}
+	reopened, err := Open(store.path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	paul, _ = reopened.Get("paul")
+	if !paul.MayOpen("wiki") || paul.MayOpen("site") || len(paul.Services) != 2 || paul.Services[0] != "cloud" || !paul.Public().RestrictServices {
+		t.Fatalf("liste relue : %+v", paul)
+	}
+	admin, _ := reopened.Get(reopened.List()[0].Name)
+	admin.RestrictServices = true
+	if admin.Role == RoleAdmin && !admin.MayOpen("site") {
+		t.Fatal("un administrateur ouvre tout")
+	}
+	if err := reopened.ForgetService("wiki"); err != nil {
+		t.Fatal(err)
+	}
+	paul, _ = reopened.Get("paul")
+	if paul.MayOpen("wiki") || !paul.MayOpen("cloud") {
+		t.Fatalf("service désinstallé oublié : %+v", paul.Services)
+	}
+	paul, _ = reopened.SetServices("paul", false, []string{"cloud"})
+	if !paul.MayOpen("site") || paul.Services != nil {
+		t.Fatalf("restriction levée : %+v", paul)
+	}
+}

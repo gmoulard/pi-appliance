@@ -811,5 +811,17 @@ piTranslations("es", {
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "¿Volver a pi-appliance {0}, una versión anterior?\n\nLos ajustes hechos desde entonces pueden no ser comprendidos por la versión anterior. Los servicios y sus datos se conservan.\n\nLa consola y el acceso a los servicios se cortarán uno o dos minutos. Si esta versión no arranca, la de hoy vuelve sola.",
   "Versions de la console": "Versiones de la consola",
   "Voir les versions publiées": "Ver las versiones publicadas",
-  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Puede instalar una versión más reciente o volver a una versión anterior si la última le molesta. Sus servicios y sus datos se conservan."
+  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Puede instalar una versión más reciente o volver a una versión anterior si la última le molesta. Sus servicios y sus datos se conservan.",
+  "Alertes par e-mail": "Alertas por correo electrónico",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "La Pi avisa por correo electrónico a los administradores cuya dirección está verificada cuando algo va mal. Sin avalancha: como mucho un correo por tipo de alerta y por día, y luego otro cuando todo vuelve a la normalidad.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "Disco casi lleno (tarjeta SD o disco USB lleno al 90 %)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "Servicio detenido desde hace más de 10 minutos, sin que nadie lo haya detenido en la consola",
+  "Le Pi manque de courant (alimentation trop faible)": "A la Pi le falta corriente (alimentación demasiado débil)",
+  "La sauvegarde de la nuit a échoué": "La copia de seguridad de la noche ha fallado",
+  "Correctifs de sécurité à installer": "Parches de seguridad por instalar",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Certificado de una dirección de internet de la Pi a punto de caducar",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Las alertas se enviarán en cuanto se configure el envío de correos, justo arriba.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Ningún administrador ha verificado aún su dirección de correo: verifique la suya en «Mi cuenta» para recibir las alertas.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Las alertas se envían a {0} administrador(es). Verifique su dirección en «Mi cuenta» para recibirlas también.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Las alertas se envían a {0} administrador(es), usted incluido."
 });

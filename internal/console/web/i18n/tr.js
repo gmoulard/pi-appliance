@@ -811,5 +811,17 @@ piTranslations("tr", {
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "Daha eski bir sürüm olan pi-appliance {0} sürümüne dönülsün mü?\n\nO zamandan beri yapılan ayarlar eski sürüm tarafından anlaşılmayabilir. Hizmetler ve verileri korunur.\n\nKonsol ve hizmetlere erişim bir iki dakika kesilecek. Bu sürüm başlamazsa bugünkü sürüm kendiliğinden geri gelir.",
   "Versions de la console": "Konsol sürümleri",
   "Voir les versions publiées": "Yayımlanan sürümleri gör",
-  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Daha yeni bir sürüm yükleyebilir ya da en son sürüm sizi rahatsız ediyorsa önceki bir sürüme dönebilirsiniz. Hizmetleriniz ve verileri korunur."
+  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Daha yeni bir sürüm yükleyebilir ya da en son sürüm sizi rahatsız ediyorsa önceki bir sürüme dönebilirsiniz. Hizmetleriniz ve verileri korunur.",
+  "Alertes par e-mail": "E-posta uyarıları",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "Bir sorun olduğunda Pi, adresi doğrulanmış yöneticilere e-posta ile haber verir. Yağmur gibi e-posta yok: her uyarı türü için günde en fazla bir e-posta, ardından her şey normale döndüğünde bir tane daha.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "Disk neredeyse dolu (SD kart veya USB disk %90 dolu)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "Hizmet 10 dakikadan uzun süredir durmuş ve konsoldan kimse durdurmamış",
+  "Le Pi manque de courant (alimentation trop faible)": "Pi'nin elektriği yetersiz (güç kaynağı çok zayıf)",
+  "La sauvegarde de la nuit a échoué": "Gece yedeklemesi başarısız oldu",
+  "Correctifs de sécurité à installer": "Kurulacak güvenlik düzeltmeleri",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Pi'nin bir internet adresinin sertifikasının süresi yakında doluyor",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "E-posta gönderimi ayarlanır ayarlanmaz uyarılar gönderilecek (hemen yukarıda).",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Henüz hiçbir yönetici e-posta adresini doğrulamadı: uyarıları almak için kendi adresinizi «Hesabım» bölümünde doğrulayın.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Uyarılar {0} yöneticiye gidiyor. Sizin de almanız için adresinizi «Hesabım» bölümünde doğrulayın.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Uyarılar siz de dahil {0} yöneticiye gidiyor."
 });

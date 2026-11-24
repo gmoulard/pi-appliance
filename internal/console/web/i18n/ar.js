@@ -811,5 +811,17 @@ piTranslations("ar", {
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "العودة إلى pi-appliance {0}، وهو إصدار سابق؟\n\nقد لا يفهم الإصدار الأقدم الإعدادات التي أُجريت منذ ذلك الحين. تُحفظ الخدمات وبياناتها.\n\nستنقطع وحدة التحكم والوصول إلى الخدمات دقيقة أو دقيقتين. إذا لم يبدأ هذا الإصدار، يعود إصدار اليوم تلقائيًا.",
   "Versions de la console": "إصدارات وحدة التحكم",
   "Voir les versions publiées": "عرض الإصدارات المنشورة",
-  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "يمكنك تثبيت إصدار أحدث، أو العودة إلى إصدار سابق إذا كان الأخير يزعجك. تُحفظ خدماتك وبياناتها."
+  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "يمكنك تثبيت إصدار أحدث، أو العودة إلى إصدار سابق إذا كان الأخير يزعجك. تُحفظ خدماتك وبياناتها.",
+  "Alertes par e-mail": "التنبيهات بالبريد الإلكتروني",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "عندما يحدث خطأ ما، ينبّه الـ Pi بالبريد الإلكتروني المسؤولين الذين تم التحقق من عناوينهم. بلا سيل من الرسائل: رسالة واحدة على الأكثر لكل نوع تنبيه في اليوم، ثم رسالة أخرى عندما يعود كل شيء إلى طبيعته.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "القرص ممتلئ تقريبًا (بطاقة SD أو قرص USB ممتلئ بنسبة 90 %)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "خدمة متوقفة منذ أكثر من 10 دقائق، دون أن يوقفها أحد من وحدة التحكم",
+  "Le Pi manque de courant (alimentation trop faible)": "الـ Pi لا يحصل على كهرباء كافية (مزوّد الطاقة ضعيف جدًا)",
+  "La sauvegarde de la nuit a échoué": "فشل النسخ الاحتياطي الليلي",
+  "Correctifs de sécurité à installer": "تصحيحات أمنية بانتظار التثبيت",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "شهادة أحد عناوين الـ Pi على الإنترنت ستنتهي قريبًا",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "ستُرسل التنبيهات فور ضبط إرسال البريد الإلكتروني، في الأعلى مباشرة.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "لم يتحقق أي مسؤول من عنوان بريده الإلكتروني بعد: تحقّق من عنوانك في «حسابي» لتلقي التنبيهات.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "تُرسل التنبيهات إلى {0} مسؤول. تحقّق من عنوانك في «حسابي» لتتلقاها أنت أيضًا.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "تُرسل التنبيهات إلى {0} مسؤول، بمن فيهم أنت."
 });

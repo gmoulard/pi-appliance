@@ -35,6 +35,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -86,6 +87,9 @@ var (
 
 var namePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]{0,31}$`)
 
+// servicePattern : nom d'un service installé (une étiquette DNS).
+var servicePattern = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$`)
+
 type Account struct {
 	Name          string `json:"name"`
 	Email         string `json:"email"`
@@ -121,6 +125,16 @@ type Account struct {
 	// Mot de passe oublié : SHA-256 du lien envoyé par e-mail et sa fin (recovery.go).
 	ResetHash    string    `json:"reset_hash,omitempty"`
 	ResetExpires time.Time `json:"reset_expires,omitzero"`
+	// RestrictServices : le compte n'ouvre que les services de Services
+	// (spécification 8.1, TODO-4.1) ; faux : tous les services. Sans effet
+	// pour un administrateur.
+	RestrictServices bool     `json:"restrict_services,omitempty"`
+	Services         []string `json:"services,omitempty"`
+}
+
+// MayOpen : le compte peut ouvrir ce service (connexion déléguée ou OpenID Connect).
+func (a Account) MayOpen(service string) bool {
+	return a.Role == RoleAdmin || !a.RestrictServices || slices.Contains(a.Services, service)
 }
 
 // Public est la vue d'un compte renvoyée à l'interface, sans hachage ni secret.
@@ -140,6 +154,9 @@ type Public struct {
 	TwoFactor bool `json:"two_factor"`
 	// TwoFactorOffer : la console doit proposer la double authentification.
 	TwoFactorOffer bool `json:"two_factor_offer"`
+	// RestrictServices, Services : services autorisés (MayOpen).
+	RestrictServices bool     `json:"restrict_services"`
+	Services         []string `json:"services"`
 }
 
 func (a Account) Public() Public {
@@ -148,7 +165,8 @@ func (a Account) Public() Public {
 		ExpiresAt: a.ExpiresAt, Invited: a.Hash == "", TOTP: a.TOTPSecret != "",
 		TOTPRequired: a.TOTPRequired, RecoveryCodes: len(a.RecoveryHashes),
 		EmailCode: a.emailFactor(), TwoFactor: a.HasTwoFactor(),
-		TwoFactorOffer: a.Hash != "" && !a.HasTwoFactor() && !a.TwoFactorOffered,
+		TwoFactorOffer:   a.Hash != "" && !a.HasTwoFactor() && !a.TwoFactorOffered,
+		RestrictServices: a.RestrictServices, Services: append([]string{}, a.Services...),
 	}
 }
 

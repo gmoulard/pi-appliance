@@ -811,5 +811,17 @@ piTranslations("fa", {
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "بازگشت به pi-appliance {0}، یک نسخهٔ قدیمی‌تر؟\n\nممکن است نسخهٔ قدیمی‌تر تنظیماتی را که از آن زمان انجام شده نفهمد. سرویس‌ها و داده‌هایشان نگه داشته می‌شوند.\n\nکنسول و دسترسی به سرویس‌ها یکی دو دقیقه قطع می‌شود. اگر این نسخه راه نیفتد، نسخهٔ امروز خودبه‌خود برمی‌گردد.",
   "Versions de la console": "نسخه‌های کنسول",
   "Voir les versions publiées": "دیدن نسخه‌های منتشرشده",
-  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "می‌توانید نسخهٔ جدیدتری نصب کنید، یا اگر آخرین نسخه برایتان دردسر دارد به نسخهٔ قبلی برگردید. سرویس‌ها و داده‌هایشان نگه داشته می‌شوند."
+  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "می‌توانید نسخهٔ جدیدتری نصب کنید، یا اگر آخرین نسخه برایتان دردسر دارد به نسخهٔ قبلی برگردید. سرویس‌ها و داده‌هایشان نگه داشته می‌شوند.",
+  "Alertes par e-mail": "هشدارهای ایمیلی",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "وقتی مشکلی پیش بیاید، Pi با ایمیل به مدیرانی که نشانی‌شان تأیید شده خبر می‌دهد. بدون سیل ایمیل: برای هر نوع هشدار حداکثر یک ایمیل در روز، و سپس یکی دیگر وقتی همه‌چیز به حالت عادی برگشت.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "دیسک تقریباً پر است (کارت SD یا دیسک USB تا ۹۰٪ پر شده)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "سرویس بیش از ۱۰ دقیقه است که متوقف شده، بی‌آنکه کسی آن را در کنسول متوقف کرده باشد",
+  "Le Pi manque de courant (alimentation trop faible)": "برق Pi کافی نیست (منبع تغذیه خیلی ضعیف است)",
+  "La sauvegarde de la nuit a échoué": "پشتیبان‌گیری شبانه ناموفق بود",
+  "Correctifs de sécurité à installer": "وصله‌های امنیتی برای نصب",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "گواهی یکی از نشانی‌های اینترنتی Pi به‌زودی منقضی می‌شود",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "هشدارها به‌محض تنظیم ارسال ایمیل، درست در بالا، فرستاده می‌شوند.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "هنوز هیچ مدیری نشانی ایمیل خود را تأیید نکرده است: برای دریافت هشدارها نشانی خود را در «حساب من» تأیید کنید.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "هشدارها برای {0} مدیر فرستاده می‌شوند. برای اینکه شما هم دریافت کنید، نشانی خود را در «حساب من» تأیید کنید.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "هشدارها برای {0} مدیر، از جمله شما، فرستاده می‌شوند."
 });

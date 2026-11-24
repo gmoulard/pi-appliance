@@ -34,6 +34,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/addresses"
+	"github.com/gmoulard/pi-appliance/internal/alerts"
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
@@ -43,6 +44,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/mail"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
+	"github.com/gmoulard/pi-appliance/internal/oidc"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
@@ -214,6 +216,12 @@ type Config struct {
 	// SMTP : envoi des e-mails par le serveur SMTP réglé dans la console
 	// (spécification 10.2) ; nil : réglage absent de la console.
 	SMTP *mail.SMTP
+	// OIDC : la console fournisseur OpenID Connect pour les services
+	// (spécification 8.1) ; nil : pas de fournisseur ici.
+	OIDC *oidc.Provider
+	// Alerts : alertes par e-mail aux administrateurs (spécification 8.6) ;
+	// nil : pas d'alertes ici.
+	Alerts *alerts.Monitor
 	// DevicePublicKey : clé publique du Pi (device.pub), d'où vient son
 	// identifiant pour l'application mobile ; vide : pas d'identifiant.
 	DevicePublicKey string
@@ -312,6 +320,8 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
 	c.accountRoutes(mux)
 	c.mailRoutes(mux)
+	c.alertRoutes(mux)
+	c.oidcRoutes(mux)
 	c.deviceRoutes(mux)
 	if c.Backups != nil {
 		c.Backups.Routes(mux, BasePath, c.adminOnly)
@@ -786,9 +796,14 @@ func (c *console) control(w http.ResponseWriter, r *http.Request) {
 		c.update(w, r, name)
 		return
 	}
-	if err := c.Services.Control(r.Context(), name, services.Action(r.PathValue("action"))); err != nil {
+	action := services.Action(r.PathValue("action"))
+	if err := c.Services.Control(r.Context(), name, action); err != nil {
 		writeServiceError(w, err)
 		return
+	}
+	if c.Alerts != nil {
+		// Arrêté exprès dans la console : pas d'alerte « service arrêté ».
+		c.Alerts.SetStopped(name, action == services.Stop)
 	}
 	status, err := c.Services.Status(r.Context(), name)
 	if err != nil {
@@ -865,6 +880,10 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 		writeServiceError(w, err)
 		return
 	}
+	if c.Alerts != nil {
+		c.Alerts.SetStopped(r.PathValue("name"), false)
+	}
+	c.forgetServiceIdentity(r.PathValue("name"))
 	if err := c.Accounts.RevokeServiceShares(r.PathValue("name")); err != nil {
 		log.Printf("liens de partage de %s : %v", r.PathValue("name"), err)
 	}
@@ -897,6 +916,9 @@ func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
 		if err != nil {
 			writeServiceError(w, err)
 			return
+		}
+		if c.Alerts != nil {
+			c.Alerts.SetStopped(name, false)
 		}
 		c.syncTraefikNow()
 		writeJSON(w, http.StatusOK, result)

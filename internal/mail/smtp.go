@@ -439,3 +439,9 @@ func (s *SMTP) SendCode(account auth.Public, purpose auth.CodePurpose, code, lan
 	}
 	return s.Send(Message{Kind: kind, To: account.Email, Name: account.Name, Code: code, Lang: lang})
 }
+
+// SendAlert envoie une alerte (spécification 8.6) à un administrateur ;
+// subject et body viennent du paquet alerts.
+func (s *SMTP) SendAlert(to, name, lang, subject, body string) error {
+	return s.Send(Message{Kind: KindAlert, To: to, Name: name, Lang: lang, Subject: subject, Body: body})
+}

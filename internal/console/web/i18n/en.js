@@ -811,5 +811,17 @@ piTranslations("en", {
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "Go back to pi-appliance {0}, an earlier version?\n\nSettings made since then may not be understood by the older version. Services and their data are kept.\n\nThe console and access to services will be cut for a minute or two. If this version does not start, today's one comes back on its own.",
   "Versions de la console": "Console versions",
   "Voir les versions publiées": "See the published versions",
-  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "You can install a newer version, or go back to an earlier version if the latest one bothers you. Your services and their data are kept."
+  "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "You can install a newer version, or go back to an earlier version if the latest one bothers you. Your services and their data are kept.",
+  "Alertes par e-mail": "Email alerts",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "The Pi emails the administrators whose address is verified when something goes wrong. No flood: at most one email per type of alert and per day, then another one when everything is back to normal.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "Disk almost full (SD card or USB disk 90% full)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "Service stopped for more than 10 minutes, without anyone stopping it in the console",
+  "Le Pi manque de courant (alimentation trop faible)": "The Pi lacks power (power supply too weak)",
+  "La sauvegarde de la nuit a échoué": "Last night's backup failed",
+  "Correctifs de sécurité à installer": "Security fixes to install",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Certificate of one of the Pi's internet addresses expiring soon",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Alerts will be sent as soon as sending emails is set up, just above.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "No administrator has verified their email address yet: verify yours in \"My account\" to receive alerts.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Alerts go to {0} administrator(s). Verify your address in \"My account\" to receive them too.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Alerts go to {0} administrator(s), including you."
 });

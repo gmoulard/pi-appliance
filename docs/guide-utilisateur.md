@@ -41,7 +41,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 - La gestion d'un disque USB pour les données des services.
 - Les sauvegardes chiffrées sur un second disque USB, chaque nuit et à la demande, et la restauration d'un service à une date choisie (écran « Sauvegardes » dans « Mon Pi »), pas encore essayées sur un vrai Pi.
 - Un code à scanner avec l'[application mobile](#application-mobile), dans « Mon Pi », pour retrouver le Pi et ses services sur le téléphone.
-- L'[envoi des e-mails](#envoi-des-e-mails) par votre propre boîte e-mail (Gmail, OVH, Free, Orange…), et la [double authentification](#double-authentification) par un code reçu par e-mail ou par une application du téléphone, proposée à chaque nouveau compte ; pas encore essayés sur un vrai Pi.
+- L'[envoi des e-mails](#envoi-des-e-mails) par votre propre boîte e-mail (Gmail, OVH, Free, Orange…), et la [double authentification](#double-authentification) par un code reçu par e-mail ou par une application du téléphone, proposée à chaque nouveau compte, et les [alertes par e-mail](#alertes-par-e-mail) aux administrateurs ; pas encore essayés sur un vrai Pi.
 
 Ces fonctions sont présentes dans le code, mais restent à valider sur du matériel réel. La liste des essais restants est dans la page [Avancement](TODO.html).
 
@@ -138,6 +138,10 @@ Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « m
 **Gmail** refuse votre mot de passe habituel : dans votre compte Google, activez la validation en deux étapes, puis ouvrez **Sécurité**, **Mots de passe des applications**, créez-en un (par exemple « pi-appliance ») et collez dans la console les 16 lettres affichées. Vous pourrez le retirer à tout moment, sans changer votre mot de passe Google.
 
 Le mot de passe reste sur le Pi : la console ne le réaffiche jamais (laissez le champ vide pour le garder) et il n'est écrit dans aucun journal. Le mieux est une boîte e-mail réservée au Pi, ou un mot de passe d'application. Ce réglage se change seulement depuis la maison. **Ne plus envoyer d'e-mails** efface le réglage ; les comptes qui recevaient leur code de connexion par e-mail devront alors utiliser leur application ou un code de secours.
+
+### Alertes par e-mail {#alertes-par-e-mail}
+
+Une fois l'envoi réglé, le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée (dans « Mon compte ») quand quelque chose ne va pas : disque presque plein (carte SD ou disque USB rempli à 90 %), service arrêté depuis plus de 10 minutes sans qu'on l'ait arrêté dans la console, Pi qui manque de courant, sauvegarde de la nuit en échec, correctifs de sécurité à installer, certificat d'une adresse internet bientôt expiré. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre. Dans « Mon Pi », carte **Alertes par e-mail**, décochez les types que vous ne voulez pas recevoir.
 
 ## Protéger son compte : la double authentification {#double-authentification}
 
