@@ -707,8 +707,10 @@ function tagsChooser(service) {
 // tuiles (Mon Pi, Mes services, Marketplace), puis, pour les types choisis,
 // leurs étiquettes : les thèmes de Mon Pi, les étiquettes du catalogue pour les
 // services. Choix multiple, « l'un ou l'autre » ; rien de choisi : tout est
-// affiché. Une étiquette ne trie que les tuiles de son type. Le choix est gardé
-// sur cet appareil (stockage du navigateur). Les tuiles portent data-kind
+// affiché. Une étiquette ne trie que les tuiles de son type. Les étiquettes
+// choisies sont gardées sur cet appareil (stockage du navigateur) ; le type,
+// lui, ne l'est pas : la console s'ouvre toujours sur « Mon Pi » (TODO-5.25),
+// ou, pour un compte qui ne l'a pas, sur tout ce qu'il a. Les tuiles portent data-kind
 // (section) et data-theme (Mon Pi) ou data-tags (services) ; la barre ne se
 // montre que quand au moins deux types sont à l'écran (pas pendant l'assistant).
 const TILE_KINDS = [
@@ -732,8 +734,6 @@ const tileChoice = { kinds: new Set(), tags: new Set() };
 (function readTileChoice() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(TILES_KEY) || "{}");
-    // Un seul type à la fois (Mon Pi, Mes services ou Marketplace).
-    for (const kind of (saved.kinds || []).slice(0, 1)) tileChoice.kinds.add(String(kind));
     for (const tag of saved.tags || []) tileChoice.tags.add(String(tag));
   } catch {
     // Stockage indisponible ou illisible : tout est affiché.
@@ -742,7 +742,7 @@ const tileChoice = { kinds: new Set(), tags: new Set() };
 
 function saveTileChoice() {
   try {
-    window.localStorage.setItem(TILES_KEY, JSON.stringify({ kinds: [...tileChoice.kinds], tags: [...tileChoice.tags] }));
+    window.localStorage.setItem(TILES_KEY, JSON.stringify({ tags: [...tileChoice.tags] }));
   } catch {
     // Sans stockage, le choix ne dure que le temps de cette page.
   }
@@ -1595,15 +1595,19 @@ async function refreshResources() {
 // date de lecture change. En cas d'échec, le catalogue affiché reste.
 async function refreshOnlineCatalog() {
   try {
-    const { changed, source } = await api("catalog/refresh", { method: "POST" });
-    if (changed) {
-      await loadCatalog();
-      await loadServices();
-    } else {
-      showCatalogSource(source);
-    }
+    await showCatalogRefresh(await api("catalog/refresh", { method: "POST" }));
   } catch {
     // Pas d'internet ou console injoignable : rien ne change à l'écran.
+  }
+}
+
+// showCatalogRefresh : réponse de api/catalog/refresh mise à l'écran.
+async function showCatalogRefresh({ changed, source }) {
+  if (changed) {
+    await loadCatalog();
+    await loadServices();
+  } else {
+    showCatalogSource(source);
   }
 }
 
@@ -4526,6 +4530,11 @@ async function showConsole(account, wizard) {
     return;
   }
   currentAccount = account;
+  // À chaque ouverture, « Mon Pi » d'abord (TODO-5.25) ; un compte sans
+  // « Mon Pi » voit tout ce qu'il a (un type absent de l'écran ne compte pas).
+  tileChoice.kinds.clear();
+  tileChoice.kinds.add("pi");
+  scheduleTiles();
   authSection.hidden = true;
   logoutButton.hidden = false;
   servicesSection.hidden = false;
@@ -4551,6 +4560,10 @@ async function showConsole(account, wizard) {
   if (returnTo && (await goBackToService())) {
     return;
   }
+  // Catalogue en ligne relu tout de suite, en arrière-plan (TODO-5.25) : la
+  // console ne l'attend pas ; une fois par minute au plus, l'ancien catalogue
+  // reste en cas d'échec ; la marketplace suit quand la réponse arrive.
+  const catalogRefreshed = api("catalog/refresh", { method: "POST" }).catch(() => null);
   if (account.role === "admin" && wizard) {
     await startWizard();
     return;
@@ -4576,6 +4589,7 @@ async function showConsole(account, wizard) {
   await resourcesReady;
   await loadCatalog();
   await loadServices();
+  catalogRefreshed.then((result) => result && showCatalogRefresh(result)).catch(() => null);
 }
 
 api("health")
