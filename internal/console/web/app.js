@@ -3425,6 +3425,23 @@ function needsTOTP(account) {
   return account.totp_required && !account.two_factor;
 }
 
+// ?oidc= : demande de connexion d'un service par OpenID Connect (spécification
+// 8.1), reprise une fois connecté : la console renvoie au service avec un code.
+let oidcRequest = new URLSearchParams(window.location.search).get("oidc");
+
+async function goBackToOIDC() {
+  try {
+    const { url } = await api("oidc/authorize", jsonBody("POST", { request: oidcRequest }));
+    window.location.assign(url);
+    return true;
+  } catch (error) {
+    showMessage([error.message], "error");
+    oidcRequest = null;
+    window.history.replaceState(null, "", window.location.pathname);
+    return false;
+  }
+}
+
 // Ouvre le service demandé ; faux si l'adresse est refusée (la console s'affiche alors).
 async function goBackToService() {
   try {
@@ -3591,6 +3608,7 @@ totpConfirm.addEventListener("submit", async (event) => {
     if (!internetBox.hidden) loadInternet();
     // Rester ici le temps de noter les codes de secours, sans repartir vers un service.
     returnTo = null;
+    oidcRequest = null;
     const session = await api("session");
     await showConsole(session.account, session.wizard);
     showRecoveryCodes(codes);
@@ -3695,6 +3713,7 @@ emailCodeConfirm.addEventListener("submit", async (event) => {
     const reply = await api("account/email/confirm", jsonBody("POST", { code: new FormData(emailCodeConfirm).get("code") }));
     showMessage([t("Votre adresse e-mail est vérifiée : à chaque connexion, la console vous enverra un code.")], "success");
     returnTo = null;
+    oidcRequest = null;
     const session = await api("session");
     await showConsole(session.account, session.wizard);
     showRecoveryCodes(reply.recovery_codes);
@@ -4602,6 +4621,9 @@ async function showConsole(account, wizard) {
     return;
   }
   if (returnTo && (await goBackToService())) {
+    return;
+  }
+  if (oidcRequest && (await goBackToOIDC())) {
     return;
   }
   if (account.role === "admin" && wizard) {

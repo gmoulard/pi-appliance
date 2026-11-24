@@ -444,6 +444,11 @@ func (c *console) forwardWith(w http.ResponseWriter, r *http.Request, adminOnly,
 			writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
 			return
 		}
+		// Services autorisés par compte (spécification 8.1) : les autres restent fermés.
+		if service := c.serviceOf(r.Header.Get("X-Forwarded-Host"), r.Header.Get("X-Forwarded-Uri")); service != "" && !account.MayOpen(service) {
+			writeError(w, http.StatusForbidden, "Votre compte n'a pas accès à ce service : demandez-le à l'administrateur du Pi.")
+			return
+		}
 		if extra != nil && !extra(w, r, account) {
 			return
 		}

@@ -44,6 +44,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/mail"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
+	"github.com/gmoulard/pi-appliance/internal/oidc"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
@@ -214,6 +215,9 @@ type Config struct {
 	// SMTP : envoi des e-mails par le serveur SMTP réglé dans la console
 	// (spécification 10.2) ; nil : réglage absent de la console.
 	SMTP *mail.SMTP
+	// OIDC : la console fournisseur OpenID Connect pour les services
+	// (spécification 8.1) ; nil : pas de fournisseur ici.
+	OIDC *oidc.Provider
 	// Alerts : alertes par e-mail aux administrateurs (spécification 8.6) ;
 	// nil : pas d'alertes ici.
 	Alerts *alerts.Monitor
@@ -305,6 +309,7 @@ func Handler(config Config) http.Handler {
 	c.accountRoutes(mux)
 	c.mailRoutes(mux)
 	c.alertRoutes(mux)
+	c.oidcRoutes(mux)
 	c.deviceRoutes(mux)
 	if c.Backups != nil {
 		c.Backups.Routes(mux, BasePath, c.adminOnly)
@@ -865,6 +870,7 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 	if c.Alerts != nil {
 		c.Alerts.SetStopped(r.PathValue("name"), false)
 	}
+	c.forgetServiceIdentity(r.PathValue("name"))
 	if err := c.Accounts.RevokeServiceShares(r.PathValue("name")); err != nil {
 		log.Printf("liens de partage de %s : %v", r.PathValue("name"), err)
 	}

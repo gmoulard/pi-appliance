@@ -43,6 +43,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/mail"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
+	"github.com/gmoulard/pi-appliance/internal/oidc"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
@@ -343,6 +344,13 @@ func main() {
 		alerts.Certificate: alerts.CertificateCheck(filepath.Join(*data, "system", "traefik", "acme.json"), func() []string { return console.InternetHosts(config) }),
 	}
 	config.Alerts = monitor
+	// Fournisseur OpenID Connect pour les services (spécification 8.1) : clé de
+	// signature et clients enregistrés, en droits 600 à côté des comptes.
+	if signer, err := oidc.LoadOrCreateSigner(filepath.Join(*data, "oidc-key.pem")); err != nil {
+		log.Printf("OpenID Connect : %v ; fournisseur coupé", err)
+	} else {
+		config.OIDC = &oidc.Provider{Signer: signer, Clients: &oidc.Clients{Path: filepath.Join(*data, "oidc-clients.json")}}
+	}
 	go monitor.Run(ctx, 2*time.Minute, alerts.Every)
 	if config.TraefikInternetFile != "" || config.ServicesInternetFile != "" {
 		go console.RunInternet(ctx, config, time.Minute)

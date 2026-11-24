@@ -20,6 +20,7 @@ import (
 	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -193,6 +194,51 @@ func (s *Store) Update(name string, role Role, expires *time.Time, totpRequired 
 	}
 	account.Role, account.ExpiresAt, account.TOTPRequired = role, expires, totpRequired
 	return account, s.put(account)
+}
+
+// SetServices : services que le compte peut ouvrir ; restrict faux : tous.
+// Les noms sont gardés triés, sans doublon (64 au plus).
+func (s *Store) SetServices(name string, restrict bool, services []string) (Account, error) {
+	if len(services) > 64 {
+		return Account{}, ErrInvalid
+	}
+	list := []string{}
+	for _, service := range services {
+		if !servicePattern.MatchString(service) {
+			return Account{}, ErrInvalid
+		}
+		if !slices.Contains(list, service) {
+			list = append(list, service)
+		}
+	}
+	slices.Sort(list)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	account, ok := s.accounts[name]
+	if !ok {
+		return Account{}, ErrNotFound
+	}
+	account.RestrictServices, account.Services = restrict, list
+	if !restrict {
+		account.Services = nil
+	}
+	return account, s.put(account)
+}
+
+// ForgetService retire un service désinstallé des listes de services autorisés.
+func (s *Store) ForgetService(service string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for _, account := range s.accounts {
+		if !slices.Contains(account.Services, service) {
+			continue
+		}
+		account.Services = slices.DeleteFunc(slices.Clone(account.Services), func(other string) bool { return other == service })
+		if err := s.put(account); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Delete supprime un compte et ferme ses sessions ; le dernier administrateur reste.
