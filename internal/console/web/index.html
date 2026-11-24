@@ -86,17 +86,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <p id="emailReminder" class="empty" hidden></p>
 <section id="wizard" class="card" hidden>
 <h2>Mise en route</h2>
-<p>Bienvenue ! Cet assistant prépare votre Pi en trois étapes : votre compte (c'est fait), le réseau de la maison, puis une vérification du réseau suivie d'un redémarrage. Comptez environ cinq minutes. Il revient à chaque connexion tant que vous ne l'avez pas terminé ; vous pourrez tout changer plus tard. Vous choisirez ensuite vos services dans la marketplace.</p>
+<p>Bienvenue ! Cet assistant prépare votre Pi : votre compte (c'est fait), la langue, le réseau de la maison et sa vérification, l'adresse du Pi sur internet, l'accès depuis internet, les autres comptes, puis un redémarrage. Comptez une dizaine de minutes. Chaque étape peut être passée et refaite plus tard dans la console. L'assistant revient à chaque connexion tant que vous ne l'avez pas terminé. Vous choisirez ensuite vos services dans la marketplace.</p>
 <ol class="steps">
 <li id="stepAccount" class="done">Votre compte administrateur</li>
+<li id="stepLanguage">La langue</li>
 <li id="stepNetwork">Le réseau de la maison</li>
-<li id="stepCheck">Vérification et redémarrage</li>
+<li id="stepCheck">Vérification du réseau</li>
+<li id="stepAddress">L'adresse sur internet</li>
+<li id="stepAccess">L'accès depuis internet</li>
+<li id="stepUsers">Les autres comptes</li>
+<li id="stepReboot">Redémarrage</li>
 </ol>
 <p id="wizardHelp"></p>
+<label id="wizardLanguageField" hidden>Langue de la console<select id="wizardLanguage"></select></label>
 <ul id="wizardChecks" class="checks" hidden></ul>
 <div id="wizardReboot" class="note" aria-live="polite" hidden></div>
 <div class="controls">
 <button id="wizardTest" type="button" hidden></button>
+<button id="wizardContinue" type="button" hidden>Continuer</button>
 <button id="wizardRebootButton" type="button" hidden>Redémarrer le Pi</button>
 <button id="wizardRebootCancel" class="secondary" type="button" hidden>Ne pas redémarrer</button>
 <button id="wizardNext" type="button" hidden></button>
@@ -233,7 +240,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </section>
 <section id="duckdnsSection" data-kind="pi" data-theme="reseau-internet" hidden>
 <h2>Adresse sur internet</h2>
-<div class="card">
+<div id="addressBox" class="card">
 <h3>Votre adresse pi-appliance.com</h3>
 <p>Choisissez un nom : vos services seront joignables depuis internet à l'adresse nom.pi-appliance.com. Elle suit votre nom DuckDNS, réglé plus bas.</p>
 <p id="addressState" class="state" aria-live="polite"></p>
@@ -283,6 +290,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <button id="internetOpen" type="button" hidden>Ouvrir la console sur internet</button>
 <button id="internetClose" class="secondary" type="button" hidden>Fermer la console sur internet</button>
 </div>
+</div>
+</section>
+<section id="accessSection" data-kind="pi" data-theme="reseau-internet" hidden>
+<h2>Accès depuis internet</h2>
+<div class="card">
+<p>Pour que vos services s'ouvrent depuis internet, votre box doit faire suivre vers le Pi les ports 80 et 443, et le port 51820 si vous avez installé le VPN WireGuard. Le Pi peut le demander lui-même à la box (UPnP), si vous l'acceptez.</p>
+<p id="accessState" class="state" aria-live="polite"></p>
+<ul id="accessPorts" class="checks" hidden></ul>
+<p id="accessLocal" class="meta" hidden></p>
+<div class="controls">
+<button id="accessEnable" type="button" hidden>Ouvrir les ports automatiquement</button>
+<button id="accessDisable" class="secondary" type="button" hidden>Ne plus ouvrir les ports</button>
+</div>
+<p class="meta">Votre box ne le permet pas ? Le guide explique comment ouvrir les ports à la main sur une Livebox, une Freebox, une box SFR ou une Bbox.</p>
+<p class="meta"><a href="https://www.pi-appliance.com/guide-utilisateur.html#ouvrir-les-ports" target="_blank" rel="noopener">Ouvrir le guide de la box</a></p>
+<h3>Tester l'accès depuis internet</h3>
+<p>Le Pi vérifie ce qu'il peut vérifier lui-même : votre box, votre adresse publique et l'adresse du Pi sur internet.</p>
+<div class="controls">
+<button id="accessTest" class="secondary" type="button">Tester l'accès depuis internet</button>
+</div>
+<ul id="accessChecks" class="checks" hidden></ul>
+<div id="accessPhone" class="note" hidden></div>
 </div>
 </section>
 <section id="mailSection" data-kind="pi" data-theme="entretien" hidden>

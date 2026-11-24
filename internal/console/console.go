@@ -48,6 +48,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/internal/updates"
+	"github.com/gmoulard/pi-appliance/internal/upnp"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
@@ -232,6 +233,13 @@ type Config struct {
 	// tiré à chaque démarrage et gardé dans un fichier lisible par root seul ;
 	// vide : pas de ligne de commande.
 	CLIToken string
+	// PortMapper : ouverture automatique des ports de la box par UPnP
+	// (spécification 7.2) ; nil : ports à ouvrir à la main seulement.
+	PortMapper *upnp.Manager
+	// PublicIP : adresse publique de la box vue d'internet ; nil : inconnue.
+	PublicIP func(context.Context) (string, error)
+	// LookupHost : résolution des adresses internet du Pi ; nil : résolveur du système.
+	LookupHost func(context.Context, string) ([]string, error)
 }
 
 type console struct {
@@ -292,6 +300,10 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/address", c.adminOnly(c.addressReserve))
 	mux.HandleFunc("DELETE "+BasePath+"/api/address", c.adminOnly(c.addressRelease))
 	mux.HandleFunc("GET "+BasePath+"/api/address/check", c.adminOnly(c.addressCheck))
+	mux.HandleFunc("GET "+BasePath+"/api/address/service", c.adminOnly(c.addressService))
+	mux.HandleFunc("GET "+BasePath+"/api/internet-access", c.adminOnly(c.accessStatus))
+	mux.HandleFunc("PUT "+BasePath+"/api/internet-access", c.adminOnly(c.accessSave))
+	mux.HandleFunc("POST "+BasePath+"/api/internet-access/test", c.adminOnly(c.accessTest))
 	mux.HandleFunc("GET "+BasePath+"/api/stats", c.adminOnly(c.statsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/stats", c.adminOnly(c.statsSave))
 	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
@@ -824,6 +836,7 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c.syncTraefikNow()
+	c.wakePorts()
 	writeJSON(w, http.StatusCreated, result)
 }
 
@@ -856,6 +869,7 @@ func (c *console) remove(w http.ResponseWriter, r *http.Request) {
 		log.Printf("liens de partage de %s : %v", r.PathValue("name"), err)
 	}
 	c.syncTraefikNow()
+	c.wakePorts()
 	w.WriteHeader(http.StatusNoContent)
 }
 

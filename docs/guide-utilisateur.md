@@ -20,6 +20,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
    - [Régler l'envoi des e-mails](#envoi-des-e-mails)
    - [Protéger son compte : la double authentification](#double-authentification)
 5. [Administrer le Pi depuis internet](#console-sur-internet)
+   - [Ouvrir les ports de la box](#ouvrir-les-ports)
 6. [Ligne de commande du Pi (SSH)](#ligne-de-commande)
 7. [Mot de passe oublié : le lien par e-mail](#mot-de-passe-oublie), ou [le fichier reset](#fichier-reset)
 8. [Remettre le Pi à zéro](#remise-a-zero)
@@ -31,7 +32,8 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 
 ## Ce que contient cette version {#contenu}
 
-- Une console en français avec création du compte administrateur, connexion et assistant de première mise en route (réseau, test du Wi-Fi, redémarrage).
+- Une console en 12 langues avec création du compte administrateur, connexion et assistant de première mise en route (langue, réseau, test du Wi-Fi, adresse sur internet, accès depuis internet, autres comptes, redémarrage), chaque étape pouvant être passée et refaite plus tard.
+- L'[ouverture des ports de la box](#ouvrir-les-ports) par le Pi lui-même (UPnP), avec votre accord, ou à la main avec le guide de votre box, et un test de l'accès depuis internet ; pas encore essayé sur une vraie box.
 - La configuration du réseau filaire ou du Wi-Fi depuis la console, ainsi qu'un point d'accès Wi-Fi de configuration au premier démarrage de l'image.
 - Un tableau de bord avec l'état du Pi, des graphiques et des alertes de mémoire et de stockage.
 - Une marketplace avec les applications installables du catalogue.
@@ -93,8 +95,11 @@ L'image est destinée aux Raspberry Pi 5, 4, 3 B+ et Zero 2 W. Il faut une carte
 4. **Portail** : une fois connecté à ce Wi-Fi, le téléphone ouvre souvent le portail tout seul ; sinon, ouvrez `https://10.42.0.1/pi-appliance/`. Le navigateur affiche une alerte sur le certificat : vous pouvez continuer.
 5. **Compte** : choisissez un identifiant (un nom court, par exemple `marie` : ce n'est pas l'adresse e-mail), votre adresse e-mail et un mot de passe d'au moins 12 caractères. L'assistant « Mise en route » s'ouvre ensuite ; il revient à chaque connexion tant qu'il n'est pas terminé. Au-dessus, la carte « Protégez votre compte » propose la [double authentification](#double-authentification) : sans internet, choisissez l'application du téléphone ou **Plus tard** ; le code par e-mail viendra une fois l'[envoi des e-mails](#envoi-des-e-mails) réglé.
 6. **Wi-Fi de la maison** : choisissez le pays, puis votre Wi-Fi et son mot de passe (le bouton **Afficher** montre ce que vous tapez), ou le câble réseau s'il est branché sur la box. Avant de couper le Wi-Fi de configuration, la console affiche l'adresse où la retrouver ; avec le câble, elle donne aussi l'adresse IP du Pi.
-7. **Retrouver la console** : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison et ouvrez l'adresse indiquée (ci-dessous), puis reconnectez-vous : l'assistant reprend.
-8. **Vérification et redémarrage** : **Tester le Wi-Fi** vérifie la connexion sans rien couper ; si tout est en ordre, **Redémarrer le Pi** rappelle l'adresse du Pi, compte 10 secondes et redémarre le Pi, qui doit retrouver votre réseau tout seul. La mise en route est alors terminée ; vos services se choisissent ensuite dans la marketplace.
+   Avant le Wi-Fi, l'assistant demande la **langue** de la console (12 langues, modifiable à tout moment en bas de la page).
+7. **Retrouver la console** : reconnectez votre téléphone ou votre ordinateur au Wi-Fi de la maison et ouvrez l'adresse indiquée (ci-dessous), puis reconnectez-vous : l'assistant reprend (il redemande la langue une fois, pour cette nouvelle adresse).
+8. **Vérification** : **Tester le Wi-Fi** vérifie la connexion sans rien couper ; si tout est en ordre, **Continuer**.
+9. **Internet et comptes**, trois étapes que **Passer cette étape** laisse pour plus tard (même carte dans la console) : l'**adresse sur internet** (DuckDNS, votre domaine ; pi-appliance.com quand le service sera ouvert), l'**accès depuis internet** ([ouvrir les ports de la box](#ouvrir-les-ports) et tester), puis les **autres comptes** (invitations pour la famille).
+10. **Redémarrage** : **Redémarrer le Pi** rappelle l'adresse du Pi, compte 10 secondes et redémarre le Pi, qui doit retrouver votre réseau tout seul. La mise en route est alors terminée ; vos services se choisissent ensuite dans la marketplace.
 
 ### Retrouver la console sur le réseau de la maison {#retrouver-la-console}
 
@@ -149,7 +154,7 @@ La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir
 
 1. Conseillé : à la maison, dans « Mon compte », activez la [double authentification](#double-authentification) (code par e-mail ou application). Ce n'est pas obligatoire, mais depuis internet n'importe qui peut essayer de deviner votre mot de passe ; avec elle, il faut aussi un code.
 2. Donnez une adresse internet au Pi, dans « Adresse sur internet » : DuckDNS, puis votre adresse pi-appliance.com. Si vous avez votre propre nom de domaine, vous pouvez aussi, chez votre fournisseur, faire pointer un de ses noms vers votre box (par exemple `maison.exemple.fr`), puis le taper dans la carte « Console sur internet », champ « Votre adresse personnelle », et toucher **Enregistrer l'adresse**. La carte affiche l'entrée à créer chez votre fournisseur : de préférence un alias (**CNAME**) vers votre nom DuckDNS ou votre adresse pi-appliance.com, par exemple `maison.exemple.fr. CNAME monpi.duckdns.org.`, qui suit l'adresse de votre box sans mot de passe de votre fournisseur sur le Pi. Choisissez un sous-domaine (`maison.exemple.fr`) plutôt que le domaine seul (`exemple.fr`), où un alias ne peut pas être créé. La console refuse un nom qui n'existe pas encore sur internet : attendez quelques minutes après le changement chez le fournisseur.
-3. Dans votre box, faites suivre les ports **80** et **443** vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse.
+3. Dans votre box, faites suivre les ports **80** et **443** vers le Pi : c'est ce qui permet d'obtenir le certificat de sécurité de l'adresse. Le Pi peut le demander lui-même à la box, ou vous le faites à la main : voir [Ouvrir les ports de la box](#ouvrir-les-ports).
 4. Dans « Adresse sur internet », carte « Console sur internet », touchez **Ouvrir la console sur internet**. La carte donne l'adresse à utiliser, par exemple `https://monpi.pi-appliance.com/pi-appliance/`, ou `https://maison.exemple.fr/pi-appliance/` avec votre adresse personnelle.
 
 Depuis internet, la console demande votre mot de passe, puis le code reçu par e-mail ou celui de votre application si vous avez activé la double authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
@@ -165,6 +170,43 @@ Un service s'ouvre depuis internet à l'adresse internet du Pi suivie de son nom
 Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, WordPress, n8n, Etherpad, DokuWiki, Astro, Next.js, Docker Compose libre) : elles restent à la maison, la fiche le dit. Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. FileBrowser Quantum s'ouvre aussi depuis internet, à l'adresse du Pi suivie de son nom (par exemple `https://vdl.moulard.org/fichiers/`) ; s'il a été installé avant cette version, touchez **Mettre à jour** sur sa fiche (vos fichiers sont gardés). Son adresse de la maison ne change pas : elle mène toute seule à la page de FileBrowser. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`). MkDocs et WordPress vers Markdown y marchent tels quels.
 
 **À savoir :** sous internet, le service partage l'adresse de la console. Une page de ce service pourrait donc agir dans la console au nom d'une personne connectée. N'ouvrez sur internet que des services de confiance, dont vous connaissez le contenu.
+
+## Ouvrir les ports de la box {#ouvrir-les-ports}
+
+Depuis internet, on arrive sur votre box, pas sur le Pi. Pour que vos services et la console s'ouvrent depuis l'extérieur, la box doit **faire suivre** vers le Pi :
+
+- le port **80** et le port **443** (TCP) : les pages web et le certificat de sécurité ;
+- le port **51820** (UDP), seulement si vous avez installé le VPN WireGuard.
+
+Ces réglages s'appellent selon les box « redirection de ports », « NAT/PAT » ou « translation de ports ». Ils ne servent à rien si votre fournisseur partage l'adresse de votre box avec d'autres abonnés (fréquent en 4G ou 5G, et chez Free sans adresse « full-stack ») : le test de la console vous le dit.
+
+### Automatiquement (UPnP)
+
+Dans la console, « Mon Pi », carte **Accès depuis internet**, touchez **Ouvrir les ports automatiquement** et confirmez. Le Pi demande lui-même à la box d'ouvrir ces ports vers lui, pour une heure, et renouvelle la demande toutes les 30 minutes ; il ajoute le port de WireGuard quand vous l'installez et le referme quand vous le désinstallez. La carte montre, port par port, ce que la box a accepté. **Ne plus ouvrir les ports** les referme tous.
+
+Il faut que l'**UPnP** soit activé dans la box (souvent appelé « UPnP » ou « UPnP IGD », parfois coupé par défaut). Si la carte dit que la box ne répond pas, activez-le (voir votre box ci-dessous) ou ouvrez les ports à la main. Si elle dit qu'un port est déjà donné à un autre appareil, retirez cette ancienne redirection dans la page de la box, puis réessayez.
+
+### À la main
+
+1. Notez l'adresse du Pi sur votre réseau : elle est dans la carte **Accès depuis internet** (« Adresse du Pi sur votre réseau »), ou dans la liste des appareils de la box (nom `pi-appliance-XXXX` ou celui que vous avez choisi).
+2. Conseillé : dans la box, donnez toujours la même adresse au Pi (réglage « bail DHCP statique », « adresse IP fixe » ou « réservation d'adresse »). Sinon, après une coupure, la box pourrait lui en donner une autre et les redirections ne mèneraient plus nulle part.
+3. Dans la page de la box, créez une règle par port : port externe et port interne identiques (80, puis 443, en **TCP** ; 51820 en **UDP** pour WireGuard), appareil ou adresse de destination : le Pi.
+4. Testez (voir plus bas).
+
+Les menus changent d'un modèle à l'autre et au fil des mises à jour : les chemins ci-dessous sont ceux des modèles récents, cherchez des noms proches si les vôtres diffèrent.
+
+- **Orange Livebox** : ouvrez `http://192.168.1.1` ; le mot de passe d'administration est, sauf si vous l'avez changé, les 8 premiers caractères de la clé de sécurité Wi-Fi imprimée sous la box. Allez dans **Paramètres avancés**, **Réseau**, onglet **NAT/PAT** : créez une règle « personnalisée » par port (port interne, port externe, protocole, appareil : le Pi). L'onglet **DHCP** donne une adresse fixe au Pi, l'onglet **UPnP** active l'ouverture automatique. Si le pare-feu de la Livebox est réglé sur « élevé », passez-le en « moyen » ou autorisez ces ports.
+- **Freebox** : ouvrez `http://mafreebox.freebox.fr` (ou l'application Freebox), **Paramètres de la Freebox**, mode **avancé**. **Gestion des ports** : **Ajouter une redirection** par port (IP de destination : le Pi). **DHCP**, **Baux statiques** : adresse fixe du Pi. **UPnP IGD** : ouverture automatique. Important : si votre Freebox partage son adresse IPv4 avec d'autres abonnés, les ports 80 et 443 ne sont pas à vous ; demandez gratuitement une **adresse IP fixe V4 full-stack** dans votre espace abonné (« Ma Freebox », « Demander une adresse IP fixe V4 full-stack »), puis redémarrez la Freebox.
+- **Box de SFR** : ouvrez `http://192.168.1.1`, menu **Réseau v4** (ou **Paramètres avancés**, **Réseau**), page **NAT** (« Translation de ports ») : ajoutez une règle par port vers l'adresse du Pi. **DHCP** : adresse fixe du Pi. **UPnP** : ouverture automatique.
+- **Bouygues Telecom Bbox** : ouvrez `https://mabbox.bytel.fr` (ou `http://192.168.1.254`), **Services de la box** (ou **Réseau avancé**), **Redirection de ports** (« NAT/PAT ») : ajoutez une règle par port vers le Pi. **DHCP** : adresse fixe du Pi. **UPnP** : ouverture automatique.
+
+Si votre box sert elle-même une page sur le port 80 ou 443 depuis internet (« accès à distance » à l'administration de la box), coupez cet accès ou faites-le passer sur un autre port, sinon la redirection est refusée.
+
+### Tester l'accès depuis internet
+
+Dans la carte **Accès depuis internet**, touchez **Tester l'accès depuis internet**. Le Pi vérifie ce qu'il peut vérifier seul : qu'il a une adresse sur internet (DuckDNS, pi-appliance.com ou votre domaine), votre adresse publique, que la box répond et a bien une adresse publique à elle, que l'adresse du Pi mène à votre box, et les ports ouverts automatiquement.
+
+Le Pi ne peut pas se tester lui-même depuis internet : depuis la maison, son adresse passe par la box sans sortir sur internet, ce qui ne prouve rien. L'essai qui fait foi : **coupez le Wi-Fi de votre téléphone** et ouvrez en 4G l'adresse donnée par le test, par exemple `https://monpi.duckdns.org/pi-appliance/`. Si la page de connexion de la console s'affiche (ou une page « introuvable » de pi-appliance tant que la console n'est pas ouverte sur internet), l'accès marche.
 
 ## Ligne de commande du Pi (SSH) {#ligne-de-commande}
 
