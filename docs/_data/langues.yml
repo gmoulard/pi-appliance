@@ -1,0 +1,30 @@
+# Langues du site (TODO-5.11), dans l'ordre de la console
+# (internal/console/web/i18n.js). Le français fait foi : il est à la racine
+# du site, les autres langues dans un dossier à leur nom (en/, es/…).
+# Textes de chaque langue : _data/textes/<code>.yml.
+- code: fr
+  nom: Français
+- code: en
+  nom: English
+- code: es
+  nom: Español
+- code: pt
+  nom: Português
+- code: it
+  nom: Italiano
+- code: de
+  nom: Deutsch
+- code: nl
+  nom: Nederlands
+- code: tr
+  nom: Türkçe
+- code: zh
+  nom: 中文
+- code: ja
+  nom: 日本語
+- code: ar
+  nom: العربية
+  dir: rtl
+- code: fa
+  nom: فارسی
+  dir: rtl

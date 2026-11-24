@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Pied de page (docs/_includes/version.html) : dates en français à l'heure
-// de Paris, date exacte du commit et dernière étiquette de version lues dans
+// Pied de page (docs/_includes/version.html) : dates dans la langue de la
+// page (attribut lang de <html>, TODO-5.11) à l'heure de Paris, date exacte du commit et dernière étiquette de version lues dans
 // l'API GitHub. Sans réseau, le texte construit par GitHub Pages reste.
 (() => {
   const box = document.getElementById("build-info");
@@ -23,11 +23,14 @@
   const sha = box.dataset.commit;
   const api = `https://api.github.com/repos/${repo}`;
   const field = (name) => box.querySelector(`[data-field="${name}"]`);
+  const locale = document.documentElement.lang || "fr";
+  const du = box.dataset.du ?? ", du ";
+  const paris = box.dataset.heureParis ?? "(heure de Paris)";
 
-  const dateTime = new Intl.DateTimeFormat("fr-FR", {
+  const dateTime = new Intl.DateTimeFormat(locale, {
     dateStyle: "long", timeStyle: "short", timeZone: "Europe/Paris",
   });
-  const dateOnly = new Intl.DateTimeFormat("fr-FR", {
+  const dateOnly = new Intl.DateTimeFormat(locale, {
     dateStyle: "long", timeZone: "Europe/Paris",
   });
   const show = (el, iso, withTime) => {
@@ -36,7 +39,7 @@
     el.setAttribute("datetime", date.toISOString());
     el.title = date.toISOString();
     el.textContent = withTime
-      ? `${dateTime.format(date)} (heure de Paris)`
+      ? `${dateTime.format(date)} ${paris}`
       : dateOnly.format(date);
   };
 
@@ -73,7 +76,7 @@
       version.textContent = tag.name;
       const time = document.createElement("time");
       time.dataset.field = "version-date";
-      field("version-date").replaceWith(", du ", time);
+      field("version-date").replaceWith(du, time);
       show(time, iso, false);
     }).catch(() => {});
   }

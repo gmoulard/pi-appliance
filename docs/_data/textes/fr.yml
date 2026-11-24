@@ -1,0 +1,86 @@
+# Textes du site en français (TODO-5.11) : la référence. Chaque langue a le
+# même fichier, _data/textes/<code>.yml, avec les mêmes clés. Quand un texte
+# français change, changer aussi les 11 autres fichiers (et les pages
+# traduites, en/marketplace.md…), puis la date `traduit_le` de leur en-tête.
+menu:
+  aria_doc: "Menu de la documentation"
+  aria_principal: "Menu principal"
+  aria_pied: "Liens du pied de page"
+  logo: "pi-appliance, accueil"
+  accueil: "Accueil"
+  guide: "Guide"
+  marketplace: "Marketplace"
+  specification: "Spécification"
+  avancement: "Avancement"
+  charte: "Charte"
+  application: "Application mobile"
+  code: "Code source"
+  # Ajouté aux liens vers une page qui n'existe qu'en français.
+  en_francais: ""
+langue:
+  choisir: "Langue"
+traduction:
+  # %DATE% : date de la version française traduite ; %LIEN% : lien vers elle.
+  note: ""
+  lien: ""
+pied:
+  licence: "Logiciel libre, licence AGPL-3.0"
+  projet: "Projet"
+  version: "Version"
+  pas_publiee: "pas encore publiée"
+  du: ", du "
+  commit: "Commit"
+  copie_locale: "copie locale"
+  format_date: "%d/%m/%Y"
+  format_heure: "%d/%m/%Y à %H:%M"
+  heure_paris: "(heure de Paris)"
+catalogue:
+  chargement: "Chargement du catalogue…"
+  indisponible: "Le catalogue est indisponible. Réessayez plus tard."
+  prototype: "Dans le prototype"
+  a_venir: "À venir"
+  mo: "Mo"
+  deux_points: " : "
+  virgule: ", "
+  # Étiquettes et catégories du catalogue, écrites en français dans les
+  # manifestes : leur traduction (vide en français).
+  noms: {}
+accueil:
+  titre: "pi-appliance — votre serveur, à la maison"
+  description: "pi-appliance transforme un Raspberry Pi en serveur personnel, à la maison et sur internet : une image, une console, une application mobile. Version expérimentale."
+  pastille: "Version expérimentale pour Raspberry Pi 5, 4, 3 B+ et Zero 2 W"
+  h1: "Votre serveur, <span>à la maison.</span>"
+  chapeau: "Une console en français pour installer et gérer vos services chez vous. L’image système est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4."
+  carte: "Objectif du projet : moins de 15 minutes entre la carte SD et un service prêt à l’emploi, à la maison et sur internet. Toutes vos données restent chez vous, en sécurité. Cette version est encore expérimentale."
+  voir_avancement: "Voir l’avancement"
+  lire_guide: "Lire le guide"
+  parcours: "Le parcours visé"
+  etapes:
+    - titre: "Flashez"
+      texte: "Copiez l’image pi-appliance sur une carte SD."
+    - titre: "Branchez"
+      texte: "Le Pi démarre. Sans réseau, il crée un Wi-Fi « pi-appliance » : choisissez celui de la maison depuis votre téléphone."
+    - titre: "Choisissez"
+      texte: "Installez vos applications depuis la console. L’accès depuis internet fait partie des prochaines étapes."
+  parcours_note: "Ce parcours est validé sur Raspberry Pi 3 B+ et Raspberry Pi 4 ; le Pi 5 et le Pi Zero 2 W restent à essayer."
+  parties: "Trois parties, un seul nom"
+  trois:
+    - titre: "L’image"
+      texte: "Le système du Pi, prêt à l’emploi, à copier sur la carte SD."
+    - titre: "Le socle et sa console"
+      texte: "Toujours installé sur le Pi : une page web pour régler le Pi et installer vos services, et ses outils, dont la commande pia."
+    - titre: "L’application mobile"
+      texte: "Le guide lisible sans réseau, et un raccourci vers vos Pi sur le téléphone."
+  applications: "Les applications"
+  catalogue_complet: "Voir le catalogue complet, les applications prévues et comment contribuer à la marketplace."
+  adresse: "Votre adresse sur internet"
+  adresse_texte: "L’adresse publique <span class=\"mono\">cloud.<b>votre-nom</b>.pi-appliance.com</span> et l’accès depuis internet ne sont pas encore disponibles."
+  adresse_champ: "Nom de votre adresse"
+  adresse_exemple: "votre-nom"
+  reserver: "Réserver cette adresse"
+  reserver_note: "La réservation d’adresses est prévue dans une étape ultérieure du projet."
+  telecharger: "Télécharger l’image"
+  telecharger_valide: "L’image est validée sur Raspberry Pi 3 B+ et Raspberry Pi 4."
+  telecharger_texte: "C’est encore une version expérimentale, sans garantie : gardez une copie de vos fichiers importants. La page d’installation indique comment vérifier le fichier et flasher l’image. Un Pi déjà installé se met à jour depuis la console (« Mon Pi », « Mises à jour »). Si la dernière version n’a pas d’image (mise à jour du socle seul), sa page donne le lien de la dernière image."
+  telecharger_bouton: "Télécharger la dernière version"
+  telecharger_instructions: "Lire les instructions d’installation"

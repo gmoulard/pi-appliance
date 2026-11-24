@@ -4,12 +4,38 @@
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, version 3.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 (() => {
   const marketplaceRoot = document.getElementById("marketplace-catalog");
   const homeRoot = document.getElementById("applications");
   const catalogIndex = (marketplaceRoot || homeRoot)?.dataset.catalogIndex;
   if (!catalogIndex) return;
+
+  // Textes dans la langue de la page (TODO-5.11), écrits par le gabarit
+  // depuis _data/textes/<langue>.yml ; le français à défaut. Les noms et
+  // descriptions des applications restent ceux des manifestes, en français ;
+  // seules les étiquettes et les catégories sont traduites (`noms`).
+  const text = {
+    prototype: "Dans le prototype",
+    a_venir: "À venir",
+    indisponible: "Le catalogue est indisponible. Réessayez plus tard.",
+    mo: "Mo",
+    deux_points: " : ",
+    virgule: ", ",
+    noms: {},
+  };
+  try {
+    Object.assign(text, JSON.parse(document.getElementById("textes-catalogue")?.textContent || "{}"));
+  } catch { /* textes français */ }
+  const translated = (label) => (text.noms && text.noms[label]) || label;
 
   async function loadCatalog() {
     const indexResponse = await fetch(catalogIndex);
@@ -87,7 +113,7 @@
     box.replaceChildren(...used.map((tag) => {
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = tag.label;
+      button.textContent = translated(tag.label);
       button.dataset.tag = tag.id;
       button.addEventListener("click", () => {
         if (chosen.has(tag.id)) chosen.delete(tag.id);
@@ -116,7 +142,7 @@
         const item = document.createElement("li");
         const name = document.createElement("strong");
         name.textContent = app.name;
-        item.append(name, ` : ${app.description} (${app.todo})`);
+        item.append(name, `${text.deux_points}${app.description} (${app.todo})`);
         return item;
       }));
       plannedList.hidden = planned.length === 0;
@@ -130,10 +156,10 @@
       for (const value of [
         app.name,
         app.description,
-        app.category,
-        (app.tags || []).map((id) => (tags.find((tag) => tag.id === id) || { label: id }).label).join(", "),
-        `${app.memory_mb} Mo`,
-        `${app.disk_mb} Mo`,
+        translated(app.category),
+        (app.tags || []).map((id) => translated((tags.find((tag) => tag.id === id) || { label: id }).label)).join(text.virgule),
+        `${app.memory_mb} ${text.mo}`,
+        `${app.disk_mb} ${text.mo}`,
       ]) {
         const cell = document.createElement("td");
         cell.textContent = value;
@@ -151,8 +177,8 @@
     const list = homeRoot.querySelector(".apps");
     const status = document.getElementById("home-catalog-status");
     list.replaceChildren(
-      ...apps.map((app, index) => appCard(app, index, "Dans le prototype")),
-      ...planned.map((app, index) => appCard(app, apps.length + index, "À venir")),
+      ...apps.map((app, index) => appCard(app, index, text.prototype)),
+      ...planned.map((app, index) => appCard(app, apps.length + index, text.a_venir)),
     );
     status.hidden = true;
   }
@@ -166,7 +192,7 @@
       console.error("Chargement du catalogue impossible :", error);
       for (const id of ["marketplace-catalog-status", "home-catalog-status"]) {
         const status = document.getElementById(id);
-        if (status) status.textContent = "Le catalogue est indisponible. Réessayez plus tard.";
+        if (status) status.textContent = text.indisponible;
       }
     });
 })();

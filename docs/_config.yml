@@ -1,6 +1,8 @@
 title: pi-appliance
 description: Votre serveur, à la maison.
 lang: fr
+# Adresse du site, pour les liens hreflang absolus (TODO-5.11).
+url: https://www.pi-appliance.com
 markdown: kramdown
 kramdown:
   input: GFM

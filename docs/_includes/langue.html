@@ -1,0 +1,43 @@
+<!--
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{%- comment -%}
+Langue de la page (TODO-5.11), à inclure en tête des gabarits : fixe
+`lang` (code), `dir` (ltr, ou rtl pour l'arabe et le persan), `t` (textes
+de _data/textes/<lang>.yml), `ref` (identifiant de la page s'il en existe
+une traduction, _data/pages_traduites.yml) et `racine` (accueil de la
+langue). Une page sans `lang` dans son en-tête est en français.
+{%- endcomment -%}
+{%- assign lang = page.lang | default: site.lang | default: "fr" -%}
+{%- assign t = site.data.textes[lang] | default: site.data.textes.fr -%}
+{%- assign tfr = site.data.textes.fr -%}
+{%- assign ref = page.ref -%}
+{%- if lang == "fr" and ref == nil -%}
+{%- for p in site.data.pages_traduites -%}
+{%- assign url_fr = "/" | append: p[1] -%}
+{%- if page.url == url_fr -%}{%- assign ref = p[0] -%}{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- assign dir = "ltr" -%}
+{%- assign nom_langue = "Français" -%}
+{%- assign codes = "" -%}
+{%- for l in site.data.langues -%}
+{%- assign codes = codes | append: " " | append: l.code -%}
+{%- if l.code == lang -%}{%- assign nom_langue = l.nom -%}{%- if l.dir -%}{%- assign dir = l.dir -%}{%- endif -%}{%- endif -%}
+{%- endfor -%}
+{%- assign codes = codes | strip -%}
+{%- if lang == "fr" -%}{%- assign racine = "/" -%}{%- else -%}{%- assign racine = "/" | append: lang | append: "/" -%}{%- endif -%}
+{%- if lang == "fr" -%}{%- assign en_fr = "" -%}{%- else -%}{%- assign en_fr = " " | append: t.menu.en_francais -%}{%- endif -%}

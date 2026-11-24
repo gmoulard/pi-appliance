@@ -1,0 +1,34 @@
+<!--
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{%- comment -%}
+Choix de la langue, dans l'en-tête de chaque page : la même page dans
+chaque langue quand elle est traduite, sinon l'accueil de la langue.
+Demande _includes/langue.html avant. Le lien vers le français porte
+?lang=fr, pour que l'accueil français ne renvoie pas vers la langue du
+navigateur (langue.js).
+{%- endcomment -%}
+<details class="langues">
+<summary aria-label="{{ t.langue.choisir }} : {{ nom_langue }}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg><span>{{ nom_langue }}</span></summary>
+<ul>
+{%- for l in site.data.langues -%}
+{%- if ref -%}{%- assign chemin = site.data.pages_traduites[ref] -%}{%- else -%}{%- assign chemin = "" -%}{%- endif -%}
+{%- if l.code == "fr" -%}{%- assign u = "/" | append: chemin -%}{%- else -%}{%- assign u = "/" | append: l.code | append: "/" | append: chemin -%}{%- endif -%}
+{%- if l.code == "fr" and chemin == "" -%}{%- assign u = "/?lang=fr" -%}{%- endif %}
+<li><a href="{{ u | relative_url }}" hreflang="{{ l.code }}" lang="{{ l.code }}"{% if l.dir %} dir="{{ l.dir }}"{% endif %} data-langue="{{ l.code }}"{% if l.code == lang %} aria-current="true"{% endif %}>{{ l.nom }}</a></li>
+{%- endfor %}
+</ul>
+</details>

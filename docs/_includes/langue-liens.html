@@ -1,0 +1,30 @@
+<!--
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{%- comment -%}
+Dans <head> : liens vers les autres langues de la page (hreflang ; le
+français, qui fait foi, par défaut) et script du choix de la langue.
+Demande _includes/langue.html avant.
+{%- endcomment -%}
+{%- if ref -%}
+{%- assign chemin = site.data.pages_traduites[ref] -%}
+{%- for l in site.data.langues -%}
+{%- if l.code == "fr" -%}{%- assign u = "/" | append: chemin -%}{%- else -%}{%- assign u = "/" | append: l.code | append: "/" | append: chemin -%}{%- endif %}
+<link rel="alternate" hreflang="{{ l.code }}" href="{{ u | absolute_url }}">
+{%- endfor %}
+<link rel="alternate" hreflang="x-default" href="{{ '/' | append: chemin | absolute_url }}">
+{%- endif %}
+<script src="{{ '/langue.js' | relative_url }}"></script>

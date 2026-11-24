@@ -1,0 +1,7 @@
+# Pages du site traduites dans les 12 langues (TODO-5.11) : identifiant de
+# la page (clé `ref` de l'en-tête des pages traduites) et chemin, le même
+# dans chaque dossier de langue. La page française, qui fait foi, est à ce
+# chemin à la racine du site. Les autres pages (guide, spécification,
+# avancement…) n'existent qu'en français.
+accueil: ""
+marketplace: marketplace.html

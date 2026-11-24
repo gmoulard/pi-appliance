@@ -15,7 +15,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<html lang="fr">
+{% include langue.html -%}
+<html lang="{{ lang }}" dir="{{ dir }}" data-langues="{{ codes }}" data-racine="{{ '/' | relative_url }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -23,38 +24,48 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <link rel="icon" href="{{ '/logo/framboise/favicon.svg' | relative_url }}" type="image/svg+xml">
 <link rel="apple-touch-icon" href="{{ '/logo/framboise/apple-touch-icon.png' | relative_url }}">
 <link rel="stylesheet" href="{{ '/site.css' | relative_url }}">
+{% include langue-liens.html %}
 </head>
 <body class="doc">
 <header class="top">
-<a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/logo/framboise/logo.svg' | relative_url }}" alt="pi-appliance, accueil" width="160" height="54"></a>
-<nav aria-label="Menu de la documentation">
+<a class="brand" href="{{ racine | relative_url }}"><img src="{{ '/logo/framboise/logo.svg' | relative_url }}" alt="{{ t.menu.logo }}" width="160" height="54"></a>
+<nav aria-label="{{ t.menu.aria_doc }}">
+{%- if lang == "fr" %}
 <a href="{{ '/guide-utilisateur.html' | relative_url }}">Guide</a>
 <a href="{{ '/marketplace.html' | relative_url }}">Marketplace</a>
 <a href="{{ '/specification.html' | relative_url }}">Spécification</a>
 <a href="{{ '/TODO.html' | relative_url }}">Avancement</a>
 <a href="{{ '/charte-graphique.html' | relative_url }}">Charte</a>
-<a href="https://github.com/gmoulard/pi-appliance">Code source</a>
+{%- else %}
+<a href="{{ '/guide-utilisateur.html' | relative_url }}" hreflang="fr">{{ t.menu.guide }}{{ en_fr }}</a>
+<a href="{{ racine | append: 'marketplace.html' | relative_url }}">{{ t.menu.marketplace }}</a>
+<a href="https://app.pi-appliance.com">{{ t.menu.application }}</a>
+{%- endif %}
+<a href="https://github.com/gmoulard/pi-appliance">{{ t.menu.code }}</a>
 </nav>
+{% include langue-choix.html %}
 </header>
 <main>
 <article class="prose">
 {{ content }}
+{% include traduction.html %}
 </article>
 </main>
 <footer>
-<nav aria-label="Liens du pied de page">
-<a href="{{ '/' | relative_url }}">Accueil</a>
-<a href="{{ '/guide-utilisateur.html' | relative_url }}">Guide</a>
-<a href="{{ '/marketplace.html' | relative_url }}">Marketplace</a>
-<a href="https://app.pi-appliance.com">Application mobile</a>
-<a href="https://github.com/gmoulard/pi-appliance">Code source</a>
+<nav aria-label="{{ t.menu.aria_pied }}">
+<a href="{{ racine | relative_url }}">{{ t.menu.accueil }}</a>
+<a href="{{ '/guide-utilisateur.html' | relative_url }}"{% if lang != "fr" %} hreflang="fr"{% endif %}>{{ t.menu.guide }}{{ en_fr }}</a>
+<a href="{{ racine | append: 'marketplace.html' | relative_url }}">{{ t.menu.marketplace }}</a>
+<a href="https://app.pi-appliance.com">{{ t.menu.application }}</a>
+<a href="https://github.com/gmoulard/pi-appliance">{{ t.menu.code }}</a>
 </nav>
-<p><a href="https://github.com/gmoulard/pi-appliance/blob/master/LICENSE">Logiciel libre, licence AGPL-3.0</a>.</p>
+<p><a href="https://github.com/gmoulard/pi-appliance/blob/master/LICENSE">{{ t.pied.licence }}</a>.</p>
 {% include version.html %}
 </footer>
 {% if page.name == "TODO.md" %}
 <script src="{{ '/todo-filter.js' | relative_url }}" defer></script>
-{% elsif page.name == "marketplace.md" or page.name == "index.html" %}
+{% elsif page.name == "marketplace.md" %}
+<script type="application/json" id="textes-catalogue">{{ t.catalogue | jsonify }}</script>
 <script src="{{ '/marketplace-catalog.js' | relative_url }}" defer></script>
 {% endif %}
 </body>

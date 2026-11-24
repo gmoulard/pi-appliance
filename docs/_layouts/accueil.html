@@ -1,0 +1,126 @@
+<!doctype html>
+<!--
+This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+Copyright (c) 2026 Guillaume Moulard.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, version 3.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+{%- comment -%}
+Accueil du site (index.html à la racine, en français, et <langue>/index.html,
+TODO-5.11). Textes : `t.accueil` (_data/textes/<langue>.yml). L'accueil
+français envoie vers la langue du navigateur ou celle choisie (langue.js).
+{%- endcomment -%}
+{% include langue.html -%}
+<html lang="{{ lang }}" dir="{{ dir }}" data-langues="{{ codes }}" data-racine="{{ '/' | relative_url }}"{% if lang == "fr" %} data-accueil-fr{% endif %}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{%- assign a = t.accueil %}
+<title>{{ a.titre }}</title>
+<meta name="description" content="{{ a.description }}">
+<link rel="icon" href="{{ '/logo/framboise/favicon.svg' | relative_url }}" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{{ '/logo/framboise/apple-touch-icon.png' | relative_url }}">
+<link rel="stylesheet" href="{{ '/site.css' | relative_url }}">
+{% include langue-liens.html %}
+</head>
+<body>
+{%- if lang == "fr" -%}{%- assign hl_fr = "" -%}{%- else -%}{%- assign hl_fr = ' hreflang="fr"' -%}{%- endif %}
+<header class="top">
+<a class="brand" href="{{ racine | relative_url }}"><img src="{{ '/logo/framboise/logo.svg' | relative_url }}" alt="pi-appliance" width="160" height="54"></a>
+<nav aria-label="{{ t.menu.aria_principal }}">
+<a href="{{ '/guide-utilisateur.html' | relative_url }}"{{ hl_fr }}>{{ t.menu.guide }}{{ en_fr }}</a>
+<a href="{{ racine | append: 'marketplace.html' | relative_url }}">{{ t.menu.marketplace }}</a>
+<a href="https://app.pi-appliance.com">{{ t.menu.application }}</a>
+<a href="https://github.com/gmoulard/pi-appliance">{{ t.menu.code }}</a>
+</nav>
+{% include langue-choix.html %}
+</header>
+<main>
+<section class="hero">
+<p class="pill">{{ a.pastille }}</p>
+<h1>{{ a.h1 }}</h1>
+<p class="lead">{{ a.chapeau }}</p>
+<div class="hero-card">
+<ul class="hero-tiles" aria-hidden="true">
+<li class="tint-0"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z"/></svg></li><li class="tint-1"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></li><li class="tint-2"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></li><li class="tint-3"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M4 5a2 2 0 0 1 2-2h12v16H6a2 2 0 0 0-2 2zM4 19V5M8 7h6"/></svg></li><li class="tint-4"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M15 4l5 5L9 20H4v-5zM13 6l5 5"/></svg></li><li class="tint-5"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6zM9 12l2 2 4-4"/></svg></li>
+</ul>
+<p>{{ a.carte }}</p>
+</div>
+<div class="actions">
+<a class="button dark" href="{{ '/TODO.html' | relative_url }}"{{ hl_fr }}>{{ a.voir_avancement }}{{ en_fr }}</a>
+<a class="link" href="{{ '/guide-utilisateur.html' | relative_url }}"{{ hl_fr }}>{{ a.lire_guide }}{{ en_fr }}</a>
+</div>
+</section>
+
+<section class="steps-band">
+<h2>{{ a.parcours }}</h2>
+<ol class="steps">
+{%- assign teintes = "tint-brand tint-1 tint-2" | split: " " -%}
+{%- for e in a.etapes %}
+<li class="{{ teintes[forloop.index0] }}"><span class="num" aria-hidden="true">{{ forloop.index }}</span><div><h3>{{ e.titre }}</h3><p>{{ e.texte }}</p></div></li>
+{%- endfor %}
+</ol>
+<p>{{ a.parcours_note }}</p>
+<h2>{{ a.parties }}</h2>
+<ul class="steps">
+{%- for e in a.trois %}
+<li class="{{ teintes[forloop.index0] }}"><div><h3>{{ e.titre }}</h3><p>{{ e.texte }}</p></div></li>
+{%- endfor %}
+</ul>
+</section>
+
+<section id="applications" class="apps-band" data-catalog-index="{{ '/static/pi-appliance-catalog.json' | relative_url }}">
+<h2>{{ a.applications }}</h2>
+<p id="home-catalog-status" role="status">{{ t.catalogue.chargement }}</p>
+<ul class="apps"></ul>
+<p><a href="{{ racine | append: 'marketplace.html' | relative_url }}">{{ a.catalogue_complet }}</a></p>
+</section>
+
+<section class="address-band">
+<h2>{{ a.adresse }}</h2>
+<p>{{ a.adresse_texte }}</p>
+<form class="reserve" aria-describedby="reserveSoon">
+<label for="reserveName">{{ a.adresse_champ }}</label>
+<span class="field"><input id="reserveName" type="text" placeholder="{{ a.adresse_exemple }}" disabled><span>.pi-appliance.com</span></span>
+<button type="button" disabled>{{ a.reserver }}</button>
+<p id="reserveSoon" class="soon-note">{{ a.reserver_note }}</p>
+</form>
+</section>
+
+<section id="telecharger" class="download">
+<h2>{{ a.telecharger }}</h2>
+<div class="panel">
+<p><b>{{ a.telecharger_valide }}</b></p>
+<p>{{ a.telecharger_texte }}</p>
+<a class="button" href="https://github.com/gmoulard/pi-appliance/releases/latest">{{ a.telecharger_bouton }}</a>
+<a href="{{ '/guide-utilisateur.html' | relative_url }}#telecharger-limage-experimentale"{{ hl_fr }}>{{ a.telecharger_instructions }}{{ en_fr }}</a>
+</div>
+</section>
+</main>
+<footer>
+<nav aria-label="{{ t.menu.aria_pied }}">
+<a href="{{ '/guide-utilisateur.html' | relative_url }}"{{ hl_fr }}>{{ t.menu.guide }}{{ en_fr }}</a>
+<a href="{{ racine | append: 'marketplace.html' | relative_url }}">{{ t.menu.marketplace }}</a>
+<a href="{{ '/specification.html' | relative_url }}"{{ hl_fr }}>{{ t.menu.specification }}{{ en_fr }}</a>
+<a href="{{ '/TODO.html' | relative_url }}"{{ hl_fr }}>{{ t.menu.avancement }}{{ en_fr }}</a>
+<a href="https://app.pi-appliance.com">{{ t.menu.application }}</a>
+<a href="https://github.com/gmoulard/pi-appliance">{{ t.menu.code }}</a>
+</nav>
+<p>{{ t.pied.licence }}.</p>
+{% include traduction.html %}
+{% include version.html %}
+</footer>
+<script type="application/json" id="textes-catalogue">{{ t.catalogue | jsonify }}</script>
+<script src="{{ '/marketplace-catalog.js' | relative_url }}" defer></script>
+</body>
+</html>
