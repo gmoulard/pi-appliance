@@ -21,7 +21,7 @@ Il s'adresse à la personne qui fait les essais, pas au grand public : il utilis
 | VPN WireGuard | Écrit | Oui, avec une redirection du port UDP 51820 |
 | Adresse `<nom>.pi-appliance.com` (service d'adresses) | Pas écrit (TODO-3.5) | Non |
 | Relais pour les box sans accès direct (CGNAT, 4G) | Pas écrit (TODO-3.9) | Non |
-| UPnP, guide de la box dans la console | Pas écrit (TODO-3.8) | Non : la redirection se fait à la main |
+| UPnP, guide de la box, test d'accès dans la console | Écrit (TODO-3.8), pas encore essayé sur une vraie box | Oui : UPnP avec l'accord de l'administrateur, ou redirection à la main suivant le guide |
 | Services du projet (e-mails, statistiques) | Pas installés (TODO-4.4) | Non |
 
 Chaque Pi pi-appliance est indépendant (spécification, section 4) : il a sa propre console et **ne pilote pas** les autres Pi, ni dans sa maison ni ailleurs. Rien n'est donc à essayer « entre » deux Pi, sauf qu'ils ne se gênent pas.

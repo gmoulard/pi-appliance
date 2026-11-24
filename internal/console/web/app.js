@@ -3122,40 +3122,236 @@ statsToggle.addEventListener("click", async () => {
   }
 });
 
+// Accès depuis internet (spécification 7.2) : les ports de la box ouverts vers
+// le Pi par UPnP, avec l'accord de l'administrateur, sinon à la main (guide),
+// et le test de l'accès. Le Pi ne peut pas se joindre lui-même depuis internet :
+// le dernier mot revient à un téléphone en 4G.
+const accessSection = document.getElementById("accessSection");
+const accessState = document.getElementById("accessState");
+const accessPorts = document.getElementById("accessPorts");
+const accessLocal = document.getElementById("accessLocal");
+const accessEnable = document.getElementById("accessEnable");
+const accessDisable = document.getElementById("accessDisable");
+const accessTestButton = document.getElementById("accessTest");
+const accessChecks = document.getElementById("accessChecks");
+const accessPhone = document.getElementById("accessPhone");
+let accessPortList = "";
+
+function portLabel(port) {
+  return port.protocol === "UDP" ? t("port {0} (UDP)", port.port) : t("port {0}", port.port);
+}
+
+function showAccess(status) {
+  accessPortList = status.ports.map(portLabel).join(", ");
+  const upnp = status.upnp;
+  const enabled = Boolean(upnp && upnp.enabled);
+  accessEnable.hidden = !status.automatic || enabled;
+  accessDisable.hidden = !status.automatic || !enabled;
+  accessLocal.hidden = !status.local_ip;
+  accessLocal.textContent = status.local_ip ? t("Adresse du Pi sur votre réseau : {0}", status.local_ip) : "";
+  accessPorts.replaceChildren();
+  accessPorts.hidden = !enabled;
+  let dot = "orange";
+  let text;
+  if (!status.automatic) {
+    text = t("À ouvrir à la main sur votre box, vers le Pi : {0}.", accessPortList);
+  } else if (!enabled) {
+    dot = "";
+    text = t("Les ports ne sont pas ouverts automatiquement. À ouvrir sur votre box, vers le Pi : {0}.", accessPortList);
+  } else {
+    for (const port of upnp.ports) {
+      accessPorts.append(port.open
+        ? checkLine("green", t("Le {0} de la box mène au Pi.", portLabel(port)))
+        : checkLine("red", port.error || t("La box n'a pas ouvert le {0}.", portLabel(port))));
+    }
+    if (upnp.error) {
+      dot = "red";
+      text = upnp.error;
+    } else {
+      dot = "green";
+      text = upnp.gateway
+        ? t("La box « {0} » fait suivre les ports vers le Pi. Le Pi renouvelle cette ouverture toutes les 30 minutes.", upnp.gateway)
+        : t("Ouverture automatique en cours…");
+    }
+  }
+  accessState.replaceChildren(element("span", undefined, `dot ${dot}`), element("span", text));
+}
+
+async function loadAccess() {
+  try {
+    showAccess(await api("internet-access"));
+  } catch (error) {
+    accessState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
+  }
+}
+
+async function setAccess(enabled) {
+  if (enabled && !window.confirm(t("Le Pi va demander à votre box de lui faire suivre : {0}. Vos services « Tout le monde, sur internet » seront alors joignables depuis internet. Continuer ?", accessPortList))) return;
+  if (!enabled && !window.confirm(t("Refermer les ports de la box ? Vos services ne seront plus joignables depuis internet."))) return;
+  const button = enabled ? accessEnable : accessDisable;
+  button.disabled = true;
+  accessState.replaceChildren(element("span", undefined, "dot"), element("span", t("La box est en train de répondre…")));
+  try {
+    showAccess(await api("internet-access", jsonBody("PUT", { enabled })));
+  } catch (error) {
+    showMessage([error.message], "error");
+    await loadAccess();
+  } finally {
+    button.disabled = false;
+  }
+}
+
+accessEnable.addEventListener("click", () => setAccess(true));
+accessDisable.addEventListener("click", () => setAccess(false));
+
+function accessResultLines(result) {
+  const lines = [];
+  if (result.hosts.length === 0) {
+    lines.push(checkLine("red", t("Le Pi n'a pas encore d'adresse sur internet : réglez DuckDNS ou votre adresse dans « Adresse sur internet ».")));
+  }
+  if (result.public_ip) {
+    lines.push(checkLine("green", t("Votre adresse publique est {0}.", result.public_ip)));
+  } else {
+    lines.push(checkLine("red", t("Le Pi ne trouve pas son adresse publique : vérifiez qu'il joint internet.")));
+  }
+  if (result.box && result.shared) {
+    lines.push(checkLine("red", t("Votre fournisseur partage l'adresse publique de votre box avec d'autres abonnés : l'accès direct depuis internet est impossible. Chez Free, demandez une « adresse IP fixe V4 full-stack » (gratuite) dans votre espace abonné ; ailleurs, demandez une adresse IPv4 publique à votre fournisseur.")));
+  } else if (result.box && result.double_box) {
+    lines.push(checkLine("orange", t("Un autre routeur se trouve entre votre box et internet : il faut aussi y ouvrir les ports, ou brancher le Pi sur le premier appareil.")));
+  } else if (result.box) {
+    lines.push(checkLine("green", t("Votre box « {0} » répond et a bien une adresse publique.", result.box_name)));
+  } else {
+    lines.push(checkLine("orange", t("La box ne répond pas à l'ouverture automatique (UPnP) : c'est normal si elle est coupée et que vous avez ouvert les ports à la main.")));
+  }
+  for (const check of result.dns) {
+    if (check.error) {
+      lines.push(checkLine("red", t("{0} n'existe pas encore sur internet. Après un réglage, attendez quelques minutes.", check.host)));
+    } else if (check.matches) {
+      lines.push(checkLine("green", t("{0} mène bien à votre box.", check.host)));
+    } else {
+      lines.push(checkLine("orange", t("{0} mène à {1}, pas à votre box. Si vous venez de la régler, attendez quelques minutes.", check.host, check.addresses.join(", "))));
+    }
+  }
+  if (result.automatic) {
+    for (const port of result.ports) {
+      lines.push(port.open
+        ? checkLine("green", t("Le {0} de la box mène au Pi.", portLabel(port)))
+        : checkLine("red", t("La box n'a pas ouvert le {0}.", portLabel(port))));
+    }
+  } else {
+    lines.push(checkLine("orange", t("Le Pi ne peut pas vérifier les ports ouverts à la main sur la box.")));
+  }
+  return lines;
+}
+
+accessTestButton.addEventListener("click", async () => {
+  accessTestButton.disabled = true;
+  accessChecks.replaceChildren(checkLine("", t("Test en cours…")));
+  accessChecks.hidden = false;
+  accessPhone.hidden = true;
+  try {
+    const result = await api("internet-access/test", { method: "POST" });
+    accessChecks.replaceChildren(...accessResultLines(result));
+    accessPhone.replaceChildren(element("p", t("Le Pi ne peut pas se tester lui-même depuis internet : depuis la maison, son adresse passe par la box sans sortir sur internet. Pour en être sûr, coupez le Wi-Fi d'un téléphone et ouvrez en 4G :")));
+    if (result.url) {
+      const link = element("a", result.url);
+      link.href = result.url;
+      link.rel = "noopener";
+      link.target = "_blank";
+      link.dir = "ltr";
+      const line = element("p");
+      line.append(link);
+      accessPhone.append(line);
+    } else {
+      accessPhone.append(element("p", t("l'adresse du Pi sur internet, dès qu'il en aura une.")));
+    }
+    accessPhone.hidden = false;
+  } catch (error) {
+    accessChecks.replaceChildren(checkLine("red", error.message));
+  } finally {
+    accessTestButton.disabled = false;
+  }
+});
+
 // Assistant de premier démarrage (spécification 5.1) : compte administrateur,
-// réseau de la maison, puis test du réseau et redémarrage. Les services
-// s'installent ensuite depuis la marketplace. Les autres étapes de la
-// spécification (langue, adresse sur internet, utilisateurs, statistiques)
-// viendront avec leurs fonctions.
+// langue, réseau de la maison et son test, adresse sur internet, accès depuis
+// internet, autres comptes, puis redémarrage. Chaque étape se passe et se
+// refait plus tard dans la console, avec les mêmes cartes. Les statistiques
+// n'ont pas d'étape tant que la fonction est désactivée (TODO-4.7). Les
+// services s'installent ensuite depuis la marketplace.
 const wizardSection = document.getElementById("wizard");
 const wizardHelp = document.getElementById("wizardHelp");
 const wizardNext = document.getElementById("wizardNext");
 const wizardSkip = document.getElementById("wizardSkip");
+const wizardContinue = document.getElementById("wizardContinue");
+const wizardLanguageField = document.getElementById("wizardLanguageField");
+const wizardLanguage = document.getElementById("wizardLanguage");
 const wizardTestButton = document.getElementById("wizardTest");
 const wizardChecks = document.getElementById("wizardChecks");
 const wizardReboot = document.getElementById("wizardReboot");
 const wizardRebootButton = document.getElementById("wizardRebootButton");
 const wizardRebootCancel = document.getElementById("wizardRebootCancel");
-const stepNetwork = document.getElementById("stepNetwork");
-const stepCheck = document.getElementById("stepCheck");
+const addressBox = document.getElementById("addressBox");
+const internetStateLine = document.getElementById("internetState");
+const WIZARD_STEPS = ["language", "network", "check", "address", "access", "users", "reboot"];
+const stepItems = Object.fromEntries(WIZARD_STEPS.map((step) => [step, document.getElementById(`step${step[0].toUpperCase()}${step.slice(1)}`)]));
+// Étape de la langue déjà vue sur cette adresse de la console (la langue
+// choisie est gardée par adresse : après le passage au Wi-Fi de la maison,
+// la question revient une fois).
+const WIZARD_LANGUAGE_KEY = "pi-wizard-language";
 const REBOOT_COUNTDOWN = 10;
 let wizardStep = null;
 let wizardTimer = null;
 let wizardNetwork = "";
 let wizardAddress = "";
+let wizardPassed = false;
 let rebootTimer = null;
+
+for (const language of LANGUAGES) {
+  const option = element("option", language.name);
+  option.value = language.code;
+  option.lang = language.code;
+  wizardLanguage.append(option);
+}
+wizardLanguage.value = LANGUAGE;
+wizardLanguage.addEventListener("change", () => {
+  try {
+    window.localStorage.setItem(LANGUAGE_KEY, wizardLanguage.value);
+  } catch {
+    // Sans stockage, le choix ne dure que le temps de cette page.
+  }
+  const url = new URL(window.location.href);
+  url.searchParams.set("lang", wizardLanguage.value);
+  window.location.replace(url);
+});
+
+function sessionFlag(key, set) {
+  try {
+    if (set) window.sessionStorage.setItem(key, "1");
+    return window.sessionStorage.getItem(key) === "1";
+  } catch {
+    return Boolean(set);
+  }
+}
+
+// Cartes de la console montrées pendant une étape, remises en état après.
+function resetWizardViews() {
+  addressBox.hidden = false;
+  internetStateLine.hidden = false;
+}
 
 function setStep(step) {
   wizardStep = step;
-  stepNetwork.className = step === "network" ? "current" : "done";
-  stepCheck.className = step === "check" ? "current" : "";
+  const index = WIZARD_STEPS.indexOf(step);
+  WIZARD_STEPS.forEach((name, position) => {
+    stepItems[name].className = position < index ? "done" : position === index ? "current" : "";
+  });
   clearInterval(wizardTimer);
   clearInterval(rebootTimer);
-  wizardChecks.hidden = true;
-  wizardReboot.hidden = true;
-  wizardTestButton.hidden = true;
-  wizardRebootButton.hidden = true;
-  wizardRebootCancel.hidden = true;
+  for (const node of [wizardChecks, wizardReboot, wizardTestButton, wizardRebootButton, wizardRebootCancel, wizardContinue, wizardSkip, wizardNext, wizardLanguageField, networkSection, duckDNSSection, accessSection, accountsSection]) {
+    node.hidden = true;
+  }
+  resetWizardViews();
 }
 
 async function startWizard() {
@@ -3164,6 +3360,18 @@ async function startWizard() {
   catalogSection.hidden = true;
   piSection.hidden = true;
   accountSection.hidden = true;
+  wizardPassed = false;
+  if (!sessionFlag(WIZARD_LANGUAGE_KEY)) {
+    setStep("language");
+    wizardHelp.textContent = t("Choisissez la langue de la console. Vous pourrez la changer à tout moment en bas de la page.");
+    wizardLanguageField.hidden = false;
+    wizardContinue.hidden = false;
+    return;
+  }
+  await networkStep();
+}
+
+async function networkStep() {
   setStep("network");
   const state = await loadNetwork();
   if (!state || state.configured) {
@@ -3171,7 +3379,6 @@ async function startWizard() {
     return;
   }
   wizardHelp.textContent = t("Reliez le Pi à votre réseau : choisissez le Wi-Fi de la maison ci-dessous, ou le câble s'il est branché sur votre box.");
-  wizardNext.hidden = true;
   wizardSkip.hidden = false;
   // Le choix se fait parfois sans réponse de la page (connexion au Wi-Fi) :
   // l'étape avance dès que l'état du réseau le montre.
@@ -3183,23 +3390,19 @@ async function startWizard() {
   }, 5000);
 }
 
-// Dernière étape : le test regarde la connexion déjà établie, sans couper le
+// Test du réseau : il regarde la connexion déjà établie, sans couper le
 // Wi-Fi de configuration (même puce Wi-Fi, spécification 4).
 async function wizardCheck(state) {
   setStep("check");
-  networkSection.hidden = true;
-  wizardSkip.hidden = true;
-  wizardNext.textContent = t("Terminer sans redémarrer");
-  wizardNext.className = "secondary";
-  wizardNext.hidden = false;
   wizardNetwork = (state && state.configured) || "";
   wizardAddress = state && !state.accessPoint.open && state.addresses.length > 0 ? state.addresses[0] : "";
+  wizardContinue.hidden = false;
   if (!wizardNetwork) {
-    wizardHelp.textContent = t("Le Pi n'est pas encore relié à votre réseau. Vous pourrez le faire plus tard dans « Réseau de la maison ». Terminez la mise en route pour continuer.");
-    wizardNext.textContent = t("Terminer la mise en route");
-    wizardNext.className = "";
+    wizardHelp.textContent = t("Le Pi n'est pas encore relié à votre réseau : les étapes d'internet attendront. Vous pourrez le relier plus tard dans « Réseau de la maison ».");
     return;
   }
+  wizardContinue.hidden = true;
+  wizardSkip.hidden = false;
   wizardHelp.textContent = wizardNetwork === "wifi"
     ? t("Le Pi est relié au Wi-Fi de la maison. Vérifiez maintenant que tout fonctionne : le test ne coupe rien.")
     : t("Le Pi est relié à votre box par le câble réseau. Vérifiez maintenant que tout fonctionne : le test ne coupe rien.");
@@ -3254,13 +3457,16 @@ wizardTestButton.addEventListener("click", async () => {
     showTestResult(result);
     wizardTestButton.textContent = t("Tester à nouveau");
     wizardTestButton.className = result.passed ? "secondary" : "";
+    wizardPassed = result.passed;
     if (result.passed) {
-      wizardHelp.textContent = t("Tout est en ordre. Redémarrez maintenant le Pi : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.");
-      wizardRebootButton.hidden = false;
+      wizardHelp.textContent = t("Le réseau marche. Continuez : le Pi redémarrera à la fin de la mise en route.");
+      wizardContinue.hidden = false;
+      wizardSkip.hidden = true;
       networkSection.hidden = true;
     } else {
       wizardHelp.textContent = t("Le test a trouvé un problème, expliqué ci-dessous. Corrigez-le, puis testez à nouveau.");
-      wizardRebootButton.hidden = true;
+      wizardContinue.hidden = true;
+      wizardSkip.hidden = false;
       await loadNetwork();
     }
   } catch (error) {
@@ -3269,6 +3475,82 @@ wizardTestButton.addEventListener("click", async () => {
     wizardTestButton.disabled = false;
   }
 });
+
+// Adresse sur internet : DuckDNS et domaine personnel ; <nom>.pi-appliance.com
+// seulement si le service d'adresses du projet répond (TODO-3.5).
+async function addressStep() {
+  setStep("address");
+  wizardHelp.textContent = t("Donnez au Pi une adresse sur internet, pour ouvrir vos services hors de la maison : un nom DuckDNS (gratuit, sur duckdns.org) et, si vous en avez un, votre propre nom de domaine. Vous pourrez le faire plus tard dans « Adresse sur internet ».");
+  duckDNSSection.hidden = false;
+  addressBox.hidden = true;
+  internetStateLine.hidden = true;
+  wizardSkip.hidden = false;
+  wizardContinue.hidden = false;
+  await loadDuckDNS();
+  await loadInternet();
+  if (wizardStep !== "address") return;
+  internetOpen.hidden = true;
+  internetClose.hidden = true;
+  const service = await api("address/service").catch(() => null);
+  if (wizardStep === "address" && service && service.reachable) {
+    addressBox.hidden = false;
+    await loadAddress();
+  }
+}
+
+async function accessStep() {
+  setStep("access");
+  wizardHelp.textContent = t("Pour que vos services s'ouvrent depuis internet, votre box doit faire suivre certains ports vers le Pi. Le Pi peut le lui demander si vous l'acceptez ; sinon, le guide explique comment faire à la main. Testez ensuite l'accès. Vous pourrez le faire plus tard dans « Accès depuis internet ».");
+  accessSection.hidden = false;
+  wizardSkip.hidden = false;
+  wizardContinue.hidden = false;
+  await loadAccess();
+}
+
+async function usersStep() {
+  setStep("users");
+  wizardHelp.textContent = t("Invitez les personnes qui utiliseront vos services : chacune reçoit un lien et choisit elle-même son mot de passe. Vous pourrez en inviter d'autres plus tard dans « Comptes ».");
+  accountsSection.hidden = false;
+  wizardSkip.hidden = false;
+  wizardContinue.hidden = false;
+  await loadAccounts().catch((error) => showMessage([error.message], "error"));
+}
+
+// Dernière étape : redémarrage, seulement quand le test du réseau a réussi.
+function rebootStep() {
+  setStep("reboot");
+  wizardNext.hidden = false;
+  if (wizardPassed) {
+    wizardHelp.textContent = t("Tout est en ordre. Redémarrez maintenant le Pi : il doit retrouver votre réseau tout seul. La mise en route sera alors terminée.");
+    wizardRebootButton.hidden = false;
+    wizardNext.textContent = t("Terminer sans redémarrer");
+    wizardNext.className = "secondary";
+  } else {
+    wizardHelp.textContent = wizardNetwork
+      ? t("Le réseau n'a pas été vérifié : terminez la mise en route sans redémarrer. Vous pourrez redémarrer le Pi plus tard.")
+      : t("Le Pi n'est pas encore relié à votre réseau. Vous pourrez le faire plus tard dans « Réseau de la maison ». Terminez la mise en route pour continuer.");
+    wizardNext.textContent = t("Terminer la mise en route");
+    wizardNext.className = "";
+  }
+}
+
+async function nextStep() {
+  switch (wizardStep) {
+    case "language":
+      sessionFlag(WIZARD_LANGUAGE_KEY, true);
+      return networkStep();
+    case "check":
+      return wizardNetwork ? addressStep() : usersStep();
+    case "address":
+      return accessStep();
+    case "access":
+      return usersStep();
+    case "users":
+      return rebootStep();
+  }
+}
+
+wizardContinue.addEventListener("click", nextStep);
 
 // Avant le redémarrage : où retrouver le Pi, la suite, et 10 secondes pour changer d'avis.
 function rebootLines() {
@@ -3297,7 +3579,6 @@ wizardRebootButton.addEventListener("click", () => {
   let seconds = REBOOT_COUNTDOWN;
   showReboot(rebootLines(), seconds);
   wizardRebootButton.hidden = true;
-  wizardTestButton.hidden = true;
   wizardNext.hidden = true;
   wizardRebootCancel.hidden = false;
   clearInterval(rebootTimer);
@@ -3317,7 +3598,6 @@ wizardRebootCancel.addEventListener("click", () => {
   wizardReboot.hidden = true;
   wizardRebootCancel.hidden = true;
   wizardRebootButton.hidden = false;
-  wizardTestButton.hidden = false;
   wizardNext.hidden = false;
 });
 
@@ -3336,7 +3616,7 @@ async function rebootPi() {
     return;
   }
   wizardStep = null;
-  stepCheck.className = "done";
+  stepItems.reboot.className = "done";
   wizardHelp.textContent = t("Le Pi redémarre…");
   showReboot(rebootLines());
   watchReboot();
@@ -3363,6 +3643,10 @@ function watchReboot() {
 }
 
 wizardSkip.addEventListener("click", async () => {
+  if (wizardStep !== "network") {
+    await nextStep();
+    return;
+  }
   if (!window.confirm(named(t("Passer le choix du réseau ? Le Wi-Fi « pi-appliance » restera ouvert, au plus 24 heures, pour le faire plus tard.")))) {
     return;
   }
@@ -4122,6 +4406,7 @@ function showAuth(mode) {
   emailReminder.hidden = true;
   networkSection.hidden = true;
   duckDNSSection.hidden = true;
+  accessSection.hidden = true;
   piSection.hidden = true;
   accountSection.hidden = true;
   accountsSection.hidden = true;
@@ -4531,6 +4816,8 @@ async function showConsole(account, wizard) {
   servicesSection.hidden = false;
   catalogSection.hidden = account.role !== "admin";
   duckDNSSection.hidden = true;
+  accessSection.hidden = true;
+  resetWizardViews();
   statsSection.hidden = true;
   clearInterval(duckDNSTimer);
   duckDNSTimer = null;
@@ -4566,6 +4853,8 @@ async function showConsole(account, wizard) {
     await loadDuckDNS();
     await loadAddress();
     await loadInternet();
+    accessSection.hidden = false;
+    await loadAccess();
     duckDNSTimer = setInterval(loadDuckDNS, 15000);
     await loadStats();
     await loadNetwork();

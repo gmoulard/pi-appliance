@@ -279,6 +279,12 @@ func (u *Updater) client() Doer {
 	return &http.Client{Timeout: 30 * time.Second}
 }
 
+// PublicIP : adresse IPv4 publique de la box, vue d'internet (test de l'accès
+// direct, spécification 7.2).
+func (u *Updater) PublicIP(ctx context.Context) (string, error) {
+	return u.lookup(ctx)
+}
+
 // lookup renvoie l'adresse IPv4 publique de la box.
 func (u *Updater) lookup(ctx context.Context) (string, error) {
 	address := u.LookupURL

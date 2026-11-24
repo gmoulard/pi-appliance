@@ -243,6 +243,8 @@ var homeOnlyPaths = []string{
 	"POST " + BasePath + "/appareil/retirer",
 	"PUT " + BasePath + "/api/internet-console",
 	"PUT " + BasePath + "/api/internet-console/domain",
+	// Ouvrir ou refermer les ports de la box (accès direct, 7.2).
+	"PUT " + BasePath + "/api/internet-access",
 	// Le serveur d'envoi reçoit tous les codes de connexion par e-mail.
 	"PUT " + BasePath + "/api/mail",
 	"DELETE " + BasePath + "/api/mail",

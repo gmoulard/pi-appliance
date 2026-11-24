@@ -47,6 +47,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/storage"
 	"github.com/gmoulard/pi-appliance/internal/system"
 	"github.com/gmoulard/pi-appliance/internal/updates"
+	"github.com/gmoulard/pi-appliance/internal/upnp"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
@@ -116,6 +117,7 @@ func main() {
 	traefikServices := flag.String("traefik-services", "/etc/pi-appliance/traefik/dynamic/services-internet.yml", "configuration dynamique de Traefik des services ouverts sur internet, sous un chemin de l'adresse internet du Pi (vide : aucun)")
 	traefikInternet := flag.String("traefik-internet", "/etc/pi-appliance/traefik/dynamic/console-internet.yml", "configuration dynamique de Traefik écrite quand la console est ouverte sur internet (vide : jamais ouverte)")
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
+	upnpEnabled := flag.Bool("upnp", true, "ouverture des ports de la box par UPnP, avec l'accord de l'administrateur (false : à la main seulement)")
 	mailURL := flag.String("mail-url", mail.DefaultServiceURL, "service d'envoi d'e-mails du projet, pour « mot de passe oublié » et les invitations (vide : pas d'e-mail)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
 	flag.Parse()
@@ -278,6 +280,17 @@ func main() {
 	if address != nil {
 		go address.Run(ctx, 5*time.Minute)
 	}
+	// Accès direct : ports de la box ouverts par UPnP une fois l'accord donné (spécification 7.2).
+	var portMapper *upnp.Manager
+	if *upnpEnabled {
+		portMapper, err = upnp.Open(filepath.Join(*data, "upnp.json"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		portMapper.Ports = func() []upnp.Mapping { return console.DirectPorts(manager) }
+		portMapper.Logf = log.Printf
+		go portMapper.Run(ctx)
+	}
 	go backups.Run(ctx)
 	go manager.Relocate(ctx, log.Printf)
 	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
@@ -311,6 +324,8 @@ func main() {
 		Diagnostic:       diag,
 		DiagnosticWindow: window,
 		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),
+		PortMapper:       portMapper,
+		PublicIP:         duckdns.PublicIP,
 	}
 	if *cliTokenFile != "" {
 		token, err := cli.WriteToken(*cliTokenFile)
