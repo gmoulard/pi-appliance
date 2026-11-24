@@ -196,6 +196,8 @@ pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
 pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
 ```
 
+Pour ne pas avoir à répondre aux questions de confirmation (par exemple dans un script), ajoutez `-force` n'importe où sur la ligne : `pia -force desinstaller cloud --effacer-donnees`. La réponse est alors toujours oui : vérifiez bien la commande avant de la lancer.
+
 Inutile de taper `sudo` : quand une commande a besoin des droits d'administrateur du Pi (toutes sauf `aide` et `version`), `pia` les demande lui-même, avec le mot de passe de votre compte si le Pi le réclame. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
 
 ## Mot de passe oublié : le lien par e-mail {#mot-de-passe-oublie}

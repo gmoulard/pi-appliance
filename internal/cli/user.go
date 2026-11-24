@@ -89,7 +89,7 @@ const userHelp = `pia user : comptes de la console.
   pia user delete <compte> [--yes]
 
 Rôles : admin (administrateur), user (utilisateur), guest (invité, avec --until :
-dernier jour d'accès).
+dernier jour d'accès). -force, n'importe où sur la ligne, vaut --yes.
 `
 
 func userCommand(env Env, args []string) error {

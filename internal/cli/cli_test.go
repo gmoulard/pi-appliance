@@ -499,3 +499,45 @@ func TestElevate(t *testing.T) {
 		t.Fatalf("relancé alors que root : %v", relaunched)
 	}
 }
+
+// -force (TODO-5.20) : aucune question, à toute place de la ligne, gardé par la relance sudo.
+func TestForce(t *testing.T) {
+	pi := newFakePi(t, "non\n")
+	for _, args := range [][]string{
+		{"-force", "desinstaller", "cloud", "--effacer-donnees"},
+		{"desinstaller", "cloud", "--effacer-donnees", "--force"},
+		{"desinstaller", "--forcer", "cloud", "--effacer-donnees"},
+	} {
+		count := len(pi.requests)
+		pi.out.Reset()
+		if code := pi.run(args...); code != 0 || len(pi.requests) == count {
+			t.Fatalf("%v : code %d : %s", args, code, pi.err.String())
+		}
+		if last := pi.requests[len(pi.requests)-1]; !strings.HasPrefix(last, "DELETE /pi-appliance/api/services/cloud?data=delete") {
+			t.Fatalf("%v : demande %q", args, last)
+		}
+		if !strings.Contains(pi.out.String(), "sauf sauvegarde. oui (-force)") {
+			t.Fatalf("%v : question non affichée : %s", args, pi.out.String())
+		}
+	}
+	// Sans -force, la réponse lue reste « non ».
+	count := len(pi.requests)
+	if code := pi.run("desinstaller", "cloud", "--effacer-donnees"); code != 1 || len(pi.requests) != count {
+		t.Fatalf("sans -force : code %d", code)
+	}
+	// -force vaut aussi --confirmer pour les options à risque.
+	if code := pi.run("-force", "installer", "portainer"); code != 0 {
+		t.Fatalf("installer -force : code %d : %s", code, pi.err.String())
+	}
+	if !strings.Contains(help, "-force") || !ForceFlag("-Force") || ForceFlag("-f") {
+		t.Fatal("-force absent de l'aide")
+	}
+	// La relance avec sudo garde -force.
+	pi.env.Euid = 1000
+	var relaunched []string
+	pi.env.Elevate = func(args []string) error { relaunched = args; return errors.New("sudo absent") }
+	pi.run("-force", "desinstaller", "cloud")
+	if fmt.Sprint(relaunched) != "[-force desinstaller cloud]" {
+		t.Fatalf("relance : %v", relaunched)
+	}
+}
