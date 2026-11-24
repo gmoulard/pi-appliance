@@ -823,5 +823,6 @@ piTranslations("de", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Warnungen werden gesendet, sobald der E-Mail-Versand eingerichtet ist, direkt darüber.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Noch kein Administrator hat seine E-Mail-Adresse bestätigt: Bestätigen Sie Ihre unter „Mein Konto“, um Warnungen zu erhalten.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Warnungen gehen an {0} Administrator(en). Bestätigen Sie Ihre Adresse unter „Mein Konto“, um sie auch zu erhalten.",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "Warnungen gehen an {0} Administrator(en), Sie eingeschlossen."
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Warnungen gehen an {0} Administrator(en), Sie eingeschlossen.",
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "Dieser Dienst sieht und speichert die Bilder der am Pi angeschlossenen Kameras. Die Bilder bleiben auf dem Pi. Sagen Sie es den gefilmten Personen: Jemanden ohne sein Wissen zu filmen, kann verboten sein. Fortfahren?"
 });

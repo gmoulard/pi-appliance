@@ -1174,6 +1174,14 @@ async function withRisks(send) {
     if (error.status !== 409 || !risks) {
       throw error;
     }
+    // Caméras du Pi (« Caméra et timelapse ») : confirmation de vie privée,
+    // l'application n'a pas la main sur tout le Pi.
+    if (risks.every((risk) => risk.code === "camera")) {
+      if (!window.confirm(t("Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?"))) {
+        return null;
+      }
+      return send(true);
+    }
     const lines = risks.map((risk) => `• ${risk.message}`).join("\n");
     if (!window.confirm(t("Attention, ces options donnent la main sur tout le Pi :\n\n{0}\n\nUn service mal intentionné ou mal écrit pourrait alors abîmer le Pi ou lire toutes vos données. Continuer quand même ?", lines))) {
       return null;

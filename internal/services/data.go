@@ -26,6 +26,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"gopkg.in/yaml.v3"
+
 	"github.com/gmoulard/pi-appliance/internal/system"
 )
 
@@ -38,6 +40,35 @@ var ErrNoSpace = errors.New("pas assez de place")
 
 // rollbackLabel marque les volumes de secours, pour les retrouver.
 const rollbackLabel = "pi-appliance.rollback"
+
+// NoCopyLabel : étiquette Docker d'un volume qui n'est pas copié avant une
+// mise à jour, posée par le manifeste avec la valeur « false » (section
+// volumes du fichier Compose, comme NoBackupLabel) : les vidéos de « Caméra
+// et timelapse », trop grosses pour être copiées sur la carte SD, et qu'une
+// nouvelle version ne réécrit pas.
+const NoCopyLabel = "pi-appliance.update-copy"
+
+// withoutNoCopy retire des volumes à copier ceux que le manifeste marque
+// NoCopyLabel=false (volumes Docker Compose nommés pi-<nom>_<volume>).
+func withoutNoCopy(copies []volumeCopy, name string, compose []byte) []volumeCopy {
+	var file struct {
+		Volumes map[string]struct {
+			Labels map[string]string `yaml:"labels"`
+		} `yaml:"volumes"`
+	}
+	if yaml.Unmarshal(compose, &file) != nil {
+		return copies
+	}
+	kept := copies[:0:0]
+	for _, c := range copies {
+		short, _ := strings.CutPrefix(c.volume, "pi-"+name+"_")
+		if volume, ok := file.Volumes[short]; ok && volume.Labels[NoCopyLabel] == "false" {
+			continue
+		}
+		kept = append(kept, c)
+	}
+	return kept
+}
 
 // Copier copie le contenu du dossier from dans le dossier to, vide.
 type Copier interface {

@@ -823,5 +823,6 @@ piTranslations("zh", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "一旦在上方设置好电子邮件发送，提醒就会发出。",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "还没有管理员验证自己的电子邮件地址：请在“我的账户”中验证您的地址以接收提醒。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "提醒会发给 {0} 位管理员。请在“我的账户”中验证您的地址，以便您也能收到。",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "提醒会发给 {0} 位管理员，包括您。"
+  "Les alertes partent à {0} administrateur(s), vous compris.": "提醒会发给 {0} 位管理员，包括您。",
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "此服务会查看并录制连接到 Pi 的摄像头的画面。画面保存在 Pi 上。请告知被拍摄的人：未经告知拍摄他人可能是违法的。是否继续？"
 });

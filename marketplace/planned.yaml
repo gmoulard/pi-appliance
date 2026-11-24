@@ -8,10 +8,3 @@
   category: Fichiers
   tags: [fichiers, reseau]
   todo: TODO-4.8
-- id: camera
-  name: Caméra et timelapse
-  description: Surveiller une pièce ou filmer en accéléré avec la caméra du Pi (Motion).
-  icon: M4 7h3l2-2h6l2 2h3v12H4zM12 10a3 3 0 1 0 0 6a3 3 0 1 0 0-6z
-  category: Maison
-  tags: [maison]
-  todo: TODO-4.9

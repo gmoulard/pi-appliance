@@ -823,5 +823,6 @@ piTranslations("ja", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "すぐ上でメールの送信を設定すると、お知らせが送られるようになります。",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "メールアドレスを確認した管理者がまだいません：お知らせを受け取るには「マイアカウント」でご自分のアドレスを確認してください。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "お知らせは {0} 人の管理者に送られます。あなたも受け取るには「マイアカウント」でアドレスを確認してください。",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "お知らせはあなたを含む {0} 人の管理者に送られます。"
+  "Les alertes partent à {0} administrateur(s), vous compris.": "お知らせはあなたを含む {0} 人の管理者に送られます。",
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "このサービスは Pi に接続されたカメラの映像を見て録画します。映像は Pi の中に残ります。撮影される人に知らせてください。知らせずに人を撮影することは禁止されている場合があります。続けますか?"
 });

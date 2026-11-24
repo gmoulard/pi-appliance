@@ -96,6 +96,7 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 	if err != nil {
 		return Result{}, err
 	}
+	volumes = withoutNoCopy(volumes, name, app.Compose)
 	if err := m.checkSpace(name, volumes); err != nil {
 		return Result{}, err
 	}

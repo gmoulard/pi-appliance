@@ -401,6 +401,9 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 		volumes, _ := target["volumes"].([]string)
 		target["volumes"] = append(volumes, filepath.Join(m.serviceDir(name), siteDir)+":"+mount.Path)
 	}
+	if app.ID == CameraApp {
+		addCameras(services)
+	}
 	return map[string]any{
 		"services": services,
 		"networks": map[string]any{Network: map[string]any{"external": true}},
