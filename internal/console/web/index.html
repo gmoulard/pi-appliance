@@ -157,6 +157,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <option value="beta">Bêta : nouveautés en avance, moins éprouvées</option>
 </select></label>
 </div>
+<div id="versionsBox" class="card" data-theme="entretien" hidden>
+<h3>Versions de la console</h3>
+<p id="versionsCurrent"></p>
+<details id="versionsDetails">
+<summary>Voir les versions publiées</summary>
+<p class="meta">Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.</p>
+<p id="versionsState" class="state" aria-live="polite"></p>
+<ul id="versionsList" class="backup-list"></ul>
+</details>
+</div>
 <div id="storageBox" class="card" data-theme="entretien" hidden>
 <h3>Disque USB</h3>
 <p id="storageState"></p>

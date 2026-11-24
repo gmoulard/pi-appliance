@@ -101,12 +101,21 @@ jobs:
           # proposée seulement sur le canal bêta (spécification 5.4).
           prerelease=
           case "${GITHUB_REF_NAME}" in *-*) prerelease=--prerelease ;; esac
+          # Résumé de la version d'après sa ligne du CHANGELOG, en premier
+          # paragraphe des notes : la console le montre dans la liste des
+          # versions (Mon Pi, Versions de la console, TODO-5.26).
+          summary=$(grep -m1 -F -- "- **${GITHUB_REF_NAME#v}** — " CHANGELOG.md | sed 's/^- \*\*[^*]*\*\* — [^—]* — [^—]* — //' || true)
+          if [ -n "$summary" ]; then
+            summary="$summary
+
+          "
+          fi
           if [ "$WITH_IMAGE" = true ]; then
             # shellcheck disable=SC2086
             gh release create "${GITHUB_REF_NAME}" $prerelease deploy/*.img.xz deploy/*.img.xz.sha256 \
               deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
               --title "pi-appliance ${GITHUB_REF_NAME}" \
-              --notes "Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).
+              --notes "${summary}Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).
           Vérifier le fichier avec sa somme de contrôle : sha256sum -c *.sha256
           Les Pi déjà installés proposent cette version dans la console (Mon Pi, Mises à jour) : archive pi-appliance-${GITHUB_REF_NAME}-arm64.tar.gz."
           else
@@ -122,5 +131,5 @@ jobs:
             gh release create "${GITHUB_REF_NAME}" $prerelease \
               deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
               --title "pi-appliance ${GITHUB_REF_NAME}" \
-              --notes "$notes"
+              --notes "${summary}${notes}"
           fi
