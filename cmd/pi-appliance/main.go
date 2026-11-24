@@ -208,7 +208,13 @@ func main() {
 	}
 	// Sauvegardes chaque nuit sur le disque USB de sauvegarde (spécification 9.1).
 	host := backup.Hostname()
-	backups := &backup.Manager{Dir: *data, Services: manager, Target: backup.DiskTarget(backup.DiskMount, host), Host: host, Logf: log.Printf}
+	backups := &backup.Manager{Dir: *data, Services: manager, Target: backup.DiskTarget(backup.DiskMount, host), Hosted: backup.HostedTarget(backup.DiskMount), Host: host, Logf: log.Printf}
+	// Sauvegarde croisée : demandes signées par la clé de l'appliance (spécification 9.1).
+	if peerKey, err := addresses.LoadOrCreateKey(filepath.Join(*data, "address-key")); err == nil {
+		backups.PeerKey = peerKey
+	} else {
+		log.Printf("sauvegarde chez un proche : %v", err)
+	}
 	if *backupScript != "" {
 		backups.Disks = &backup.Disks{Runner: network.Script(*backupScript)}
 	}
