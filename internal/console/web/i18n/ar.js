@@ -746,5 +746,17 @@ piTranslations("ar", {
   "CPU {0} %": "المعالج {0}٪",
   "RAM {0} %": "الذاكرة {0}٪",
   "Disque {0} / {1}": "القرص {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "سيحصل Claude على كل الصلاحيات على الـ Pi: يمكنه قراءة كل شيء وتعديله وحذفه؛ وكل إجراء يمر عبر تطبيق Claude لديك، حيث تقبله أو ترفضه. يلزم اشتراك في Claude ‏(Pro أو Max). بعد التثبيت، افتح الخدمة لتسجيل الدخول إلى حساب Claude مرة واحدة."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "سيحصل Claude على كل الصلاحيات على الـ Pi: يمكنه قراءة كل شيء وتعديله وحذفه؛ وكل إجراء يمر عبر تطبيق Claude لديك، حيث تقبله أو ترفضه. يلزم اشتراك في Claude ‏(Pro أو Max). بعد التثبيت، افتح الخدمة لتسجيل الدخول إلى حساب Claude مرة واحدة.",
+  "Alertes par e-mail": "التنبيهات بالبريد الإلكتروني",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "عندما يحدث خطأ ما، ينبّه الـ Pi بالبريد الإلكتروني المسؤولين الذين تم التحقق من عناوينهم. بلا سيل من الرسائل: رسالة واحدة على الأكثر لكل نوع تنبيه في اليوم، ثم رسالة أخرى عندما يعود كل شيء إلى طبيعته.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "القرص ممتلئ تقريبًا (بطاقة SD أو قرص USB ممتلئ بنسبة 90 %)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "خدمة متوقفة منذ أكثر من 10 دقائق، دون أن يوقفها أحد من وحدة التحكم",
+  "Le Pi manque de courant (alimentation trop faible)": "الـ Pi لا يحصل على كهرباء كافية (مزوّد الطاقة ضعيف جدًا)",
+  "La sauvegarde de la nuit a échoué": "فشل النسخ الاحتياطي الليلي",
+  "Correctifs de sécurité à installer": "تصحيحات أمنية بانتظار التثبيت",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "شهادة أحد عناوين الـ Pi على الإنترنت ستنتهي قريبًا",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "ستُرسل التنبيهات فور ضبط إرسال البريد الإلكتروني، في الأعلى مباشرة.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "لم يتحقق أي مسؤول من عنوان بريده الإلكتروني بعد: تحقّق من عنوانك في «حسابي» لتلقي التنبيهات.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "تُرسل التنبيهات إلى {0} مسؤول. تحقّق من عنوانك في «حسابي» لتتلقاها أنت أيضًا.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "تُرسل التنبيهات إلى {0} مسؤول، بمن فيهم أنت."
 });

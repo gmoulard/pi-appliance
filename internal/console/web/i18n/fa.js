@@ -746,5 +746,17 @@ piTranslations("fa", {
   "CPU {0} %": "پردازنده {0}٪",
   "RAM {0} %": "حافظه {0}٪",
   "Disque {0} / {1}": "دیسک {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude همهٔ دسترسی‌ها را روی Pi شما خواهد داشت: می‌تواند همه چیز را بخواند، تغییر دهد و پاک کند؛ هر کار از برنامهٔ Claude شما می‌گذرد و شما آن را می‌پذیرید یا رد می‌کنید. اشتراک Claude ‏(Pro یا Max) لازم است. پس از نصب، سرویس را باز کنید تا یک بار وارد حساب Claude خود شوید."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude همهٔ دسترسی‌ها را روی Pi شما خواهد داشت: می‌تواند همه چیز را بخواند، تغییر دهد و پاک کند؛ هر کار از برنامهٔ Claude شما می‌گذرد و شما آن را می‌پذیرید یا رد می‌کنید. اشتراک Claude ‏(Pro یا Max) لازم است. پس از نصب، سرویس را باز کنید تا یک بار وارد حساب Claude خود شوید.",
+  "Alertes par e-mail": "هشدارهای ایمیلی",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "وقتی مشکلی پیش بیاید، Pi با ایمیل به مدیرانی که نشانی‌شان تأیید شده خبر می‌دهد. بدون سیل ایمیل: برای هر نوع هشدار حداکثر یک ایمیل در روز، و سپس یکی دیگر وقتی همه‌چیز به حالت عادی برگشت.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "دیسک تقریباً پر است (کارت SD یا دیسک USB تا ۹۰٪ پر شده)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "سرویس بیش از ۱۰ دقیقه است که متوقف شده، بی‌آنکه کسی آن را در کنسول متوقف کرده باشد",
+  "Le Pi manque de courant (alimentation trop faible)": "برق Pi کافی نیست (منبع تغذیه خیلی ضعیف است)",
+  "La sauvegarde de la nuit a échoué": "پشتیبان‌گیری شبانه ناموفق بود",
+  "Correctifs de sécurité à installer": "وصله‌های امنیتی برای نصب",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "گواهی یکی از نشانی‌های اینترنتی Pi به‌زودی منقضی می‌شود",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "هشدارها به‌محض تنظیم ارسال ایمیل، درست در بالا، فرستاده می‌شوند.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "هنوز هیچ مدیری نشانی ایمیل خود را تأیید نکرده است: برای دریافت هشدارها نشانی خود را در «حساب من» تأیید کنید.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "هشدارها برای {0} مدیر فرستاده می‌شوند. برای اینکه شما هم دریافت کنید، نشانی خود را در «حساب من» تأیید کنید.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "هشدارها برای {0} مدیر، از جمله شما، فرستاده می‌شوند."
 });

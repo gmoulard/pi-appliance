@@ -746,5 +746,17 @@ piTranslations("nl", {
   "CPU {0} %": "CPU {0}%",
   "RAM {0} %": "RAM {0}%",
   "Disque {0} / {1}": "Schijf {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude krijgt alle rechten op uw Pi: het kan alles lezen, wijzigen en wissen; elke actie gaat via uw Claude-app, waar u die accepteert of weigert. Een Claude-abonnement (Pro of Max) is nodig. Open na de installatie de dienst om één keer in te loggen op uw Claude-account."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude krijgt alle rechten op uw Pi: het kan alles lezen, wijzigen en wissen; elke actie gaat via uw Claude-app, waar u die accepteert of weigert. Een Claude-abonnement (Pro of Max) is nodig. Open na de installatie de dienst om één keer in te loggen op uw Claude-account.",
+  "Alertes par e-mail": "Waarschuwingen per e-mail",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "De Pi waarschuwt de beheerders met een bevestigd adres per e-mail als er iets misgaat. Geen stortvloed: hoogstens één e-mail per soort waarschuwing per dag, en daarna een volgende als alles weer in orde is.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "Schijf bijna vol (SD-kaart of USB-schijf voor 90 % vol)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "Dienst al meer dan 10 minuten gestopt, zonder dat iemand hem in de console heeft gestopt",
+  "Le Pi manque de courant (alimentation trop faible)": "De Pi krijgt te weinig stroom (voeding te zwak)",
+  "La sauvegarde de la nuit a échoué": "De back-up van vannacht is mislukt",
+  "Correctifs de sécurité à installer": "Beveiligingsupdates om te installeren",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Certificaat van een internetadres van de Pi verloopt binnenkort",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Waarschuwingen worden verstuurd zodra het versturen van e-mails is ingesteld, hierboven.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Nog geen beheerder heeft zijn e-mailadres bevestigd: bevestig het uwe in ‘Mijn account’ om waarschuwingen te ontvangen.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Waarschuwingen gaan naar {0} beheerder(s). Bevestig uw adres in ‘Mijn account’ om ze ook te ontvangen.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Waarschuwingen gaan naar {0} beheerder(s), u inbegrepen."
 });

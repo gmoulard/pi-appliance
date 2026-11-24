@@ -746,5 +746,17 @@ piTranslations("ja", {
   "CPU {0} %": "CPU {0}%",
   "RAM {0} %": "メモリ {0}%",
   "Disque {0} / {1}": "ディスク {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude は Pi に対するすべての権限を持ちます。すべてを読み、変更し、消去できます。どの操作も Claude アプリを通り、そこで許可または拒否します。Claude のサブスクリプション（Pro または Max）が必要です。インストール後、サービスを開いて Claude アカウントに一度ログインしてください。"
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude は Pi に対するすべての権限を持ちます。すべてを読み、変更し、消去できます。どの操作も Claude アプリを通り、そこで許可または拒否します。Claude のサブスクリプション（Pro または Max）が必要です。インストール後、サービスを開いて Claude アカウントに一度ログインしてください。",
+  "Alertes par e-mail": "メールでのお知らせ",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "問題が起きると、Pi はアドレス確認済みの管理者にメールで知らせます。大量には送りません：お知らせの種類ごとに 1 日 1 通まで、すべて元に戻ったらもう 1 通送ります。",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "ディスクの空きがほとんどない（SD カードまたは USB ディスクが 90% 使用）",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "コンソールで誰も止めていないのに、サービスが 10 分以上止まっている",
+  "Le Pi manque de courant (alimentation trop faible)": "Pi の電力が足りない（電源が弱すぎる）",
+  "La sauvegarde de la nuit a échoué": "夜間のバックアップに失敗した",
+  "Correctifs de sécurité à installer": "インストール待ちのセキュリティ修正がある",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Pi のインターネットアドレスの証明書がまもなく期限切れになる",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "すぐ上でメールの送信を設定すると、お知らせが送られるようになります。",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "メールアドレスを確認した管理者がまだいません：お知らせを受け取るには「マイアカウント」でご自分のアドレスを確認してください。",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "お知らせは {0} 人の管理者に送られます。あなたも受け取るには「マイアカウント」でアドレスを確認してください。",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "お知らせはあなたを含む {0} 人の管理者に送られます。"
 });

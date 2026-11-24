@@ -36,6 +36,10 @@ type Message struct {
 	Link string
 	Code string
 	Lang string
+	// Subject, Body : sujet et texte d'une alerte (KindAlert) seulement,
+	// écrits par le paquet alerts, jamais par une personne.
+	Subject string
+	Body    string
 }
 
 var codePattern = regexp.MustCompile(`^[0-9]{6}$`)
@@ -100,6 +104,13 @@ var texts = map[Kind]map[string][2]string{
 // déjà mis en forme (« pi-appliance <adresse> »).
 func Compose(from string, m Message, now time.Time) ([]byte, error) {
 	text, ok := texts[m.Kind][Language(m.Lang)]
+	if m.Kind == KindAlert {
+		// Le texte de l'alerte peut tenir sur plusieurs lignes, jamais le sujet.
+		if m.Subject == "" || m.Body == "" || strings.ContainsAny(m.Subject, "\r\n") || strings.Contains(m.Body, "\r") || len(m.Subject) > 200 || len(m.Body) > 20000 {
+			return nil, ErrInvalid
+		}
+		text, ok = [2]string{m.Subject, m.Body}, true
+	}
 	if !ok {
 		return nil, ErrInvalid
 	}

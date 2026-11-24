@@ -152,7 +152,9 @@ func (s Snapshot) service(name string) (ServiceCopy, bool) {
 
 // Outcome : résultat de la dernière opération.
 type Outcome struct {
-	Action  string    `json:"action"`
+	Action string `json:"action"`
+	// Kind : sauvegarde de la nuit ou à la demande (alertes, spécification 8.6).
+	Kind    Kind      `json:"kind,omitempty"`
 	Service string    `json:"service,omitempty"`
 	At      time.Time `json:"at"`
 	OK      bool      `json:"ok"`
@@ -355,7 +357,7 @@ func (m *Manager) Backup(ctx context.Context, kind Kind) (Snapshot, error) {
 	}
 	defer m.end()
 	snapshot, err := m.backup(ctx, kind, nil)
-	outcome := Outcome{Action: "backup", OK: err == nil, Message: "Sauvegarde terminée."}
+	outcome := Outcome{Action: "backup", Kind: kind, OK: err == nil, Message: "Sauvegarde terminée."}
 	if err != nil {
 		outcome.Message = err.Error()
 		m.logf("sauvegarde : %v", err)

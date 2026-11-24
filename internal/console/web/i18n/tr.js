@@ -746,5 +746,17 @@ piTranslations("tr", {
   "CPU {0} %": "CPU %{0}",
   "RAM {0} %": "RAM %{0}",
   "Disque {0} / {1}": "Disk {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude, Pi'niz üzerinde tüm haklara sahip olacak: her şeyi okuyabilir, değiştirebilir, silebilir; her işlem, kabul edip reddettiğiniz Claude uygulamanızdan geçer. Bir Claude aboneliği (Pro veya Max) gerekir. Kurulumdan sonra, Claude hesabınıza bir kez bağlanmak için hizmeti açın."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude, Pi'niz üzerinde tüm haklara sahip olacak: her şeyi okuyabilir, değiştirebilir, silebilir; her işlem, kabul edip reddettiğiniz Claude uygulamanızdan geçer. Bir Claude aboneliği (Pro veya Max) gerekir. Kurulumdan sonra, Claude hesabınıza bir kez bağlanmak için hizmeti açın.",
+  "Alertes par e-mail": "E-posta uyarıları",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "Bir sorun olduğunda Pi, adresi doğrulanmış yöneticilere e-posta ile haber verir. Yağmur gibi e-posta yok: her uyarı türü için günde en fazla bir e-posta, ardından her şey normale döndüğünde bir tane daha.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "Disk neredeyse dolu (SD kart veya USB disk %90 dolu)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "Hizmet 10 dakikadan uzun süredir durmuş ve konsoldan kimse durdurmamış",
+  "Le Pi manque de courant (alimentation trop faible)": "Pi'nin elektriği yetersiz (güç kaynağı çok zayıf)",
+  "La sauvegarde de la nuit a échoué": "Gece yedeklemesi başarısız oldu",
+  "Correctifs de sécurité à installer": "Kurulacak güvenlik düzeltmeleri",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Pi'nin bir internet adresinin sertifikasının süresi yakında doluyor",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "E-posta gönderimi ayarlanır ayarlanmaz uyarılar gönderilecek (hemen yukarıda).",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Henüz hiçbir yönetici e-posta adresini doğrulamadı: uyarıları almak için kendi adresinizi «Hesabım» bölümünde doğrulayın.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Uyarılar {0} yöneticiye gidiyor. Sizin de almanız için adresinizi «Hesabım» bölümünde doğrulayın.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Uyarılar siz de dahil {0} yöneticiye gidiyor."
 });

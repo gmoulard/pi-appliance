@@ -411,3 +411,26 @@ func TestComposeRefusesBadCodes(t *testing.T) {
 		t.Error("en-tête injecté")
 	}
 }
+
+// Alertes (spécification 8.6) : sujet et texte du paquet alerts, sur plusieurs
+// lignes ; un sujet sur deux lignes est refusé.
+func TestSMTPSendAlert(t *testing.T) {
+	server := newFakeSMTP(t, false)
+	s := server.sender(t, SecuritySTARTTLS)
+	if err := s.SendAlert("marie@example.org", "marie", "fr", "pi-appliance : disque presque plein", "Bonjour,\n\n- Carte SD : 93 % utilisés\n"); err != nil {
+		t.Fatal(err)
+	}
+	message := server.last(t)
+	if !strings.Contains(message.data, "Subject: pi-appliance : disque presque plein\r\n") {
+		t.Fatalf("sujet : %s", message.data)
+	}
+	if body := decoded(t, message.data); !strings.Contains(body, "- Carte SD : 93 % utilisés\r\n") {
+		t.Fatalf("texte : %q", body)
+	}
+	if err := s.SendAlert("marie@example.org", "marie", "fr", "sujet\nBcc: x@example.org", "texte"); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("sujet sur deux lignes : %v", err)
+	}
+	if err := s.SendAlert("marie@example.org", "marie", "fr", "sujet", ""); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("texte vide : %v", err)
+	}
+}

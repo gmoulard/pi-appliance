@@ -746,5 +746,17 @@ piTranslations("it", {
   "CPU {0} %": "CPU {0}%",
   "RAM {0} %": "RAM {0}%",
   "Disque {0} / {1}": "Disco {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude avrà tutti i diritti sul tuo Pi: può leggere, modificare e cancellare tutto; ogni azione passa dalla tua app Claude, dove la accetti o la rifiuti. Serve un abbonamento Claude (Pro o Max). Dopo l'installazione, apri il servizio per collegarti una volta al tuo account Claude."
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude avrà tutti i diritti sul tuo Pi: può leggere, modificare e cancellare tutto; ogni azione passa dalla tua app Claude, dove la accetti o la rifiuti. Serve un abbonamento Claude (Pro o Max). Dopo l'installazione, apri il servizio per collegarti una volta al tuo account Claude.",
+  "Alertes par e-mail": "Avvisi via e-mail",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "Il Pi avvisa via e-mail gli amministratori con indirizzo verificato quando qualcosa non va. Niente raffiche: al massimo un'e-mail per tipo di avviso e per giorno, poi un'altra quando tutto è tornato alla normalità.",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "Disco quasi pieno (scheda SD o disco USB pieno al 90 %)",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "Servizio fermo da più di 10 minuti, senza che nessuno l'abbia fermato nella console",
+  "Le Pi manque de courant (alimentation trop faible)": "Al Pi manca corrente (alimentatore troppo debole)",
+  "La sauvegarde de la nuit a échoué": "Il backup della notte non è riuscito",
+  "Correctifs de sécurité à installer": "Correzioni di sicurezza da installare",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Certificato di un indirizzo internet del Pi in scadenza",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Gli avvisi partiranno appena sarà impostato l'invio delle e-mail, qui sopra.",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Nessun amministratore ha ancora verificato il proprio indirizzo e-mail: verifichi il suo in «Il mio account» per ricevere gli avvisi.",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Gli avvisi vanno a {0} amministratore/i. Verifichi il suo indirizzo in «Il mio account» per riceverli anche lei.",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Gli avvisi vanno a {0} amministratore/i, lei compreso."
 });

@@ -3855,6 +3855,7 @@ mailForm.addEventListener("submit", async (event) => {
     recoveryEmail = true;
     showEmailCode(currentAccount);
     showMessage([t("Réglage enregistré. Envoyez-vous un e-mail d'essai pour vérifier qu'il marche.")], "success");
+    loadAlerts();
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -3888,10 +3889,60 @@ mailForget.addEventListener("click", async () => {
     recoveryEmail = Boolean(session.recovery_email);
     showEmailCode(session.account);
     showMessage([t("Le Pi n'envoie plus d'e-mails par ce serveur.")], "success");
+    loadAlerts();
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
     mailForget.disabled = false;
+  }
+});
+
+// Alertes par e-mail (spécification 8.6, TODO-4.2), pour l'administrateur :
+// chaque case active ou coupe un type d'alerte.
+const alertsSection = document.getElementById("alertsSection");
+const alertsState = document.getElementById("alertsState");
+const alertsForm = document.getElementById("alertsForm");
+
+function showAlerts(status) {
+  for (const setting of status.types) {
+    const box = alertsForm.elements[setting.type];
+    if (box) box.checked = setting.enabled;
+  }
+  const ready = status.mail && status.recipients > 0;
+  const dot = element("span", undefined, `dot ${ready ? "ok" : ""}`);
+  let text;
+  if (!status.mail) {
+    text = t("Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.");
+  } else if (status.recipients === 0) {
+    text = t("Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.");
+  } else if (!status.verified) {
+    text = t("Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.", status.recipients);
+  } else {
+    text = t("Les alertes partent à {0} administrateur(s), vous compris.", status.recipients);
+  }
+  alertsState.replaceChildren(dot, element("span", text));
+}
+
+async function loadAlerts() {
+  try {
+    showAlerts(await api("alerts"));
+    alertsSection.hidden = false;
+  } catch {
+    alertsSection.hidden = true;
+  }
+}
+
+alertsForm.addEventListener("change", async (event) => {
+  const box = event.target;
+  if (!(box instanceof HTMLInputElement) || box.type !== "checkbox") return;
+  box.disabled = true;
+  try {
+    showAlerts(await api("alerts", jsonBody("PUT", { type: box.name, enabled: box.checked })));
+  } catch (error) {
+    box.checked = !box.checked;
+    showMessage([error.message], "error");
+  } finally {
+    box.disabled = false;
   }
 });
 
@@ -4127,6 +4178,7 @@ function showAuth(mode) {
   accountsSection.hidden = true;
   twoFactorOffer.hidden = true;
   mailSection.hidden = true;
+  alertsSection.hidden = true;
   emailCodeButton.hidden = true;
   loginMethods = [];
   inviteBox.hidden = true;
@@ -4542,6 +4594,7 @@ async function showConsole(account, wizard) {
   showOffer(account);
   accountsSection.hidden = true;
   mailSection.hidden = true;
+  alertsSection.hidden = true;
   if (needsTOTP(account)) {
     // Double authentification exigée : rien d'autre tant qu'elle n'est pas activée.
     servicesSection.hidden = true;
@@ -4572,6 +4625,7 @@ async function showConsole(account, wizard) {
     accountsSection.hidden = false;
     await loadAccounts();
     await loadMail();
+    await loadAlerts();
   }
   await resourcesReady;
   await loadCatalog();

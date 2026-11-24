@@ -746,5 +746,17 @@ piTranslations("zh", {
   "CPU {0} %": "CPU {0}%",
   "RAM {0} %": "内存 {0}%",
   "Disque {0} / {1}": "磁盘 {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude 将拥有您的 Pi 的全部权限：它可以读取、修改和删除一切；每个操作都经过您的 Claude 应用，由您接受或拒绝。需要 Claude 订阅（Pro 或 Max）。安装后，请打开该服务，登录一次您的 Claude 账户。"
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude 将拥有您的 Pi 的全部权限：它可以读取、修改和删除一切；每个操作都经过您的 Claude 应用，由您接受或拒绝。需要 Claude 订阅（Pro 或 Max）。安装后，请打开该服务，登录一次您的 Claude 账户。",
+  "Alertes par e-mail": "电子邮件提醒",
+  "Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.": "出现问题时，Pi 会通过电子邮件通知地址已验证的管理员。不会狂发邮件：每种提醒每天最多一封，一切恢复正常后再发一封。",
+  "Disque presque plein (carte SD ou disque USB rempli à 90 %)": "磁盘快满了（SD 卡或 USB 磁盘已用 90%）",
+  "Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console": "服务已停止超过 10 分钟，且不是有人在控制台中停止的",
+  "Le Pi manque de courant (alimentation trop faible)": "Pi 供电不足（电源太弱）",
+  "La sauvegarde de la nuit a échoué": "夜间备份失败",
+  "Correctifs de sécurité à installer": "有待安装的安全补丁",
+  "Certificat d'une adresse internet du Pi bientôt expiré": "Pi 的某个互联网地址的证书即将过期",
+  "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "一旦在上方设置好电子邮件发送，提醒就会发出。",
+  "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "还没有管理员验证自己的电子邮件地址：请在“我的账户”中验证您的地址以接收提醒。",
+  "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "提醒会发给 {0} 位管理员。请在“我的账户”中验证您的地址，以便您也能收到。",
+  "Les alertes partent à {0} administrateur(s), vous compris.": "提醒会发给 {0} 位管理员，包括您。"
 });

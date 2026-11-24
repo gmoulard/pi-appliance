@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/addresses"
+	"github.com/gmoulard/pi-appliance/internal/alerts"
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
@@ -325,6 +326,24 @@ func main() {
 		config.TraefikInternetFile = *traefikInternet
 	}
 	config.ServicesInternetFile = *traefikServices
+	// Alertes par e-mail aux administrateurs (spécification 8.6), par le SMTP du Pi.
+	monitor := &alerts.Monitor{
+		Path:       filepath.Join(*data, "alerts.json"),
+		Recipients: func() []alerts.Recipient { return console.AlertRecipients(accounts) },
+		Sender:     smtpSender,
+		Link:       func() string { return "https://" + manager.CurrentDomain() + console.BasePath + "/" },
+		Logf:       log.Printf,
+	}
+	monitor.Checks = map[alerts.Type]alerts.Check{
+		alerts.Disk:        alerts.DiskCheck(resources),
+		alerts.Service:     alerts.ServiceCheck(manager, monitor.Stopped),
+		alerts.Power:       alerts.PowerCheck(resources),
+		alerts.Backup:      alerts.BackupCheck(backups),
+		alerts.Updates:     alerts.UpdatesCheck(checker),
+		alerts.Certificate: alerts.CertificateCheck(filepath.Join(*data, "system", "traefik", "acme.json"), func() []string { return console.InternetHosts(config) }),
+	}
+	config.Alerts = monitor
+	go monitor.Run(ctx, 2*time.Minute, alerts.Every)
 	if config.TraefikInternetFile != "" || config.ServicesInternetFile != "" {
 		go console.RunInternet(ctx, config, time.Minute)
 	}

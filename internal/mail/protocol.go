@@ -53,6 +53,9 @@ const (
 	KindLoginCode  Kind = "login-code"
 	KindVerifyCode Kind = "verify-code"
 	KindTest       Kind = "test"
+	// KindAlert : alerte aux administrateurs (spécification 8.6), dont le sujet
+	// et le texte sont écrits par le paquet alerts (Message.Subject, Message.Body).
+	KindAlert Kind = "alert"
 )
 
 // Request : corps de POST /api/send.

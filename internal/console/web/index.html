@@ -316,6 +316,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </details>
 </div>
 </section>
+<section id="alertsSection" data-kind="pi" data-theme="entretien" hidden>
+<h2>Alertes par e-mail</h2>
+<div class="card">
+<p>Le Pi prévient par e-mail les administrateurs dont l'adresse est vérifiée quand quelque chose ne va pas. Pas de rafale : un e-mail par type d'alerte et par jour au plus, puis un autre quand tout est rentré dans l'ordre.</p>
+<p id="alertsState" class="state" aria-live="polite"></p>
+<form id="alertsForm">
+<label class="check"><input name="disk" type="checkbox">Disque presque plein (carte SD ou disque USB rempli à 90 %)</label>
+<label class="check"><input name="service" type="checkbox">Service arrêté depuis plus de 10 minutes, sans qu'on l'ait arrêté dans la console</label>
+<label class="check"><input name="power" type="checkbox">Le Pi manque de courant (alimentation trop faible)</label>
+<label class="check"><input name="backup" type="checkbox">La sauvegarde de la nuit a échoué</label>
+<label class="check"><input name="updates" type="checkbox">Correctifs de sécurité à installer</label>
+<label class="check"><input name="certificate" type="checkbox">Certificat d'une adresse internet du Pi bientôt expiré</label>
+</form>
+</div>
+</section>
 <section id="statsSection" data-kind="pi" data-theme="etat" hidden>
 <h2>Statistiques anonymes</h2>
 <div class="card">
