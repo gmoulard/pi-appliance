@@ -239,10 +239,12 @@ func RunInternet(ctx context.Context, config Config, every time.Duration) {
 }
 
 // internetPaths : ce qu'une demande venue d'internet atteint même console
-// fermée : api/hello (application mobile), et l'authentification déléguée,
-// appelée par Traefik avec l'adresse du visiteur d'un service.
+// fermée : api/hello (application mobile), l'authentification déléguée,
+// appelée par Traefik avec l'adresse du visiteur d'un service, et l'API des
+// proches (sauvegarde croisée, demandes signées par l'autre Pi, internal/backup).
 func internetOpenPath(path string) bool {
-	return path == BasePath+"/api/hello" || strings.HasPrefix(path, BasePath+"/api/auth/forward") || strings.HasPrefix(path, BasePath+"/erreur/")
+	return path == BasePath+"/api/hello" || strings.HasPrefix(path, BasePath+"/api/auth/forward") || strings.HasPrefix(path, BasePath+"/erreur/") ||
+		strings.HasPrefix(path, BasePath+"/api/peer/")
 }
 
 // homeOnlyPaths : à faire depuis la maison, même console ouverte.

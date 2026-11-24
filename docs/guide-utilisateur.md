@@ -40,6 +40,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 - L'installation de plusieurs instances, les commandes de démarrage et d'arrêt, la mise à jour des applications avec retour arrière, et le choix de conserver ou supprimer leurs données à la désinstallation.
 - La gestion d'un disque USB pour les données des services.
 - Les sauvegardes chiffrées sur un second disque USB, chaque nuit et à la demande, et la restauration d'un service à une date choisie (écran « Sauvegardes » dans « Mon Pi »), pas encore essayées sur un vrai Pi.
+- Dans le même écran, pas encore essayés sur un vrai Pi : « Parcourir » une sauvegarde pour télécharger un fichier (un dossier arrive en .zip) ou le « Remettre en place » ; la « Sauvegarde en ligne » vers un stockage compatible S3 (OVH, Scaleway, Backblaze, AWS…), chiffrée, sans même le nom de vos services lisible ; la « Sauvegarde chez un proche » qui a aussi un pi-appliance (son Pi affiche un code, vous le saisissez avec son adresse internet ; chacun réserve à l'autre un espace limité et ne peut pas lire ce qu'il garde).
 - Un code à scanner avec l'[application mobile](#application-mobile), dans « Mon Pi », pour retrouver le Pi et ses services sur le téléphone.
 - L'[envoi des e-mails](#envoi-des-e-mails) par votre propre boîte e-mail (Gmail, OVH, Free, Orange…), et la [double authentification](#double-authentification) par un code reçu par e-mail ou par une application du téléphone, proposée à chaque nouveau compte, et les [alertes par e-mail](#alertes-par-e-mail) aux administrateurs ; pas encore essayés sur un vrai Pi.
 
@@ -49,7 +50,7 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 
 - Une version stable de l'image, et des essais sur Pi 5 et Pi Zero 2 W.
 - La réservation d'une adresse `*.pi-appliance.com`. Les services s'ouvrent déjà depuis internet sous l'adresse du Pi (voir [Ouvrir ses services depuis internet](#services-sur-internet)), pas encore essayé sur un vrai Pi.
-- Les sauvegardes en ligne ou sur un autre pi-appliance et la restauration de l'appliance entière ou d'un seul fichier.
+- La restauration de l'appliance entière sur une nouvelle carte SD depuis la mise en route (le code est prêt, l'écran pas encore).
 
 ## Télécharger et installer l'image {#telecharger-limage-experimentale}
 

@@ -547,3 +547,43 @@ func TestDisks(t *testing.T) {
 		t.Fatalf("%v %v", err, runner.args)
 	}
 }
+
+func TestRestoreAppliance(t *testing.T) {
+	f := newFixture(t)
+	ctx := context.Background()
+	write(t, filepath.Join(f.fake.dir, "accounts.json"), `[{"name":"marie"}]`)
+	snapshot, err := f.Backup(ctx, Manual)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Nouvelle carte SD : ni comptes, ni services, ni données ; seul le disque de sauvegarde reste.
+	os.RemoveAll(f.fake.dir)
+	os.RemoveAll(f.fake.volumes)
+	write(t, filepath.Join(f.fake.dir, "accounts.json"), "[]")
+	f.fake.log = nil
+	if err := f.RestoreAppliance(ctx, snapshot.ID, "autre"); !errors.Is(err, ErrPassword) {
+		t.Fatalf("mauvais mot de passe : %v", err)
+	}
+	if err := f.RestoreAppliance(ctx, snapshot.ID, "mot de passe administrateur"); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(t, filepath.Join(f.fake.dir, "accounts.json")); got != `[{"name":"marie"}]` {
+		t.Fatalf("comptes : %q", got)
+	}
+	if got := read(t, filepath.Join(f.fake.dir, "services", "cloud", ".env")); got != "SECRET=v1" {
+		t.Fatalf("réglages du service : %q", got)
+	}
+	if got := read(t, filepath.Join(f.volume("cloud"), "data", "photo.jpg")); got != "photo v1" {
+		t.Fatalf("données : %q", got)
+	}
+	if want := []string{"create pi-cloud_files", "start cloud"}; !slices.Equal(f.fake.log, want) {
+		t.Fatalf("étapes : %v, attendu %v", f.fake.log, want)
+	}
+	// La clé est celle de la sauvegarde : les sauvegardes d'avant se restaurent sans mot de passe.
+	if err := f.Restore(ctx, snapshot.ID, "cloud", ""); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.Backup(ctx, Manual); err != nil {
+		t.Fatal(err)
+	}
+}

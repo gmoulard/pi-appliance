@@ -24,18 +24,24 @@
 //	config.enc           configuration de l'appliance (dossier des données de la console)
 //	services/<nom>.enc   volumes Docker du service, copiés service arrêté
 //
-// Elle est écrite dans <date>.partial/, renommé à la fin : un dossier sans
-// manifest.json n'est jamais une sauvegarde.
+// Elle est écrite en brouillon (<date>.partial/ sur le disque), complète
+// une fois son manifest écrit : un dossier sans manifest.json n'est jamais
+// une sauvegarde. Hors de la maison (stockage en ligne, autre pi-appliance),
+// les noms des services sont chiffrés dans le manifest et les fichiers des
+// services numérotés (store.go).
 package backup
 
 import (
 	"archive/tar"
+	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/fs"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -127,6 +133,15 @@ type ServiceCopy struct {
 	Volumes []string `json:"volumes"`
 	// Error : la copie de ce service a échoué ; il n'est pas restaurable.
 	Error string `json:"error,omitempty"`
+	// File : fichier de ses volumes ; vide : services/<nom>.enc.
+	File string `json:"file,omitempty"`
+}
+
+func (c ServiceCopy) file() string {
+	if c.File != "" {
+		return c.File
+	}
+	return "services/" + c.Name + ".enc"
 }
 
 // Snapshot : le manifest d'une sauvegarde.
@@ -139,6 +154,11 @@ type Snapshot struct {
 	Services []ServiceCopy `json:"services"`
 	SizeMB   int64         `json:"size_mb"`
 	Envelope Envelope      `json:"envelope"`
+	// Sealed : hors de la maison, Host et Services chiffrés par la clé des
+	// sauvegardes ; l'enveloppe, la date et le type restent lisibles.
+	Sealed string `json:"sealed,omitempty"`
+	// Locked : manifest chiffré par une autre clé, pas encore ouverte par son mot de passe.
+	Locked bool `json:"-"`
 }
 
 func (s Snapshot) service(name string) (ServiceCopy, bool) {
@@ -172,14 +192,26 @@ type Manager struct {
 	FreeMB func(dir string) (int64, bool)
 	// Disks : disque USB de sauvegarde ; nil : non réglable ici.
 	Disks *Disks
-	Now   func() time.Time
-	Logf  func(format string, args ...any)
-	Host  string
+	// HTTP : client des destinations hors de la maison ; nil : client par défaut.
+	HTTP *http.Client
+	// Hosted rend le dossier des sauvegardes de proches accueillies ici
+	// (HostedTarget) ; nil : pas d'accueil.
+	Hosted func() (string, error)
+	// PeerKey signe les demandes faites au pi-appliance qui accueille nos sauvegardes.
+	PeerKey PeerSigner
+	Now     func() time.Time
+	Logf    func(format string, args ...any)
+	Host    string
 
 	mu       sync.Mutex // une opération à la fois
 	stateMu  sync.Mutex
 	running  string
 	attempts map[string]bool // nuits déjà tentées
+
+	cacheMu  sync.Mutex
+	lists    map[string]cachedList  // sauvegardes des destinations lointaines
+	unlocked map[string]unlockedKey // clés d'autres cartes SD ouvertes par leur mot de passe
+	index    *fileIndex             // dernière sauvegarde parcourue (restauration d'un fichier)
 }
 
 func (m *Manager) now() time.Time {
@@ -269,7 +301,7 @@ func (m *Manager) record(outcome Outcome) {
 	}
 }
 
-// Running dit quelle opération est en cours : "backup", "restore" ou "".
+// Running dit quelle opération est en cours : "backup", "restore", "restore-file" ou "".
 func (m *Manager) Running() string {
 	m.stateMu.Lock()
 	defer m.stateMu.Unlock()
@@ -303,51 +335,221 @@ func (m *Manager) freeMB(dir string) (int64, bool) {
 	return 0, false
 }
 
-// Snapshots rend les sauvegardes de la destination, la plus récente d'abord.
-func (m *Manager) Snapshots() ([]Snapshot, error) {
-	root, err := m.Target()
-	if err != nil {
-		return nil, err
+// stores rend les destinations utilisables, dans l'ordre de préférence :
+// disque USB, stockage en ligne, autre pi-appliance. ErrNoDisk s'il n'y en a aucune.
+func (m *Manager) stores() ([]store, error) {
+	var list []store
+	root, diskErr := m.Target()
+	if diskErr == nil {
+		list = append(list, &diskStore{root: root, free: m.freeMB})
 	}
-	return readSnapshots(root)
+	if online := m.onlineStore(); online != nil {
+		list = append(list, online)
+	}
+	if peer := m.peerStore(); peer != nil {
+		list = append(list, peer)
+	}
+	if len(list) == 0 {
+		if diskErr == nil {
+			diskErr = ErrNoDisk
+		}
+		return nil, diskErr
+	}
+	return list, nil
 }
 
-func readSnapshots(root string) ([]Snapshot, error) {
-	entries, err := os.ReadDir(root)
-	if errors.Is(err, os.ErrNotExist) {
-		return []Snapshot{}, nil
+// Snapshots rend les sauvegardes de toutes les destinations, la plus récente
+// d'abord ; une sauvegarde présente à plusieurs endroits n'est rendue qu'une
+// fois (celle du disque de préférence), Places les dit tous.
+func (m *Manager) Snapshots() ([]Snapshot, error) {
+	list, _, err := m.snapshotsByPlace(context.Background())
+	return list, err
+}
+
+// snapshotsByPlace rend aussi, pour chaque sauvegarde, ses destinations.
+func (m *Manager) snapshotsByPlace(ctx context.Context) ([]Snapshot, map[string][]string, error) {
+	stores, err := m.stores()
+	if err != nil {
+		return nil, nil, err
 	}
+	places := map[string][]string{}
+	snapshots := []Snapshot{}
+	var errs []error
+	for _, st := range stores {
+		list, err := m.storeSnapshots(ctx, st)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s : %w", st.place(), err))
+			continue
+		}
+		for _, s := range list {
+			if len(places[s.ID]) == 0 {
+				snapshots = append(snapshots, s)
+			}
+			places[s.ID] = append(places[s.ID], st.place())
+		}
+	}
+	if len(errs) == len(stores) {
+		return nil, nil, errors.Join(errs...)
+	}
+	sort.Slice(snapshots, func(i, j int) bool { return snapshots[i].ID > snapshots[j].ID })
+	return snapshots, places, nil
+}
+
+type cachedList struct {
+	at        time.Time
+	snapshots []Snapshot
+}
+
+// storeSnapshots : les sauvegardes d'une destination ; celles hors de la
+// maison sont gardées 10 minutes en mémoire (la page interroge souvent).
+func (m *Manager) storeSnapshots(ctx context.Context, st store) ([]Snapshot, error) {
+	if st.sealed() {
+		m.cacheMu.Lock()
+		cached, ok := m.lists[st.place()]
+		m.cacheMu.Unlock()
+		if ok && time.Since(cached.at) < 10*time.Minute {
+			return cached.snapshots, nil
+		}
+	}
+	ids, _, err := st.list(ctx)
 	if err != nil {
 		return nil, err
 	}
 	snapshots := []Snapshot{}
-	for _, entry := range entries {
-		if !entry.IsDir() || !idPattern.MatchString(entry.Name()) {
-			continue
-		}
-		snapshot, err := readManifest(filepath.Join(root, entry.Name()))
+	for _, id := range ids {
+		snapshot, err := m.readManifest(ctx, st, id)
 		if err != nil {
 			continue
 		}
 		snapshots = append(snapshots, snapshot)
 	}
 	sort.Slice(snapshots, func(i, j int) bool { return snapshots[i].ID > snapshots[j].ID })
+	if st.sealed() {
+		m.cacheMu.Lock()
+		if m.lists == nil {
+			m.lists = map[string]cachedList{}
+		}
+		m.lists[st.place()] = cachedList{at: time.Now(), snapshots: snapshots}
+		m.cacheMu.Unlock()
+	}
 	return snapshots, nil
 }
 
-func readManifest(dir string) (Snapshot, error) {
+// forget oublie les listes gardées en mémoire (après une sauvegarde, une rotation).
+func (m *Manager) forget() {
+	m.cacheMu.Lock()
+	m.lists = nil
+	m.cacheMu.Unlock()
+}
+
+// sealedPart : ce que le manifest chiffre hors de la maison.
+type sealedPart struct {
+	Host     string        `json:"host"`
+	Services []ServiceCopy `json:"services"`
+}
+
+// encodeManifest écrit le manifest ; sealed : noms chiffrés par key.
+func encodeManifest(snapshot Snapshot, key []byte, sealed bool) ([]byte, error) {
+	if sealed {
+		part, err := json.Marshal(sealedPart{Host: snapshot.Host, Services: snapshot.Services})
+		if err != nil {
+			return nil, err
+		}
+		var buf bytes.Buffer
+		w, err := encrypt(&buf, key)
+		if err != nil {
+			return nil, err
+		}
+		if _, err := w.Write(part); err != nil {
+			return nil, err
+		}
+		if err := w.Close(); err != nil {
+			return nil, err
+		}
+		snapshot.Host, snapshot.Services = "", nil
+		snapshot.Sealed = base64.StdEncoding.EncodeToString(buf.Bytes())
+	}
+	data, err := json.MarshalIndent(snapshot, "", "  ")
+	if err != nil {
+		return nil, err
+	}
+	return append(data, '\n'), nil
+}
+
+// readManifest lit le manifest d'une sauvegarde ; un manifest chiffré par
+// une autre clé, pas encore ouverte, est rendu Locked, sans ses services.
+func (m *Manager) readManifest(ctx context.Context, st store, id string) (Snapshot, error) {
 	var snapshot Snapshot
-	data, err := os.ReadFile(filepath.Join(dir, manifestName))
+	r, err := st.open(ctx, id, manifestName)
+	if err != nil {
+		return snapshot, err
+	}
+	defer r.Close()
+	data, err := io.ReadAll(io.LimitReader(r, 4<<20))
 	if err != nil {
 		return snapshot, err
 	}
 	if err := json.Unmarshal(data, &snapshot); err != nil {
 		return snapshot, err
 	}
-	if snapshot.ID != filepath.Base(dir) {
+	if snapshot.ID != id {
 		return snapshot, ErrCorrupt
 	}
+	if snapshot.Services == nil {
+		snapshot.Services = []ServiceCopy{}
+	}
+	if snapshot.Sealed == "" {
+		return snapshot, nil
+	}
+	key, ok := m.knownKey(snapshot.Envelope)
+	if !ok {
+		snapshot.Locked = true
+		return snapshot, nil
+	}
+	return unseal(snapshot, key)
+}
+
+func unseal(snapshot Snapshot, key []byte) (Snapshot, error) {
+	sealed, err := base64.StdEncoding.DecodeString(snapshot.Sealed)
+	if err != nil {
+		return snapshot, ErrCorrupt
+	}
+	plain, err := decrypt(bytes.NewReader(sealed), key)
+	if err != nil {
+		return snapshot, err
+	}
+	data, err := io.ReadAll(plain)
+	if err != nil {
+		return snapshot, ErrCorrupt
+	}
+	var part sealedPart
+	if err := json.Unmarshal(data, &part); err != nil {
+		return snapshot, ErrCorrupt
+	}
+	snapshot.Host, snapshot.Services, snapshot.Locked = part.Host, part.Services, false
+	if snapshot.Services == nil {
+		snapshot.Services = []ServiceCopy{}
+	}
 	return snapshot, nil
+}
+
+// find rend la destination qui garde la sauvegarde id (le disque de
+// préférence) et son manifest.
+func (m *Manager) find(ctx context.Context, id string) (store, Snapshot, error) {
+	if !idPattern.MatchString(id) {
+		return nil, Snapshot{}, ErrNotFound
+	}
+	stores, err := m.stores()
+	if err != nil {
+		return nil, Snapshot{}, err
+	}
+	for _, st := range stores {
+		snapshot, err := m.readManifest(ctx, st, id)
+		if err == nil {
+			return st, snapshot, nil
+		}
+	}
+	return nil, Snapshot{}, ErrNotFound
 }
 
 // Backup fait une sauvegarde complète : configuration et tous les services.
@@ -358,6 +560,17 @@ func (m *Manager) Backup(ctx context.Context, kind Kind) (Snapshot, error) {
 	defer m.end()
 	snapshot, err := m.backup(ctx, kind, nil)
 	outcome := Outcome{Action: "backup", Kind: kind, OK: err == nil, Message: "Sauvegarde terminée."}
+	var replica *ReplicaError
+	if errors.As(err, &replica) {
+		names := []string{}
+		for _, place := range replica.Places {
+			names = append(names, placeNames[place])
+		}
+		outcome.Message = fmt.Sprintf("Sauvegarde faite, mais pas envoyée %s : la destination ne répond pas. Nouvel essai à la prochaine sauvegarde.", strings.Join(names, ", "))
+		m.logf("sauvegarde : %v", err)
+		m.record(outcome)
+		return snapshot, err
+	}
 	if err != nil {
 		outcome.Message = err.Error()
 		m.logf("sauvegarde : %v", err)
@@ -368,6 +581,9 @@ func (m *Manager) Backup(ctx context.Context, kind Kind) (Snapshot, error) {
 	m.record(outcome)
 	return snapshot, err
 }
+
+// placeNames : les destinations dites en langage courant.
+var placeNames = map[string]string{PlaceDisk: "sur le disque USB", PlaceOnline: "en ligne", PlacePeer: "chez votre proche"}
 
 func failedServices(s Snapshot) []string {
 	var failed []string
@@ -380,12 +596,15 @@ func failedServices(s Snapshot) []string {
 }
 
 // backup sauvegarde la configuration et les services ; only limite aux services
-// nommés (copie avant restauration). Le verrou doit être pris.
+// nommés (copie avant restauration). La sauvegarde est écrite sur la première
+// destination, puis recopiée telle quelle sur les autres (copie avant
+// restauration : première destination seulement). Le verrou doit être pris.
 func (m *Manager) backup(ctx context.Context, kind Kind, only []string) (Snapshot, error) {
-	root, err := m.Target()
+	stores, err := m.stores()
 	if err != nil {
 		return Snapshot{}, err
 	}
+	defer m.forget()
 	envelope, err := m.keys().envelope()
 	if err != nil {
 		return Snapshot{}, err
@@ -397,10 +616,14 @@ func (m *Manager) backup(ctx context.Context, kind Kind, only []string) (Snapsho
 	if keyID(key) != envelope.KeyID {
 		return Snapshot{}, ErrNoKey
 	}
-	if err := os.MkdirAll(root, 0o700); err != nil {
+	primary := stores[0]
+	complete, partial, err := primary.list(ctx)
+	if err != nil {
 		return Snapshot{}, err
 	}
-	removePartials(root)
+	for _, id := range partial {
+		primary.remove(ctx, id)
+	}
 	instances, err := m.Services.List()
 	if err != nil {
 		return Snapshot{}, err
@@ -423,37 +646,37 @@ func (m *Manager) backup(ctx context.Context, kind Kind, only []string) (Snapsho
 	}
 	// Place : les données sans compression, plus 10 %.
 	needMB := (size + size/10) >> 20
-	if free, ok := m.freeMB(root); ok && needMB > free {
+	if free, ok := primary.freeMB(); ok && needMB > free {
 		return Snapshot{}, fmt.Errorf("%w : la sauvegarde demande %d Mo, il en reste %d. Branchez un disque plus grand, ou gardez moins de sauvegardes", ErrNoSpace, needMB, free)
 	}
 
 	now := m.now()
 	id := now.Format(idLayout)
-	for exists(filepath.Join(root, id)) {
+	for slices.Contains(complete, id) {
 		now = now.Add(time.Second)
 		id = now.Format(idLayout)
 	}
-	partial := filepath.Join(root, id+partialSuffix)
-	if err := os.MkdirAll(filepath.Join(partial, "services"), 0o700); err != nil {
-		return Snapshot{}, err
-	}
 	snapshot := Snapshot{Version: formatVersion, ID: id, Created: now.UTC(), Kind: kind, Host: m.Host, Services: []ServiceCopy{}, Envelope: envelope}
 	fail := func(err error) (Snapshot, error) {
-		os.RemoveAll(partial)
+		primary.remove(context.WithoutCancel(ctx), id)
 		return Snapshot{}, err
 	}
 	config := tree{dir: m.Dir, prefix: "config", skip: func(rel string) bool {
 		return rel == stateDir || strings.HasPrefix(rel, stateDir+"/")
 	}}
-	if err := writeEncrypted(filepath.Join(partial, configName), key, []tree{config}); err != nil {
+	var written int64
+	if err := writeEncrypted(ctx, primary, id, configName, key, []tree{config}, &written); err != nil {
 		return fail(fmt.Errorf("copie de la configuration : %w", err))
 	}
-	for _, instance := range instances {
+	for n, instance := range instances {
 		saved := ServiceCopy{Name: instance.Name, App: instance.App, AppName: instance.AppName, Volumes: []string{}}
+		if primary.sealed() {
+			saved.File = fmt.Sprintf("services/%d.enc", n+1)
+		}
 		list, ok := volumes[instance.Name]
 		if !ok {
 			saved.Error = "données illisibles"
-		} else if err := m.copyService(ctx, partial, key, instance.Name, list); err != nil {
+		} else if err := m.copyService(ctx, primary, id, key, saved.file(), instance.Name, list, &written); err != nil {
 			m.logf("sauvegarde de %s : %v", instance.Name, err)
 			saved.Error = err.Error()
 		} else {
@@ -463,24 +686,90 @@ func (m *Manager) backup(ctx context.Context, kind Kind, only []string) (Snapsho
 		}
 		snapshot.Services = append(snapshot.Services, saved)
 	}
-	snapshot.SizeMB = dirSize(partial) >> 20
-	data, err := json.MarshalIndent(snapshot, "", "  ")
+	snapshot.SizeMB = written >> 20
+	manifest, err := encodeManifest(snapshot, key, primary.sealed())
 	if err != nil {
 		return fail(err)
 	}
-	if err := os.WriteFile(filepath.Join(partial, manifestName), append(data, '\n'), 0o600); err != nil {
+	if err := primary.commit(ctx, id, manifest); err != nil {
 		return fail(err)
 	}
-	if err := os.Rename(partial, filepath.Join(root, id)); err != nil {
-		return fail(err)
+	m.rotate(ctx, primary)
+	if kind == BeforeRestore {
+		return snapshot, nil
 	}
-	m.rotate(root)
+	var failed []string
+	for _, other := range stores[1:] {
+		if err := m.replicate(ctx, primary, other, snapshot, key); err != nil {
+			m.logf("sauvegarde vers %s : %v", other.place(), err)
+			failed = append(failed, other.place())
+			continue
+		}
+		m.rotate(ctx, other)
+	}
+	if len(failed) > 0 {
+		return snapshot, &ReplicaError{Places: failed}
+	}
 	return snapshot, nil
+}
+
+// ReplicaError : sauvegarde faite sur la première destination, pas recopiée
+// sur les autres (stockage en ligne injoignable, autre pi-appliance éteint).
+type ReplicaError struct {
+	Places []string
+}
+
+func (e *ReplicaError) Error() string {
+	return "sauvegarde pas recopiée vers : " + strings.Join(e.Places, ", ")
+}
+
+// replicate recopie une sauvegarde complète vers une autre destination,
+// fichiers chiffrés tels quels ; hors de la maison, fichiers des services
+// numérotés et noms chiffrés dans le manifest.
+func (m *Manager) replicate(ctx context.Context, from, to store, snapshot Snapshot, key []byte) error {
+	_, partial, err := to.list(ctx)
+	if err != nil {
+		return err
+	}
+	for _, id := range partial {
+		to.remove(ctx, id)
+	}
+	copied := snapshot
+	copied.Services = slices.Clone(snapshot.Services)
+	fail := func(err error) error {
+		to.remove(context.WithoutCancel(ctx), snapshot.ID)
+		return err
+	}
+	if err := copyFile(ctx, from, to, snapshot.ID, configName, configName); err != nil {
+		return fail(err)
+	}
+	for n, c := range snapshot.Services {
+		if c.Error != "" || len(c.Volumes) == 0 {
+			continue
+		}
+		target, file := "services/"+c.Name+".enc", ""
+		if to.sealed() {
+			target = fmt.Sprintf("services/%d.enc", n+1)
+			file = target
+		}
+		if err := copyFile(ctx, from, to, snapshot.ID, c.file(), target); err != nil {
+			return fail(err)
+		}
+		copied.Services[n].File = file
+	}
+	manifest, err := encodeManifest(copied, key, to.sealed())
+	if err != nil {
+		return fail(err)
+	}
+	if err := to.commit(ctx, snapshot.ID, manifest); err != nil {
+		return fail(err)
+	}
+	return nil
 }
 
 // copyService copie les volumes d'un service, arrêté pendant la copie pour
 // des données cohérentes (une base de données en marche peut être à moitié écrite).
-func (m *Manager) copyService(ctx context.Context, partial string, key []byte, name string, volumes []services.Volume) error {
+func (m *Manager) copyService(ctx context.Context, st store, id string, key []byte, file, name string, volumes []services.Volume, written *int64) error {
 	if len(volumes) == 0 {
 		return nil
 	}
@@ -494,7 +783,7 @@ func (m *Manager) copyService(ctx context.Context, partial string, key []byte, n
 	for _, v := range volumes {
 		trees = append(trees, tree{dir: v.Path, prefix: v.Name})
 	}
-	err := writeEncrypted(filepath.Join(partial, "services", name+".enc"), key, trees)
+	err := writeEncrypted(ctx, st, id, file, key, trees, written)
 	if running {
 		// Redémarré même si la copie a échoué, avec un contexte à part :
 		// un service ne reste jamais arrêté par une sauvegarde.
@@ -507,43 +796,47 @@ func (m *Manager) copyService(ctx context.Context, partial string, key []byte, n
 	return err
 }
 
-func writeEncrypted(path string, key []byte, trees []tree) error {
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600)
+// writeEncrypted écrit une archive chiffrée dans la sauvegarde id ; written
+// compte les octets écrits.
+func writeEncrypted(ctx context.Context, st store, id, file string, key []byte, trees []tree, written *int64) error {
+	w, err := st.create(ctx, id, file)
 	if err != nil {
 		return err
 	}
-	err = writeArchive(f, key, trees)
-	if err == nil {
-		err = f.Sync()
+	counter := &countWriter{w: w}
+	if err := writeArchive(counter, key, trees); err != nil {
+		w.Abort()
+		return err
 	}
-	if closeErr := f.Close(); err == nil {
-		err = closeErr
-	}
-	return err
+	*written += counter.n
+	return w.Close()
 }
 
-// removePartials efface les sauvegardes interrompues (Pi éteint, disque débranché).
-func removePartials(root string) {
-	entries, _ := os.ReadDir(root)
-	for _, entry := range entries {
-		if id, ok := strings.CutSuffix(entry.Name(), partialSuffix); ok && idPattern.MatchString(id) {
-			os.RemoveAll(filepath.Join(root, entry.Name()))
-		}
-	}
+type countWriter struct {
+	w io.Writer
+	n int64
+}
+
+func (c *countWriter) Write(p []byte) (int, error) {
+	n, err := c.w.Write(p)
+	c.n += int64(n)
+	return n, err
 }
 
 // rotate efface les sauvegardes que les réglages ne gardent plus.
-func (m *Manager) rotate(root string) {
-	snapshots, err := readSnapshots(root)
+func (m *Manager) rotate(ctx context.Context, st store) {
+	m.forget()
+	snapshots, err := m.storeSnapshots(ctx, st)
 	if err != nil {
-		m.logf("rotation des sauvegardes : %v", err)
+		m.logf("rotation des sauvegardes (%s) : %v", st.place(), err)
 		return
 	}
 	for _, s := range expired(snapshots, m.Settings(), m.now()) {
-		if err := os.RemoveAll(filepath.Join(root, s.ID)); err != nil {
-			m.logf("rotation des sauvegardes : %v", err)
+		if err := st.remove(ctx, s.ID); err != nil {
+			m.logf("rotation des sauvegardes (%s) : %v", st.place(), err)
 		}
 	}
+	m.forget()
 }
 
 // expired : sauvegardes à effacer. On garde la plus récente de chacun des
@@ -617,22 +910,22 @@ func (m *Manager) Restore(ctx context.Context, id, name, password string) (err e
 	if !idPattern.MatchString(id) || !validName(name) {
 		return fmt.Errorf("%w : sauvegarde ou service inconnu", ErrInvalid)
 	}
-	root, err := m.Target()
+	st, snapshot, err := m.find(ctx, id)
 	if err != nil {
 		return err
-	}
-	dir := filepath.Join(root, id)
-	snapshot, err := readManifest(dir)
-	if err != nil {
-		return ErrNotFound
-	}
-	saved, ok := snapshot.service(name)
-	if !ok {
-		return fmt.Errorf("%w : %s n'est pas dans cette sauvegarde", ErrNotFound, name)
 	}
 	key, err := m.snapshotKey(snapshot, password)
 	if err != nil {
 		return err
+	}
+	if snapshot.Locked {
+		if snapshot, err = unseal(snapshot, key); err != nil {
+			return err
+		}
+	}
+	saved, ok := snapshot.service(name)
+	if !ok {
+		return fmt.Errorf("%w : %s n'est pas dans cette sauvegarde", ErrNotFound, name)
 	}
 	installed, err := m.installed(name)
 	if err != nil {
@@ -652,7 +945,7 @@ func (m *Manager) Restore(ctx context.Context, id, name, password string) (err e
 			return err
 		}
 	}
-	if err := m.restoreFiles(ctx, dir, key, name, saved); err != nil {
+	if err := m.restoreFiles(ctx, st, id, key, name, saved); err != nil {
 		if before != "" {
 			return fmt.Errorf("%w. L'état d'avant est dans la sauvegarde du %s", err, before)
 		}
@@ -674,21 +967,51 @@ func (m *Manager) installed(name string) (bool, error) {
 }
 
 // snapshotKey : la clé de l'appliance si c'est la même, sinon celle de
-// l'enveloppe, ouverte par le mot de passe en vigueur lors de la sauvegarde.
+// l'enveloppe, ouverte par le mot de passe en vigueur lors de la sauvegarde
+// (gardée une heure en mémoire, pour parcourir la sauvegarde sans le redemander).
 func (m *Manager) snapshotKey(snapshot Snapshot, password string) ([]byte, error) {
-	key, err := m.keys().key()
-	if err == nil && keyID(key) == snapshot.Envelope.KeyID {
+	if key, ok := m.knownKey(snapshot.Envelope); ok {
 		return key, nil
 	}
 	if password == "" {
 		return nil, ErrPassword
 	}
-	return snapshot.Envelope.Open(password)
+	key, err := snapshot.Envelope.Open(password)
+	if err != nil {
+		return nil, err
+	}
+	m.cacheMu.Lock()
+	defer m.cacheMu.Unlock()
+	if m.unlocked == nil {
+		m.unlocked = map[string]unlockedKey{}
+	}
+	m.unlocked[snapshot.Envelope.KeyID] = unlockedKey{key: key, until: time.Now().Add(time.Hour)}
+	m.lists = nil
+	return key, nil
+}
+
+type unlockedKey struct {
+	key   []byte
+	until time.Time
+}
+
+// knownKey : la clé de cette enveloppe si elle est celle de l'appliance ou
+// déjà ouverte par son mot de passe.
+func (m *Manager) knownKey(envelope Envelope) ([]byte, bool) {
+	if key, err := m.keys().key(); err == nil && keyID(key) == envelope.KeyID {
+		return key, true
+	}
+	m.cacheMu.Lock()
+	defer m.cacheMu.Unlock()
+	if u, ok := m.unlocked[envelope.KeyID]; ok && time.Now().Before(u.until) {
+		return u.key, true
+	}
+	return nil, false
 }
 
 // restoreFiles remet les réglages du service (son dossier dans la
 // configuration) puis ses volumes ; le service est arrêté.
-func (m *Manager) restoreFiles(ctx context.Context, dir string, key []byte, name string, saved ServiceCopy) error {
+func (m *Manager) restoreFiles(ctx context.Context, st store, id string, key []byte, name string, saved ServiceCopy) error {
 	serviceDir := filepath.Join(m.Dir, "services", name)
 	staging := serviceDir + ".restore"
 	os.RemoveAll(staging)
@@ -698,7 +1021,7 @@ func (m *Manager) restoreFiles(ctx context.Context, dir string, key []byte, name
 	defer os.RemoveAll(staging)
 	settings := newExtractor(staging)
 	found := false
-	err := readFile(filepath.Join(dir, configName), key, func(header *tar.Header, r io.Reader) error {
+	err := readFile(ctx, st, id, configName, key, func(header *tar.Header, r io.Reader) error {
 		rel, ok := entryPath(header.Name, "config/services/"+name)
 		if !ok {
 			return nil
@@ -755,7 +1078,7 @@ func (m *Manager) restoreFiles(ctx context.Context, dir string, key []byte, name
 	if len(saved.Volumes) == 0 {
 		return nil
 	}
-	err = readFile(filepath.Join(dir, "services", name+".enc"), key, func(header *tar.Header, r io.Reader) error {
+	err = readFile(ctx, st, id, saved.file(), key, func(header *tar.Header, r io.Reader) error {
 		volume, _, _ := strings.Cut(strings.TrimSuffix(header.Name, "/"), "/")
 		x, ok := extractors[volume]
 		if !ok {
@@ -778,13 +1101,13 @@ func (m *Manager) restoreFiles(ctx context.Context, dir string, key []byte, name
 	return nil
 }
 
-func readFile(path string, key []byte, visit func(*tar.Header, io.Reader) error) error {
-	f, err := os.Open(path)
+func readFile(ctx context.Context, st store, id, file string, key []byte, visit func(*tar.Header, io.Reader) error) error {
+	r, err := st.open(ctx, id, file)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
-	return readArchive(f, key, visit)
+	defer r.Close()
+	return readArchive(r, key, visit)
 }
 
 // Due dit si la sauvegarde de la nuit est à faire maintenant : à l'heure

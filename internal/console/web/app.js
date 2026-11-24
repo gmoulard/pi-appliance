@@ -1956,11 +1956,12 @@ async function loadBackups() {
   const running = status.running !== "";
   backupNow.disabled = running || !status.destination || !status.ready;
   if (running) {
-    backupState.textContent = status.running === "restore" ? t("Restauration en cours…") : t("Sauvegarde en cours…");
+    backupState.textContent = status.running === "restore-file" ? t("Remise en place d'un fichier…")
+      : status.running === "restore" ? t("Restauration en cours…") : t("Sauvegarde en cours…");
     watchBackups();
   } else if (!status.ready) {
     backupState.textContent = t("Les sauvegardes attendent votre mot de passe : déconnectez-vous puis reconnectez-vous.");
-  } else if (!status.destination) {
+  } else if (!status.disk_ready && (!status.destination || (status.disk && status.disk.disks.length))) {
     const disks = status.disk ? status.disk.disks : [];
     backupState.textContent = disks.length
       ? t("Choisissez le disque USB qui recevra les sauvegardes (pas celui des données) :")
@@ -1984,10 +1985,20 @@ async function loadBackups() {
   }
   backupActions.hidden = !status.destination;
   backupSettingsBox.hidden = !status.destination;
+  showBackupOnline(status.online);
+  showBackupPeer(status.peer);
   backupList.replaceChildren(...status.snapshots.map((snapshot) => {
     const item = element("li");
     const when = new Date(snapshot.created).toLocaleString(LOCALE);
     item.append(element("span", `${when} (${BACKUP_KINDS[snapshot.kind] || snapshot.kind}, ${sizeText(snapshot.size_mb)})`));
+    const places = (snapshot.places || []).map((place) => BACKUP_PLACES[place] || place);
+    if (places.length) item.append(element("span", t("Gardée : {0}", places.join(", ")), "meta"));
+    if (snapshot.locked) {
+      const button = element("button", t("Ouvrir avec le mot de passe"), "secondary");
+      button.type = "button";
+      button.addEventListener("click", () => unlockBackup(snapshot));
+      item.append(button);
+    }
     for (const service of snapshot.services) {
       if (service.error) continue;
       const button = element("button", t("Restaurer {0}", service.name), "secondary");
@@ -1995,11 +2006,273 @@ async function loadBackups() {
       button.disabled = running;
       button.addEventListener("click", () => restoreService(snapshot, service));
       item.append(button);
+      if (!service.volumes || !service.volumes.length) continue;
+      const browse = element("button", t("Parcourir {0}", service.name), "secondary");
+      browse.type = "button";
+      browse.addEventListener("click", () => openBackupBrowser(snapshot, service.name, ""));
+      item.append(browse);
     }
     return item;
   }));
   return running;
 }
+
+const BACKUP_PLACES = { disk: t("sur le disque"), online: t("en ligne"), peer: t("chez votre proche") };
+
+async function askBackupPassword(snapshot) {
+  const password = window.prompt(t("Cette sauvegarde a été faite sur une autre carte SD. Saisissez le mot de passe administrateur en vigueur à sa date :"));
+  if (!password) return false;
+  try {
+    await backupRequest(`backups/${encodeURIComponent(snapshot.id)}/unlock`, { password });
+    return true;
+  } catch (error) {
+    showMessage([error.message], "error");
+    return false;
+  }
+}
+
+async function unlockBackup(snapshot) {
+  if (await askBackupPassword(snapshot)) await loadBackups().catch(() => null);
+}
+
+// Restauration d'un fichier (spécification 9.1) : parcourir la sauvegarde
+// d'un service, télécharger un fichier (un dossier en .zip) ou le remettre en place.
+const backupBrowser = document.getElementById("backupBrowser");
+const backupBrowserTitle = document.getElementById("backupBrowserTitle");
+const backupBrowserPath = document.getElementById("backupBrowserPath");
+const backupBrowserState = document.getElementById("backupBrowserState");
+const backupBrowserList = document.getElementById("backupBrowserList");
+let backupBrowsing = null;
+
+document.getElementById("backupBrowserClose").addEventListener("click", () => {
+  backupBrowsing = null;
+  backupBrowser.hidden = true;
+});
+
+// Le premier dossier est un volume « pi-<service>_<nom> » : seul <nom> parle.
+function backupEntryName(service, path, name) {
+  return path.includes("/") ? name : name.replace(`pi-${service}_`, "");
+}
+
+function backupFileURL(snapshot, service, path, action) {
+  const query = new URLSearchParams({ service, path });
+  return `api/backups/${encodeURIComponent(snapshot.id)}/${action}?${query}`;
+}
+
+async function openBackupBrowser(snapshot, service, path) {
+  const browsing = { snapshot, service, path };
+  backupBrowsing = browsing;
+  if (backupBrowser.hidden) {
+    backupBrowser.hidden = false;
+    backupBrowser.scrollIntoView({ block: "start" });
+  }
+  backupBrowserTitle.textContent = t("Fichiers de {0}, sauvegarde du {1}", service, new Date(snapshot.created).toLocaleString(LOCALE));
+  const crumbs = [["", t("Début")]];
+  path.split("/").filter(Boolean).forEach((part, i, parts) => {
+    crumbs.push([parts.slice(0, i + 1).join("/"), backupEntryName(service, i ? "x/x" : "x", part)]);
+  });
+  backupBrowserPath.replaceChildren(...crumbs.map(([target, label]) => {
+    const button = element("button", label, "secondary");
+    button.type = "button";
+    button.addEventListener("click", () => openBackupBrowser(snapshot, service, target));
+    return button;
+  }));
+  backupBrowserList.replaceChildren();
+  let reply;
+  for (;;) {
+    try {
+      reply = await api(backupFileURL(snapshot, service, path, "files").slice(4));
+    } catch (error) {
+      if (error.status === 403 && error.body.code === "password" && await askBackupPassword(snapshot)) continue;
+      backupBrowserState.textContent = error.message;
+      return;
+    }
+    if (backupBrowsing !== browsing) return;
+    if (!reply.preparing) break;
+    backupBrowserState.textContent = t("Lecture de la sauvegarde… {0} fichiers lus.", reply.count);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    if (backupBrowsing !== browsing) return;
+  }
+  backupBrowserState.textContent = reply.entries.length
+    ? (reply.truncated ? t("La liste est coupée : ce dossier contient trop de fichiers pour tous les montrer.") : "")
+    : t("Dossier vide.");
+  backupBrowserList.replaceChildren(...reply.entries.map((entry) => {
+    const item = element("li");
+    const name = backupEntryName(service, entry.path, entry.name);
+    if (entry.dir) {
+      const open = element("button", `${name}/`, "secondary");
+      open.type = "button";
+      open.addEventListener("click", () => openBackupBrowser(snapshot, service, entry.path));
+      item.append(open);
+    } else {
+      item.append(element("span", `${name} (${sizeText(entry.size / 1048576)})`));
+    }
+    const download = element("a", t("Télécharger"));
+    download.href = backupFileURL(snapshot, service, entry.path, "download");
+    download.setAttribute("download", "");
+    item.append(download);
+    if (entry.path.includes("/")) {
+      const putBack = element("button", t("Remettre en place"), "secondary");
+      putBack.type = "button";
+      putBack.addEventListener("click", () => putBackFile(snapshot, service, entry.path, name));
+      item.append(putBack);
+    }
+    return item;
+  }));
+}
+
+async function putBackFile(snapshot, service, path, name) {
+  if (!window.confirm(t("Remettre {0} à sa place dans {1} ? Le service est arrêté le temps de l'écrire.", name, service))) return;
+  const body = { service, path, replace: false };
+  for (;;) {
+    try {
+      await backupRequest(`backups/${encodeURIComponent(snapshot.id)}/put-back`, body);
+      showMessage([t("Remise en place de {0}…", name)], "info");
+      break;
+    } catch (error) {
+      if (error.status === 409 && error.body.code === "exists" && !body.replace) {
+        if (!window.confirm(t("{0} existe encore. Le remplacer par celui de la sauvegarde ?", name))) break;
+        body.replace = true;
+        continue;
+      }
+      showMessage([error.message], "error");
+      break;
+    }
+  }
+  await loadBackups().catch(() => null);
+  watchBackups();
+}
+
+// Sauvegarde en ligne (stockage compatible S3) : les clés restent sur le Pi,
+// la console ne les renvoie jamais.
+const backupOnlineForm = document.getElementById("backupOnline");
+const backupOnlineState = document.getElementById("backupOnlineState");
+const backupOnlineRemove = document.getElementById("backupOnlineRemove");
+
+function showBackupOnline(online) {
+  const fields = backupOnlineForm.elements;
+  backupOnlineRemove.hidden = !online.configured;
+  backupOnlineState.textContent = online.configured
+    ? t("Envoyées aussi en ligne vers {0}.", `${online.bucket} (${online.endpoint})`)
+    : t("Pas encore de stockage en ligne.");
+  for (const name of ["access_key_id", "secret_access_key"]) {
+    fields[name].required = !online.configured;
+    fields[name].placeholder = online.configured ? t("Clés enregistrées : laissez vide pour les garder.") : "";
+  }
+  if (backupOnlineForm.contains(document.activeElement) || !online.configured) return;
+  fields.endpoint.value = online.endpoint;
+  fields.region.value = online.region;
+  fields.bucket.value = online.bucket;
+}
+
+backupOnlineForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const fields = backupOnlineForm.elements;
+  const button = backupOnlineForm.querySelector("button");
+  button.disabled = true;
+  try {
+    await api("backups/online", jsonBody("PUT", {
+      endpoint: fields.endpoint.value, region: fields.region.value, bucket: fields.bucket.value,
+      access_key_id: fields.access_key_id.value, secret_access_key: fields.secret_access_key.value,
+    }));
+    fields.access_key_id.value = "";
+    fields.secret_access_key.value = "";
+    showMessage([t("Stockage en ligne enregistré : l'essai d'écriture a réussi.")], "success");
+    await loadBackups();
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    button.disabled = false;
+  }
+});
+
+backupOnlineRemove.addEventListener("click", async () => {
+  if (!window.confirm(t("Arrêter l'envoi en ligne ? Les sauvegardes déjà envoyées y restent."))) return;
+  try {
+    await api("backups/online", { method: "DELETE" });
+    await loadBackups();
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+});
+
+// Sauvegarde chez un proche : jumelage par code ; ce Pi accueille aussi les
+// sauvegardes de proches dans un espace réservé.
+const backupPeerBox = document.getElementById("backupPeerBox");
+const backupPeerState = document.getElementById("backupPeerState");
+const backupPeerForm = document.getElementById("backupPeer");
+const backupPeerRemove = document.getElementById("backupPeerRemove");
+const backupHostingState = document.getElementById("backupHostingState");
+const backupHostingForm = document.getElementById("backupHosting");
+const backupGuests = document.getElementById("backupGuests");
+let backupCode = "";
+
+function showBackupPeer(peer) {
+  backupPeerBox.hidden = !peer || !peer.available;
+  if (backupPeerBox.hidden) return;
+  backupPeerForm.hidden = Boolean(peer.peer);
+  backupPeerRemove.hidden = !peer.peer;
+  backupPeerState.textContent = peer.peer
+    ? t("Envoyées aussi chez votre proche ({0}), espace réservé : {1}.", peer.peer.address.replace("https://", ""), sizeText(peer.peer.quota_mb))
+    : "";
+  const hosting = peer.hosting;
+  backupHostingForm.hidden = !hosting.available;
+  backupHostingState.textContent = !hosting.available
+    ? t("Branchez d'abord un disque de sauvegarde pour accueillir un proche.")
+    : hosting.code_expires && backupCode ? t("Code à saisir sur le Pi de votre proche, valable une heure : {0}", backupCode) : "";
+  backupGuests.replaceChildren(...hosting.guests.map((guest) => {
+    const item = element("li");
+    item.append(element("span", t("{0} : {1} utilisés sur {2}", guest.name, sizeText(guest.used_mb), sizeText(guest.quota_mb))));
+    const remove = element("button", t("Ne plus accueillir"), "secondary");
+    remove.type = "button";
+    remove.addEventListener("click", async () => {
+      if (!window.confirm(t("Ne plus accueillir {0} ? Ses sauvegardes gardées ici seront effacées.", guest.name))) return;
+      try {
+        await api(`backups/hosting/${encodeURIComponent(guest.id)}`, { method: "DELETE" });
+        await loadBackups();
+      } catch (error) {
+        showMessage([error.message], "error");
+      }
+    });
+    item.append(remove);
+    return item;
+  }));
+}
+
+backupPeerForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const fields = backupPeerForm.elements;
+  try {
+    await api("backups/peer", jsonBody("PUT", { address: fields.address.value, code: fields.code.value }));
+    fields.code.value = "";
+    showMessage([t("Jumelage réussi : vos sauvegardes partiront aussi chez votre proche.")], "success");
+    await loadBackups();
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+});
+
+backupPeerRemove.addEventListener("click", async () => {
+  if (!window.confirm(t("Arrêter l'envoi chez ce proche ? Ce qu'il garde déjà y reste tant qu'il ne l'efface pas."))) return;
+  try {
+    await api("backups/peer", { method: "DELETE" });
+    await loadBackups();
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+});
+
+backupHostingForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const fields = backupHostingForm.elements;
+  try {
+    const reply = await api("backups/hosting/code", jsonBody("POST", { name: fields.name.value, quota_mb: Number(fields.quota.value) * 1024 }));
+    backupCode = reply.code;
+    await loadBackups();
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+});
 
 // Mises à jour (spécification 9.2) : la console les signale, l'administrateur
 // décide. Les correctifs de sécurité du système passent en premier, en rouge ;
