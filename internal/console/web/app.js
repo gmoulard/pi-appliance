@@ -707,8 +707,10 @@ function tagsChooser(service) {
 // tuiles (Mon Pi, Mes services, Marketplace), puis, pour les types choisis,
 // leurs étiquettes : les thèmes de Mon Pi, les étiquettes du catalogue pour les
 // services. Choix multiple, « l'un ou l'autre » ; rien de choisi : tout est
-// affiché. Une étiquette ne trie que les tuiles de son type. Le choix est gardé
-// sur cet appareil (stockage du navigateur). Les tuiles portent data-kind
+// affiché. Une étiquette ne trie que les tuiles de son type. Les étiquettes
+// choisies sont gardées sur cet appareil (stockage du navigateur) ; le type,
+// lui, ne l'est pas : la console s'ouvre toujours sur « Mon Pi » (TODO-5.25),
+// ou, pour un compte qui ne l'a pas, sur tout ce qu'il a. Les tuiles portent data-kind
 // (section) et data-theme (Mon Pi) ou data-tags (services) ; la barre ne se
 // montre que quand au moins deux types sont à l'écran (pas pendant l'assistant).
 const TILE_KINDS = [
@@ -732,8 +734,6 @@ const tileChoice = { kinds: new Set(), tags: new Set() };
 (function readTileChoice() {
   try {
     const saved = JSON.parse(window.localStorage.getItem(TILES_KEY) || "{}");
-    // Un seul type à la fois (Mon Pi, Mes services ou Marketplace).
-    for (const kind of (saved.kinds || []).slice(0, 1)) tileChoice.kinds.add(String(kind));
     for (const tag of saved.tags || []) tileChoice.tags.add(String(tag));
   } catch {
     // Stockage indisponible ou illisible : tout est affiché.
@@ -742,7 +742,7 @@ const tileChoice = { kinds: new Set(), tags: new Set() };
 
 function saveTileChoice() {
   try {
-    window.localStorage.setItem(TILES_KEY, JSON.stringify({ kinds: [...tileChoice.kinds], tags: [...tileChoice.tags] }));
+    window.localStorage.setItem(TILES_KEY, JSON.stringify({ tags: [...tileChoice.tags] }));
   } catch {
     // Sans stockage, le choix ne dure que le temps de cette page.
   }
@@ -1603,15 +1603,19 @@ async function refreshResources() {
 // date de lecture change. En cas d'échec, le catalogue affiché reste.
 async function refreshOnlineCatalog() {
   try {
-    const { changed, source } = await api("catalog/refresh", { method: "POST" });
-    if (changed) {
-      await loadCatalog();
-      await loadServices();
-    } else {
-      showCatalogSource(source);
-    }
+    await showCatalogRefresh(await api("catalog/refresh", { method: "POST" }));
   } catch {
     // Pas d'internet ou console injoignable : rien ne change à l'écran.
+  }
+}
+
+// showCatalogRefresh : réponse de api/catalog/refresh mise à l'écran.
+async function showCatalogRefresh({ changed, source }) {
+  if (changed) {
+    await loadCatalog();
+    await loadServices();
+  } else {
+    showCatalogSource(source);
   }
 }
 
@@ -2002,8 +2006,9 @@ async function loadBackups() {
 // une nouvelle version de pi-appliance s'installe à la demande, avec retour
 // automatique à l'ancienne si elle ne démarre pas.
 // Cockpit (spécification 6.4) : installé à la demande ; ouvert sous
-// /cockpit/, depuis la maison seulement, aux administrateurs, avec leur compte
-// de la console (connexion unique, compte système créé par la console).
+// /cockpit/, depuis la maison, aux administrateurs (plus largement si un
+// administrateur le choisit, TODO-3.4), avec leur compte de la console
+// (connexion unique, compte système créé par la console).
 const cockpitBox = document.getElementById("cockpitBox");
 const cockpitState = document.getElementById("cockpitState");
 const cockpitInstall = document.getElementById("cockpitInstall");
@@ -2016,6 +2021,10 @@ let cockpitTimer = null;
 icons.cockpit = "M12 3a9 9 0 1 0 0 18a9 9 0 1 0 0-18zM12 12l4-4M12 7v1M7 12h1M16 12h1";
 tint(cockpitBox, "cockpit");
 cockpitBox.querySelector(".card-head").prepend(tile("cockpit"));
+// Carte de Cockpit d'un utilisateur admis (TODO-3.4), dans « Mes services ».
+const cockpitUserBox = document.getElementById("cockpitUserBox");
+tint(cockpitUserBox, "cockpit");
+cockpitUserBox.querySelector(".card-head").prepend(tile("cockpit"));
 cockpitBox.append(element("p", t("{0} · licence {1}", t("Administration"), "LGPL-2.1"), "meta"), tagList(["administration"]));
 
 function cockpitBusy(status) {
@@ -2077,8 +2086,82 @@ async function loadCockpit() {
   }
   cockpitBox.hidden = false;
   showCockpit();
+  loadCockpitAccess();
   return !cockpitBusy(cockpitStatus);
 }
+
+// Qui ouvre Cockpit (TODO-3.4) : par défaut les administrateurs, depuis la
+// maison ; un administrateur peut l'ouvrir aussi aux utilisateurs et depuis
+// internet (si la console y est ouverte), sans double authentification
+// exigée, après un avertissement clair. Un utilisateur admis a sa carte dans
+// « Mes services ».
+const cockpitAccess = document.getElementById("cockpitAccess");
+const cockpitAccessState = document.getElementById("cockpitAccessState");
+const cockpitUsers = document.getElementById("cockpitUsers");
+const cockpitInternet = document.getElementById("cockpitInternet");
+const cockpitUserList = document.getElementById("cockpitUserList");
+let cockpitAccessStatus = null;
+
+async function loadCockpitAccess() {
+  try {
+    cockpitAccessStatus = await api("cockpit/access");
+  } catch {
+    // Console sans Cockpit, ou état illisible : rien de plus à l'écran.
+    cockpitAccessStatus = null;
+    cockpitAccess.hidden = true;
+    cockpitUserList.hidden = true;
+    return;
+  }
+  showCockpitAccess();
+}
+
+function showCockpitAccess() {
+  const access = cockpitAccessStatus;
+  const admin = currentAccount && currentAccount.role === "admin";
+  cockpitUserList.hidden = admin || !(access && access.allowed && access.installed && access.active);
+  if (!admin || !access) return;
+  const installed = cockpitStatus && cockpitStatus.installed && !cockpitBusy(cockpitStatus);
+  cockpitAccess.hidden = !installed;
+  cockpitUsers.checked = Boolean(access.users);
+  cockpitInternet.checked = Boolean(access.internet);
+  const online = access.internet && access.console_internet;
+  const lines = [access.users
+    ? (online
+      ? t("Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.")
+      : t("Ouvert à tous les comptes de la console (sauf les invités), depuis la maison."))
+    : (online
+      ? t("Ouvert aux administrateurs, aussi depuis internet.")
+      : t("Ouvert aux administrateurs, depuis la maison."))];
+  if (access.internet && !access.console_internet) {
+    lines.push(t("La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet »."));
+  }
+  cockpitAccessState.textContent = lines.join(" ");
+  // Depuis internet, sans Cockpit ouvert sur internet : le bouton n'y mènerait pas.
+  if (!access.allowed) cockpitOpen.disabled = true;
+}
+
+async function saveCockpitAccess(box, warning) {
+  if (box.checked && !window.confirm(warning)) {
+    box.checked = false;
+    return;
+  }
+  box.disabled = true;
+  try {
+    cockpitAccessStatus = await api("cockpit/access", jsonBody("PUT", { users: cockpitUsers.checked, internet: cockpitInternet.checked }));
+    showMessage([t("Accès à Cockpit enregistré.")], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    box.disabled = false;
+  }
+  await loadCockpitAccess();
+}
+
+cockpitUsers.addEventListener("change", () => saveCockpitAccess(cockpitUsers,
+  t("Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.")));
+cockpitInternet.addEventListener("change", () => saveCockpitAccess(cockpitInternet,
+  t("Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.")));
+document.getElementById("cockpitUserOpen").addEventListener("click", () => openCockpit(cockpitAccessStatus && cockpitAccessStatus.path));
 
 function watchCockpit() {
   if (cockpitTimer) return;
@@ -2114,10 +2197,12 @@ cockpitInstall.addEventListener("click", async () => {
 
 // Ouvre Cockpit dans un nouvel onglet, avec le cookie délégué de la console
 // (Traefik le demande à la console avant de laisser passer).
-cockpitOpen.addEventListener("click", async () => {
+cockpitOpen.addEventListener("click", () => openCockpit(cockpitStatus.path));
+
+async function openCockpit(path) {
   const tab = window.open("", "_blank");
   try {
-    const { url } = await api("auth/return", jsonBody("POST", { return: window.location.origin + cockpitStatus.path }));
+    const { url } = await api("auth/return", jsonBody("POST", { return: window.location.origin + (path || "/cockpit/") }));
     if (tab) {
       tab.opener = null;
       tab.location.href = url;
@@ -2128,7 +2213,7 @@ cockpitOpen.addEventListener("click", async () => {
     if (tab) tab.close();
     showMessage([error.message], "error");
   }
-});
+}
 
 cockpitRemove.addEventListener("click", async () => {
   if (!window.confirm(t("Désinstaller Cockpit ? Les comptes du Pi créés pour Cockpit seront supprimés."))) return;
@@ -5026,6 +5111,12 @@ async function showConsole(account, wizard) {
     return;
   }
   currentAccount = account;
+  // À chaque ouverture, « Mon Pi » d'abord (TODO-5.25) pour un administrateur ;
+  // un autre compte, qui n'a pas « Mon Pi » (seulement son compte), voit tout
+  // ce qu'il a.
+  tileChoice.kinds.clear();
+  if (account.role === "admin") tileChoice.kinds.add("pi");
+  scheduleTiles();
   authSection.hidden = true;
   logoutButton.hidden = false;
   servicesSection.hidden = false;
@@ -5057,6 +5148,10 @@ async function showConsole(account, wizard) {
   if (oidcRequest && (await goBackToOIDC())) {
     return;
   }
+  // Catalogue en ligne relu tout de suite, en arrière-plan (TODO-5.25) : la
+  // console ne l'attend pas ; une fois par minute au plus, l'ancien catalogue
+  // reste en cas d'échec ; la marketplace suit quand la réponse arrive.
+  const catalogRefreshed = api("catalog/refresh", { method: "POST" }).catch(() => null);
   if (account.role === "admin" && wizard) {
     await startWizard();
     return;
@@ -5085,6 +5180,8 @@ async function showConsole(account, wizard) {
   await resourcesReady;
   await loadCatalog();
   await loadServices();
+  if (account.role !== "admin") await loadCockpitAccess();
+  catalogRefreshed.then((result) => result && showCatalogRefresh(result)).catch(() => null);
 }
 
 api("health")

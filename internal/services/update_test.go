@@ -75,7 +75,7 @@ func TestUpdate(t *testing.T) {
 		"image tag sha256:aaa mariadb:pi-rollback-cloud-11.4",
 		"image tag sha256:bbb nextcloud:pi-rollback-cloud-30-apache",
 		" pull",
-		"up --detach --wait --remove-orphans",
+		"up --detach --wait --remove-orphans --force-recreate",
 		"image rm nextcloud:pi-rollback-cloud-30-apache",
 	} {
 		if !runner.called(call) {

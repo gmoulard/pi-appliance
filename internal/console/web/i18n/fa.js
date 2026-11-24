@@ -425,7 +425,6 @@ piTranslations("fa", {
   "{0} : accès changé.": "{0}: دسترسی تغییر کرد.",
   "Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.": "آنجا همه‌چیز مجاز است، حتی آسیب زدن به Pi. آنجا Wi-Fi خود Pi («pi-appliance-ap») و دیسک‌های USB داده‌ها و پشتیبان‌ها را تغییر ندهید: آن‌ها را در همین کنسول تنظیم کنید.",
   "Cockpit": "Cockpit",
-  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.": "برای کسانی که با رایانه آشنا هستند: گزارش‌ها، برنامه‌ها، شبکه و دیسک‌های Pi و یک ترمینال، در مرورگر. با حساب pi-appliance خود، بدون گذرواژهٔ دیگر و با همهٔ اختیارات روی Pi وارد می‌شوید. فقط برای مدیران، از خانه.",
   "Installer Cockpit": "نصب Cockpit",
   "Ouvrir Cockpit": "باز کردن Cockpit",
   "Pas installé.": "نصب نشده است.",
@@ -824,5 +823,17 @@ piTranslations("fa", {
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "هنوز هیچ مدیری نشانی ایمیل خود را تأیید نکرده است: برای دریافت هشدارها نشانی خود را در «حساب من» تأیید کنید.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "هشدارها برای {0} مدیر فرستاده می‌شوند. برای اینکه شما هم دریافت کنید، نشانی خود را در «حساب من» تأیید کنید.",
   "Les alertes partent à {0} administrateur(s), vous compris.": "هشدارها برای {0} مدیر، از جمله شما، فرستاده می‌شوند.",
-  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "این سرویس تصاویر دوربین‌های وصل‌شده به Pi را می‌بیند و ضبط می‌کند. تصاویر روی Pi می‌مانند. به کسانی که فیلم‌برداری می‌شوند بگویید: فیلم‌برداری از کسی بدون اطلاع او ممکن است ممنوع باشد. ادامه می‌دهید؟"
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "این سرویس تصاویر دوربین‌های وصل‌شده به Pi را می‌بیند و ضبط می‌کند. تصاویر روی Pi می‌مانند. به کسانی که فیلم‌برداری می‌شوند بگویید: فیلم‌برداری از کسی بدون اطلاع او ممکن است ممنوع باشد. ادامه می‌دهید؟",
+  "Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.": "باز برای همهٔ حساب‌های کنسول (به‌جز مهمانان)، از اینترنت هم.",
+  "Ouvert à tous les comptes de la console (sauf les invités), depuis la maison.": "باز برای همهٔ حساب‌های کنسول (به‌جز مهمانان)، از خانه.",
+  "Ouvert aux administrateurs, aussi depuis internet.": "باز برای مدیران، از اینترنت هم.",
+  "Ouvert aux administrateurs, depuis la maison.": "باز برای مدیران، از خانه.",
+  "La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet ».": "کنسول روی اینترنت باز نیست، پس Cockpit هم باز نیست. آن را در «کنسول روی اینترنت» باز کنید.",
+  "Accès à Cockpit enregistré.": "دسترسی به Cockpit ذخیره شد.",
+  "Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.": "Cockpit برای کاربران کنسول هم باز شود؟ هر کس حسابی دارد همهٔ اختیارات Pi را خواهد داشت: می‌تواند همه‌چیز را بخواند، تغییر دهد و پاک کند، حتی از اینترنت اگر Cockpit آنجا باز باشد. یک گذرواژهٔ دزدیده‌شده کافی است.",
+  "Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.": "Cockpit از اینترنت هم باز شود؟ هر کس بتواند وارد شود همهٔ اختیارات Pi را خواهد داشت، حتی از اینترنت: یک گذرواژهٔ دزدیده‌شده کافی است. تأیید دومرحله‌ای الزامی نیست: آن را به هر حساب توصیه کنید.",
+  "Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.": "گزارش‌های Pi، برنامه‌ها، شبکه، دیسک‌ها و یک ترمینال، در مرورگر، با همهٔ اختیارات Pi. یک مدیر آن را برای شما باز کرده است.",
+  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.": "برای کسانی که با رایانه راحت‌اند: گزارش‌های Pi، برنامه‌ها، شبکه، دیسک‌ها و یک ترمینال، در مرورگر. با حساب pi-appliance خود وارد می‌شوید، بدون گذرواژهٔ دیگر، با همهٔ اختیارات Pi.",
+  "Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)": "برای کاربران کنسول هم باز شود (نه فقط مدیران)",
+  "Ouvrir aussi depuis internet": "از اینترنت هم باز شود"
 });

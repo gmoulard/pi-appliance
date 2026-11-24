@@ -96,7 +96,7 @@ func main() {
 	// pia ou pi-appliance <commande> : ligne de commande du Pi (internal/cli) ; sans
 	// commande, ou avec des options seulement, le programme est la console.
 	// « pia » (lien posé par install.sh) est toujours la ligne de commande.
-	if filepath.Base(os.Args[0]) == cli.ShortName || (len(os.Args) > 1 && !strings.HasPrefix(os.Args[1], "-")) {
+	if filepath.Base(os.Args[0]) == cli.ShortName || (len(os.Args) > 1 && (!strings.HasPrefix(os.Args[1], "-") || cli.ForceFlag(os.Args[1]))) {
 		os.Exit(cli.Run(os.Args[1:], cli.Defaults(version)))
 	}
 	addr := flag.String("addr", ":8080", "adresse d'écoute de la console")
@@ -230,22 +230,17 @@ func main() {
 	// Cockpit, installé à la demande, avec connexion unique (spécification 6.4).
 	var admin *cockpit.Client
 	var cockpitLogins *cockpit.Logins
+	// Qui ouvre Cockpit : aussi depuis internet, aussi les utilisateurs (TODO-3.4).
+	cockpitAccess := &cockpit.AccessFile{Path: filepath.Join(*data, "cockpit-access.json"), Logf: log.Printf}
 	if *cockpitScript != "" {
 		admin = &cockpit.Client{Runner: network.Script(*cockpitScript), Logf: log.Printf}
 		// Connexion unique : un compte système par administrateur de la console.
 		cockpitLogins = &cockpit.Logins{
 			Client: admin,
 			File:   filepath.Join(*data, "system", "cockpit-accounts.json"),
-			Admins: func() []string {
-				var names []string
-				for _, account := range accounts.List() {
-					if account.Role == auth.RoleAdmin && !account.Invited {
-						names = append(names, account.Name)
-					}
-				}
-				return names
-			},
-			Logf: log.Printf,
+			// Un compte système par administrateur, et par utilisateur si l'accès le permet.
+			Admins: console.CockpitAccounts(accounts, cockpitAccess),
+			Logf:   log.Printf,
 		}
 		go cockpitLogins.Run(context.Background())
 	}
@@ -318,6 +313,7 @@ func main() {
 		Updates:          checker,
 		Cockpit:          admin,
 		CockpitLogins:    cockpitLogins,
+		CockpitAccess:    cockpitAccess,
 		Stats:            statsConsole(reporter),
 		WizardFile:       filepath.Join(*data, "wizard-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),

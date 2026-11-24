@@ -468,6 +468,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <section id="servicesSection" data-kind="services" hidden>
 <h2>Mes services</h2>
 <ul id="services" class="cards"></ul>
+<!-- Cockpit pour un utilisateur à qui un administrateur l'a ouvert (TODO-3.4). -->
+<ul id="cockpitUserList" class="cards" hidden>
+<li id="cockpitUserBox" class="card app" data-tags="administration">
+<div class="card-head"><div><h3>Cockpit</h3>
+<p>Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.</p></div></div>
+<p class="note">Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.</p>
+<div class="controls">
+<button id="cockpitUserOpen" type="button">Ouvrir Cockpit</button>
+</div>
+</li>
+</ul>
 <p id="noServices" class="empty" hidden>Aucun service installé pour l'instant : choisissez-en un ci-dessous.</p>
 </section>
 <section id="catalogSection" data-kind="catalog" hidden>
@@ -477,13 +488,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <!-- Cockpit (spécification 6.4) : installée sur le système, pas dans un conteneur ; carte remise par loadCatalog avant le Docker Compose libre, montrée seulement à l'administrateur. -->
 <li id="cockpitBox" class="card app" data-tags="administration" hidden>
 <div class="card-head"><div><h3>Cockpit</h3>
-<p>Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.</p></div></div>
+<p>Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.</p></div></div>
 <p id="cockpitState" class="state" aria-live="polite"></p>
 <p class="note">Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.</p>
 <div class="controls">
 <button id="cockpitInstall" type="button" hidden>Installer Cockpit</button>
 <button id="cockpitOpen" type="button" hidden>Ouvrir Cockpit</button>
 <button id="cockpitRemove" class="secondary" type="button" hidden>Désinstaller</button>
+</div>
+<!-- Qui ouvre Cockpit (TODO-3.4) : administrateurs à la maison par défaut ; un avertissement avant d'ouvrir plus largement. -->
+<div id="cockpitAccess" hidden>
+<p id="cockpitAccessState" class="meta"></p>
+<label class="check"><input id="cockpitUsers" type="checkbox">Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)</label>
+<label class="check"><input id="cockpitInternet" type="checkbox">Ouvrir aussi depuis internet</label>
 </div>
 </li>
 </ul>

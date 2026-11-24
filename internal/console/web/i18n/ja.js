@@ -425,7 +425,6 @@ piTranslations("ja", {
   "{0} : accès changé.": "{0}：アクセスを変更しました。",
   "Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.": "そこでは何でもでき、Pi を壊すこともできます。そこで Pi の Wi-Fi（「pi-appliance-ap」）や、データ用・バックアップ用の USB ディスクを変更しないでください。それらはこのコンソールで設定してください。",
   "Cockpit": "Cockpit",
-  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.": "コンピューターに慣れた方向け：Pi のログ、プログラム、ネットワーク、ディスク、ターミナルをブラウザーで扱えます。pi-appliance のアカウントで、別のパスワードなしに、Pi のすべての権限で入れます。管理者のみ、自宅から利用できます。",
   "Installer Cockpit": "Cockpit をインストール",
   "Ouvrir Cockpit": "Cockpit を開く",
   "Pas installé.": "インストールされていません。",
@@ -824,5 +823,17 @@ piTranslations("ja", {
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "メールアドレスを確認した管理者がまだいません：お知らせを受け取るには「マイアカウント」でご自分のアドレスを確認してください。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "お知らせは {0} 人の管理者に送られます。あなたも受け取るには「マイアカウント」でアドレスを確認してください。",
   "Les alertes partent à {0} administrateur(s), vous compris.": "お知らせはあなたを含む {0} 人の管理者に送られます。",
-  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "このサービスは Pi に接続されたカメラの映像を見て録画します。映像は Pi の中に残ります。撮影される人に知らせてください。知らせずに人を撮影することは禁止されている場合があります。続けますか?"
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "このサービスは Pi に接続されたカメラの映像を見て録画します。映像は Pi の中に残ります。撮影される人に知らせてください。知らせずに人を撮影することは禁止されている場合があります。続けますか?",
+  "Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.": "コンソールのすべてのアカウント（ゲストを除く）に公開、インターネットからも。",
+  "Ouvert à tous les comptes de la console (sauf les invités), depuis la maison.": "コンソールのすべてのアカウント（ゲストを除く）に公開、自宅から。",
+  "Ouvert aux administrateurs, aussi depuis internet.": "管理者に公開、インターネットからも。",
+  "Ouvert aux administrateurs, depuis la maison.": "管理者に公開、自宅から。",
+  "La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet ».": "コンソールがインターネットに公開されていないため、Cockpit も公開されません。「インターネットのコンソール」で公開してください。",
+  "Accès à Cockpit enregistré.": "Cockpit へのアクセスを保存しました。",
+  "Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.": "Cockpit をコンソールのユーザーにも公開しますか？アカウントを持つ人は誰でも Pi のすべての権限を持ちます。Cockpit がインターネットに公開されていれば、インターネットからでも、すべてを読み、変更し、消去できます。盗まれたパスワード一つで十分です。",
+  "Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.": "Cockpit をインターネットからも公開しますか？入れる人は誰でも、インターネットからでも Pi のすべての権限を持ちます。盗まれたパスワード一つで十分です。2 段階認証は必須ではありません。各アカウントに勧めてください。",
+  "Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.": "Pi のログ、プログラム、ネットワーク、ディスク、ターミナルをブラウザで、Pi のすべての権限とともに。管理者があなたに公開しました。",
+  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.": "コンピューターに慣れた人向け：Pi のログ、プログラム、ネットワーク、ディスク、ターミナルをブラウザで。pi-appliance アカウントで、ほかのパスワードなしに、Pi のすべての権限で入れます。",
+  "Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)": "コンソールのユーザーにも公開する（管理者だけでなく）",
+  "Ouvrir aussi depuis internet": "インターネットからも公開する"
 });

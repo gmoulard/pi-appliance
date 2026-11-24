@@ -425,7 +425,6 @@ piTranslations("ar", {
   "{0} : accès changé.": "{0}: تم تغيير الوصول.",
   "Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.": "كل شيء مسموح هناك، حتى إتلاف الـ Pi. لا تغيّر هناك شبكة Wi-Fi الخاصة بالـ Pi («pi-appliance-ap») ولا أقراص USB الخاصة بالبيانات والنسخ الاحتياطية: اضبطها من هذه الوحدة.",
   "Cockpit": "Cockpit",
-  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.": "لمن يجيد التعامل مع الحاسوب: سجلات الـPi وبرامجه وشبكته وأقراصه وطرفية، في المتصفح. تدخل بحسابك في pi-appliance، دون كلمة مرور أخرى، وبكل الصلاحيات على الـPi. للمسؤولين فقط، من المنزل.",
   "Installer Cockpit": "تثبيت Cockpit",
   "Ouvrir Cockpit": "فتح Cockpit",
   "Pas installé.": "غير مثبَّت.",
@@ -824,5 +823,17 @@ piTranslations("ar", {
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "لم يتحقق أي مسؤول من عنوان بريده الإلكتروني بعد: تحقّق من عنوانك في «حسابي» لتلقي التنبيهات.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "تُرسل التنبيهات إلى {0} مسؤول. تحقّق من عنوانك في «حسابي» لتتلقاها أنت أيضًا.",
   "Les alertes partent à {0} administrateur(s), vous compris.": "تُرسل التنبيهات إلى {0} مسؤول، بمن فيهم أنت.",
-  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "ترى هذه الخدمة صور الكاميرات الموصولة بجهاز Pi وتسجّلها. تبقى الصور على جهاز Pi. أخبِر الأشخاص الذين يتم تصويرهم: قد يكون تصوير شخص دون إخباره ممنوعًا. هل تريد المتابعة؟"
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "ترى هذه الخدمة صور الكاميرات الموصولة بجهاز Pi وتسجّلها. تبقى الصور على جهاز Pi. أخبِر الأشخاص الذين يتم تصويرهم: قد يكون تصوير شخص دون إخباره ممنوعًا. هل تريد المتابعة؟",
+  "Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.": "مفتوح لكل حسابات لوحة التحكم (ما عدا الضيوف)، ومن الإنترنت أيضًا.",
+  "Ouvert à tous les comptes de la console (sauf les invités), depuis la maison.": "مفتوح لكل حسابات لوحة التحكم (ما عدا الضيوف)، من المنزل.",
+  "Ouvert aux administrateurs, aussi depuis internet.": "مفتوح للمسؤولين، ومن الإنترنت أيضًا.",
+  "Ouvert aux administrateurs, depuis la maison.": "مفتوح للمسؤولين، من المنزل.",
+  "La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet ».": "لوحة التحكم غير مفتوحة على الإنترنت، لذلك Cockpit غير مفتوح أيضًا. افتحها في «لوحة التحكم على الإنترنت».",
+  "Accès à Cockpit enregistré.": "تم حفظ الوصول إلى Cockpit.",
+  "Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.": "فتح Cockpit لمستخدمي لوحة التحكم أيضًا؟ كل شخص لديه حساب سيملك كل الصلاحيات على الـ Pi: يمكنه قراءة كل شيء وتعديله وحذفه، حتى من الإنترنت إذا كان Cockpit مفتوحًا هناك. تكفي كلمة مرور مسروقة.",
+  "Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.": "فتح Cockpit من الإنترنت أيضًا؟ كل من يستطيع الدخول سيملك كل الصلاحيات على الـ Pi، حتى من الإنترنت: تكفي كلمة مرور مسروقة. التحقق بخطوتين غير إلزامي: انصح به كل حساب.",
+  "Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.": "سجلات الـ Pi وبرامجه وشبكته وأقراصه وطرفية، في المتصفح، مع كل الصلاحيات على الـ Pi. فتحه لك أحد المسؤولين.",
+  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.": "للأشخاص المرتاحين مع المعلوماتية: سجلات الـ Pi وبرامجه وشبكته وأقراصه وطرفية، في المتصفح. تدخل بحسابك في pi-appliance، بلا كلمة مرور أخرى، مع كل الصلاحيات على الـ Pi.",
+  "Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)": "فتح لمستخدمي لوحة التحكم أيضًا (ليس للمسؤولين فقط)",
+  "Ouvrir aussi depuis internet": "فتح من الإنترنت أيضًا"
 });

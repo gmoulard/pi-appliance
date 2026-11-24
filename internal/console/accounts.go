@@ -399,11 +399,23 @@ func (c *console) forwardServiceAdmin(w http.ResponseWriter, r *http.Request) {
 // passe pour les droits d'administrateur du Pi (sudo). Traefik retire ces
 // en-têtes de la demande du visiteur quand la console ne les donne pas : ils ne
 // peuvent pas être forgés.
+//
+// Qui passe (TODO-3.4) : les administrateurs, et les utilisateurs si un
+// administrateur l'a permis (jamais les invités) ; depuis internet, seulement
+// si Cockpit y est ouvert (le routeur n'existe pas sinon : seconde barrière).
 func (c *console) forwardCockpit(w http.ResponseWriter, r *http.Request) {
-	c.forwardWith(w, r, true, true, c.cockpitLogin)
+	c.forwardWith(w, r, false, true, c.cockpitLogin)
 }
 
 func (c *console) cockpitLogin(w http.ResponseWriter, r *http.Request, account auth.Account) bool {
+	if !c.cockpitAccountAllowed(account) {
+		writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
+		return false
+	}
+	if fromInternet(r) && !c.cockpitOnInternet() {
+		writeError(w, http.StatusForbidden, "Cockpit n'est pas ouvert depuis internet.")
+		return false
+	}
 	lang := pageLanguage(r)
 	if account.NeedsTwoFactorSetup() {
 		c.messagePage(w, r, http.StatusForbidden, "Cockpit", pageT(lang, "Activez d'abord dans la console la double authentification, exigée pour ce compte."))

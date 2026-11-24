@@ -425,7 +425,6 @@ piTranslations("zh", {
   "{0} : accès changé.": "{0}：访问权限已更改。",
   "Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.": "在那里可以做任何事，包括损坏树莓派。请不要在那里更改树莓派的 Wi-Fi（“pi-appliance-ap”）以及数据和备份用的 USB 磁盘：请在本控制台中设置它们。",
   "Cockpit": "Cockpit",
-  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.": "适合熟悉电脑的人：在浏览器中查看 Pi 的日志、程序、网络、磁盘，并使用终端。使用你的 pi-appliance 账户进入，无需其他密码，拥有 Pi 的全部权限。仅限管理员，仅在家中。",
   "Installer Cockpit": "安装 Cockpit",
   "Ouvrir Cockpit": "打开 Cockpit",
   "Pas installé.": "未安装。",
@@ -824,5 +823,17 @@ piTranslations("zh", {
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "还没有管理员验证自己的电子邮件地址：请在“我的账户”中验证您的地址以接收提醒。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "提醒会发给 {0} 位管理员。请在“我的账户”中验证您的地址，以便您也能收到。",
   "Les alertes partent à {0} administrateur(s), vous compris.": "提醒会发给 {0} 位管理员，包括您。",
-  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "此服务会查看并录制连接到 Pi 的摄像头的画面。画面保存在 Pi 上。请告知被拍摄的人：未经告知拍摄他人可能是违法的。是否继续？"
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "此服务会查看并录制连接到 Pi 的摄像头的画面。画面保存在 Pi 上。请告知被拍摄的人：未经告知拍摄他人可能是违法的。是否继续？",
+  "Ouvert à tous les comptes de la console (sauf les invités), aussi depuis internet.": "向控制台的所有账户开放（访客除外），也可从互联网访问。",
+  "Ouvert à tous les comptes de la console (sauf les invités), depuis la maison.": "向控制台的所有账户开放（访客除外），仅限在家。",
+  "Ouvert aux administrateurs, aussi depuis internet.": "向管理员开放，也可从互联网访问。",
+  "Ouvert aux administrateurs, depuis la maison.": "向管理员开放，仅限在家。",
+  "La console n'est pas ouverte sur internet : Cockpit ne l'est donc pas non plus. Ouvrez-la dans « Console sur internet ».": "控制台未在互联网上开放，因此 Cockpit 也未开放。请在“互联网上的控制台”中开放它。",
+  "Accès à Cockpit enregistré.": "Cockpit 访问设置已保存。",
+  "Ouvrir Cockpit aussi aux utilisateurs de la console ? Toute personne qui a un compte aura tous les droits sur le Pi : elle pourra tout lire, tout modifier, tout effacer, même depuis internet si Cockpit y est ouvert. Un mot de passe volé suffit.": "也向控制台用户开放 Cockpit？任何有账户的人都将拥有 Pi 的全部权限：可以读取、修改、删除一切，如果 Cockpit 在互联网上开放，甚至可以从互联网操作。一个被盗的密码就足够了。",
+  "Ouvrir Cockpit aussi depuis internet ? Toute personne qui peut y entrer aura tous les droits sur le Pi, même depuis internet : un mot de passe volé suffit. La double authentification n'est pas exigée : conseillez-la à chaque compte.": "也从互联网开放 Cockpit？任何能进入的人都将拥有 Pi 的全部权限，即使从互联网：一个被盗的密码就足够了。不强制要求两步验证：请建议每个账户启用。",
+  "Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.": "在浏览器中查看 Pi 的日志、程序、网络、磁盘和终端，拥有 Pi 的全部权限。管理员已为您开放。",
+  "Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.": "适合熟悉电脑的人：在浏览器中查看 Pi 的日志、程序、网络、磁盘和终端。您用 pi-appliance 账户进入，无需其他密码，拥有 Pi 的全部权限。",
+  "Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)": "也向控制台用户开放（不仅是管理员）",
+  "Ouvrir aussi depuis internet": "也从互联网开放"
 });

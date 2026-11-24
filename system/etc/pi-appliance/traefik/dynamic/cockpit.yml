@@ -22,6 +22,10 @@
 # droits sur le Pi (X-Superuser), sans second mot de passe. Tant que Cockpit n'est pas installé (cockpit.sh install), rien
 # n'écoute sur 127.0.0.1:9090 : la console sert sa page « service
 # indisponible » (pi-appliance-errors, dynamic/console.yml).
+# Ouvert plus largement par un administrateur (TODO-3.4) : aussi aux
+# utilisateurs (api/auth/forward-cockpit les admet), et aussi depuis internet
+# (routeur pi-appliance-cockpit-internet écrit par la console dans
+# console-internet.yml, avec ces mêmes middlewares).
 
 http:
   routers:
@@ -44,8 +48,9 @@ http:
       tls: {}
 
   middlewares:
-    # Comme pi-appliance-auth (dynamic/console.yml), réservé aux administrateurs :
-    # une autre personne connectée reçoit « 403 ». Authorization et X-Superuser
+    # Comme pi-appliance-auth (dynamic/console.yml), réservé aux administrateurs
+    # (et aux utilisateurs si un administrateur l'a permis) : une autre personne
+    # connectée reçoit « 403 ». Authorization et X-Superuser
     # sont toujours remplacés, ou retirés si la console ne les donne pas : un
     # visiteur ne peut pas les forger.
     pi-appliance-cockpit:
