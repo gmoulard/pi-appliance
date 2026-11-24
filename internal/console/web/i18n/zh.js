@@ -746,5 +746,6 @@ piTranslations("zh", {
   "CPU {0} %": "CPU {0}%",
   "RAM {0} %": "内存 {0}%",
   "Disque {0} / {1}": "磁盘 {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude 将拥有您的 Pi 的全部权限：它可以读取、修改和删除一切；每个操作都经过您的 Claude 应用，由您接受或拒绝。需要 Claude 订阅（Pro 或 Max）。安装后，请打开该服务，登录一次您的 Claude 账户。"
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude 将拥有您的 Pi 的全部权限：它可以读取、修改和删除一切；每个操作都经过您的 Claude 应用，由您接受或拒绝。需要 Claude 订阅（Pro 或 Max）。安装后，请打开该服务，登录一次您的 Claude 账户。",
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "此服务会查看并录制连接到 Pi 的摄像头的画面。画面保存在 Pi 上。请告知被拍摄的人：未经告知拍摄他人可能是违法的。是否继续？"
 });

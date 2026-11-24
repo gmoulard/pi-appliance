@@ -169,7 +169,8 @@ func TestNoWebPageHasNoAccess(t *testing.T) {
 
 // Seuls Portainer (accès à Docker) et Claude Code (conteneur privilégié,
 // pid: host), réservés aux administrateurs à la maison, ont tous les droits
-// sur le Pi parmi les applications livrées.
+// sur le Pi parmi les applications livrées ; les caméras sont confirmées
+// (camera_test.go).
 func TestMarketplaceRisks(t *testing.T) {
 	catalog, err := marketplace.Builtin()
 	if err != nil {
@@ -180,7 +181,7 @@ func TestMarketplaceRisks(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s : %v", app.ID, err)
 		}
-		if (len(risks) > 0) != (app.ID == "portainer" || app.ID == "claude-code") {
+		if (len(risks) > 0) != (app.ID == "portainer" || app.ID == "claude-code" || app.ID == CameraApp) {
 			t.Errorf("%s : options dangereuses %v", app.ID, risks)
 		}
 	}

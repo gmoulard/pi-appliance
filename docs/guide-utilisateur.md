@@ -241,6 +241,21 @@ L'application **WordPress vers Markdown** de la marketplace transforme les artic
 
 Les images sont prises sur le site WordPress d'origine, qui doit être en ligne ; celles qui n'ont pas pu être téléchargées sont listées dans le fichier `images-manquantes.txt` du `.zip`. Votre fichier reste sur le Pi : rien n'est envoyé ailleurs que les demandes d'images à votre site. Il est effacé du Pi peu après le téléchargement, et au plus tard une heure après la conversion. Une seule conversion à la fois sur le Pi. La première fois, le Pi doit avoir internet pour télécharger l'outil de conversion (quelques minutes).
 
+## Filmer avec une caméra : Caméra et timelapse {#camera}
+
+L'application **Caméra et timelapse** de la marketplace montre en direct la caméra du Pi (le petit module branché par une nappe) ou une webcam USB, enregistre une vidéo quand quelque chose bouge, et prend une photo toutes les quelques minutes pour en faire un film en accéléré (timelapse). Pas encore essayé sur un vrai Pi avec une caméra.
+
+1. Branchez la caméra **avant** d'installer (le Pi éteint pour le module caméra).
+2. Dans la **Marketplace**, installez **Caméra et timelapse**. Vous pouvez choisir l'intervalle des photos du timelapse (10 minutes par défaut) et la place maximale des vidéos et des photos (2 Go par défaut). La console vous demande de confirmer : le service voit et enregistre les images des caméras.
+3. Notez les **deux mots de passe** affichés à la fin : identifiant `regarder` pour regarder, identifiant `admin` pour les réglages. Ils ne seront plus affichés.
+4. Ouvrez le service (bouton **Ouvrir**) et connectez-vous avec `regarder`. Les vidéos et les photos d'un jour se retrouvent en touchant l'image de la caméra ; le bouton **Timelapse** des photos assemble le film en accéléré.
+
+Une caméra branchée plus tard apparaît quand vous touchez **Redémarrer** sur la fiche du service.
+
+**Vie privée** : les images restent sur le Pi. Par défaut, seules les personnes qui ont un compte sur la console ouvrent le service, et il n'est pas publié sur internet. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit.
+
+**Place sur la carte SD** : les vidéos sont effacées après 7 jours, les photos après 30 jours, et les plus anciennes plus tôt quand la place choisie est pleine ou qu'il reste moins de 1 Go sur le disque. Les vidéos et les photos ne sont pas dans les sauvegardes.
+
 ## Faire dépanner son Pi par Claude {#depannage-par-claude}
 
 Pour les personnes à l'aise avec l'informatique : l'application **Claude Code** de la marketplace laisse Claude, l'assistant d'Anthropic, dépanner le Pi depuis l'application Claude de votre téléphone (ou depuis [claude.ai/code](https://claude.ai/code)), sans brancher d'ordinateur ni ouvrir de port sur la box. Pas encore essayé sur un vrai Pi.

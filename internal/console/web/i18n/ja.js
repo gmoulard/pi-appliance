@@ -746,5 +746,6 @@ piTranslations("ja", {
   "CPU {0} %": "CPU {0}%",
   "RAM {0} %": "メモリ {0}%",
   "Disque {0} / {1}": "ディスク {0} / {1}",
-  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude は Pi に対するすべての権限を持ちます。すべてを読み、変更し、消去できます。どの操作も Claude アプリを通り、そこで許可または拒否します。Claude のサブスクリプション（Pro または Max）が必要です。インストール後、サービスを開いて Claude アカウントに一度ログインしてください。"
+  "Claude aura tous les droits sur votre Pi : il peut tout lire, tout modifier, tout effacer ; chaque action passe par votre application Claude, où vous l'acceptez ou la refusez. Il faut un abonnement Claude (Pro ou Max). Après l'installation, ouvrez le service pour vous connecter une fois à votre compte Claude.": "Claude は Pi に対するすべての権限を持ちます。すべてを読み、変更し、消去できます。どの操作も Claude アプリを通り、そこで許可または拒否します。Claude のサブスクリプション（Pro または Max）が必要です。インストール後、サービスを開いて Claude アカウントに一度ログインしてください。",
+  "Ce service voit et enregistre les images des caméras branchées au Pi. Les images restent sur le Pi. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit. Continuer ?": "このサービスは Pi に接続されたカメラの映像を見て録画します。映像は Pi の中に残ります。撮影される人に知らせてください。知らせずに人を撮影することは禁止されている場合があります。続けますか?"
 });
