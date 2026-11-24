@@ -271,3 +271,28 @@ func TestInstallHTTP(t *testing.T) {
 	response.Body.Close()
 	waitDownload(t, checker)
 }
+
+func TestVersionDetails(t *testing.T) {
+	release, client := publishedRelease(t, "")
+	checker, _ := applianceChecker(t, release, client, twoPackages)
+	checker.Releases = fakeLister{fakeReleases: fakeReleases{release: release}, releases: []Release{
+		{Tag: "v1.0.0", URL: "https://github.com/x/v1.0.0", PublishedAt: "2026-11-20T23:30:00Z",
+			Body: "Mise à jour du socle seulement, sans nouvelle image : les Pi déjà installés proposent cette version"},
+		{Tag: "v0.9.0", PublishedAt: "illisible",
+			Body: "**Console** : `Mon Pi` montre\r\nles versions.\r\n\r\nImage à flasher sur une carte SD."},
+	}}
+	versions, err := checker.Versions(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v := versions[0]; v.Date != "2026-11-20" || v.URL != "https://github.com/x/v1.0.0" || v.Summary != "" {
+		t.Fatalf("v1.0.0 : %+v", v)
+	}
+	if v := versions[1]; v.Date != "" || v.Summary != "Console : Mon Pi montre les versions." {
+		t.Fatalf("v0.9.0 : %+v", v)
+	}
+	long := releaseSummary(strings.Repeat("mot ", 100))
+	if n := len([]rune(long)); n > maxSummary || !strings.HasSuffix(long, "…") {
+		t.Fatalf("résumé coupé : %d %q", n, long)
+	}
+}

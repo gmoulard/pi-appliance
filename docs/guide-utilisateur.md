@@ -166,6 +166,12 @@ Sur la fiche du service (« Mes services »), la ligne « Depuis internet » don
 
 **À savoir :** sous internet, le service partage l'adresse de la console. Une page de ce service pourrait donc agir dans la console au nom d'une personne connectée. N'ouvrez sur internet que des services de confiance, dont vous connaissez le contenu.
 
+## Changer de version de pi-appliance {#versions-de-la-console}
+
+Dans « Mon Pi », thème « Entretien », la carte **Versions de la console** (administrateurs seulement) montre la version installée sur le Pi, sa date et son commit. Touchez **Voir les versions publiées** : la liste donne les versions du canal choisi dans « Mises à jour » (stables, ou stables et bêta), la plus récente en premier, avec leur date, un court résumé quand il existe et un lien vers leurs notes sur GitHub.
+
+**Installer cette version** installe la version de votre choix : une plus récente (mise à jour), ou une plus ancienne si la dernière vous gêne (retour à une version précédente). Avant un retour en arrière, sachez que les réglages faits depuis peuvent ne pas être compris par l'ancienne version ; vos services et leurs données sont gardés. Comme pour une mise à jour, la console et l'accès aux services sont coupés une minute ou deux, et si la version choisie ne démarre pas, celle d'avant revient toute seule. Une version marquée comme à flasher ne s'installe pas depuis la console : il faut écrire son image sur la carte SD. La même chose se fait en ligne de commande avec `pia update list` et `pia update <version>` ([ligne de commande](#ligne-de-commande)).
+
 ## Ligne de commande du Pi (SSH) {#ligne-de-commande}
 
 Pour les personnes à l'aise avec SSH, le Pi a une commande `pia` (nom long : `pi-appliance`). Tout ce qu'elle fait se fait aussi dans la console. Connectez-vous au Pi (`ssh <compte>@<nom-du-pi>.local`), puis :

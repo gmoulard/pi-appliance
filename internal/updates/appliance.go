@@ -80,6 +80,49 @@ type Version struct {
 	Current bool `json:"current"`
 	// Newer : plus récente que la version en service.
 	Newer bool `json:"newer"`
+	// Date : jour de publication, AAAA-MM-JJ (vide : inconnu).
+	Date string `json:"date,omitempty"`
+	// URL : page de la version sur GitHub (notes de version).
+	URL string `json:"url,omitempty"`
+	// Summary : résumé des nouveautés d'après les notes de la version (vide :
+	// les notes ne disent que comment l'installer).
+	Summary string `json:"summary,omitempty"`
+}
+
+// maxSummary : longueur maximale du résumé, en caractères.
+const maxSummary = 240
+
+// genericNotes : début des notes des versions publiées avant que le workflow
+// « Image » y mette le résumé du CHANGELOG ; elles ne disent que comment
+// installer la version, sans résumé à montrer.
+var genericNotes = []string{"Image à flasher", "Mise à jour du socle seulement"}
+
+// releaseSummary : premier paragraphe des notes de la version, en texte
+// simple, coupé à maxSummary caractères ; vide quand les notes ne disent que
+// comment l'installer.
+func releaseSummary(body string) string {
+	body = strings.TrimSpace(strings.ReplaceAll(body, "\r\n", "\n"))
+	paragraph, _, _ := strings.Cut(body, "\n\n")
+	text := strings.Join(strings.Fields(paragraph), " ")
+	text = strings.NewReplacer("**", "", "`", "").Replace(strings.TrimLeft(text, "#-* "))
+	for _, prefix := range genericNotes {
+		if strings.HasPrefix(text, prefix) {
+			return ""
+		}
+	}
+	if runes := []rune(text); len(runes) > maxSummary {
+		text = strings.TrimRight(string(runes[:maxSummary-1]), " ,;:") + "…"
+	}
+	return text
+}
+
+// releaseDate : jour de publication (AAAA-MM-JJ) d'une date RFC 3339.
+func releaseDate(published string) string {
+	when, err := time.Parse(time.RFC3339, published)
+	if err != nil {
+		return ""
+	}
+	return when.UTC().Format("2006-01-02")
 }
 
 // Versions rend les versions publiées récemment sur le canal choisi, la plus
@@ -98,6 +141,9 @@ func (c *Checker) Versions(ctx context.Context) ([]Version, error) {
 			Installable: c.installable(release),
 			Current:     strings.TrimPrefix(release.Tag, "v") == strings.TrimPrefix(c.Version, "v"),
 			Newer:       Newer(c.Version, release.Tag),
+			Date:        releaseDate(release.PublishedAt),
+			URL:         release.URL,
+			Summary:     releaseSummary(release.Body),
 		})
 	}
 	return versions, nil

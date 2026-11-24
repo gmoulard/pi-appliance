@@ -34,6 +34,10 @@ type Release struct {
 	Assets     []Asset `json:"assets"`
 	Prerelease bool    `json:"prerelease"`
 	Draft      bool    `json:"draft"`
+	// PublishedAt : date de publication, RFC 3339 (vide pour un brouillon).
+	PublishedAt string `json:"published_at"`
+	// Body : notes de la version (Markdown).
+	Body string `json:"body"`
 }
 
 // Canaux de version (spécification 5.4) : stable par défaut, bêta au choix

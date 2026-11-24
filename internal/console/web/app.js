@@ -2264,10 +2264,13 @@ async function loadUpdates() {
     updatesStatus = await api("updates");
   } catch {
     updatesBox.hidden = true;
+    versionsBox.hidden = true;
     return true;
   }
   updatesBox.hidden = false;
   showUpdates();
+  if (versionsBox.hidden) loadVersions();
+  else showVersions();
   const busy = applyBusy(updatesStatus.system) || updatesStatus.checking;
   if (busy) {
     watchUpdates();
@@ -2331,6 +2334,7 @@ updatesChannel.addEventListener("change", async () => {
   try {
     await api("updates/channel", { method: "PUT", body: JSON.stringify({ channel }) });
     showMessage([channel === "beta" ? t("Vous recevrez désormais les versions bêta.") : t("Vous recevrez désormais les versions stables seulement.")], "success");
+    if (versionsDetails.open) fetchVersions();
   } catch (error) {
     showMessage([error.message], "error");
   } finally {
@@ -2400,6 +2404,134 @@ updatesCheck.addEventListener("click", async () => {
   }
   await loadUpdates();
   watchUpdates();
+});
+
+// Versions de la console (TODO-5.26) : version installée, versions publiées
+// sur le canal choisi, et installation de l'une d'elles, plus récente ou plus
+// ancienne (même API que pia update), administrateurs seulement. La liste
+// n'est lue qu'à l'ouverture (GitHub limite les demandes sans compte).
+const versionsBox = document.getElementById("versionsBox");
+const versionsCurrent = document.getElementById("versionsCurrent");
+const versionsDetails = document.getElementById("versionsDetails");
+const versionsState = document.getElementById("versionsState");
+const versionsList = document.getElementById("versionsList");
+let versionsHealth = null;
+let versionsData = null;
+
+function versionNumber(version) {
+  return String(version || "").replace(/^v/, "");
+}
+
+function versionDay(date) {
+  const day = /^\d{4}-\d{2}-\d{2}$/.test(date || "") ? new Date(`${date}T12:00:00`) : null;
+  return day && !Number.isNaN(day.getTime()) ? day.toLocaleDateString(LOCALE, { day: "numeric", month: "long", year: "numeric" }) : "";
+}
+
+async function loadVersions() {
+  if (!versionsHealth) {
+    versionsHealth = await api("health").catch(() => null);
+  }
+  versionsBox.hidden = false;
+  const health = versionsHealth || {};
+  const parts = [];
+  const number = health.release ? versionNumber(health.version) : (updatesStatus && updatesStatus.appliance.current) || "";
+  parts.push(health.release ? t("Version installée : {0}", number) : t("Version installée : {0} (version de développement)", number || "?"));
+  const day = versionDay(health.date);
+  if (day) parts.push(t("du {0}", day));
+  const line = element("strong", parts.join(" "));
+  versionsCurrent.replaceChildren(line);
+  if (health.commit) {
+    versionsCurrent.append(` · ${t("commit")} `, footerLink(`${REPO_URL}/commit/${encodeURIComponent(health.commit)}`, element("code", health.commit.slice(0, 7))));
+  }
+  if (versionsDetails.open) {
+    await fetchVersions();
+  }
+}
+
+async function fetchVersions() {
+  versionsState.textContent = t("Lecture des versions publiées…");
+  try {
+    versionsData = await api("updates/versions");
+    versionsState.textContent = versionsData.channel === "beta"
+      ? t("Versions stables et bêta (choix dans « Mises à jour »).")
+      : t("Versions stables seulement (choix dans « Mises à jour »).");
+  } catch (error) {
+    versionsData = null;
+    const code = error.body && error.body.code;
+    versionsState.textContent = code === "offline"
+      ? t("Impossible de lire la liste des versions : le site de publication ne répond pas.")
+      : code === "unavailable" ? t("La liste des versions n'est pas disponible sur cette console.") : error.message;
+  }
+  showVersions();
+}
+
+function showVersions() {
+  if (!versionsData) {
+    versionsList.replaceChildren();
+    return;
+  }
+  const upgrading = upgradeBusy(updatesStatus);
+  const items = versionsData.versions.map((version) => {
+    const item = element("li");
+    const head = element("span");
+    const number = element("strong", versionNumber(version.version));
+    number.dir = "ltr";
+    head.append(number);
+    const facts = [];
+    const day = versionDay(version.date);
+    if (day) facts.push(day);
+    if (version.preview) facts.push(t("bêta"));
+    if (version.current) facts.push(t("version installée"));
+    if (facts.length) head.append(` · ${facts.join(" · ")}`);
+    item.append(head);
+    if (version.summary) {
+      // Résumé tiré des notes de la version, en français.
+      const summary = element("span", version.summary, "meta");
+      summary.lang = "fr";
+      summary.dir = "auto";
+      item.append(summary);
+    }
+    const link = footerLink(version.url || `${REPO_URL}/releases/tag/${encodeURIComponent(version.version)}`, t("Notes de la version"));
+    item.append(link);
+    if (!version.current && version.installable && !upgrading) {
+      const button = element("button", t("Installer cette version"), "secondary");
+      button.type = "button";
+      button.addEventListener("click", () => installVersion(version, button));
+      item.append(button);
+    } else if (!version.current && !version.installable) {
+      item.append(element("span", t("Cette version ne s'installe pas depuis la console : il faut flasher la carte SD avec son image."), "meta"));
+    }
+    return item;
+  });
+  if (items.length === 0) {
+    items.push(element("li", t("Aucune version publiée sur ce canal pour l'instant.")));
+  }
+  versionsList.replaceChildren(...items);
+}
+
+async function installVersion(version, button) {
+  const number = versionNumber(version.version);
+  const question = version.newer
+    ? t("Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.", number)
+    : t("Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.", number);
+  if (!window.confirm(question)) {
+    return;
+  }
+  button.disabled = true;
+  try {
+    const answer = await api("updates/appliance", { method: "POST", body: JSON.stringify({ version: version.version }) });
+    const target = (answer && answer.version) || version.version;
+    showMessage([t("Téléchargement de pi-appliance {0}…", target)], "info");
+    watchAppliance(target);
+  } catch (error) {
+    showMessage([error.message], "error");
+    button.disabled = false;
+  }
+  await loadUpdates();
+}
+
+versionsDetails.addEventListener("toggle", () => {
+  if (versionsDetails.open) fetchVersions();
 });
 
 // Réseau de la maison (spécification, section 4) : choix du Wi-Fi ou du câble,
@@ -4145,6 +4277,10 @@ function showAuth(mode) {
   clearInterval(updatesTimer);
   updatesTimer = null;
   updatesStatus = null;
+  versionsBox.hidden = true;
+  versionsDetails.open = false;
+  versionsData = null;
+  versionsHealth = null;
   clearInterval(cockpitTimer);
   cockpitTimer = null;
   cockpitStatus = null;
