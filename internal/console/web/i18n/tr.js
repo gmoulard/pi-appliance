@@ -810,7 +810,6 @@ piTranslations("tr", {
   "Aucune version publiée sur ce canal pour l'instant.": "Bu kanalda henüz yayımlanmış bir sürüm yok.",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "pi-appliance {0} sürümüne güncellensin mi?\n\nKonsol ve hizmetlere erişim bir iki dakika kesilecek. Yeni sürüm başlamazsa eski sürüm kendiliğinden geri gelir.",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "Daha eski bir sürüm olan pi-appliance {0} sürümüne dönülsün mü?\n\nO zamandan beri yapılan ayarlar eski sürüm tarafından anlaşılmayabilir. Hizmetler ve verileri korunur.\n\nKonsol ve hizmetlere erişim bir iki dakika kesilecek. Bu sürüm başlamazsa bugünkü sürüm kendiliğinden geri gelir.",
-  "Versions de la console": "Konsol sürümleri",
   "Voir les versions publiées": "Yayımlanan sürümleri gör",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Daha yeni bir sürüm yükleyebilir ya da en son sürüm sizi rahatsız ediyorsa önceki bir sürüme dönebilirsiniz. Hizmetleriniz ve verileri korunur.",
   "Alertes par e-mail": "E-posta uyarıları",
@@ -912,5 +911,6 @@ piTranslations("tr", {
   "Annuler": "İptal",
   "Confirmer depuis internet": "İnternetten onayla",
   "Confirmer": "Onayla",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "İnternetten bu işlem, konsol hesabınızın parolasını ve iki adımlı doğrulama kodunuzu gerektirir."
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "İnternetten bu işlem, konsol hesabınızın parolasını ve iki adımlı doğrulama kodunuzu gerektirir.",
+  "OK": "Tamam"
 });

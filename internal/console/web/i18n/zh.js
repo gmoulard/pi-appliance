@@ -810,7 +810,6 @@ piTranslations("zh", {
   "Aucune version publiée sur ce canal pour l'instant.": "此渠道暂时还没有发布任何版本。",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "更新到 pi-appliance {0}？\n\n控制台和服务的访问将中断一两分钟。如果新版本无法启动，旧版本会自动恢复。",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "回到较早的版本 pi-appliance {0}？\n\n此后所做的设置可能无法被旧版本识别。服务及其数据会保留。\n\n控制台和服务的访问将中断一两分钟。如果此版本无法启动，现在的版本会自动恢复。",
-  "Versions de la console": "控制台版本",
   "Voir les versions publiées": "查看已发布的版本",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "您可以安装更新的版本；如果最新版本给您带来不便，也可以回到以前的版本。您的服务及其数据会保留。",
   "Alertes par e-mail": "电子邮件提醒",
@@ -912,5 +911,6 @@ piTranslations("zh", {
   "Annuler": "取消",
   "Confirmer depuis internet": "从互联网确认",
   "Confirmer": "确认",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "从互联网执行此操作需要控制台账户密码和双重验证码。"
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "从互联网执行此操作需要控制台账户密码和双重验证码。",
+  "OK": "确定"
 });

@@ -810,7 +810,6 @@ piTranslations("fa", {
   "Aucune version publiée sur ce canal pour l'instant.": "هنوز هیچ نسخه‌ای روی این کانال منتشر نشده است.",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "به‌روزرسانی به pi-appliance {0}؟\n\nکنسول و دسترسی به سرویس‌ها یکی دو دقیقه قطع می‌شود. اگر نسخهٔ جدید راه نیفتد، نسخهٔ قبلی خودبه‌خود برمی‌گردد.",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "بازگشت به pi-appliance {0}، یک نسخهٔ قدیمی‌تر؟\n\nممکن است نسخهٔ قدیمی‌تر تنظیماتی را که از آن زمان انجام شده نفهمد. سرویس‌ها و داده‌هایشان نگه داشته می‌شوند.\n\nکنسول و دسترسی به سرویس‌ها یکی دو دقیقه قطع می‌شود. اگر این نسخه راه نیفتد، نسخهٔ امروز خودبه‌خود برمی‌گردد.",
-  "Versions de la console": "نسخه‌های کنسول",
   "Voir les versions publiées": "دیدن نسخه‌های منتشرشده",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "می‌توانید نسخهٔ جدیدتری نصب کنید، یا اگر آخرین نسخه برایتان دردسر دارد به نسخهٔ قبلی برگردید. سرویس‌ها و داده‌هایشان نگه داشته می‌شوند.",
   "Alertes par e-mail": "هشدارهای ایمیلی",
@@ -912,5 +911,6 @@ piTranslations("fa", {
   "Annuler": "لغو",
   "Confirmer depuis internet": "تأیید از اینترنت",
   "Confirmer": "تأیید",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "از اینترنت، این کار به گذرواژهٔ حساب کنسول و کد احراز هویت دومرحله‌ای نیاز دارد."
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "از اینترنت، این کار به گذرواژهٔ حساب کنسول و کد احراز هویت دومرحله‌ای نیاز دارد.",
+  "OK": "باشه"
 });

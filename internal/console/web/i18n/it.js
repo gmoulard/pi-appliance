@@ -810,7 +810,6 @@ piTranslations("it", {
   "Aucune version publiée sur ce canal pour l'instant.": "Nessuna versione pubblicata su questo canale per ora.",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "Aggiornare a pi-appliance {0}?\n\nLa console e l'accesso ai servizi saranno interrotti per un minuto o due. Se la nuova versione non si avvia, la vecchia torna da sola.",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "Tornare a pi-appliance {0}, una versione precedente?\n\nLe impostazioni fatte da allora potrebbero non essere comprese dalla versione precedente. I servizi e i loro dati sono conservati.\n\nLa console e l'accesso ai servizi saranno interrotti per un minuto o due. Se questa versione non si avvia, quella di oggi torna da sola.",
-  "Versions de la console": "Versioni della console",
   "Voir les versions publiées": "Vedi le versioni pubblicate",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Puoi installare una versione più recente, o tornare a una versione precedente se l'ultima ti dà fastidio. I tuoi servizi e i loro dati sono conservati.",
   "Alertes par e-mail": "Avvisi via e-mail",
@@ -912,5 +911,6 @@ piTranslations("it", {
   "Annuler": "Annulla",
   "Confirmer depuis internet": "Conferma da internet",
   "Confirmer": "Conferma",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Da internet, questa azione richiede la password del tuo account della console e il codice di autenticazione a due fattori."
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Da internet, questa azione richiede la password del tuo account della console e il codice di autenticazione a due fattori.",
+  "OK": "OK"
 });

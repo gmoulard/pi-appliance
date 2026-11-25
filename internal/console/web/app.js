@@ -12,7 +12,7 @@
 // See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
 const status = document.getElementById("status");
-const message = document.getElementById("message");
+const toasts = document.getElementById("toasts");
 const servicesList = document.getElementById("services");
 const noServices = document.getElementById("noServices");
 const catalogList = document.getElementById("catalog");
@@ -177,10 +177,52 @@ for (const input of document.querySelectorAll('input[type="password"]')) {
   addRevealButton(input);
 }
 
+// Messages (demande de l'utilisateur du 2026-11-25) : en bas à droite, toujours
+// visibles. Une erreur reste jusqu'au bouton « OK » ; une information ou une
+// réussite disparaît seule, après un temps qui suit sa longueur (le pointeur
+// dessus la garde).
 function showMessage(lines, kind) {
-  message.replaceChildren(...lines.map((line) => element("p", line)));
-  message.className = kind;
-  message.hidden = false;
+  const text = lines.filter(Boolean).join("\n");
+  for (const old of toasts.children) {
+    if (old.dataset.text === text) dismissMessage(old, true);
+  }
+  const toast = element("div", undefined, `toast ${kind}`);
+  toast.dataset.text = text;
+  toast.setAttribute("role", kind === "error" ? "alert" : "status");
+  const body = element("div", undefined, "toast-text");
+  body.append(...lines.filter(Boolean).map((line) => element("p", line)));
+  toast.append(body);
+  if (kind === "error") {
+    const ok = element("button", t("OK"), "secondary");
+    ok.type = "button";
+    ok.addEventListener("click", () => dismissMessage(toast));
+    toast.append(ok);
+  } else {
+    const delay = Math.min(12000, 4000 + text.length * 40);
+    let timer = window.setTimeout(() => dismissMessage(toast), delay);
+    toast.addEventListener("mouseenter", () => window.clearTimeout(timer));
+    toast.addEventListener("mouseleave", () => {
+      timer = window.setTimeout(() => dismissMessage(toast), 2000);
+    });
+    toast.addEventListener("click", () => dismissMessage(toast));
+  }
+  toasts.append(toast);
+  // Au plus 4 messages à l'écran : les plus anciens partent.
+  while (toasts.children.length > 4) toasts.firstElementChild.remove();
+}
+
+function dismissMessage(toast, now = false) {
+  if (now) {
+    toast.remove();
+    return;
+  }
+  toast.classList.add("leaving");
+  window.setTimeout(() => toast.remove(), 250);
+}
+
+// hideMessages : l'écran change (connexion, autre page) : plus de message.
+function hideMessages() {
+  toasts.replaceChildren();
 }
 
 // Adresse de la maison : nom en .local, localhost, adresse IP privée ou locale.
@@ -1226,7 +1268,7 @@ async function install(app, form, button, details) {
       body: JSON.stringify({ app: app.id, name: data.get("name"), parameters, access: data.get("access") || undefined, confirm_risks: confirm }),
     }));
     if (!result) {
-      message.hidden = true;
+      hideMessages();
       return;
     }
     const lines = [app.web ? t("{0} est prêt : https://{1}", app.name, result.instance.address) : t("{0} est prêt.", app.name)];
@@ -1449,7 +1491,7 @@ async function advancedPanel(service, panel) {
       if (result) {
         showMessage([t("Les réglages de {0} sont appliqués.", service.name)], "success");
       } else {
-        message.hidden = true;
+        hideMessages();
       }
     } catch (error) {
       showMessage([error.message], "error");
@@ -1820,7 +1862,7 @@ function customComposeCard() {
         }),
       }));
       if (!result) {
-        message.hidden = true;
+        hideMessages();
         return;
       }
       succeeded = true;
@@ -3419,7 +3461,7 @@ wifiScanButton.addEventListener("click", async () => {
   showMessage([t("Recherche des Wi-Fi…")], "info");
   try {
     showWifiList(await api("network/wifi/scan", { method: "POST" }));
-    message.hidden = true;
+    hideMessages();
   } catch (error) {
     showMessage([error.message, named(t("Si la page ne répond plus, reconnectez-vous au Wi-Fi « pi-appliance »."))], "error");
   } finally {
@@ -4849,26 +4891,22 @@ offerLater.addEventListener("click", async () => {
 });
 
 // Envoi des e-mails par le SMTP du Pi (spécification 10.2, TODO-3.16), pour
-// l'administrateur : le mot de passe n'est jamais renvoyé par le Pi. Les
-// réponses s'affichent dans la carte (mailResult) : le message du haut de la
-// page est hors de vue quand on règle l'envoi.
+// l'administrateur : le mot de passe n'est jamais renvoyé par le Pi.
 const mailSection = document.getElementById("mailSection");
 const mailState = document.getElementById("mailState");
 const mailForm = document.getElementById("mailForm");
 const mailTest = document.getElementById("mailTest");
 const mailForget = document.getElementById("mailForget");
 const mailSave = document.getElementById("mailSave");
-const mailResult = document.getElementById("mailResult");
 let mailStatus = null;
 // sessionInternet : console ouverte depuis internet (api/session) ; le
 // réglage de l'envoi ne change alors pas (homeOnlyPaths du serveur).
 let sessionInternet = false;
 const mailHome = document.getElementById("mailHome");
 
+// La carte e-mail passe par les messages communs (en bas à droite).
 function showMailResult(text, kind) {
-  mailResult.replaceChildren(element("p", text));
-  mailResult.className = kind;
-  mailResult.hidden = false;
+  showMessage([text], kind);
 }
 
 function showMail(status) {
@@ -5377,7 +5415,7 @@ authForm.addEventListener("submit", async (event) => {
   authButton.disabled = true;
   try {
     const account = await api(config.path, jsonBody("POST", body));
-    message.hidden = true;
+    hideMessages();
     if (authMode === "forgot") {
       showAuth("login");
       showMessage([
@@ -5458,20 +5496,20 @@ emailCodeButton.addEventListener("click", requestLoginCode);
 
 forgotButton.addEventListener("click", () => {
   const name = authForm.elements.name.value;
-  message.hidden = true;
+  hideMessages();
   showAuth("forgot");
   authForm.elements.who.value = name;
   authForm.elements.who.focus();
 });
 
 loginButton.addEventListener("click", () => {
-  message.hidden = true;
+  hideMessages();
   showAuth("login");
 });
 
 logoutButton.addEventListener("click", async () => {
   await api("logout", { method: "POST" }).catch(() => null);
-  message.hidden = true;
+  hideMessages();
   showAuth("login");
 });
 
@@ -5687,7 +5725,7 @@ diagnosticDownload.addEventListener("click", async () => {
     link.click();
     link.remove();
     URL.revokeObjectURL(link.href);
-    message.hidden = true;
+    hideMessages();
   } catch (error) {
     showMessage([error.message], "error");
   } finally {

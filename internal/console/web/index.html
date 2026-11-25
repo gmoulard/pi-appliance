@@ -31,7 +31,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <section class="hero" aria-live="polite">
 <p class="hero-state"><span class="dot" id="statusDot"></span><span id="status">Connexion à l'appliance…</span><span id="heroLoad" class="hero-load" hidden></span></p>
 </section>
-<div id="message" role="status" hidden></div>
+
 <section id="auth" class="card" hidden>
 <h2 id="authTitle"></h2>
 <p id="authHelp"></p>
@@ -129,9 +129,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <option value="stable">Stables (conseillé)</option>
 <option value="beta">Bêta : nouveautés en avance, moins éprouvées</option>
 </select></label>
-</div>
-<div id="versionsBox" class="card" data-theme="entretien" hidden>
-<h3>Versions de la console</h3>
+<div id="versionsBox" class="versions" hidden>
 <p id="versionsCurrent"></p>
 <details id="versionsDetails">
 <summary>Voir les versions publiées</summary>
@@ -139,6 +137,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <p id="versionsState" class="state" aria-live="polite"></p>
 <ul id="versionsList" class="backup-list"></ul>
 </details>
+</div>
 </div>
 <div class="card" data-theme="etat">
 <div id="piNow" class="tiles"></div>
@@ -383,7 +382,6 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <button id="mailTest" class="secondary" type="button">Envoyer un e-mail d'essai</button>
 <button id="mailForget" class="secondary" type="button" hidden>Ne plus envoyer d'e-mails</button>
 </div>
-<div id="mailResult" role="status" hidden></div>
 </form>
 <details>
 <summary>Aide : quels réglages pour ma boîte e-mail ?</summary>
@@ -546,6 +544,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 </ul>
 </section>
 </main>
+<div id="toasts"></div>
 <dialog id="confirmDialog" class="card">
 <form id="confirmForm" method="dialog">
 <h2>Confirmer depuis internet</h2>

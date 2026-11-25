@@ -810,7 +810,6 @@ piTranslations("en", {
   "Aucune version publiée sur ce canal pour l'instant.": "No version published on this channel yet.",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "Update to pi-appliance {0}?\n\nThe console and access to services will be cut for a minute or two. If the new version does not start, the old one comes back on its own.",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "Go back to pi-appliance {0}, an earlier version?\n\nSettings made since then may not be understood by the older version. Services and their data are kept.\n\nThe console and access to services will be cut for a minute or two. If this version does not start, today's one comes back on its own.",
-  "Versions de la console": "Console versions",
   "Voir les versions publiées": "See the published versions",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "You can install a newer version, or go back to an earlier version if the latest one bothers you. Your services and their data are kept.",
   "Alertes par e-mail": "Email alerts",
@@ -912,5 +911,6 @@ piTranslations("en", {
   "Annuler": "Cancel",
   "Confirmer depuis internet": "Confirm from the internet",
   "Confirmer": "Confirm",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "From the internet, this action requires your console account password and your two-factor code."
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "From the internet, this action requires your console account password and your two-factor code.",
+  "OK": "OK"
 });

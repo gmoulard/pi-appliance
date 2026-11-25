@@ -810,7 +810,6 @@ piTranslations("nl", {
   "Aucune version publiée sur ce canal pour l'instant.": "Nog geen versie gepubliceerd op dit kanaal.",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "Bijwerken naar pi-appliance {0}?\n\nDe console en de toegang tot de diensten worden een minuut of twee onderbroken. Als de nieuwe versie niet start, komt de oude vanzelf terug.",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "Teruggaan naar pi-appliance {0}, een eerdere versie?\n\nInstellingen die sindsdien zijn gemaakt, begrijpt de oudere versie misschien niet. De diensten en hun gegevens blijven bewaard.\n\nDe console en de toegang tot de diensten worden een minuut of twee onderbroken. Als deze versie niet start, komt die van vandaag vanzelf terug.",
-  "Versions de la console": "Versies van de console",
   "Voir les versions publiées": "Gepubliceerde versies bekijken",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "U kunt een nieuwere versie installeren, of teruggaan naar een eerdere versie als de nieuwste u hindert. Uw diensten en hun gegevens blijven bewaard.",
   "Alertes par e-mail": "Waarschuwingen per e-mail",
@@ -912,5 +911,6 @@ piTranslations("nl", {
   "Annuler": "Annuleren",
   "Confirmer depuis internet": "Bevestigen vanaf internet",
   "Confirmer": "Bevestigen",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Vanaf internet vereist deze actie het wachtwoord van uw consoleaccount en uw code voor tweestapsverificatie."
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Vanaf internet vereist deze actie het wachtwoord van uw consoleaccount en uw code voor tweestapsverificatie.",
+  "OK": "OK"
 });

@@ -810,7 +810,6 @@ piTranslations("ar", {
   "Aucune version publiée sur ce canal pour l'instant.": "لا يوجد أي إصدار منشور على هذه القناة حتى الآن.",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "التحديث إلى pi-appliance {0}؟\n\nستنقطع وحدة التحكم والوصول إلى الخدمات دقيقة أو دقيقتين. إذا لم يبدأ الإصدار الجديد، يعود القديم تلقائيًا.",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "العودة إلى pi-appliance {0}، وهو إصدار سابق؟\n\nقد لا يفهم الإصدار الأقدم الإعدادات التي أُجريت منذ ذلك الحين. تُحفظ الخدمات وبياناتها.\n\nستنقطع وحدة التحكم والوصول إلى الخدمات دقيقة أو دقيقتين. إذا لم يبدأ هذا الإصدار، يعود إصدار اليوم تلقائيًا.",
-  "Versions de la console": "إصدارات وحدة التحكم",
   "Voir les versions publiées": "عرض الإصدارات المنشورة",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "يمكنك تثبيت إصدار أحدث، أو العودة إلى إصدار سابق إذا كان الأخير يزعجك. تُحفظ خدماتك وبياناتها.",
   "Alertes par e-mail": "التنبيهات بالبريد الإلكتروني",
@@ -912,5 +911,6 @@ piTranslations("ar", {
   "Annuler": "إلغاء",
   "Confirmer depuis internet": "التأكيد من الإنترنت",
   "Confirmer": "تأكيد",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "من الإنترنت، يتطلب هذا الإجراء كلمة مرور حسابك في وحدة التحكم ورمز المصادقة الثنائية."
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "من الإنترنت، يتطلب هذا الإجراء كلمة مرور حسابك في وحدة التحكم ورمز المصادقة الثنائية.",
+  "OK": "حسنًا"
 });

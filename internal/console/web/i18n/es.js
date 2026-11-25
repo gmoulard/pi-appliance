@@ -810,7 +810,6 @@ piTranslations("es", {
   "Aucune version publiée sur ce canal pour l'instant.": "Todavía no hay ninguna versión publicada en este canal.",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "¿Actualizar a pi-appliance {0}?\n\nLa consola y el acceso a los servicios se cortarán uno o dos minutos. Si la nueva versión no arranca, la anterior vuelve sola.",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "¿Volver a pi-appliance {0}, una versión anterior?\n\nLos ajustes hechos desde entonces pueden no ser comprendidos por la versión anterior. Los servicios y sus datos se conservan.\n\nLa consola y el acceso a los servicios se cortarán uno o dos minutos. Si esta versión no arranca, la de hoy vuelve sola.",
-  "Versions de la console": "Versiones de la consola",
   "Voir les versions publiées": "Ver las versiones publicadas",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "Puede instalar una versión más reciente o volver a una versión anterior si la última le molesta. Sus servicios y sus datos se conservan.",
   "Alertes par e-mail": "Alertas por correo electrónico",
@@ -912,5 +911,6 @@ piTranslations("es", {
   "Annuler": "Cancelar",
   "Confirmer depuis internet": "Confirmar desde internet",
   "Confirmer": "Confirmar",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Desde internet, esta acción requiere la contraseña de su cuenta de la consola y su código de verificación en dos pasos."
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Desde internet, esta acción requiere la contraseña de su cuenta de la consola y su código de verificación en dos pasos.",
+  "OK": "Aceptar"
 });

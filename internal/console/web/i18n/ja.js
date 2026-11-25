@@ -810,7 +810,6 @@ piTranslations("ja", {
   "Aucune version publiée sur ce canal pour l'instant.": "このチャンネルにはまだ公開されたバージョンがありません。",
   "Mettre à jour vers pi-appliance {0} ?\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si la nouvelle version ne démarre pas, l'ancienne revient toute seule.": "pi-appliance {0} にアップデートしますか？\n\nコンソールとサービスへのアクセスが 1〜2 分止まります。新しいバージョンが起動しない場合は、元のバージョンに自動で戻ります。",
   "Revenir à pi-appliance {0}, une version précédente ?\n\nLes réglages faits depuis peuvent ne pas être compris par l'ancienne version. Les services et leurs données sont gardés.\n\nLa console et l'accès aux services seront coupés une minute ou deux. Si cette version ne démarre pas, celle d'aujourd'hui revient toute seule.": "以前のバージョンである pi-appliance {0} に戻しますか？\n\nその後に行った設定は、古いバージョンでは理解されないことがあります。サービスとそのデータはそのまま残ります。\n\nコンソールとサービスへのアクセスが 1〜2 分止まります。このバージョンが起動しない場合は、現在のバージョンに自動で戻ります。",
-  "Versions de la console": "コンソールのバージョン",
   "Voir les versions publiées": "公開されているバージョンを見る",
   "Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.": "新しいバージョンをインストールすることも、最新版に問題があれば以前のバージョンに戻すこともできます。サービスとそのデータはそのまま残ります。",
   "Alertes par e-mail": "メールでのお知らせ",
@@ -912,5 +911,6 @@ piTranslations("ja", {
   "Annuler": "キャンセル",
   "Confirmer depuis internet": "インターネットから確認",
   "Confirmer": "確認",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "インターネットからこの操作を行うには、コンソールのアカウントのパスワードと 2 段階認証のコードが必要です。"
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "インターネットからこの操作を行うには、コンソールのアカウントのパスワードと 2 段階認証のコードが必要です。",
+  "OK": "OK"
 });
