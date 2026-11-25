@@ -64,7 +64,9 @@ func TestBrowseAndDownload(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := f.Files(context.Background(), snapshot.ID, "cloud", ""); !errors.Is(err, ErrPreparing) {
+	// Première demande : la liste se prépare en arrière-plan ; sur une si
+	// petite archive, elle peut déjà être prête (pas d'erreur).
+	if _, _, err := f.Files(context.Background(), snapshot.ID, "cloud", ""); err != nil && !errors.Is(err, ErrPreparing) {
 		t.Fatalf("première demande : %v", err)
 	}
 	if got := names(f.files(t, snapshot.ID, "cloud", "")); !slices.Equal(got, []string{"pi-cloud_files"}) {
