@@ -1595,6 +1595,9 @@ function customComposeCard() {
   details.append(element("summary", t("Installer un fichier Docker Compose")));
   const form = element("form");
   form.append(element("p", t("Ce service ne sera ni vérifié ni pris en charge par le projet pi-appliance. Les images doivent être prêtes à l'emploi (pas de « build ») et exister pour le Pi (arm64)."), "note"));
+  const examples = element("p", undefined, "note");
+  examples.append(footerLink("https://github.com/Websoft9/docker-library/tree/main/apps", t("D'autres exemples de fichiers Docker Compose (Websoft9), à adapter avant de les coller : leurs réglages sont dans un fichier .env à part.")));
+  form.append(examples);
   const nameLabel = element("label", t("Nom du service (son adresse)"));
   const name = element("input");
   name.name = "name";

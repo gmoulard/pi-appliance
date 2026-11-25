@@ -129,6 +129,7 @@ piTranslations("it", {
   "Pour les personnes qui connaissent Docker : installez votre propre fichier Docker Compose, hors marketplace.": "Per chi conosce Docker: installa il tuo file Docker Compose, fuori dal marketplace.",
   "Installer un fichier Docker Compose": "Installa un file Docker Compose",
   "Ce service ne sera ni vérifié ni pris en charge par le projet pi-appliance. Les images doivent être prêtes à l'emploi (pas de « build ») et exister pour le Pi (arm64).": "Questo servizio non sarà né verificato né supportato dal progetto pi-appliance. Le immagini devono essere pronte all'uso (niente «build») ed esistere per il Pi (arm64).",
+  "D'autres exemples de fichiers Docker Compose (Websoft9), à adapter avant de les coller : leurs réglages sont dans un fichier .env à part.": "Altri esempi di file Docker Compose (Websoft9), da adattare prima di incollarli: le loro impostazioni sono in un file .env separato.",
   "Nom du service (son adresse)": "Nome del servizio (il suo indirizzo)",
   "Fichier compose.yaml": "File compose.yaml",
   "Conteneur à ouvrir à l'adresse du service": "Container da aprire all'indirizzo del servizio",
