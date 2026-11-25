@@ -72,6 +72,9 @@ type Env struct {
 	// Chown donne un fichier à un compte (clés SSH) ; os.Lchown sur le Pi.
 	Chown func(path string, uid, gid int) error
 	HTTP  *http.Client
+	// Force : option -force (ou --force, --forcer), toutes les questions de
+	// confirmation valent oui (TODO-5.20).
+	Force bool
 }
 
 // Defaults : l'environnement du vrai Pi.
@@ -135,8 +138,33 @@ type usageError struct{ message string }
 
 func (e usageError) Error() string { return e.message }
 
+// forceFlags : formes de l'option qui évite de confirmer, à toute place de la ligne.
+var forceFlags = map[string]bool{"-force": true, "--force": true, "-forcer": true, "--forcer": true}
+
+// ForceFlag dit si arg est l'option -force : « pi-appliance -force <commande> »
+// (et la relance par sudo, qui passe par ce nom) est la ligne de commande, pas la console.
+func ForceFlag(arg string) bool { return forceFlags[strings.ToLower(arg)] }
+
+// withoutForce retire l'option -force de args et dit si elle y était.
+func withoutForce(args []string) ([]string, bool) {
+	kept := make([]string, 0, len(args))
+	force := false
+	for _, arg := range args {
+		if forceFlags[strings.ToLower(arg)] {
+			force = true
+			continue
+		}
+		kept = append(kept, arg)
+	}
+	return kept, force
+}
+
 // Run exécute la commande args et rend le code de sortie du programme.
 func Run(args []string, env Env) int {
+	// La relance par sudo reçoit la ligne entière, -force compris.
+	original := args
+	args, force := withoutForce(args)
+	env.Force = env.Force || force
 	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" {
 		args = []string{"aide"}
 	}
@@ -167,7 +195,7 @@ func Run(args []string, env Env) int {
 	// Toutes les autres commandes lisent le jeton de la console ou le système :
 	// pia se relance lui-même avec sudo, jamais besoin de le taper.
 	if env.Euid != 0 && !asUser[command] && env.Elevate != nil {
-		err := env.Elevate(args)
+		err := env.Elevate(original)
 		fmt.Fprintf(env.Err, "Impossible de demander les droits d'administrateur du Pi (%v) : connectez-vous avec un compte qui peut utiliser sudo.\n", err)
 		return 1
 	}
@@ -213,6 +241,10 @@ const help = `pia : ligne de commande du Pi (la console reste le moyen le plus s
   pia ssh cle ajouter "<clé publique>" | --fichier FICHIER [--utilisateur NOM]
   pia ssh cle retirer <numéro> [--utilisateur NOM]
   pia ssh mot-de-passe activer|desactiver
+
+Option -force (ou --force, --forcer), à mettre n'importe où sur la ligne :
+aucune question de confirmation, la réponse est oui (vaut aussi --oui, --yes
+et --confirmer). Par exemple : pia -force desinstaller cloud --effacer-donnees
 
 Inutile de taper sudo : pia demande lui-même les droits d'administrateur du Pi
 quand une commande en a besoin.
@@ -275,7 +307,12 @@ func errNeedRoot(args ...string) error {
 }
 
 // confirm pose une question oui/non ; « o », « oui », « y », « yes » valent oui.
+// Avec -force, la question est affichée et la réponse est oui, sans rien lire.
 func confirm(env Env, question string) bool {
+	if env.Force {
+		fmt.Fprintln(env.Out, question+" oui (-force)")
+		return true
+	}
 	fmt.Fprint(env.Out, question+" [o/N] ")
 	line, _ := bufio.NewReader(env.In).ReadString('\n')
 	switch strings.ToLower(strings.TrimSpace(line)) {
@@ -630,7 +667,7 @@ func install(env Env, args []string) error {
 		}
 		parameters[key] = value
 	}
-	request := map[string]any{"app": chosen.ID, "name": name, "parameters": parameters, "confirm_risks": f.set["confirmer"]}
+	request := map[string]any{"app": chosen.ID, "name": name, "parameters": parameters, "confirm_risks": f.set["confirmer"] || env.Force}
 	if access := f.value("acces"); access != "" {
 		request["access"] = access
 	}

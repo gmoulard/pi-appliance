@@ -142,8 +142,11 @@ func (c *console) internetHosts() []string {
 // traefikInternet : configuration dynamique de Traefik pour la console sur
 // internet ; vide quand elle est fermée ou que le Pi n'a pas d'adresse.
 // Les adresses de l'authentification déléguée (api/auth/forward…) ne sont
-// appelées que par Traefik lui-même : jamais publiées sur internet.
-func traefikInternet(enabled bool, hosts []string) string {
+// appelées que par Traefik lui-même : jamais publiées sur internet. Avec
+// cockpit, Cockpit (/cockpit/) est publié aussi sur ces adresses (TODO-3.4) :
+// mêmes middlewares qu'à la maison (dynamic/cockpit.yml), donc toujours une
+// session de la console et un compte admis par api/auth/forward-cockpit.
+func traefikInternet(enabled bool, hosts []string, cockpit bool) string {
 	if !enabled || len(hosts) == 0 {
 		return ""
 	}
@@ -160,6 +163,15 @@ func traefikInternet(enabled bool, hosts []string) string {
 	b.WriteString("      priority: 2\n")
 	b.WriteString("      service: pi-appliance-console@file\n")
 	b.WriteString("      tls:\n        certResolver: letsencrypt\n")
+	if cockpit {
+		b.WriteString("    pi-appliance-cockpit-internet:\n")
+		b.WriteString("      entryPoints: [websecure]\n")
+		fmt.Fprintf(&b, "      rule: \"(%s) && PathPrefix(`/cockpit`)\"\n", strings.Join(rules, " || "))
+		b.WriteString("      priority: 2\n")
+		b.WriteString("      middlewares: [pi-appliance-errors@file, pi-appliance-cockpit@file]\n")
+		b.WriteString("      service: pi-appliance-cockpit@file\n")
+		b.WriteString("      tls:\n        certResolver: letsencrypt\n")
+	}
 	return b.String()
 }
 
@@ -173,7 +185,7 @@ func (c *console) syncTraefik() error {
 	internetMu.Lock()
 	defer internetMu.Unlock()
 	hosts := c.internetHosts()
-	if err := writeDynamic(c.TraefikInternetFile, traefikInternet(c.internetEnabled(), hosts)); err != nil {
+	if err := writeDynamic(c.TraefikInternetFile, traefikInternet(c.internetEnabled(), hosts, c.cockpitOnInternet())); err != nil {
 		return err
 	}
 	return writeDynamic(c.ServicesInternetFile, traefikServices(hosts, c.publications()))
@@ -227,10 +239,12 @@ func RunInternet(ctx context.Context, config Config, every time.Duration) {
 }
 
 // internetPaths : ce qu'une demande venue d'internet atteint même console
-// fermée : api/hello (application mobile), et l'authentification déléguée,
-// appelée par Traefik avec l'adresse du visiteur d'un service.
+// fermée : api/hello (application mobile), l'authentification déléguée,
+// appelée par Traefik avec l'adresse du visiteur d'un service, et l'API des
+// proches (sauvegarde croisée, demandes signées par l'autre Pi, internal/backup).
 func internetOpenPath(path string) bool {
-	return path == BasePath+"/api/hello" || strings.HasPrefix(path, BasePath+"/api/auth/forward") || strings.HasPrefix(path, BasePath+"/erreur/")
+	return path == BasePath+"/api/hello" || strings.HasPrefix(path, BasePath+"/api/auth/forward") || strings.HasPrefix(path, BasePath+"/erreur/") ||
+		strings.HasPrefix(path, BasePath+"/api/peer/")
 }
 
 // homeOnlyPaths : à faire depuis la maison, même console ouverte.

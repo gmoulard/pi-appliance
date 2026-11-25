@@ -200,7 +200,8 @@ var fullControl = map[string]bool{"docker-socket": true, "privileged": true, "ho
 // tous les droits sur le Pi (accès à Docker, conteneur privilégié, pid: host), à faire
 // confirmer par l'administrateur avant de l'installer. Une application qui en
 // a doit être réservée aux administrateurs, à la maison (access: admins) :
-// sinon elle est refusée.
+// sinon elle est refusée. L'accès aux caméras du Pi (CameraApp) est aussi à
+// confirmer, sans réserver l'application aux administrateurs.
 func MarketplaceRisks(app marketplace.App) ([]Risk, error) {
 	_, risks, err := AnalyzeCompose(app.Compose)
 	if err != nil {
@@ -214,6 +215,10 @@ func MarketplaceRisks(app marketplace.App) ([]Risk, error) {
 	}
 	if len(full) > 0 && app.Access != AccessAdmins {
 		return nil, fmt.Errorf("%w : %s a la main sur tout le Pi, son manifeste doit le réserver aux administrateurs, à la maison (access: admins)", ErrInvalid, app.Name)
+	}
+	// Caméras : installation confirmée (vie privée, camera.go).
+	if app.ID == CameraApp {
+		full = append(full, cameraRisks()...)
 	}
 	return full, nil
 }

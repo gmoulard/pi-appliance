@@ -207,15 +207,25 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 }
 
 func TestTraefikInternet(t *testing.T) {
-	if got := traefikInternet(false, []string{"maison.example.org"}); got != "" {
+	if got := traefikInternet(false, []string{"maison.example.org"}, true); got != "" {
 		t.Fatalf("console fermée : %q", got)
 	}
-	if got := traefikInternet(true, nil); got != "" {
+	if got := traefikInternet(true, nil, true); got != "" {
 		t.Fatalf("sans adresse : %q", got)
 	}
-	got := traefikInternet(true, []string{"controltower.pi-appliance.com", "maison.duckdns.org"})
+	got := traefikInternet(true, []string{"controltower.pi-appliance.com", "maison.duckdns.org"}, false)
 	if !strings.Contains(got, "(Host(`controltower.pi-appliance.com`) || Host(`maison.duckdns.org`)) && PathPrefix(`/pi-appliance`)") {
 		t.Fatalf("règle :\n%s", got)
+	}
+	if strings.Contains(got, "cockpit") {
+		t.Fatalf("Cockpit publié sans être ouvert :\n%s", got)
+	}
+	// Cockpit ouvert sur internet (TODO-3.4) : même authentification déléguée qu'à la maison.
+	got = traefikInternet(true, []string{"maison.duckdns.org"}, true)
+	if !strings.Contains(got, "rule: \"(Host(`maison.duckdns.org`)) && PathPrefix(`/cockpit`)\"") ||
+		!strings.Contains(got, "middlewares: [pi-appliance-errors@file, pi-appliance-cockpit@file]") ||
+		!strings.Contains(got, "service: pi-appliance-cockpit@file") {
+		t.Fatalf("Cockpit :\n%s", got)
 	}
 }
 

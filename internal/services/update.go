@@ -96,6 +96,7 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 	if err != nil {
 		return Result{}, err
 	}
+	volumes = withoutNoCopy(volumes, name, app.Compose)
 	if err := m.checkSpace(name, volumes); err != nil {
 		return Result{}, err
 	}
@@ -138,7 +139,10 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 		failure = err.Error()
 	} else {
 		copied = volumes
-		if output, err := m.compose(ctx, name, "up", "--detach", "--wait", "--remove-orphans"); err != nil {
+		// --force-recreate : un changement du seul contenu d'une « configs » du manifeste
+		// (script embarqué…) ne recrée pas le conteneur sans lui (TODO-2.70) ; les volumes
+		// restent, les données sont gardées.
+		if output, err := m.compose(ctx, name, "up", "--detach", "--wait", "--remove-orphans", "--force-recreate"); err != nil {
 			failure = "la nouvelle version n'a pas démarré : " + trimOutput(output, err)
 		}
 	}
@@ -185,7 +189,8 @@ func (m *Manager) rollback(ctx context.Context, name string, compose, env []byte
 			return err
 		}
 	}
-	if output, err := m.compose(ctx, name, "up", "--detach", "--wait", "--remove-orphans"); err != nil {
+	// Recréé aussi au retour : les « configs » d'avant reviennent avec le manifeste d'avant.
+	if output, err := m.compose(ctx, name, "up", "--detach", "--wait", "--remove-orphans", "--force-recreate"); err != nil {
 		problems = append(problems, trimOutput(output, err))
 	}
 	if len(problems) > 0 {

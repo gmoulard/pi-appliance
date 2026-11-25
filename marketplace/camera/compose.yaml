@@ -1,0 +1,375 @@
+x-pi-appliance:
+  name: Caméra et timelapse
+  description: Voir en direct la caméra du Pi (module caméra) ou une webcam USB, enregistrer une vidéo quand quelque chose bouge, et prendre une photo toutes les quelques minutes pour en faire un film en accéléré (timelapse). Branchez la caméra avant d'installer ; une caméra branchée plus tard apparaît quand on redémarre le service. Deux mots de passe sont donnés à l'installation, à noter — identifiant « regarder » pour regarder, « admin » pour les réglages. Vie privée — les images restent sur le Pi, seules les personnes qui ont un compte sur la console les voient, et elles ne sont pas publiées sur internet. Prévenez les personnes filmées, filmer quelqu'un sans le lui dire peut être interdit. Les vidéos et les photos ne sont pas sauvegardées ; les plus anciennes sont effacées (vidéos après 7 jours, photos après 30 jours, ou plus tôt quand la place choisie est pleine).
+  icon: M4 7h3l2-2h6l2 2h3v12H4zM12 10a3 3 0 1 0 0 6a3 3 0 1 0 0-6z
+  category: Maison
+  tags: [maison]
+  license: GPL-3.0
+  subdomain: camera
+  service: motioneye
+  port: 8765
+  memory_mb: 384
+  disk_mb: 4096
+  login: console
+  access: users
+  parameters:
+    - name: MOTIONEYE_ADMIN_PASSWORD
+      label: Mot de passe des réglages de la caméra (identifiant admin)
+      generate: true
+    - name: MOTIONEYE_VIEW_PASSWORD
+      label: Mot de passe pour regarder la caméra (identifiant regarder)
+      generate: true
+    - name: TIMELAPSE_MINUTES
+      label: "Timelapse : une photo toutes les combien de minutes ?"
+      default: "10"
+    - name: PLACE_MAX_GO
+      label: Place maximale des vidéos et des photos, en Go (les plus anciennes sont effacées au-delà)
+      default: "2"
+
+services:
+  # Caméras du Pi (spécification 6.3, TODO-4.9). motionEye (GPL-3.0), image
+  # officielle à version fixée (Debian 13, arm64) : page de la caméra en
+  # direct, vidéo enregistrée sur détection de mouvement (motion), photo à
+  # intervalle régulier et film en accéléré assemblé depuis la page (bouton
+  # « Timelapse » des photos d'un jour).
+  #
+  # Accès aux caméras : la console ajoute à ces deux services, dans
+  # pi-appliance.override.json, les périphériques vidéo du Pi seulement
+  # (dossier /dev du Pi monté, droits limités aux caméras : vidéo, « media »,
+  # mémoire partagée « dma_heap », numéros lus dans /proc/devices du Pi ;
+  # services.CameraApp). Une webcam branchée après l'installation est donc
+  # vue, sans recréer le conteneur, et ajoutée au redémarrage du service.
+  # L'installation est confirmée par l'administrateur (vie privée).
+  #
+  # Le démarrage (demarrer.py ci-dessous) remplace celui de l'image : mot de
+  # passe des réglages, page en français, caméras trouvées ajoutées avec les
+  # réglages de pi-appliance, puis ménage des plus anciennes vidéos et photos.
+  motioneye:
+    image: motioneyeproject/motioneye:0.44.0
+    restart: unless-stopped
+    # Nom affiché en haut de la page de motionEye.
+    hostname: ${PI_INSTANCE}
+    entrypoint: ["python3", "/run/pi-appliance/demarrer.py"]
+    environment:
+      MOTIONEYE_ADMIN_PASSWORD: ${MOTIONEYE_ADMIN_PASSWORD}
+      MOTIONEYE_VIEW_PASSWORD: ${MOTIONEYE_VIEW_PASSWORD}
+      TIMELAPSE_MINUTES: ${TIMELAPSE_MINUTES}
+      PLACE_MAX_GO: ${PLACE_MAX_GO}
+      # Flux de la caméra du Pi (module caméra), donné par camera-pi.
+      CAMERA_PI_URL: rtsp://camera-pi:8554/cam
+      # auto : la caméra du Pi est ajoutée quand le Pi en a une ; oui : toujours (essais).
+      CAMERA_PI: auto
+      TZ: Europe/Paris
+      # À augmenter à chaque changement de demarrer.py : Docker Compose ne
+      # recrée pas le conteneur quand seul le contenu d'une configs change.
+      VERSION_DU_DEMARRAGE: "1"
+    configs:
+      - source: demarrer
+        target: /run/pi-appliance/demarrer.py
+    volumes:
+      - config:/etc/motioneye
+      - medias:/var/lib/motioneye
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8765/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # Module caméra du Pi (nappe CSI) : motion ne lit pas libcamera. MediaMTX
+  # (MIT), image « rpi » à version fixée qui contient libcamera pour les
+  # caméras Raspberry Pi, filme et donne le flux à motionEye sur le réseau
+  # du service seulement (rien n'est publié par Traefik). Sans module
+  # caméra, il réessaie sans rien faire d'autre.
+  camera-pi:
+    image: bluenviron/mediamtx:1.21.4-rpi
+    restart: unless-stopped
+    # Mémoire partagée de libcamera (documentation de MediaMTX).
+    tmpfs:
+      - /dev/shm:exec
+    volumes:
+      # Liste des caméras du Pi (udev), en lecture seule, lue par libcamera.
+      - /run/udev:/run/udev:ro
+    configs:
+      - source: mediamtx
+        target: /mediamtx.yml
+
+configs:
+  mediamtx:
+    content: |
+      # Flux de la caméra du Pi pour motionEye : RTSP seulement, lecture
+      # seulement, pas d'interface d'administration.
+      logLevel: warn
+      api: false
+      metrics: false
+      pprof: false
+      playback: false
+      rtmp: false
+      hls: false
+      webrtc: false
+      srt: false
+      moq: false
+      rtsp: true
+      rtspTransports: [tcp]
+      rtspAddress: :8554
+      authMethod: internal
+      authInternalUsers:
+        - user: any
+          pass:
+          ips: []
+          permissions:
+            - action: read
+              path: cam
+      paths:
+        cam:
+          source: rpiCamera
+          # 1280 × 720, 10 images par seconde : assez pour la détection de
+          # mouvement, sans trop charger un Pi 3.
+          rpiCameraWidth: 1280
+          rpiCameraHeight: 720
+          rpiCameraFPS: 10
+  demarrer:
+    content: |
+      # This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+      # Copyright (c) 2026 Guillaume Moulard.
+      #
+      # This program is free software: you can redistribute it and/or modify
+      # it under the terms of the GNU Affero General Public License as published
+      # by the Free Software Foundation, version 3.
+      #
+      # This program is distributed in the hope that it will be useful,
+      # but WITHOUT ANY WARRANTY; without even the implied warranty of
+      # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      # GNU Affero General Public License for more details.
+      #
+      # You should have received a copy of the GNU Affero General Public License
+      # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+      # Démarrage de motionEye pour « Caméra et timelapse » (marketplace de
+      # pi-appliance) : mot de passe des réglages, page en français, caméras
+      # du Pi ajoutées une fois, ménage des vieilles vidéos et photos, puis
+      # motionEye lui-même (comme l'entrée de l'image).
+      # Ce fichier ne contient pas de caractère dollar : Docker Compose les
+      # lirait comme des variables.
+
+      import gettext
+      import glob
+      import json
+      import os
+      import shutil
+      import subprocess
+      import sys
+      import time
+
+      gettext.install("motioneye")
+
+      from motioneye import config, settings  # noqa: E402
+
+      CONF = "/etc/motioneye"
+      MEDIAS = "/var/lib/motioneye"
+      VUES = os.path.join(CONF, "pi-appliance-cameras.json")
+      # Garde de la carte SD : il reste toujours au moins 1 Go libre.
+      LIBRE_MIN = 1024 * 1024 * 1024
+      MENAGE_SECONDES = 600
+
+
+      def dire(texte):
+          print("pi-appliance : " + texte, flush=True)
+
+
+      def nombre(nom, defaut, mini, maxi):
+          try:
+              valeur = int(str(os.environ.get(nom, "")).strip())
+          except ValueError:
+              return defaut
+          return min(max(valeur, mini), maxi)
+
+
+      def lire(chemin):
+          try:
+              with open(chemin) as fichier:
+                  return fichier.read().strip()
+          except OSError:
+              return ""
+
+
+      def webcams():
+          # Webcams USB : premier nœud (index 0) de chaque appareil USB, sous
+          # son nom stable /dev/v4l/by-id quand il existe.
+          trouvees = []
+          for noeud in sorted(glob.glob("/sys/class/video4linux/video*")):
+              if "/usb" not in os.path.realpath(os.path.join(noeud, "device")):
+                  continue
+              if lire(os.path.join(noeud, "index")) not in ("", "0"):
+                  continue
+              chemin = "/dev/" + os.path.basename(noeud)
+              for lien in sorted(glob.glob("/dev/v4l/by-id/*")):
+                  if os.path.realpath(lien) == chemin:
+                      chemin = lien
+                      break
+              if os.path.exists(chemin):
+                  trouvees.append(chemin)
+          return trouvees
+
+
+      def camera_du_pi():
+          # Module caméra : récepteur CSI du Pi (unicam jusqu'au Pi 4, rp1-cfe sur le Pi 5).
+          if os.environ.get("CAMERA_PI") == "oui":
+              return True
+          for nom in glob.glob("/sys/class/video4linux/video*/name"):
+              texte = lire(nom)
+              if "unicam" in texte or "rp1-cfe" in texte:
+                  return True
+          return False
+
+
+      def regler(identifiant, nom, taille):
+          # Réglages de pi-appliance : vidéo quand ça bouge (gardée 7 jours),
+          # photo du timelapse toutes les N minutes (gardée 30 jours), 5 images
+          # par seconde, vidéos en MP4 calculées par le processeur (le Pi 5 n'a
+          # pas d'encodeur vidéo).
+          camera = config.get_camera(identifiant)
+          ui = config.motion_camera_dict_to_ui(camera)
+          if taille:
+              ui["resolution"] = taille
+          ui.update({
+              "name": nom,
+              "framerate": 5,
+              "movie_format": "mp4",
+              "left_text": "camera-name",
+              "motion_detection": True,
+              "movies": True,
+              "recording_mode": "motion-triggered",
+              "max_movie_length": 300,
+              "preserve_movies": 7,
+              "still_images": True,
+              "capture_mode": "interval-snapshots",
+              "snapshot_interval": nombre("TIMELAPSE_MINUTES", 10, 1, 1440) * 60,
+              "preserve_pictures": 30,
+          })
+          config.set_camera(identifiant, config.motion_camera_ui_to_dict(ui, camera))
+
+
+      def ajouter_cameras():
+          try:
+              with open(VUES) as fichier:
+                  vues = json.load(fichier)
+          except (OSError, ValueError):
+              vues = []
+          # Une caméra déjà vue n'est pas remise si elle a été retirée de motionEye.
+          nouvelles = []
+          if camera_du_pi() and "camera-du-pi" not in vues:
+              # Même taille que le flux de camera-pi (motion la reprend pour RTSP).
+              nouvelles.append(("camera-du-pi", "Camera du Pi", "1280x720", {
+                  "proto": "netcam", "scheme": "rtsp", "host": "camera-pi", "port": "8554",
+                  "path": "/cam", "username": "", "password": "", "camera_index": "tcp",
+              }))
+          for numero, chemin in enumerate(webcams(), start=1):
+              if chemin not in vues:
+                  nouvelles.append((chemin, "Webcam " + str(numero), "", {"proto": "v4l2", "path": chemin}))
+          for cle, nom, taille, details in nouvelles:
+              try:
+                  camera = config.add_camera(details)
+                  regler(camera["@id"], nom, taille)
+                  dire("caméra ajoutée : " + nom + " (" + cle + ")")
+              except Exception as erreur:  # noqa: BLE001
+                  dire("la caméra " + cle + " n'a pas pu être ajoutée : " + str(erreur))
+                  continue
+              vues.append(cle)
+          with open(VUES, "w") as fichier:
+              json.dump(vues, fichier)
+          if not config.get_camera_ids():
+              dire("aucune caméra trouvée : branchez-en une, puis redémarrez le service.")
+
+
+      def preparer():
+          os.makedirs("/run/motioneye", exist_ok=True)
+          shutil.chown("/run/motioneye", "motion", "motion")
+          if not os.path.exists(os.path.join(CONF, "motioneye.conf")):
+              shutil.copy2("/etc/motioneye.conf.sample", os.path.join(CONF, "motioneye.conf"))
+          settings.CONF_PATH = CONF
+          settings.MEDIA_PATH = MEDIAS
+          # Fichier lu par relayevent.sh (événements de motion vers la page).
+          settings.config_file = os.path.join(CONF, "motioneye.conf")
+          principal = config.get_main()
+          principal["@lang"] = "fr"
+          # motionEye demande toujours de se connecter, avec un mot de passe :
+          # pour regarder, identifiant « regarder » ; pour les réglages,
+          # « admin » ; deux mots de passe tirés par la console, posés une fois.
+          if principal.get("@normal_username", "user") == "user":
+              principal["@normal_username"] = "regarder"
+          config.set_main(principal)
+          mot_de_passe = os.environ.get("MOTIONEYE_ADMIN_PASSWORD", "")
+          if mot_de_passe and not config.get_main().get("@admin_password"):
+              config.set_admin_password(mot_de_passe)
+          mot_de_passe = os.environ.get("MOTIONEYE_VIEW_PASSWORD", "")
+          if mot_de_passe and not config.get_main().get("@normal_password"):
+              config.set_normal_password(mot_de_passe)
+          ajouter_cameras()
+
+
+      def menage():
+          # Plus anciens fichiers effacés au-delà de la place choisie, ou quand
+          # il reste moins de 1 Go sur le disque ; un fichier de moins de deux
+          # minutes (en cours d'écriture) est gardé.
+          place_max = nombre("PLACE_MAX_GO", 2, 1, 1000) * 1024 * 1024 * 1024
+          while True:
+              try:
+                  fichiers = []
+                  for dossier, _, noms in os.walk(MEDIAS):
+                      for nom in noms:
+                          chemin = os.path.join(dossier, nom)
+                          try:
+                              etat = os.stat(chemin)
+                          except OSError:
+                              continue
+                          fichiers.append((etat.st_mtime, etat.st_size, chemin))
+                  fichiers.sort()
+                  total = sum(taille for _, taille, _ in fichiers)
+                  libre = shutil.disk_usage(MEDIAS).free
+                  effaces = 0
+                  for date, taille, chemin in fichiers:
+                      if total <= place_max and libre >= LIBRE_MIN:
+                          break
+                      if date > time.time() - 120:
+                          break
+                      try:
+                          os.remove(chemin)
+                      except OSError:
+                          continue
+                      total -= taille
+                      libre += taille
+                      effaces += 1
+                  if effaces:
+                      dire(str(effaces) + " anciens fichiers effacés pour faire de la place.")
+                  for dossier, sous_dossiers, noms in os.walk(MEDIAS, topdown=False):
+                      if dossier != MEDIAS and not sous_dossiers and not noms:
+                          try:
+                              os.rmdir(dossier)
+                          except OSError:
+                              pass
+              except Exception as erreur:  # noqa: BLE001
+                  dire("ménage impossible : " + str(erreur))
+              time.sleep(MENAGE_SECONDES)
+
+
+      if __name__ == "__main__":
+          try:
+              preparer()
+          except Exception as erreur:  # noqa: BLE001
+              dire("préparation incomplète : " + str(erreur))
+          if os.fork() == 0:
+              menage()
+              sys.exit(0)
+          sys.stdout.flush()
+          os.execvp("su", ["su", "-g", "motion", "motion", "-s", "/bin/dash", "-c",
+                           "LANGUAGE=fr exec /usr/local/bin/meyectl startserver -c /etc/motioneye/motioneye.conf"])
+
+volumes:
+  config:
+  # Vidéos et photos : jamais sauvegardées (trop grosses pour les
+  # sauvegardes), ni copiées avant une mise à jour du service.
+  medias:
+    labels:
+      pi-appliance.backup: "false"
+      pi-appliance.update-copy: "false"

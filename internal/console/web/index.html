@@ -194,6 +194,46 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <button class="secondary">Enregistrer les réglages</button>
 </form>
 </details>
+<details id="backupOnlineBox" class="backup-settings">
+<summary>Sauvegarde en ligne</summary>
+<p id="backupOnlineState"></p>
+<form id="backupOnline">
+<p class="meta">Une copie chiffrée de chaque sauvegarde part aussi vers un stockage en ligne compatible S3 (OVH, Scaleway, Backblaze, AWS…), loin de la maison en cas de vol ou d'incendie. Sans votre mot de passe, personne ne peut la lire, pas même le nom de vos services.</p>
+<label>Adresse du stockage (par exemple s3.gra.io.cloud.ovh.net)<input name="endpoint" autocomplete="off" required></label>
+<label>Région<input name="region" autocomplete="off"></label>
+<label>Nom du seau (bucket)<input name="bucket" autocomplete="off" required></label>
+<label>Clé d'accès<input name="access_key_id" autocomplete="off"></label>
+<label>Clé secrète<input name="secret_access_key" type="password" autocomplete="new-password"></label>
+<button class="secondary">Enregistrer et essayer</button>
+<button type="button" id="backupOnlineRemove" class="secondary" hidden>Arrêter l'envoi en ligne</button>
+</form>
+</details>
+<details id="backupPeerBox" class="backup-settings" hidden>
+<summary>Sauvegarde chez un proche</summary>
+<p class="meta">Échangez vos sauvegardes avec un proche qui a aussi un pi-appliance : chacun garde celles de l'autre, chiffrées, sans pouvoir les lire.</p>
+<p id="backupPeerState"></p>
+<form id="backupPeer">
+<label>Adresse internet de son Pi (par exemple paul.pi-appliance.com)<input name="address" autocomplete="off" required></label>
+<label>Code affiché sur son Pi<input name="code" autocomplete="off" required></label>
+<button class="secondary">Jumeler</button>
+</form>
+<button type="button" id="backupPeerRemove" class="secondary" hidden>Arrêter l'envoi chez ce proche</button>
+<h4>Accueillir les sauvegardes d'un proche</h4>
+<p id="backupHostingState"></p>
+<ul id="backupGuests" class="backup-list"></ul>
+<form id="backupHosting">
+<label>Nom du proche<input name="name" maxlength="60" required></label>
+<label>Espace réservé (Go)<input name="quota" type="number" min="1" max="102400" value="100" inputmode="numeric" required></label>
+<button class="secondary">Obtenir un code</button>
+</form>
+</details>
+<div id="backupBrowser" class="backup-browser" hidden>
+<h4 id="backupBrowserTitle"></h4>
+<p id="backupBrowserPath" class="backup-path"></p>
+<p id="backupBrowserState" class="state"></p>
+<ul id="backupBrowserList" class="backup-list"></ul>
+<button type="button" id="backupBrowserClose" class="secondary">Fermer</button>
+</div>
 <ul id="backupList" class="backup-list"></ul>
 </div>
 <p data-theme="entretien"><a href="diagnostic">Diagnostic du Pi : état des programmes, erreurs et journaux</a></p>
@@ -468,6 +508,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <section id="servicesSection" data-kind="services" hidden>
 <h2>Mes services</h2>
 <ul id="services" class="cards"></ul>
+<!-- Cockpit pour un utilisateur à qui un administrateur l'a ouvert (TODO-3.4). -->
+<ul id="cockpitUserList" class="cards" hidden>
+<li id="cockpitUserBox" class="card app" data-tags="administration">
+<div class="card-head"><div><h3>Cockpit</h3>
+<p>Les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur, avec tous les droits sur le Pi. Un administrateur vous l'a ouvert.</p></div></div>
+<p class="note">Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.</p>
+<div class="controls">
+<button id="cockpitUserOpen" type="button">Ouvrir Cockpit</button>
+</div>
+</li>
+</ul>
 <p id="noServices" class="empty" hidden>Aucun service installé pour l'instant : choisissez-en un ci-dessous.</p>
 </section>
 <section id="catalogSection" data-kind="catalog" hidden>
@@ -477,13 +528,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <!-- Cockpit (spécification 6.4) : installée sur le système, pas dans un conteneur ; carte remise par loadCatalog avant le Docker Compose libre, montrée seulement à l'administrateur. -->
 <li id="cockpitBox" class="card app" data-tags="administration" hidden>
 <div class="card-head"><div><h3>Cockpit</h3>
-<p>Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi. Réservé aux administrateurs, depuis la maison.</p></div></div>
+<p>Pour les personnes à l'aise avec l'informatique : les journaux du Pi, ses programmes, son réseau, ses disques et un terminal, dans le navigateur. Vous y entrez avec votre compte pi-appliance, sans autre mot de passe, avec tous les droits sur le Pi.</p></div></div>
 <p id="cockpitState" class="state" aria-live="polite"></p>
 <p class="note">Tout y est permis, y compris abîmer le Pi. N'y changez pas le Wi-Fi du Pi (« pi-appliance-ap ») ni les disques USB des données et des sauvegardes : réglez-les dans cette console.</p>
 <div class="controls">
 <button id="cockpitInstall" type="button" hidden>Installer Cockpit</button>
 <button id="cockpitOpen" type="button" hidden>Ouvrir Cockpit</button>
 <button id="cockpitRemove" class="secondary" type="button" hidden>Désinstaller</button>
+</div>
+<!-- Qui ouvre Cockpit (TODO-3.4) : administrateurs à la maison par défaut ; un avertissement avant d'ouvrir plus largement. -->
+<div id="cockpitAccess" hidden>
+<p id="cockpitAccessState" class="meta"></p>
+<label class="check"><input id="cockpitUsers" type="checkbox">Ouvrir aussi aux utilisateurs de la console (pas seulement aux administrateurs)</label>
+<label class="check"><input id="cockpitInternet" type="checkbox">Ouvrir aussi depuis internet</label>
 </div>
 </li>
 </ul>

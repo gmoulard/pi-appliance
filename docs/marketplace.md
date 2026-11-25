@@ -31,7 +31,7 @@ Ces applications ne sont pas encore installables depuis la marketplace. La liste
 
 <ul id="marketplace-planned" hidden></ul>
 
-**Intégré à la console, hors catalogue** : [Cockpit](https://cockpit-project.org/), l'administration du système du Pi (journaux, programmes, réseau, disques et terminal dans le navigateur, pour les utilisateurs avertis). Ce n'est pas un conteneur mais un logiciel du système : la Marketplace de la console le propose aux administrateurs, à la maison seulement, et on y entre avec son compte pi-appliance, sans autre mot de passe (voir la [spécification](specification.html), section 6.4).
+**Intégré à la console, hors catalogue** : [Cockpit](https://cockpit-project.org/), l'administration du système du Pi (journaux, programmes, réseau, disques et terminal dans le navigateur, pour les utilisateurs avertis). Ce n'est pas un conteneur mais un logiciel du système : la Marketplace de la console le propose aux administrateurs, à la maison (un administrateur peut l'ouvrir aussi depuis internet et aux utilisateurs de la console), et on y entre avec son compte pi-appliance, sans autre mot de passe (voir la [spécification](specification.html), section 6.4).
 
 Bases de données : PostgreSQL est disponible, avec l'interface web Adminer. MongoDB (Pi 5 seulement), Redis, MSSQL (pas d'image pour le Pi) et SQLite (un simple fichier) ne sont pas proposés seuls : voir la [spécification](specification.html), section 6.3.
 

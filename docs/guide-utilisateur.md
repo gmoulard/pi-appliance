@@ -40,6 +40,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 - L'installation de plusieurs instances, les commandes de démarrage et d'arrêt, la mise à jour des applications avec retour arrière, et le choix de conserver ou supprimer leurs données à la désinstallation.
 - La gestion d'un disque USB pour les données des services.
 - Les sauvegardes chiffrées sur un second disque USB, chaque nuit et à la demande, et la restauration d'un service à une date choisie (écran « Sauvegardes » dans « Mon Pi »), pas encore essayées sur un vrai Pi.
+- Dans le même écran, pas encore essayés sur un vrai Pi : « Parcourir » une sauvegarde pour télécharger un fichier (un dossier arrive en .zip) ou le « Remettre en place » ; la « Sauvegarde en ligne » vers un stockage compatible S3 (OVH, Scaleway, Backblaze, AWS…), chiffrée, sans même le nom de vos services lisible ; la « Sauvegarde chez un proche » qui a aussi un pi-appliance (son Pi affiche un code, vous le saisissez avec son adresse internet ; chacun réserve à l'autre un espace limité et ne peut pas lire ce qu'il garde).
 - Un code à scanner avec l'[application mobile](#application-mobile), dans « Mon Pi », pour retrouver le Pi et ses services sur le téléphone.
 - L'[envoi des e-mails](#envoi-des-e-mails) par votre propre boîte e-mail (Gmail, OVH, Free, Orange…), et la [double authentification](#double-authentification) par un code reçu par e-mail ou par une application du téléphone, proposée à chaque nouveau compte, et les [alertes par e-mail](#alertes-par-e-mail) aux administrateurs ; pas encore essayés sur un vrai Pi.
 
@@ -49,7 +50,7 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 
 - Une version stable de l'image, et des essais sur Pi 5 et Pi Zero 2 W.
 - La réservation d'une adresse `*.pi-appliance.com`. Les services s'ouvrent déjà depuis internet sous l'adresse du Pi (voir [Ouvrir ses services depuis internet](#services-sur-internet)), pas encore essayé sur un vrai Pi.
-- Les sauvegardes en ligne ou sur un autre pi-appliance et la restauration de l'appliance entière ou d'un seul fichier.
+- La restauration de l'appliance entière sur une nouvelle carte SD depuis la mise en route (le code est prêt, l'écran pas encore).
 
 ## Télécharger et installer l'image {#telecharger-limage-experimentale}
 
@@ -163,6 +164,8 @@ La console est fermée sur internet tant que vous ne l'ouvrez pas. Pour l'ouvrir
 
 Depuis internet, la console demande votre mot de passe, puis le code reçu par e-mail ou celui de votre application si vous avez activé la double authentification. Certaines actions restent possibles seulement à la maison : remettre le Pi à zéro, réinitialiser le mot de passe par le fichier `reset`, appairer un téléphone. Vous pouvez refermer la console à tout moment, même depuis internet.
 
+**Cockpit depuis internet, et pour les utilisateurs** : Cockpit (l'administration du système du Pi, dans la Marketplace) n'est ouvert qu'aux administrateurs, à la maison. Sur sa carte, une fois installé, un administrateur peut cocher, à la maison, **Ouvrir aussi depuis internet** (il faut que la console y soit ouverte ; il s'ouvre alors à `https://<adresse>/cockpit/`) et **Ouvrir aussi aux utilisateurs de la console** (pas aux invités ; ils le trouvent dans « Mes services »). Attention : toute personne qui y entre a **tous les droits sur le Pi**, même depuis internet, et la double authentification n'est pas exigée : un mot de passe volé suffit. Décochez pour refermer, même depuis internet.
+
 ## Ouvrir ses services depuis internet {#services-sur-internet}
 
 Un service s'ouvre depuis internet à l'adresse internet du Pi suivie de son nom : par exemple `https://maison.exemple.fr/hugo/` pour le service `hugo`, ou `https://monpi.pi-appliance.com/hugo/`. Il n'y a **rien à créer** chez votre fournisseur de nom de domaine : c'est la même adresse que la console, qui doit déjà exister (voir [Administrer le Pi depuis internet](#console-sur-internet), étapes 2 et 3).
@@ -248,6 +251,8 @@ pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
 pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'y a pas de clé)
 ```
 
+Pour ne pas avoir à répondre aux questions de confirmation (par exemple dans un script), ajoutez `-force` n'importe où sur la ligne : `pia -force desinstaller cloud --effacer-donnees`. La réponse est alors toujours oui : vérifiez bien la commande avant de la lancer.
+
 Inutile de taper `sudo` : quand une commande a besoin des droits d'administrateur du Pi (toutes sauf `aide` et `version`), `pia` les demande lui-même, avec le mot de passe de votre compte si le Pi le réclame. Après avoir coupé les mots de passe, gardez votre session ouverte et vérifiez dans un autre terminal que votre clé marche.
 
 ## Mot de passe oublié : le lien par e-mail {#mot-de-passe-oublie}
@@ -292,6 +297,21 @@ L'application **WordPress vers Markdown** de la marketplace transforme les artic
 4. La page montre l'avancement. À la fin, touchez **Télécharger le fichier .zip** : chaque article y a son dossier, avec son texte (`index.md`) et ses images.
 
 Les images sont prises sur le site WordPress d'origine, qui doit être en ligne ; celles qui n'ont pas pu être téléchargées sont listées dans le fichier `images-manquantes.txt` du `.zip`. Votre fichier reste sur le Pi : rien n'est envoyé ailleurs que les demandes d'images à votre site. Il est effacé du Pi peu après le téléchargement, et au plus tard une heure après la conversion. Une seule conversion à la fois sur le Pi. La première fois, le Pi doit avoir internet pour télécharger l'outil de conversion (quelques minutes).
+
+## Filmer avec une caméra : Caméra et timelapse {#camera}
+
+L'application **Caméra et timelapse** de la marketplace montre en direct la caméra du Pi (le petit module branché par une nappe) ou une webcam USB, enregistre une vidéo quand quelque chose bouge, et prend une photo toutes les quelques minutes pour en faire un film en accéléré (timelapse). Pas encore essayé sur un vrai Pi avec une caméra.
+
+1. Branchez la caméra **avant** d'installer (le Pi éteint pour le module caméra).
+2. Dans la **Marketplace**, installez **Caméra et timelapse**. Vous pouvez choisir l'intervalle des photos du timelapse (10 minutes par défaut) et la place maximale des vidéos et des photos (2 Go par défaut). La console vous demande de confirmer : le service voit et enregistre les images des caméras.
+3. Notez les **deux mots de passe** affichés à la fin : identifiant `regarder` pour regarder, identifiant `admin` pour les réglages. Ils ne seront plus affichés.
+4. Ouvrez le service (bouton **Ouvrir**) et connectez-vous avec `regarder`. Les vidéos et les photos d'un jour se retrouvent en touchant l'image de la caméra ; le bouton **Timelapse** des photos assemble le film en accéléré.
+
+Une caméra branchée plus tard apparaît quand vous touchez **Redémarrer** sur la fiche du service.
+
+**Vie privée** : les images restent sur le Pi. Par défaut, seules les personnes qui ont un compte sur la console ouvrent le service, et il n'est pas publié sur internet. Prévenez les personnes filmées : filmer quelqu'un sans le lui dire peut être interdit.
+
+**Place sur la carte SD** : les vidéos sont effacées après 7 jours, les photos après 30 jours, et les plus anciennes plus tôt quand la place choisie est pleine ou qu'il reste moins de 1 Go sur le disque. Les vidéos et les photos ne sont pas dans les sauvegardes.
 
 ## Faire dépanner son Pi par Claude {#depannage-par-claude}
 
