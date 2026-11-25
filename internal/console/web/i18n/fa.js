@@ -435,6 +435,7 @@ piTranslations("fa", {
   "Cockpit est désinstallé.": "Cockpit حذف شد.",
   "Installer Cockpit ? Il donne la main sur tout le Pi aux administrateurs de la console, depuis la maison.": "Cockpit نصب شود؟ به مدیران کنسول، از خانه، اختیار کامل Pi را می‌دهد.",
   "Désinstaller Cockpit ? Les comptes du Pi créés pour Cockpit seront supprimés.": "Cockpit حذف شود؟ حساب‌هایی که برای Cockpit روی Pi ساخته شده‌اند پاک می‌شوند.",
+  "Cockpit ne s'ouvre que depuis la maison. Un administrateur peut l'ouvrir aussi depuis internet, dans la carte Cockpit de la console.": "Cockpit فقط از خانه باز می‌شود. یک مدیر می‌تواند آن را از کارت Cockpit در کنسول، از اینترنت هم باز کند.",
   "Cockpit n'est pas prêt pour l'instant. Réessayez dans une minute.": "Cockpit هنوز آماده نیست. یک دقیقهٔ دیگر دوباره امتحان کنید.",
   "Activez d'abord dans la console la double authentification, exigée pour ce compte.": "نخست در کنسول تأیید دومرحله‌ای را که برای این حساب الزامی است فعال کنید.",
   "Désinstallation en cours…": "در حال حذف…",

@@ -260,3 +260,37 @@ func TestAPIHeaderRequired(t *testing.T) {
 		t.Fatalf("avec en-tête : %d", response.Code)
 	}
 }
+
+// L'application mobile reçoit aussi l'adresse internet des services qui y
+// sont ouverts (api/hello), pour les ouvrir loin de la maison ; et Cockpit
+// demandé depuis internet sans y être ouvert dit pourquoi.
+func TestHelloInternetAndCockpitPage(t *testing.T) {
+	f, _ := servicesFixture(t)
+	f.admin(t)
+	installedApp(t, f, "www", "site-web", services.AccessPublic, "")
+	installedApp(t, f, "prive", "site-web", services.AccessHome, "")
+	hello := decode[Hello](t, f.do(http.MethodGet, "/pi-appliance/api/hello", "", "", nil))
+	got := map[string]string{}
+	for _, service := range hello.Services {
+		got[service.Name] = service.Internet
+	}
+	if got["www"] != "https://maison.example.org/www/" || got["prive"] != "" {
+		t.Fatalf("adresses internet : %v", got)
+	}
+
+	request := httptest.NewRequest(http.MethodGet, "/pi-appliance/erreur/404", nil)
+	request.RemoteAddr = "127.0.0.1:40000"
+	request.Header.Set("X-Forwarded-For", "203.0.113.9")
+	request.Header.Set("X-Replaced-Path", "/cockpit/")
+	response := httptest.NewRecorder()
+	f.handler.ServeHTTP(response, request)
+	if response.Code != http.StatusNotFound || !strings.Contains(response.Body.String(), "ne s&#39;ouvre que depuis la maison") {
+		t.Fatalf("Cockpit depuis internet : %d %s", response.Code, response.Body.String())
+	}
+	request.Header.Set("X-Replaced-Path", "/autre/")
+	response = httptest.NewRecorder()
+	f.handler.ServeHTTP(response, request)
+	if strings.Contains(response.Body.String(), "Cockpit") {
+		t.Fatal("page Cockpit pour une autre adresse")
+	}
+}

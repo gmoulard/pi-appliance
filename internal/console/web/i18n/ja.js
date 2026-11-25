@@ -435,6 +435,7 @@ piTranslations("ja", {
   "Cockpit est désinstallé.": "Cockpit をアンインストールしました。",
   "Installer Cockpit ? Il donne la main sur tout le Pi aux administrateurs de la console, depuis la maison.": "Cockpit をインストールしますか？コンソールの管理者に、自宅から Pi 全体を操作する権限を与えます。",
   "Désinstaller Cockpit ? Les comptes du Pi créés pour Cockpit seront supprimés.": "Cockpit をアンインストールしますか？Cockpit 用に作成した Pi 上のアカウントは削除されます。",
+  "Cockpit ne s'ouvre que depuis la maison. Un administrateur peut l'ouvrir aussi depuis internet, dans la carte Cockpit de la console.": "Cockpit は自宅からのみ開けます。管理者はコンソールの Cockpit カードで、インターネットからも開けるようにできます。",
   "Cockpit n'est pas prêt pour l'instant. Réessayez dans une minute.": "Cockpit はまだ準備ができていません。1 分後にもう一度お試しください。",
   "Activez d'abord dans la console la double authentification, exigée pour ce compte.": "まずコンソールで、このアカウントに必要な 2 段階認証を有効にしてください。",
   "Désinstallation en cours…": "アンインストール中…",

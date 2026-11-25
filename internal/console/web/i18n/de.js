@@ -435,6 +435,7 @@ piTranslations("de", {
   "Cockpit est désinstallé.": "Cockpit ist deinstalliert.",
   "Installer Cockpit ? Il donne la main sur tout le Pi aux administrateurs de la console, depuis la maison.": "Cockpit installieren? Es gibt den Administratoren der Konsole die Kontrolle über den ganzen Pi, von zu Hause aus.",
   "Désinstaller Cockpit ? Les comptes du Pi créés pour Cockpit seront supprimés.": "Cockpit deinstallieren? Die für Cockpit angelegten Konten auf dem Pi werden gelöscht.",
+  "Cockpit ne s'ouvre que depuis la maison. Un administrateur peut l'ouvrir aussi depuis internet, dans la carte Cockpit de la console.": "Cockpit öffnet sich nur von zu Hause aus. Ein Administrator kann es in der Cockpit-Karte der Konsole auch für das Internet öffnen.",
   "Cockpit n'est pas prêt pour l'instant. Réessayez dans une minute.": "Cockpit ist noch nicht bereit. Versuchen Sie es in einer Minute erneut.",
   "Activez d'abord dans la console la double authentification, exigée pour ce compte.": "Aktivieren Sie zuerst in der Konsole die Zwei-Faktor-Authentifizierung, die für dieses Konto verlangt wird.",
   "Désinstallation en cours…": "Wird deinstalliert…",
