@@ -907,5 +907,10 @@ piTranslations("es", {
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Para que la Pi envíe las invitaciones, configure «Envío de correos» en «Mi Pi».",
   "Mot de passe de votre compte de la console": "Contraseña de su cuenta de la consola",
   "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "Desde internet, confirme cada cambio con la contraseña de su cuenta de la consola y su código de verificación en dos pasos: el servidor de envío recibe los códigos de inicio de sesión.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Desde internet, este ajuste requiere la verificación en dos pasos: actívela primero en «Mi cuenta» (aplicación de autenticación), o hágalo desde casa."
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Desde internet, este ajuste requiere la verificación en dos pasos: actívela primero en «Mi cuenta» (aplicación de autenticación), o hágalo desde casa.",
+  "Action annulée.": "Acción cancelada.",
+  "Annuler": "Cancelar",
+  "Confirmer depuis internet": "Confirmar desde internet",
+  "Confirmer": "Confirmar",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Desde internet, esta acción requiere la contraseña de su cuenta de la consola y su código de verificación en dos pasos."
 });

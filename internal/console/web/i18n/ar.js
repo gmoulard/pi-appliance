@@ -907,5 +907,10 @@ piTranslations("ar", {
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "لكي يرسل الـ Pi الدعوات، اضبط «إرسال البريد الإلكتروني» في «الـPi الخاص بي».",
   "Mot de passe de votre compte de la console": "كلمة مرور حسابك في وحدة التحكم",
   "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "من الإنترنت، أكّد كل تغيير بكلمة مرور حسابك في وحدة التحكم ورمز المصادقة الثنائية: خادم الإرسال يتلقى رموز تسجيل الدخول.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "من الإنترنت، يتطلب هذا الإعداد المصادقة الثنائية: فعّلها أولًا في «حسابي» (تطبيق المصادقة)، أو قم بذلك من المنزل."
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "من الإنترنت، يتطلب هذا الإعداد المصادقة الثنائية: فعّلها أولًا في «حسابي» (تطبيق المصادقة)، أو قم بذلك من المنزل.",
+  "Action annulée.": "أُلغي الإجراء.",
+  "Annuler": "إلغاء",
+  "Confirmer depuis internet": "التأكيد من الإنترنت",
+  "Confirmer": "تأكيد",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "من الإنترنت، يتطلب هذا الإجراء كلمة مرور حسابك في وحدة التحكم ورمز المصادقة الثنائية."
 });

@@ -907,5 +907,10 @@ piTranslations("nl", {
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Stel „E-mails versturen” in onder „Mijn Pi” zodat de Pi uitnodigingen verstuurt.",
   "Mot de passe de votre compte de la console": "Wachtwoord van uw consoleaccount",
   "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "Bevestig vanaf internet elke wijziging met het wachtwoord van uw consoleaccount en uw code voor tweestapsverificatie: de verzendserver ontvangt de inlogcodes.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Vanaf internet vereist deze instelling tweestapsverificatie: zet die eerst aan in „Mijn account” (authenticatie-app), of doe het vanuit huis."
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Vanaf internet vereist deze instelling tweestapsverificatie: zet die eerst aan in „Mijn account” (authenticatie-app), of doe het vanuit huis.",
+  "Action annulée.": "Actie geannuleerd.",
+  "Annuler": "Annuleren",
+  "Confirmer depuis internet": "Bevestigen vanaf internet",
+  "Confirmer": "Bevestigen",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Vanaf internet vereist deze actie het wachtwoord van uw consoleaccount en uw code voor tweestapsverificatie."
 });

@@ -907,5 +907,10 @@ piTranslations("tr", {
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi'nin davetleri göndermesi için «Pi'm» içinde «E-posta gönderimi»ni ayarlayın.",
   "Mot de passe de votre compte de la console": "Konsol hesabınızın parolası",
   "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "İnternetten her değişikliği konsol hesabınızın parolası ve iki adımlı doğrulama kodunuzla onaylayın: gönderim sunucusu oturum açma kodlarını alır.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "İnternetten bu ayar iki adımlı doğrulama gerektirir: önce «Hesabım» içinde açın (kimlik doğrulama uygulaması) ya da bunu evden yapın."
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "İnternetten bu ayar iki adımlı doğrulama gerektirir: önce «Hesabım» içinde açın (kimlik doğrulama uygulaması) ya da bunu evden yapın.",
+  "Action annulée.": "İşlem iptal edildi.",
+  "Annuler": "İptal",
+  "Confirmer depuis internet": "İnternetten onayla",
+  "Confirmer": "Onayla",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "İnternetten bu işlem, konsol hesabınızın parolasını ve iki adımlı doğrulama kodunuzu gerektirir."
 });

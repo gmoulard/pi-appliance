@@ -50,6 +50,12 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "Confirmez la remise à zéro : cochez la case qui dit ce qui sera effacé.")
 		return
 	}
+	// NE PAS relâcher : le fichier reset efface sans compte ; depuis internet,
+	// n'importe qui le ferait.
+	if c.Accounts.ResetPending() && fromInternet(r) {
+		writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
+		return
+	}
 	if !c.Accounts.ResetPending() {
 		account, ok := c.account(r)
 		if !ok {
@@ -62,6 +68,11 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 		}
 		if account.NeedsTwoFactorSetup() {
 			writeError(w, http.StatusForbidden, "Activez d'abord la double authentification, exigée pour ce compte.")
+			return
+		}
+		// Depuis internet : compte avec double authentification (confirmFromInternet).
+		if fromInternet(r) && !account.HasTwoFactor() {
+			writeError(w, http.StatusForbidden, "Depuis internet, cette action demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.")
 			return
 		}
 		token, _, err := c.Accounts.Login(account.Name, request.Password, request.Code, clientIP(r))

@@ -138,7 +138,7 @@ Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « m
 
 **Gmail** refuse votre mot de passe habituel : dans votre compte Google, activez la validation en deux étapes, puis ouvrez **Sécurité**, **Mots de passe des applications**, créez-en un (par exemple « pi-appliance ») et collez dans la console les 16 lettres affichées. Vous pourrez le retirer à tout moment, sans changer votre mot de passe Google.
 
-Le mot de passe reste sur le Pi : la console ne le réaffiche jamais (laissez le champ vide pour le garder) et il n'est écrit dans aucun journal. Le mieux est une boîte e-mail réservée au Pi, ou un mot de passe d'application. Ce réglage se change seulement depuis la maison. **Ne plus envoyer d'e-mails** efface le réglage ; les comptes qui recevaient leur code de connexion par e-mail devront alors utiliser leur application ou un code de secours.
+Le mot de passe reste sur le Pi : la console ne le réaffiche jamais (laissez le champ vide pour le garder) et il n'est écrit dans aucun journal. Le mieux est une boîte e-mail réservée au Pi, ou un mot de passe d'application. Depuis internet, chaque changement demande en plus votre mot de passe et votre code de double authentification. **Ne plus envoyer d'e-mails** efface le réglage ; les comptes qui recevaient leur code de connexion par e-mail devront alors utiliser leur application ou un code de secours.
 
 ### Alertes par e-mail {#alertes-par-e-mail}
 

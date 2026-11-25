@@ -245,20 +245,26 @@ func internetOpenPath(path string) bool {
 		strings.HasPrefix(path, BasePath+"/api/peer/")
 }
 
-// homeOnlyPaths : à faire depuis la maison, même console ouverte.
+// homeOnlyPaths : à faire depuis la maison, même console ouverte. Tout ce
+// qu'un compte fait à la maison se fait aussi depuis internet (choix de
+// l'utilisateur du 2026-11-25) ; restent ici les deux actions faites sans
+// compte : créer le premier administrateur et la réinitialisation par le
+// fichier reset de la carte SD. NE PAS les ouvrir : depuis internet,
+// n'importe qui prendrait la main sur le Pi.
 var homeOnlyPaths = []string{
 	"POST " + BasePath + "/api/setup",
 	"POST " + BasePath + "/api/reset",
-	"POST " + BasePath + "/api/factory-reset",
-	"POST " + BasePath + "/appareil/appairer",
-	"POST " + BasePath + "/appareil/connexion",
-	"POST " + BasePath + "/appareil/retirer",
+}
+
+// confirmPaths : depuis internet, demandent en plus le mot de passe du compte
+// et un code de double authentification frais (confirmFromInternet, en-têtes
+// X-Pi-Confirm-Password et X-Pi-Confirm-Code). L'envoi des e-mails, Cockpit
+// et la remise à zéro les vérifient eux-mêmes.
+var confirmPaths = []string{
 	"PUT " + BasePath + "/api/internet-console",
 	"PUT " + BasePath + "/api/internet-console/domain",
 	// Ouvrir ou refermer les ports de la box (accès direct, 7.2).
 	"PUT " + BasePath + "/api/internet-access",
-	// L'envoi des e-mails (api/mail) n'est plus ici : depuis internet, il se
-	// change avec le mot de passe et la double authentification (confirmFromInternet).
 }
 
 // NE PAS relâcher : console fermée sur internet par défaut (spécification 8.3).
@@ -272,8 +278,12 @@ func (c *console) internetGuard(next http.Handler) http.Handler {
 			http.NotFound(w, r)
 			return
 		}
-		if slices.Contains(homeOnlyPaths, r.Method+" "+r.URL.Path) && !c.closingFromInternet(r) {
+		route := r.Method + " " + r.URL.Path
+		if slices.Contains(homeOnlyPaths, route) {
 			writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
+			return
+		}
+		if slices.Contains(confirmPaths, route) && !c.closingFromInternet(r) && !c.confirmFromInternet(w, r, MailConfirm{}) {
 			return
 		}
 		next.ServeHTTP(w, r)
@@ -319,8 +329,8 @@ func (c *console) domainTarget() string {
 }
 
 // internetSave : PUT api/internet-console?enabled=true|false. Ouvrir demande
-// la double authentification du compte connecté et se fait depuis la maison ;
-// fermer est toujours permis.
+// la double authentification du compte connecté (depuis internet : confirmée,
+// confirmPaths) ; fermer est toujours permis.
 func (c *console) internetSave(w http.ResponseWriter, r *http.Request) {
 	account, _ := c.account(r)
 	enabled := r.URL.Query().Get("enabled") == "true"

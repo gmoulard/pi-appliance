@@ -907,5 +907,10 @@ piTranslations("ja", {
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi が招待を送れるように、「マイ Pi」で「メールの送信」を設定してください。",
   "Mot de passe de votre compte de la console": "コンソールのアカウントのパスワード",
   "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "インターネットからは、変更のたびにコンソールのアカウントのパスワードと 2 段階認証のコードで確認してください。送信サーバーはログインコードを受け取るためです。",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "インターネットからこの設定を変更するには 2 段階認証が必要です。先に「マイアカウント」で有効にする（認証アプリ）か、自宅から行ってください。"
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "インターネットからこの設定を変更するには 2 段階認証が必要です。先に「マイアカウント」で有効にする（認証アプリ）か、自宅から行ってください。",
+  "Action annulée.": "操作を取り消しました。",
+  "Annuler": "キャンセル",
+  "Confirmer depuis internet": "インターネットから確認",
+  "Confirmer": "確認",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "インターネットからこの操作を行うには、コンソールのアカウントのパスワードと 2 段階認証のコードが必要です。"
 });

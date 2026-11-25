@@ -63,9 +63,10 @@ type MailTestRequest struct {
 	MailConfirm
 }
 
-// MailConfirm : depuis internet, changer l'envoi des e-mails demande le mot de
-// passe du compte et son code de double authentification (le serveur d'envoi
-// reçoit tous les codes de connexion par e-mail).
+// MailConfirm : depuis internet, une action sensible (envoi des e-mails,
+// confirmPaths…) demande le mot de passe du compte et son code de double
+// authentification, dans la demande ou dans les en-têtes X-Pi-Confirm-Password
+// et X-Pi-Confirm-Code (fenêtre de confirmation de la console).
 type MailConfirm struct {
 	AccountPassword string `json:"account_password"`
 	Code            string `json:"code"`
@@ -78,11 +79,15 @@ type MailSaveRequest struct {
 }
 
 // NE PAS relâcher : depuis internet, une session volée ne doit pas pouvoir
-// détourner les codes de connexion vers un autre serveur d'envoi. Il faut un
+// détourner les codes de connexion, ouvrir la box ou effacer le Pi. Il faut un
 // compte avec double authentification, son mot de passe et un code frais.
+// NE PAS journaliser les en-têtes de confirmation.
 func (c *console) confirmFromInternet(w http.ResponseWriter, r *http.Request, confirm MailConfirm) bool {
 	if !fromInternet(r) {
 		return true
+	}
+	if confirm.AccountPassword == "" {
+		confirm = MailConfirm{AccountPassword: r.Header.Get("X-Pi-Confirm-Password"), Code: r.Header.Get("X-Pi-Confirm-Code")}
 	}
 	account, ok := c.account(r)
 	if !ok {
@@ -90,7 +95,7 @@ func (c *console) confirmFromInternet(w http.ResponseWriter, r *http.Request, co
 		return false
 	}
 	if !account.HasTwoFactor() {
-		writeError(w, http.StatusForbidden, "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.")
+		writeError(w, http.StatusForbidden, "Depuis internet, cette action demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.")
 		return false
 	}
 	if confirm.AccountPassword == "" {
@@ -103,7 +108,7 @@ func (c *console) confirmFromInternet(w http.ResponseWriter, r *http.Request, co
 		return false
 	}
 	c.Accounts.Logout(token)
-	log.Printf("envoi des e-mails : changement confirmé depuis internet par %s", account.Name)
+	log.Printf("action confirmée depuis internet par %s : %s %s", account.Name, r.Method, r.URL.Path)
 	return true
 }
 

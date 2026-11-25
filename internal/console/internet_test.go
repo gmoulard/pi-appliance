@@ -69,7 +69,7 @@ func internetFixture(t *testing.T) (fixture, string) {
 }
 
 // fromOutside : demande d'un visiteur d'internet, relayée par Traefik (boucle locale).
-func (f fixture) fromOutside(method, path, body string, cookie *http.Cookie) *httptest.ResponseRecorder {
+func (f fixture) fromOutside(method, path, body string, cookie *http.Cookie, headers ...string) *httptest.ResponseRecorder {
 	var reader io.Reader
 	if body != "" {
 		reader = strings.NewReader(body)
@@ -84,6 +84,9 @@ func (f fixture) fromOutside(method, path, body string, cookie *http.Cookie) *ht
 	}
 	if cookie != nil {
 		request.AddCookie(cookie)
+	}
+	for i := 0; i+1 < len(headers); i += 2 {
+		request.Header.Set(headers[i], headers[i+1])
 	}
 	recorder := httptest.NewRecorder()
 	f.handler.ServeHTTP(recorder, request)
@@ -194,9 +197,21 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 	if response := f.fromOutside(http.MethodGet, "/pi-appliance/api/services", "", outside); response.Code != http.StatusOK {
 		t.Fatalf("console depuis internet : code %d", response.Code)
 	}
-	// Réservé à la maison, même console ouverte.
-	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/factory-reset", `{}`, outside); response.Code != http.StatusForbidden {
-		t.Fatalf("remise à zéro depuis internet : code %d", response.Code)
+	// Réservé à la maison : les actions faites sans compte.
+	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/setup", `{}`, nil); response.Code != http.StatusForbidden {
+		t.Fatalf("mise en route depuis internet : code %d", response.Code)
+	}
+	// Le reste se fait aussi depuis internet, confirmé : remise à zéro avec un
+	// mauvais mot de passe refusée, ports de la box sans confirmation refusés.
+	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/factory-reset", `{"confirm": true, "password": "mauvais"}`, outside); response.Code != http.StatusUnauthorized {
+		t.Fatalf("remise à zéro depuis internet, mauvais mot de passe : code %d %s", response.Code, response.Body.String())
+	}
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/internet-access", `{"enabled": true}`, outside); response.Code != http.StatusUnauthorized || !strings.Contains(response.Body.String(), `"confirm_needed":true`) {
+		t.Fatalf("ports de la box sans confirmation : %d %s", response.Code, response.Body.String())
+	}
+	// Paul, sans double authentification : refusé même avec son mot de passe.
+	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/factory-reset", `{"confirm": true, "password": "un autre mot de passe"}`, paulCookie); response.Code != http.StatusForbidden {
+		t.Fatalf("remise à zéro par un utilisateur : code %d", response.Code)
 	}
 	// Envoi des e-mails depuis internet : mot de passe et code de double
 	// authentification demandés (le serveur d'envoi reçoit les codes).
@@ -223,6 +238,15 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 	}
 	if response := f.fromOutside(http.MethodDelete, "/pi-appliance/api/mail", "", outside); response.Code != http.StatusUnauthorized {
 		t.Fatalf("effacement sans confirmation : %d %s", response.Code, response.Body.String())
+	}
+	// Confirmation par les en-têtes (fenêtre commune de la console).
+	later = later.Add(time.Minute)
+	headerCode, err := totp.GenerateCode(secret, later)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/internet-console/domain", `{"domain": ""}`, outside, "X-Pi-Confirm-Password", adminPassword, "X-Pi-Confirm-Code", headerCode); response.Code == http.StatusUnauthorized || response.Code == http.StatusForbidden {
+		t.Fatalf("adresse personnelle confirmée par les en-têtes : %d %s", response.Code, response.Body.String())
 	}
 	f.accounts.Now = clock
 	// Fermer depuis internet : permis ; ensuite tout est refusé, fichier retiré.

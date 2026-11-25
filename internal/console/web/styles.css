@@ -1083,3 +1083,24 @@ footer .language select {
   justify-content: space-between;
   gap: 0.75rem;
 }
+
+/* Fenêtre « Confirmer depuis internet » (askConfirmation). */
+#confirmDialog {
+  border: none;
+  width: min(28rem, calc(100vw - 2rem));
+  color: inherit;
+}
+
+#confirmDialog:not([open]) {
+  display: none;
+}
+
+#confirmDialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+
+#confirmForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}

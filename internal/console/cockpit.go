@@ -94,7 +94,7 @@ func (c *console) cockpitAccessStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 // cockpitAccessSave : PUT api/cockpit/access {"internet", "users"}. Ouvrir
-// plus largement se fait depuis la maison ; refermer est permis partout.
+// plus largement depuis internet est confirmé ; refermer est permis partout.
 func (c *console) cockpitAccessSave(w http.ResponseWriter, r *http.Request) {
 	account, _ := c.account(r)
 	var body struct {
@@ -109,9 +109,11 @@ func (c *console) cockpitAccessSave(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	current := c.CockpitAccess.Get()
-	if fromInternet(r) && ((body.Internet && !current.Internet) || (body.Users && !current.Users)) {
-		writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
-		return
+	// Ouvrir plus largement depuis internet : confirmé (mot de passe et code).
+	if (body.Internet && !current.Internet) || (body.Users && !current.Users) {
+		if !c.confirmFromInternet(w, r, MailConfirm{}) {
+			return
+		}
 	}
 	access := cockpit.Access{Internet: body.Internet, Users: body.Users, ChangedBy: account.Name, ChangedAt: time.Now().UTC()}
 	if err := c.CockpitAccess.Set(access); err != nil {

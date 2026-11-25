@@ -38,15 +38,28 @@ const CONTROLS = [
   { action: "update", label: t("Mettre à jour"), when: () => true },
 ];
 
-async function api(path, options = {}) {
+async function api(path, options = {}, confirmation = null) {
   // X-Pi-Appliance : exigé par la console sur ce qui modifie (apiHeaderGuard) ;
   // un formulaire d'une autre page ne sait pas le poser.
   const headers = { ...(options.headers || {}), "X-Pi-Appliance": "1" };
+  if (confirmation) {
+    headers["X-Pi-Confirm-Password"] = confirmation.password;
+    headers["X-Pi-Confirm-Code"] = confirmation.code;
+  }
   const response = await fetch(`api/${path}`, { ...options, headers });
   if (response.status === 204) {
     return null;
   }
   const body = await response.json().catch(() => ({}));
+  // Depuis internet, une action sensible demande le mot de passe et un code
+  // de double authentification (confirmFromInternet) : fenêtre, puis nouvel essai.
+  if (response.status === 401 && body.confirm_needed && !confirmation) {
+    const given = await askConfirmation();
+    if (given) return api(path, options, given);
+    const error = new Error(t("Action annulée."));
+    error.status = 401;
+    throw error;
+  }
   if (!response.ok) {
     const error = new Error(body.error || t("Erreur {0}", response.status));
     error.status = response.status;
@@ -54,6 +67,40 @@ async function api(path, options = {}) {
     throw error;
   }
   return body;
+}
+
+// askConfirmation : fenêtre « Confirmer depuis internet » ; rend
+// {password, code}, ou null si la personne annule. Rien n'est gardé.
+function askConfirmation() {
+  const dialog = document.getElementById("confirmDialog");
+  const form = document.getElementById("confirmForm");
+  const emailCode = document.getElementById("confirmEmailCode");
+  const note = document.getElementById("confirmNote");
+  form.reset();
+  note.hidden = true;
+  emailCode.hidden = !(currentAccount && currentAccount.email_code);
+  emailCode.onclick = async () => {
+    emailCode.disabled = true;
+    try {
+      const reply = await api("login/email-code", jsonBody("POST", { name: currentAccount.name, password: form.elements.password.value, lang: LANGUAGE }));
+      note.textContent = t("Un code vient de partir à {0} : il est valable 10 minutes. Regardez aussi dans les courriers indésirables.", reply.email);
+    } catch (error) {
+      note.textContent = error.message;
+    } finally {
+      note.hidden = false;
+      emailCode.disabled = false;
+    }
+  };
+  return new Promise((resolve) => {
+    dialog.addEventListener("close", () => {
+      const ok = dialog.returnValue === "ok";
+      const given = ok ? { password: form.elements.password.value, code: form.elements.code.value.trim() } : null;
+      form.reset();
+      resolve(given);
+    }, { once: true });
+    dialog.returnValue = "";
+    dialog.showModal();
+  });
 }
 
 function element(tag, text, className) {
@@ -3612,8 +3659,9 @@ const internetDomainRemove = document.getElementById("internetDomainRemove");
 
 function showInternet(status) {
   internetBox.hidden = false;
-  // L'adresse personnelle se règle à la maison seulement.
-  internetDomainForm.hidden = status.internet;
+  // L'adresse personnelle se règle aussi depuis internet (confirmée par la
+  // fenêtre askConfirmation, choix de l'utilisateur du 2026-11-25).
+  internetDomainForm.hidden = false;
   internetDomainForm.elements.domain.value = status.domain || "";
   const help = document.getElementById("internetDomainHelp");
   help.replaceChildren();
@@ -4816,8 +4864,6 @@ let mailStatus = null;
 // réglage de l'envoi ne change alors pas (homeOnlyPaths du serveur).
 let sessionInternet = false;
 const mailHome = document.getElementById("mailHome");
-const mailConfirm = document.getElementById("mailConfirm");
-const mailEmailCode = document.getElementById("mailEmailCode");
 
 function showMailResult(text, kind) {
   mailResult.replaceChildren(element("p", text));
@@ -4836,12 +4882,8 @@ function showMail(status) {
   fields.password.placeholder = status.password_set ? t("Enregistré : laissez vide pour le garder") : "";
   fields.from.value = status.from || "";
   // Depuis internet : chaque changement est confirmé par le mot de passe du
-  // compte et un code de double authentification (confirmFromInternet).
+  // compte et un code de double authentification (fenêtre askConfirmation).
   const twoFactor = Boolean(currentAccount && currentAccount.two_factor);
-  fields.account_password.value = "";
-  fields.code.value = "";
-  mailConfirm.hidden = !sessionInternet || !twoFactor;
-  mailEmailCode.hidden = !(currentAccount && currentAccount.email_code);
   mailSave.hidden = sessionInternet && !twoFactor;
   mailForget.hidden = !status.configured || (sessionInternet && !twoFactor);
   mailTest.hidden = sessionInternet && !twoFactor && !status.configured;
@@ -4895,24 +4937,6 @@ async function mailChanged() {
   loadAlerts();
 }
 
-// mailConfirmFields : mot de passe du compte et code, depuis internet.
-function mailConfirmFields() {
-  if (!sessionInternet) return {};
-  return { account_password: mailForm.elements.account_password.value, code: mailForm.elements.code.value };
-}
-
-mailEmailCode.addEventListener("click", async () => {
-  mailEmailCode.disabled = true;
-  try {
-    const reply = await api("login/email-code", jsonBody("POST", { name: currentAccount.name, password: mailForm.elements.account_password.value, lang: LANGUAGE }));
-    showMailResult(t("Un code vient de partir à {0} : il est valable 10 minutes. Regardez aussi dans les courriers indésirables.", reply.email), "success");
-  } catch (error) {
-    showMailResult(error.message, "error");
-  } finally {
-    mailEmailCode.disabled = false;
-  }
-});
-
 function mailSettings() {
   const fields = mailForm.elements;
   return {
@@ -4936,7 +4960,7 @@ mailForm.addEventListener("submit", async (event) => {
   const button = mailSave;
   button.disabled = true;
   try {
-    showMail(await api("mail", jsonBody("PUT", { ...mailSettings(), ...mailConfirmFields() })));
+    showMail(await api("mail", jsonBody("PUT", mailSettings())));
     showMailResult(t("Réglage enregistré. Envoyez-vous un e-mail d'essai pour vérifier qu'il marche."), "success");
     await mailChanged();
   } catch (error) {
@@ -4955,7 +4979,7 @@ mailTest.addEventListener("click", async () => {
   try {
     // Sans double authentification depuis internet : essai du réglage enregistré.
     const locked = sessionInternet && !(currentAccount && currentAccount.two_factor);
-    const body = locked ? { lang: LANGUAGE } : { lang: LANGUAGE, settings: mailSettings(), ...mailConfirmFields() };
+    const body = locked ? { lang: LANGUAGE } : { lang: LANGUAGE, settings: mailSettings() };
     const reply = await api("mail/test", jsonBody("POST", body));
     if (reply.status) showMail(reply.status);
     showMailResult(t("E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).", reply.email), "success");
@@ -4975,7 +4999,7 @@ mailForget.addEventListener("click", async () => {
   if (!window.confirm(question)) return;
   mailForget.disabled = true;
   try {
-    showMail(await api("mail", jsonBody("DELETE", mailConfirmFields())));
+    showMail(await api("mail", { method: "DELETE" }));
     showMailResult(t("Le Pi n'envoie plus d'e-mails par ce serveur."), "success");
     await mailChanged();
   } catch (error) {

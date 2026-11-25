@@ -907,5 +907,10 @@ piTranslations("fa", {
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "برای اینکه Pi دعوت‌ها را بفرستد، «ارسال ایمیل» را در «Pi من» تنظیم کنید.",
   "Mot de passe de votre compte de la console": "گذرواژهٔ حساب شما در کنسول",
   "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "از اینترنت، هر تغییر را با گذرواژهٔ حساب کنسول و کد احراز هویت دومرحله‌ای تأیید کنید: سرور ارسال کدهای ورود را دریافت می‌کند.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "از اینترنت، این تنظیم به احراز هویت دومرحله‌ای نیاز دارد: نخست آن را در «حساب من» فعال کنید (برنامهٔ احراز هویت)، یا این کار را از خانه انجام دهید."
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "از اینترنت، این تنظیم به احراز هویت دومرحله‌ای نیاز دارد: نخست آن را در «حساب من» فعال کنید (برنامهٔ احراز هویت)، یا این کار را از خانه انجام دهید.",
+  "Action annulée.": "کار لغو شد.",
+  "Annuler": "لغو",
+  "Confirmer depuis internet": "تأیید از اینترنت",
+  "Confirmer": "تأیید",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "از اینترنت، این کار به گذرواژهٔ حساب کنسول و کد احراز هویت دومرحله‌ای نیاز دارد."
 });

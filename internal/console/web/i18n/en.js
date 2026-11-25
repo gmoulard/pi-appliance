@@ -907,5 +907,10 @@ piTranslations("en", {
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "For the Pi to send invitations, set up “Sending emails” in “My Pi”.",
   "Mot de passe de votre compte de la console": "Password of your console account",
   "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "From the internet, confirm each change with your console account password and your two-factor code: the sending server receives the sign-in codes.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "From the internet, this setting requires two-factor authentication: first turn it on in “My account” (authenticator app), or do it from home."
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "From the internet, this setting requires two-factor authentication: first turn it on in “My account” (authenticator app), or do it from home.",
+  "Action annulée.": "Action cancelled.",
+  "Annuler": "Cancel",
+  "Confirmer depuis internet": "Confirm from the internet",
+  "Confirmer": "Confirm",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "From the internet, this action requires your console account password and your two-factor code."
 });

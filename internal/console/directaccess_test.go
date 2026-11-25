@@ -175,8 +175,9 @@ func TestInternetAccessNoBox(t *testing.T) {
 	}
 }
 
-func TestInternetAccessHomeOnly(t *testing.T) {
-	if !slices.Contains(homeOnlyPaths, "PUT /pi-appliance/api/internet-access") {
-		t.Fatal("ouverture des ports permise depuis internet")
+// Depuis internet, ouvrir les ports de la box est confirmé (mot de passe et code).
+func TestInternetAccessConfirmed(t *testing.T) {
+	if !slices.Contains(confirmPaths, "PUT /pi-appliance/api/internet-access") {
+		t.Fatal("ouverture des ports sans confirmation depuis internet")
 	}
 }
