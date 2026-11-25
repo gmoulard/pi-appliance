@@ -904,5 +904,6 @@ piTranslations("ja", {
   "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "テストメールを {0} に送信しました：設定を確認して保存しました。届いたか確認してください（迷惑メールフォルダーも）。",
   "Envoyer le lien par e-mail": "リンクをメールで送信",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} もう一度試すか、このリンクを {1} にご自身で渡してください。有効期間は 7 日間で、一度だけ使えます。",
-  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi が招待を送れるように、「マイ Pi」で「メールの送信」を設定してください。"
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi が招待を送れるように、「マイ Pi」で「メールの送信」を設定してください。",
+  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "インターネットからはこの設定を変更できません。送信サーバーはログインコードを受け取るためです。ご自身のネットワークから https://{0}.local/pi-appliance で変更してください（自宅でも、Pi のインターネットアドレスはインターネット扱いです）。"
 });

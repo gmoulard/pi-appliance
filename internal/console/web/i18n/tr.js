@@ -904,5 +904,6 @@ piTranslations("tr", {
   "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Deneme e-postası {0} adresine gönderildi: ayarlar denendi ve kaydedildi. Gelip gelmediğine bakın (istenmeyen postalara da).",
   "Envoyer le lien par e-mail": "Bağlantıyı e-postayla gönder",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Yeniden deneyin ya da bu bağlantıyı {1} adresine kendiniz iletin. 7 gün geçerlidir ve yalnızca bir kez kullanılabilir.",
-  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi'nin davetleri göndermesi için «Pi'm» içinde «E-posta gönderimi»ni ayarlayın."
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi'nin davetleri göndermesi için «Pi'm» içinde «E-posta gönderimi»ni ayarlayın.",
+  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "İnternetten bu ayar değiştirilemez: gönderim sunucusu oturum açma kodlarını alır. Ağınızdan, https://{0}.local/pi-appliance adresinden değiştirin (evde bile Pi'nin internet adresi internet sayılır)."
 });

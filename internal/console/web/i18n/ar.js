@@ -904,5 +904,6 @@ piTranslations("ar", {
   "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "أُرسلت رسالة الاختبار إلى {0}: تم التحقق من الإعدادات وحفظها. تأكد من وصولها (وفي مجلد الرسائل غير المرغوب فيها أيضًا).",
   "Envoyer le lien par e-mail": "إرسال الرابط بالبريد الإلكتروني",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} حاول مرة أخرى، أو أرسل هذا الرابط بنفسك إلى {1}. صالح لمدة 7 أيام ولا يُستخدم إلا مرة واحدة.",
-  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "لكي يرسل الـ Pi الدعوات، اضبط «إرسال البريد الإلكتروني» في «الـPi الخاص بي»."
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "لكي يرسل الـ Pi الدعوات، اضبط «إرسال البريد الإلكتروني» في «الـPi الخاص بي».",
+  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "لا يمكن تغيير هذا الإعداد من الإنترنت: خادم الإرسال يتلقى رموز تسجيل الدخول. غيّره من شبكتك على العنوان https://{0}.local/pi-appliance (حتى في المنزل، يُعدّ عنوان الـ Pi على الإنترنت إنترنتًا)."
 });

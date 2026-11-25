@@ -4809,8 +4809,13 @@ const mailState = document.getElementById("mailState");
 const mailForm = document.getElementById("mailForm");
 const mailTest = document.getElementById("mailTest");
 const mailForget = document.getElementById("mailForget");
+const mailSave = document.getElementById("mailSave");
 const mailResult = document.getElementById("mailResult");
 let mailStatus = null;
+// sessionInternet : console ouverte depuis internet (api/session) ; le
+// réglage de l'envoi ne change alors pas (homeOnlyPaths du serveur).
+let sessionInternet = false;
+const mailHome = document.getElementById("mailHome");
 
 function showMailResult(text, kind) {
   mailResult.replaceChildren(element("p", text));
@@ -4828,7 +4833,14 @@ function showMail(status) {
   fields.password.value = "";
   fields.password.placeholder = status.password_set ? t("Enregistré : laissez vide pour le garder") : "";
   fields.from.value = status.from || "";
-  mailForget.hidden = !status.configured;
+  for (const field of fields) {
+    if (field.tagName !== "BUTTON") field.disabled = sessionInternet;
+  }
+  mailSave.hidden = sessionInternet;
+  mailForget.hidden = !status.configured || sessionInternet;
+  mailTest.hidden = sessionInternet && !status.configured;
+  mailHome.hidden = !sessionInternet;
+  mailHome.textContent = t("Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).", piName);
   const dot = element("span", undefined, `dot ${status.verified ? "ok" : ""}`);
   let text;
   if (status.configured && status.verified) {
@@ -4860,6 +4872,7 @@ async function mailChanged() {
     const session = await api("session");
     emailCodes = Boolean(session.email_codes);
     recoveryEmail = Boolean(session.recovery_email);
+    sessionInternet = Boolean(session.internet);
     if (session.account) {
       currentAccount = session.account;
       showEmailCode(session.account);
@@ -4894,7 +4907,7 @@ mailForm.elements.security.addEventListener("change", () => {
 
 mailForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const button = mailForm.querySelector("button");
+  const button = mailSave;
   button.disabled = true;
   try {
     showMail(await api("mail", jsonBody("PUT", mailSettings())));
@@ -4910,11 +4923,13 @@ mailForm.addEventListener("submit", async (event) => {
 // L'e-mail d'essai part avec les réglages tapés ; s'il part, le Pi les
 // enregistre et les note vérifiés (rien à enregistrer avant).
 mailTest.addEventListener("click", async () => {
-  if (!mailForm.reportValidity()) return;
+  if (!sessionInternet && !mailForm.reportValidity()) return;
   mailTest.disabled = true;
   showMailResult(t("Envoi de l'e-mail d'essai…"), "info");
   try {
-    const reply = await api("mail/test", jsonBody("POST", { lang: LANGUAGE, settings: mailSettings() }));
+    // Depuis internet : essai du réglage enregistré seulement.
+    const body = sessionInternet ? { lang: LANGUAGE } : { lang: LANGUAGE, settings: mailSettings() };
+    const reply = await api("mail/test", jsonBody("POST", body));
     if (reply.status) showMail(reply.status);
     showMailResult(t("E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).", reply.email), "success");
     await mailChanged();
@@ -5325,6 +5340,7 @@ authForm.addEventListener("submit", async (event) => {
       window.history.replaceState(null, "", window.location.pathname + window.location.search);
       const session = await api("session");
       recoveryEmail = Boolean(session.recovery_email);
+      sessionInternet = Boolean(session.internet);
       emailCodes = Boolean(session.email_codes);
       if (!session.account) {
         showAuth("login");
@@ -5349,6 +5365,7 @@ authForm.addEventListener("submit", async (event) => {
     // Arrivée par un lien d'invitation : l'état du Pi n'a pas encore été lu.
     emailCodes = Boolean(session.email_codes);
     recoveryEmail = Boolean(session.recovery_email);
+    sessionInternet = Boolean(session.internet);
     await showConsole(session.account || account, session.wizard);
   } catch (error) {
     if (authMode === "login" && error.body && error.body.code_needed) {
@@ -5744,6 +5761,7 @@ api("health")
     }
     const session = await api("session");
     recoveryEmail = Boolean(session.recovery_email);
+    sessionInternet = Boolean(session.internet);
     emailCodes = Boolean(session.email_codes);
     if (session.reset) {
       if (FACTORY_PAGE) {

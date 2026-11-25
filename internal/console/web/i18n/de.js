@@ -904,5 +904,6 @@ piTranslations("de", {
   "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Test-E-Mail an {0} gesendet: Einstellungen geprüft und gespeichert. Sehen Sie nach, ob sie angekommen ist (auch im Spam-Ordner).",
   "Envoyer le lien par e-mail": "Link per E-Mail senden",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Versuchen Sie es erneut, oder geben Sie diesen Link selbst an {1} weiter. Er ist 7 Tage gültig und funktioniert nur einmal.",
-  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Damit der Pi Einladungen verschickt, richten Sie „E-Mail-Versand“ unter „Mein Pi“ ein."
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Damit der Pi Einladungen verschickt, richten Sie „E-Mail-Versand“ unter „Mein Pi“ ein.",
+  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "Aus dem Internet lässt sich diese Einstellung nicht ändern: Der Versandserver erhält die Anmeldecodes. Ändern Sie sie aus Ihrem Netzwerk unter https://{0}.local/pi-appliance (auch zu Hause zählt die Internetadresse des Pi als Internet)."
 });

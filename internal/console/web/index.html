@@ -367,6 +367,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <div class="card">
 <p>Le Pi envoie lui-même ses e-mails (invitations, mot de passe oublié, codes de connexion) avec une boîte e-mail que vous avez déjà : Gmail, OVH, Free, Orange… Entrez ses réglages d'envoi, puis envoyez-vous un e-mail d'essai.</p>
 <p id="mailState" class="state" aria-live="polite"></p>
+<p id="mailHome" class="note" hidden></p>
 <form id="mailForm">
 <label>Serveur d'envoi<input name="host" required autocapitalize="none" autocomplete="off" maxlength="253"></label>
 <label>Sécurité<select name="security">
@@ -378,7 +379,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <label>Mot de passe<input name="password" type="password" autocomplete="new-password" maxlength="256"></label>
 <label>Adresse d'expédition<input name="from" type="email" autocomplete="off" maxlength="254"></label>
 <div class="controls">
-<button>Enregistrer</button>
+<button id="mailSave">Enregistrer</button>
 <button id="mailTest" class="secondary" type="button">Envoyer un e-mail d'essai</button>
 <button id="mailForget" class="secondary" type="button" hidden>Ne plus envoyer d'e-mails</button>
 </div>
