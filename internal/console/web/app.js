@@ -94,10 +94,12 @@ function tile(appId) {
   return box;
 }
 
-function cardHead(appId, title, detail) {
+function cardHead(appId, title, detail, tags = []) {
   const head = element("div", undefined, "card-head");
   const text = element("div");
-  text.append(element("h3", title), detail);
+  text.append(element("h3", title));
+  if (tags.some((tag) => TAG_LABELS[tag])) text.append(tagList(tags));
+  text.append(detail);
   head.append(tile(appId), text);
   return head;
 }
@@ -254,10 +256,7 @@ async function loadServices() {
     if (service.site_files && service.app !== "site-web") {
       detail.append(element("p", buildText(service.build), "meta"));
     }
-    if ((service.tags || []).length > 0) {
-      detail.append(tagList(service.tags));
-    }
-    card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail), actions);
+    card.append(cardHead(service.app, `${service.name} (${service.app_name})`, detail, service.tags || []), actions);
     return card;
   }));
 }
@@ -662,10 +661,15 @@ const TAG_LABELS = {
   reseau: t("Réseau"),
   maison: t("Maison"),
 };
-function tagList(tags) {
+function labelList(labels) {
   const list = element("ul", undefined, "app-tags");
-  list.append(...tags.filter((tag) => TAG_LABELS[tag]).map((tag) => element("li", TAG_LABELS[tag])));
+  list.setAttribute("aria-label", t("Étiquettes"));
+  list.append(...labels.map((label) => element("li", label)));
   return list;
+}
+
+function tagList(tags) {
+  return labelList(tags.filter((tag) => TAG_LABELS[tag]).map((tag) => TAG_LABELS[tag]));
 }
 
 // hostingChooser : hébergement d'une application hors catalogue, par exemple
@@ -799,6 +803,16 @@ const PI_THEMES = [
   ["entretien", t("Entretien")],
   ["comptes", t("Comptes et appareils")],
 ];
+// Étiquettes à l'écran (TODO-5.28) : chaque case de « Mon Pi » montre ses
+// thèmes sous son titre, comme les cartes des services montrent les leurs.
+const THEME_LABELS = Object.fromEntries(PI_THEMES);
+for (const node of document.querySelectorAll("main [data-theme]")) {
+  if (node.tagName === "P") continue;
+  const list = labelList(nodeThemes(node).map((theme) => THEME_LABELS[theme]).filter(Boolean));
+  const heading = node.querySelector(":scope > h2, :scope > h3");
+  if (heading) heading.after(list);
+  else node.prepend(list);
+}
 const TILES_KEY = "pi-tiles";
 const tileFilters = document.getElementById("tileFilters");
 const tileKinds = document.getElementById("tileKinds");
@@ -1017,7 +1031,7 @@ async function loadCatalog() {
     const card = element("li", undefined, "card app");
     tint(card, app.id);
     card.dataset.tags = (app.tags || []).join(" ");
-    card.append(cardHead(app.id, app.name, element("p", app.description)));
+    card.append(cardHead(app.id, app.name, element("p", app.description), app.tags || []));
     const details = element("details", undefined, "install-details");
     const summary = element("summary", t("Installer"));
     details.append(summary);
@@ -1060,7 +1074,7 @@ async function loadCatalog() {
       install(app, form, button, details);
     });
     details.append(form);
-    card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"), tagList(app.tags || []));
+    card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"));
     return [app.name, card];
   });
   // Cockpit, installé sur le système et non dans un conteneur, a sa carte à
@@ -2487,7 +2501,10 @@ cockpitBox.querySelector(".card-head").prepend(tile("cockpit"));
 const cockpitUserBox = document.getElementById("cockpitUserBox");
 tint(cockpitUserBox, "cockpit");
 cockpitUserBox.querySelector(".card-head").prepend(tile("cockpit"));
-cockpitBox.append(element("p", t("{0} · licence {1}", t("Administration"), "LGPL-2.1"), "meta"), tagList(["administration"]));
+cockpitBox.append(element("p", t("{0} · licence {1}", t("Administration"), "LGPL-2.1"), "meta"));
+for (const box of [cockpitBox, cockpitUserBox]) {
+  box.querySelector(".card-head h3").after(tagList(box.dataset.tags.split(" ")));
+}
 
 function cockpitBusy(status) {
   return Boolean(status && status.job && (status.job.state === "starting" || status.job.state === "running"));

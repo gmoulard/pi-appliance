@@ -1,1 +1,0 @@
-- dans l'affichage d'un blocs,mes le tags que le caractérise exemple : caméra affiche le tag maison

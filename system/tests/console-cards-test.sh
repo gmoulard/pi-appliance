@@ -15,7 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Cartes de la console à l'écran (TODO-5.27 à 5.29) : la console de ce dépôt,
-# sans Pi ni Docker, avec un faux script des correctifs du système, ouverte
+# sans Pi ni Docker, avec un faux script des correctifs du système et un
+# service « camera » déjà installé, ouverte
 # dans Chromium sans tête par console-cards.cjs (Playwright).
 #
 # Usage : sh system/tests/console-cards-test.sh
@@ -52,7 +53,9 @@ status) echo '{"packages":[{"name":"openssl","security":true},{"name":"curl","se
 esac
 EOF
 chmod +x "$TMP/updates.sh"
-mkdir -p "$TMP/data" "$TMP/tls"
+mkdir -p "$TMP/data/services/camera" "$TMP/tls"
+printf '{"name":"camera","app":"camera","app_name":"Caméra et timelapse","address":"camera-pi-essai.local","installed_at":"2026-11-25T00:00:00Z"}\n' \
+	>"$TMP/data/services/camera/instance.json"
 
 "$TMP/pi-appliance" -addr "127.0.0.1:$PORT" -data "$TMP/data" -domain pi-essai.local \
 	-reset-file "" -network-script "" -stats-url "" -storage-script "" -backup-script "" \

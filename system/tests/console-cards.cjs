@@ -70,8 +70,23 @@ async function choose(page, bar, label) {
     }
     check("Mises à jour : correctif de sécurité annoncé", (await page.textContent("#updatesState")).includes("correctif de sécurité"));
 
+    const untagged = await page.evaluate(() => [...document.querySelectorAll("main [data-theme]")]
+      .filter((node) => node.tagName !== "P" && !node.querySelector(":scope > .app-tags li"))
+      .map((node) => node.id || node.className));
+    check("Mon Pi : chaque case montre ses thèmes", untagged.length === 0, untagged.join(", "));
+    const updateTags = await page.$$eval("#updatesBox > h3 + .app-tags li", (nodes) => nodes.map((node) => node.textContent));
+    check("Mises à jour : étiquettes « État » et « Entretien » sous le titre", updateTags.join("|") === "État|Entretien", updateTags.join(", "));
+
     await choose(page, "tileKinds", "Mon Pi");
-    const catalog = await (await page.context().request.get(`${base}api/catalog`)).json();
+    const cameraTags = await page.$$eval("#catalog > li .card-head h3", (nodes) => {
+      const h3 = nodes.find((node) => node.textContent === "Caméra et timelapse");
+      const list = h3 && h3.nextElementSibling;
+      return list && list.matches(".app-tags") ? [...list.children].map((node) => node.textContent) : [];
+    });
+    check("Caméra : étiquette « Maison » sous le titre", cameraTags.join("|") === "Maison", cameraTags.join(", "));
+    const serviceTags = await page.$$eval("#services > li .card-head h3 + .app-tags li", (nodes) => nodes.map((node) => node.textContent));
+    check("service camera : étiquette « Maison » sous le titre", serviceTags.join("|") === "Maison", serviceTags.join(", "));
+    const catalog =await (await page.context().request.get(`${base}api/catalog`)).json();
     for (const app of catalog.apps) {
       const visible = await page.evaluate((title) => [...document.querySelectorAll("#catalog > li h3")]
         .some((h3) => h3.textContent === title && h3.getClientRects().length > 0), app.name);
