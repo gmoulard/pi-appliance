@@ -1013,7 +1013,7 @@ async function loadCatalog() {
   for (const app of apps) {
     icons[app.id] = app.icon;
   }
-  catalogList.replaceChildren(...apps.map((app) => {
+  const cards = apps.map((app) => {
     const card = element("li", undefined, "card app");
     tint(card, app.id);
     card.dataset.tags = (app.tags || []).join(" ");
@@ -1061,11 +1061,14 @@ async function loadCatalog() {
     });
     details.append(form);
     card.append(details, element("p", t("{0} · licence {1}", app.category, app.license), "meta"), tagList(app.tags || []));
-    return card;
-  }));
+    return [app.name, card];
+  });
   // Cockpit, installé sur le système et non dans un conteneur, a sa carte à
-  // part, gardée d'un chargement à l'autre (spécification 6.4).
-  catalogList.append(cockpitBox);
+  // part, gardée d'un chargement à l'autre (spécification 6.4). Ordre
+  // alphabétique des noms, Cockpit compris (TODO-5.27).
+  cards.push([cockpitBox.querySelector("h3").textContent, cockpitBox]);
+  cards.sort(([a], [b]) => a.localeCompare(b, LOCALE, { sensitivity: "base" }));
+  catalogList.replaceChildren(...cards.map(([, card]) => card));
   // Carte de Cockpit remplie même si « Mon Pi » n'a pas été chargé.
   if (currentAccount && currentAccount.role === "admin" && cockpitStatus === null) {
     loadCockpit().then((done) => { if (!done) watchCockpit(); }).catch(() => {});

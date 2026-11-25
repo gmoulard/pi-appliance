@@ -77,6 +77,11 @@ async function choose(page, bar, label) {
         .some((h3) => h3.textContent === title && h3.getClientRects().length > 0), app.name);
       check(`tout affiché : carte « ${app.name} » de la marketplace`, visible);
     }
+    const titles = await page.$$eval("#catalog > li:not([hidden]) h3", (nodes) => nodes.map((node) => node.textContent));
+    const last = titles.pop();
+    const sorted = [...titles].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+    check("marketplace par ordre alphabétique", titles.join("|") === sorted.join("|"), titles.join(", "));
+    check("marketplace : « Docker Compose libre » en dernier", last === "Docker Compose libre", last);
     for (const selector of [...PI_CARDS, "#servicesSection", "#catalogSection"]) {
       check(`tout affiché : ${selector}`, await shown(page, selector));
     }
