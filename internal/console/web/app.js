@@ -1600,6 +1600,9 @@ function customComposeCard() {
   name.name = "name";
   name.pattern = "[a-z]([a-z0-9\\-]{0,30}[a-z0-9])?";
   name.required = true;
+  // Exemple prérempli qui s'installe tel quel (whoami : petite page qui
+  // affiche la requête reçue, image arm64) ; à remplacer par son fichier.
+  name.defaultValue = "whoami";
   nameLabel.append(name);
   const composeLabel = element("label", t("Fichier compose.yaml"));
   const compose = element("textarea");
@@ -1608,13 +1611,13 @@ function customComposeCard() {
   compose.required = true;
   compose.spellcheck = false;
   compose.autocapitalize = "none";
-  compose.placeholder = "services:\n  web:\n    image: nginx:1.27";
+  compose.defaultValue = "services:\n  whoami:\n    image: traefik/whoami:v1.10\n    restart: unless-stopped\n";
   composeLabel.append(compose);
   const serviceLabel = element("label", t("Conteneur à ouvrir à l'adresse du service"));
   const service = element("input");
   service.name = "service";
   service.required = true;
-  service.placeholder = "web";
+  service.defaultValue = "whoami";
   serviceLabel.append(service);
   const portLabel = element("label", t("Son port dans le conteneur"));
   const port = element("input");
