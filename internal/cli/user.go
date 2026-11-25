@@ -78,8 +78,10 @@ const userHelp = `pia user : comptes de la console.
   pia user show <compte>          détail d'un compte, ses téléphones et ses liens de partage
   pia user add <compte> <e-mail> [--role admin|user|guest] [--until AAAA-MM-JJ]
                   [--require-2fa]   la personne reçoit un lien pour choisir son mot de passe
-  pia user edit <compte> [--role admin|user|guest] [--until AAAA-MM-JJ]
-                  [--require-2fa yes|no]
+  pia user edit <compte> [--email ADRESSE] [--role admin|user|guest]
+                  [--until AAAA-MM-JJ] [--require-2fa yes|no]
+                                  nouvelle adresse : à vérifier par un code ; d'ici là,
+                                  plus de code de connexion par e-mail pour ce compte
   pia user reset <compte>         nouveau lien pour choisir un mot de passe (oublié ou invitation expirée)
   pia user 2fa-off <compte> [--yes]
                                   retirer la double authentification (code par e-mail et
@@ -227,21 +229,21 @@ func userAdd(env Env, args []string) error {
 }
 
 func userEdit(env Env, args []string) error {
-	f, err := parseFlags(args, []string{"role", "until", "require-2fa"}, nil)
+	f, err := parseFlags(args, []string{"email", "role", "until", "require-2fa"}, nil)
 	if err != nil {
 		return err
 	}
 	if len(f.positional) != 1 {
-		return userUsage("Indiquez un compte : pia user edit <compte> [--role …] [--until …] [--require-2fa yes|no].")
+		return userUsage("Indiquez un compte : pia user edit <compte> [--email …] [--role …] [--until …] [--require-2fa yes|no].")
 	}
 	if len(f.values) == 0 {
-		return userUsage("Rien à changer : indiquez --role, --until ou --require-2fa.")
+		return userUsage("Rien à changer : indiquez --email, --role, --until ou --require-2fa.")
 	}
 	account, err := getAccount(env, f.positional[0])
 	if err != nil {
 		return err
 	}
-	request := userRequest{Role: account.Role, Expires: account.ExpiresAt, TOTPRequired: account.TOTPRequired}
+	request := userRequest{Email: f.value("email"), Role: account.Role, Expires: account.ExpiresAt, TOTPRequired: account.TOTPRequired}
 	if value := f.value("role"); value != "" {
 		if request.Role, err = parseRole(value, ""); err != nil {
 			return err
@@ -276,6 +278,12 @@ func userEdit(env Env, args []string) error {
 		return err
 	}
 	fmt.Fprintf(env.Out, "Compte %s modifié : %s, %s, double authentification : %s.\n", updated.Name, roleName(updated.Role), accountState(updated), totpState(updated))
+	if updated.Email != account.Email {
+		fmt.Fprintf(env.Out, "Adresse e-mail : %s (avant : %s). La personne la vérifiera dans « Mon compte » par un code envoyé à cette adresse.\n", updated.Email, account.Email)
+		if account.EmailCode {
+			fmt.Fprintln(env.Out, "Le code de connexion par e-mail est coupé pour ce compte jusqu'à cette vérification.")
+		}
+	}
 	return nil
 }
 

@@ -83,6 +83,17 @@ type MailSaveRequest struct {
 // compte avec double authentification, son mot de passe et un code frais.
 // NE PAS journaliser les en-têtes de confirmation.
 func (c *console) confirmFromInternet(w http.ResponseWriter, r *http.Request, confirm MailConfirm) bool {
+	return c.confirmInternet(w, r, confirm, true)
+}
+
+// confirmMailFromInternet : l'envoi des e-mails se règle depuis internet sans
+// double authentification exigée (choix de l'utilisateur du 2026-11-25) : le
+// mot de passe du compte, et son code s'il a la double authentification.
+func (c *console) confirmMailFromInternet(w http.ResponseWriter, r *http.Request, confirm MailConfirm) bool {
+	return c.confirmInternet(w, r, confirm, false)
+}
+
+func (c *console) confirmInternet(w http.ResponseWriter, r *http.Request, confirm MailConfirm, needTwoFactor bool) bool {
 	if !fromInternet(r) {
 		return true
 	}
@@ -94,12 +105,12 @@ func (c *console) confirmFromInternet(w http.ResponseWriter, r *http.Request, co
 		writeError(w, http.StatusUnauthorized, "Connectez-vous.")
 		return false
 	}
-	if !account.HasTwoFactor() {
+	if needTwoFactor && !account.HasTwoFactor() {
 		writeError(w, http.StatusForbidden, "Depuis internet, cette action demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.")
 		return false
 	}
 	if confirm.AccountPassword == "" {
-		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": "Depuis internet, confirmez avec le mot de passe de votre compte et votre code de double authentification.", "confirm_needed": true})
+		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": "Depuis internet, confirmez avec le mot de passe de votre compte (et votre code de double authentification si elle est activée).", "confirm_needed": true})
 		return false
 	}
 	token, _, err := c.Accounts.Login(account.Name, confirm.AccountPassword, confirm.Code, clientIP(r))
@@ -204,7 +215,7 @@ func (c *console) mailSave(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	if !c.confirmFromInternet(w, r, request.MailConfirm) {
+	if !c.confirmMailFromInternet(w, r, request.MailConfirm) {
 		return
 	}
 	account, _ := c.account(r)
@@ -230,7 +241,7 @@ func (c *console) mailForget(w http.ResponseWriter, r *http.Request) {
 	if r.ContentLength != 0 && !decodeJSON(w, r, &confirm) {
 		return
 	}
-	if !c.confirmFromInternet(w, r, confirm) {
+	if !c.confirmMailFromInternet(w, r, confirm) {
 		return
 	}
 	if err := c.SMTP.Forget(); err != nil {
@@ -254,7 +265,7 @@ func (c *console) mailTest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Un réglage tapé est enregistré s'il marche : même confirmation que PUT.
-	if request.Settings != nil && !c.confirmFromInternet(w, r, request.MailConfirm) {
+	if request.Settings != nil && !c.confirmMailFromInternet(w, r, request.MailConfirm) {
 		return
 	}
 	if request.Settings == nil && !c.SMTP.Configured() {

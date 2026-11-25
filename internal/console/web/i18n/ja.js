@@ -905,12 +905,14 @@ piTranslations("ja", {
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} もう一度試すか、このリンクを {1} にご自身で渡してください。有効期間は 7 日間で、一度だけ使えます。",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi が招待を送れるように、「マイ Pi」で「メールの送信」を設定してください。",
   "Mot de passe de votre compte de la console": "コンソールのアカウントのパスワード",
-  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "インターネットからは、変更のたびにコンソールのアカウントのパスワードと 2 段階認証のコードで確認してください。送信サーバーはログインコードを受け取るためです。",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "インターネットからこの設定を変更するには 2 段階認証が必要です。先に「マイアカウント」で有効にする（認証アプリ）か、自宅から行ってください。",
   "Action annulée.": "操作を取り消しました。",
   "Annuler": "キャンセル",
   "Confirmer depuis internet": "インターネットから確認",
   "Confirmer": "確認",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "インターネットからこの操作を行うには、コンソールのアカウントのパスワードと 2 段階認証のコードが必要です。",
-  "OK": "OK"
+  "OK": "OK",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "インターネットからこの操作を行うには、コンソールのアカウントのパスワードと、有効にしている場合は 2 段階認証のコードが必要です。",
+  "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "インターネットからの変更には、毎回コンソールのアカウントのパスワードと、有効にしている場合は 2 段階認証のコードが必要です。",
+  "Changer l'adresse e-mail": "メールアドレスを変更",
+  "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "{0} の新しいメールアドレス：このアドレスに送られるコードで確認が必要です。それまでこのアカウントではメールによるログインコードは使えません。",
+  "Adresse e-mail de {0} changée : {1}.": "{0} のメールアドレスを変更しました：{1}。"
 });

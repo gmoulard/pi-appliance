@@ -905,12 +905,14 @@ piTranslations("es", {
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Vuelva a intentarlo, o pase usted mismo este enlace a {1}. Es válido 7 días y solo sirve una vez.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Para que la Pi envíe las invitaciones, configure «Envío de correos» en «Mi Pi».",
   "Mot de passe de votre compte de la console": "Contraseña de su cuenta de la consola",
-  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "Desde internet, confirme cada cambio con la contraseña de su cuenta de la consola y su código de verificación en dos pasos: el servidor de envío recibe los códigos de inicio de sesión.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Desde internet, este ajuste requiere la verificación en dos pasos: actívela primero en «Mi cuenta» (aplicación de autenticación), o hágalo desde casa.",
   "Action annulée.": "Acción cancelada.",
   "Annuler": "Cancelar",
   "Confirmer depuis internet": "Confirmar desde internet",
   "Confirmer": "Confirmar",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Desde internet, esta acción requiere la contraseña de su cuenta de la consola y su código de verificación en dos pasos.",
-  "OK": "Aceptar"
+  "OK": "Aceptar",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "Desde internet, esta acción requiere la contraseña de su cuenta de la consola y, si está activada, su código de verificación en dos pasos.",
+  "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "Desde internet, cada cambio requiere la contraseña de su cuenta de la consola y, si está activada, su código de verificación en dos pasos.",
+  "Changer l'adresse e-mail": "Cambiar la dirección de correo",
+  "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "Nueva dirección de correo de {0}: habrá que verificarla con un código enviado a esa dirección; mientras tanto, no habrá código de inicio de sesión por correo para esta cuenta.",
+  "Adresse e-mail de {0} changée : {1}.": "Dirección de correo de {0} cambiada: {1}."
 });

@@ -127,7 +127,7 @@ Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, s
 
 ## Régler l'envoi des e-mails {#envoi-des-e-mails}
 
-Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « mot de passe oublié », codes de connexion), avec une boîte e-mail que vous avez déjà. Administrateur : dans la console, carte **Envoi des e-mails**, entrez les réglages d'envoi de votre boîte, puis touchez **Envoyer un e-mail d'essai** : il arrive à votre adresse, et le Pi enregistre ces réglages comme vérifiés (« Vérifié le … »). S'il ne part pas, la carte dit quoi corriger, juste sous les boutons ; regardez aussi dans les courriers indésirables. **Enregistrer** garde les réglages sans les essayer. Depuis internet (console ouverte par son adresse internet, même chez vous), chaque changement demande en plus le mot de passe de votre compte de la console et votre code de double authentification : activez-la d'abord dans « Mon compte » si ce n'est pas fait.
+Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « mot de passe oublié », codes de connexion), avec une boîte e-mail que vous avez déjà. Administrateur : dans la console, carte **Envoi des e-mails**, entrez les réglages d'envoi de votre boîte, puis touchez **Envoyer un e-mail d'essai** : il arrive à votre adresse, et le Pi enregistre ces réglages comme vérifiés (« Vérifié le … »). S'il ne part pas, la carte dit quoi corriger, juste sous les boutons ; regardez aussi dans les courriers indésirables. **Enregistrer** garde les réglages sans les essayer. Depuis internet (console ouverte par son adresse internet, même chez vous), chaque changement demande en plus le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.
 
 | Boîte e-mail | Serveur d'envoi | Sécurité et port | Identifiant et mot de passe |
 | --- | --- | --- | --- |
@@ -138,7 +138,7 @@ Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « m
 
 **Gmail** refuse votre mot de passe habituel : dans votre compte Google, activez la validation en deux étapes, puis ouvrez **Sécurité**, **Mots de passe des applications**, créez-en un (par exemple « pi-appliance ») et collez dans la console les 16 lettres affichées. Vous pourrez le retirer à tout moment, sans changer votre mot de passe Google.
 
-Le mot de passe reste sur le Pi : la console ne le réaffiche jamais (laissez le champ vide pour le garder) et il n'est écrit dans aucun journal. Le mieux est une boîte e-mail réservée au Pi, ou un mot de passe d'application. Depuis internet, chaque changement demande en plus votre mot de passe et votre code de double authentification. **Ne plus envoyer d'e-mails** efface le réglage ; les comptes qui recevaient leur code de connexion par e-mail devront alors utiliser leur application ou un code de secours.
+Le mot de passe reste sur le Pi : la console ne le réaffiche jamais (laissez le champ vide pour le garder) et il n'est écrit dans aucun journal. Le mieux est une boîte e-mail réservée au Pi, ou un mot de passe d'application. Depuis internet, chaque changement demande en plus le mot de passe de votre compte, et votre code de double authentification si elle est activée. **Ne plus envoyer d'e-mails** efface le réglage ; les comptes qui recevaient leur code de connexion par e-mail devront alors utiliser leur application ou un code de secours.
 
 ### Alertes par e-mail {#alertes-par-e-mail}
 
@@ -266,9 +266,15 @@ pia user show paul                   # détail, téléphones appairés, liens de
 pia user add paul paul@exemple.fr    # nouveau compte : un lien pour choisir son mot de passe
 pia user add ines ines@exemple.fr --role guest --until 2026-12-31
 pia user edit paul --role admin      # aussi --until, --require-2fa yes|no
+pia user edit paul --email paul@nouveau.fr   # nouvelle adresse, à vérifier par un code
 pia user reset paul                  # nouveau lien de mot de passe (oublié, invitation expirée)
 pia user 2fa-off paul                # retirer la double authentification (téléphone ou boîte e-mail perdus)
 pia user delete paul
+pia mail                             # envoi des e-mails : réglage actuel
+pia mail regler --serveur smtp.free.fr --securite tls --identifiant jean.dupont --expediteur jean.dupont@free.fr --essai vous@exemple.fr
+                                     # mot de passe demandé sans s'afficher ; enregistré si l'essai part
+pia mail essai vous@exemple.fr       # e-mail d'essai
+pia mail effacer                     # le Pi n'envoie plus d'e-mails
 pia ssh                              # SSH : en marche ? mots de passe ? clés ?
 pia ssh cle ajouter "ssh-ed25519 AAAA… moi@portable"
 pia ssh mot-de-passe desactiver      # clé SSH seulement (refusé tant qu'il n'y a pas de clé)

@@ -905,12 +905,14 @@ piTranslations("nl", {
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Probeer het opnieuw, of geef deze link zelf door aan {1}. Hij is 7 dagen geldig en werkt maar één keer.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Stel „E-mails versturen” in onder „Mijn Pi” zodat de Pi uitnodigingen verstuurt.",
   "Mot de passe de votre compte de la console": "Wachtwoord van uw consoleaccount",
-  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "Bevestig vanaf internet elke wijziging met het wachtwoord van uw consoleaccount en uw code voor tweestapsverificatie: de verzendserver ontvangt de inlogcodes.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Vanaf internet vereist deze instelling tweestapsverificatie: zet die eerst aan in „Mijn account” (authenticatie-app), of doe het vanuit huis.",
   "Action annulée.": "Actie geannuleerd.",
   "Annuler": "Annuleren",
   "Confirmer depuis internet": "Bevestigen vanaf internet",
   "Confirmer": "Bevestigen",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "Vanaf internet vereist deze actie het wachtwoord van uw consoleaccount en uw code voor tweestapsverificatie.",
-  "OK": "OK"
+  "OK": "OK",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "Vanaf internet vereist deze actie het wachtwoord van uw consoleaccount en, als die aanstaat, uw code voor tweestapsverificatie.",
+  "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "Vanaf internet vereist elke wijziging het wachtwoord van uw consoleaccount en, als die aanstaat, uw code voor tweestapsverificatie.",
+  "Changer l'adresse e-mail": "E-mailadres wijzigen",
+  "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "Nieuw e-mailadres van {0}: het moet worden bevestigd met een code die naar dat adres wordt gestuurd; tot dan geen inlogcode per e-mail voor dit account.",
+  "Adresse e-mail de {0} changée : {1}.": "E-mailadres van {0} gewijzigd: {1}."
 });

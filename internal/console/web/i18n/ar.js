@@ -905,12 +905,14 @@ piTranslations("ar", {
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} حاول مرة أخرى، أو أرسل هذا الرابط بنفسك إلى {1}. صالح لمدة 7 أيام ولا يُستخدم إلا مرة واحدة.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "لكي يرسل الـ Pi الدعوات، اضبط «إرسال البريد الإلكتروني» في «الـPi الخاص بي».",
   "Mot de passe de votre compte de la console": "كلمة مرور حسابك في وحدة التحكم",
-  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "من الإنترنت، أكّد كل تغيير بكلمة مرور حسابك في وحدة التحكم ورمز المصادقة الثنائية: خادم الإرسال يتلقى رموز تسجيل الدخول.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "من الإنترنت، يتطلب هذا الإعداد المصادقة الثنائية: فعّلها أولًا في «حسابي» (تطبيق المصادقة)، أو قم بذلك من المنزل.",
   "Action annulée.": "أُلغي الإجراء.",
   "Annuler": "إلغاء",
   "Confirmer depuis internet": "التأكيد من الإنترنت",
   "Confirmer": "تأكيد",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "من الإنترنت، يتطلب هذا الإجراء كلمة مرور حسابك في وحدة التحكم ورمز المصادقة الثنائية.",
-  "OK": "حسنًا"
+  "OK": "حسنًا",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "من الإنترنت، يتطلب هذا الإجراء كلمة مرور حسابك في وحدة التحكم، ورمز المصادقة الثنائية إن كانت مفعّلة.",
+  "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "من الإنترنت، يتطلب كل تغيير كلمة مرور حسابك في وحدة التحكم، ورمز المصادقة الثنائية إن كانت مفعّلة.",
+  "Changer l'adresse e-mail": "تغيير عنوان البريد الإلكتروني",
+  "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "عنوان البريد الجديد لـ {0}: يجب التحقق منه برمز يُرسل إليه؛ وحتى ذلك الحين لا رمز تسجيل دخول بالبريد لهذا الحساب.",
+  "Adresse e-mail de {0} changée : {1}.": "تم تغيير عنوان البريد الإلكتروني لـ {0}: {1}."
 });

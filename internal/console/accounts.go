@@ -46,8 +46,8 @@ const (
 
 var statePattern = regexp.MustCompile(`^[A-Za-z0-9_-]{43}$`)
 
-// AccountRequest : nouveau compte, ou changement d'un compte existant (le nom et
-// l'e-mail ne changent pas). Expires : fin d'un compte invité.
+// AccountRequest : nouveau compte, ou changement d'un compte existant (le nom
+// ne change pas ; Email vide : adresse gardée). Expires : fin d'un compte invité.
 type AccountRequest struct {
 	Name         string     `json:"name"`
 	Email        string     `json:"email"`
@@ -225,7 +225,7 @@ func (c *console) updateAccount(w http.ResponseWriter, r *http.Request) {
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	account, err := c.Accounts.Update(r.PathValue("name"), request.Role, request.Expires, request.TOTPRequired)
+	account, err := c.Accounts.Edit(r.PathValue("name"), request.Email, request.Role, request.Expires, request.TOTPRequired)
 	if err != nil {
 		writeAuthError(w, err)
 		return

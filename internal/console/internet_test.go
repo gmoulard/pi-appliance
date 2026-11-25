@@ -249,6 +249,27 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 		t.Fatalf("adresse personnelle confirmée par les en-têtes : %d %s", response.Code, response.Body.String())
 	}
 	f.accounts.Now = clock
+	// Administrateur sans double authentification : l'envoi des e-mails se règle
+	// depuis internet avec son mot de passe (choix du 2026-11-25) ; les autres
+	// actions sensibles exigent toujours la double authentification.
+	jeanInvite := f.invite(t, cookie, `{"name": "jean", "email": "jean@example.org", "role": "admin"}`)
+	if response := f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+jeanInvite+`", "password": "le mot de passe de jean"}`, nil); response.Code != http.StatusOK {
+		t.Fatalf("invitation de jean : %d %s", response.Code, response.Body.String())
+	}
+	jeanLogin := f.fromOutside(http.MethodPost, "/pi-appliance/api/login", `{"name": "jean", "password": "le mot de passe de jean"}`, nil)
+	if jeanLogin.Code != http.StatusOK {
+		t.Fatalf("connexion de jean : %d %s", jeanLogin.Code, jeanLogin.Body.String())
+	}
+	jean := sessionCookie(t, jeanLogin)
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/mail", `{`+settings+`}`, jean); response.Code != http.StatusUnauthorized || !strings.Contains(response.Body.String(), `"confirm_needed":true`) {
+		t.Fatalf("e-mail sans mot de passe : %d %s", response.Code, response.Body.String())
+	}
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/mail", `{`+settings+`, "account_password": "le mot de passe de jean"}`, jean); response.Code != http.StatusOK {
+		t.Fatalf("e-mail par un administrateur sans double authentification : %d %s", response.Code, response.Body.String())
+	}
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/internet-access", `{"enabled": true}`, jean, "X-Pi-Confirm-Password", "le mot de passe de jean"); response.Code != http.StatusForbidden {
+		t.Fatalf("ports de la box sans double authentification : %d %s", response.Code, response.Body.String())
+	}
 	// Fermer depuis internet : permis ; ensuite tout est refusé, fichier retiré.
 	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/internet-console?enabled=false", "", outside); response.Code != http.StatusOK {
 		t.Fatalf("fermeture depuis internet : code %d %s", response.Code, response.Body.String())

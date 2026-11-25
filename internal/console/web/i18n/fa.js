@@ -905,12 +905,14 @@ piTranslations("fa", {
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} دوباره امتحان کنید، یا خودتان این پیوند را به {1} بدهید. ۷ روز معتبر است و فقط یک بار کار می‌کند.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "برای اینکه Pi دعوت‌ها را بفرستد، «ارسال ایمیل» را در «Pi من» تنظیم کنید.",
   "Mot de passe de votre compte de la console": "گذرواژهٔ حساب شما در کنسول",
-  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "از اینترنت، هر تغییر را با گذرواژهٔ حساب کنسول و کد احراز هویت دومرحله‌ای تأیید کنید: سرور ارسال کدهای ورود را دریافت می‌کند.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "از اینترنت، این تنظیم به احراز هویت دومرحله‌ای نیاز دارد: نخست آن را در «حساب من» فعال کنید (برنامهٔ احراز هویت)، یا این کار را از خانه انجام دهید.",
   "Action annulée.": "کار لغو شد.",
   "Annuler": "لغو",
   "Confirmer depuis internet": "تأیید از اینترنت",
   "Confirmer": "تأیید",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "از اینترنت، این کار به گذرواژهٔ حساب کنسول و کد احراز هویت دومرحله‌ای نیاز دارد.",
-  "OK": "باشه"
+  "OK": "باشه",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "از اینترنت، این کار به گذرواژهٔ حساب کنسول و، اگر فعال باشد، کد احراز هویت دومرحله‌ای نیاز دارد.",
+  "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "از اینترنت، هر تغییر به گذرواژهٔ حساب کنسول و، اگر فعال باشد، کد احراز هویت دومرحله‌ای نیاز دارد.",
+  "Changer l'adresse e-mail": "تغییر نشانی ایمیل",
+  "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "نشانی ایمیل تازهٔ {0}: باید با کدی که به این نشانی فرستاده می‌شود تأیید شود؛ تا آن زمان، کد ورود با ایمیل برای این حساب نیست.",
+  "Adresse e-mail de {0} changée : {1}.": "نشانی ایمیل {0} تغییر کرد: {1}."
 });

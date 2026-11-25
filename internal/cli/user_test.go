@@ -45,7 +45,11 @@ func userPi(t *testing.T, input string) *fakePi {
 		"PUT accounts/paul": func(w http.ResponseWriter, body []byte) {
 			var request map[string]any
 			json.Unmarshal(body, &request)
-			json.NewEncoder(w).Encode(map[string]any{"name": "paul", "role": request["role"], "expires_at": request["expires"], "totp_required": request["totp_required"], "totp": true})
+			email := "paul@example.org"
+			if request["email"] != nil {
+				email = request["email"].(string)
+			}
+			json.NewEncoder(w).Encode(map[string]any{"name": "paul", "email": email, "role": request["role"], "expires_at": request["expires"], "totp_required": request["totp_required"], "totp": true})
 		},
 		"POST accounts/paul/invitation": func(w http.ResponseWriter, _ []byte) {
 			io.WriteString(w, `{"account": `+paulJSON+`, "sent": true}`)
@@ -148,6 +152,16 @@ func TestUserEdit(t *testing.T) {
 	}
 	if code := pi.run("user", "edit", "paul"); code != 2 {
 		t.Fatalf("rien à changer : code %d", code)
+	}
+	pi.out.Reset()
+	if code := pi.run("user", "edit", "paul", "--email", "paul.nouveau@example.org"); code != 0 {
+		t.Fatalf("adresse : code %d : %s", code, pi.err.String())
+	}
+	if last := pi.lastRequest(); !strings.Contains(last, `"email":"paul.nouveau@example.org"`) || !strings.Contains(last, `"role":"user"`) {
+		t.Fatalf("demande %q", last)
+	}
+	if !strings.Contains(pi.out.String(), "Adresse e-mail : paul.nouveau@example.org (avant : paul@example.org)") {
+		t.Fatalf("sortie : %s", pi.out.String())
 	}
 }
 

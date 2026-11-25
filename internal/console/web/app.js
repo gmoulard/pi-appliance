@@ -4920,15 +4920,11 @@ function showMail(status) {
   fields.password.placeholder = status.password_set ? t("Enregistré : laissez vide pour le garder") : "";
   fields.from.value = status.from || "";
   // Depuis internet : chaque changement est confirmé par le mot de passe du
-  // compte et un code de double authentification (fenêtre askConfirmation).
-  const twoFactor = Boolean(currentAccount && currentAccount.two_factor);
-  mailSave.hidden = sessionInternet && !twoFactor;
-  mailForget.hidden = !status.configured || (sessionInternet && !twoFactor);
-  mailTest.hidden = sessionInternet && !twoFactor && !status.configured;
+  // compte (et son code s'il a la double authentification, sans l'exiger :
+  // choix de l'utilisateur du 2026-11-25), dans la fenêtre askConfirmation.
+  mailForget.hidden = !status.configured;
   mailHome.hidden = !sessionInternet;
-  mailHome.textContent = twoFactor
-    ? t("Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.")
-    : t("Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.");
+  mailHome.textContent = t("Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.");
   const dot = element("span", undefined, `dot ${status.verified ? "ok" : ""}`);
   let text;
   if (status.configured && status.verified) {
@@ -5011,14 +5007,11 @@ mailForm.addEventListener("submit", async (event) => {
 // L'e-mail d'essai part avec les réglages tapés ; s'il part, le Pi les
 // enregistre et les note vérifiés (rien à enregistrer avant).
 mailTest.addEventListener("click", async () => {
-  if (!(sessionInternet && !(currentAccount && currentAccount.two_factor)) && !mailForm.reportValidity()) return;
+  if (!mailForm.reportValidity()) return;
   mailTest.disabled = true;
   showMailResult(t("Envoi de l'e-mail d'essai…"), "info");
   try {
-    // Sans double authentification depuis internet : essai du réglage enregistré.
-    const locked = sessionInternet && !(currentAccount && currentAccount.two_factor);
-    const body = locked ? { lang: LANGUAGE } : { lang: LANGUAGE, settings: mailSettings() };
-    const reply = await api("mail/test", jsonBody("POST", body));
+    const reply = await api("mail/test", jsonBody("POST", { lang: LANGUAGE, settings: mailSettings() }));
     if (reply.status) showMail(reply.status);
     showMailResult(t("E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).", reply.email), "success");
     await mailChanged();
@@ -5195,6 +5188,14 @@ function accountCard(account) {
   add(account.invited ? t("Nouveau lien d'invitation") : t("Lien pour changer de mot de passe"), async () => {
     showInvite(await api(`${path}/invitation`, { method: "POST" }));
     await loadAccounts();
+  });
+  // Changer l'adresse e-mail (demande de l'utilisateur du 2026-11-25) : la
+  // nouvelle adresse sera à vérifier par un code.
+  add(t("Changer l'adresse e-mail"), async () => {
+    const email = window.prompt(t("Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.", account.name), account.email);
+    if (!email || email.trim() === account.email) return;
+    await updateAccount(account, { email: email.trim() });
+    showMessage([t("Adresse e-mail de {0} changée : {1}.", account.name, email.trim())], "success");
   });
   if (account.role === "guest") {
     add(t("Prolonger d'une semaine"), () => {

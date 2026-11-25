@@ -905,12 +905,14 @@ piTranslations("en", {
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Try again, or pass this link on to {1} yourself. It is valid for 7 days and works only once.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "For the Pi to send invitations, set up “Sending emails” in “My Pi”.",
   "Mot de passe de votre compte de la console": "Password of your console account",
-  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "From the internet, confirm each change with your console account password and your two-factor code: the sending server receives the sign-in codes.",
-  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "From the internet, this setting requires two-factor authentication: first turn it on in “My account” (authenticator app), or do it from home.",
   "Action annulée.": "Action cancelled.",
   "Annuler": "Cancel",
   "Confirmer depuis internet": "Confirm from the internet",
   "Confirmer": "Confirm",
-  "Depuis internet, cette action demande le mot de passe de votre compte de la console et votre code de double authentification.": "From the internet, this action requires your console account password and your two-factor code.",
-  "OK": "OK"
+  "OK": "OK",
+  "Depuis internet, cette action demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "From the internet, this action requires your console account password, and your two-factor code if it is turned on.",
+  "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "From the internet, each change requires your console account password, and your two-factor code if it is turned on.",
+  "Changer l'adresse e-mail": "Change email address",
+  "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "New email address for {0}: it will need to be checked with a code sent to it; until then, no sign-in code by email for this account.",
+  "Adresse e-mail de {0} changée : {1}.": "Email address of {0} changed: {1}."
 });

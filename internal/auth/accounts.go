@@ -177,6 +177,19 @@ func (s *Store) AcceptInvitation(token, password string) (Account, error) {
 // Update change le rôle, la date de fin (invité) et l'exigence de double
 // authentification d'un compte ; le dernier administrateur le reste.
 func (s *Store) Update(name string, role Role, expires *time.Time, totpRequired bool) (Account, error) {
+	return s.Edit(name, "", role, expires, totpRequired)
+}
+
+// Edit change un compte d'un bloc ; email vide : adresse gardée. Une nouvelle
+// adresse (pia user edit --email, console) n'est pas vérifiée : le code par
+// e-mail cesse de servir de double authentification jusqu'à sa vérification.
+func (s *Store) Edit(name, email string, role Role, expires *time.Time, totpRequired bool) (Account, error) {
+	if strings.TrimSpace(email) != "" {
+		var err error
+		if email, err = checkEmail(email); err != nil {
+			return Account{}, err
+		}
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	account, ok := s.accounts[name]
@@ -189,6 +202,9 @@ func (s *Store) Update(name string, role Role, expires *time.Time, totpRequired 
 	}
 	if role != RoleAdmin && s.lastAdmin(name) {
 		return Account{}, ErrLastAdmin
+	}
+	if email != "" && email != account.Email {
+		account.Email, account.EmailVerified, account.EmailCode = email, false, false
 	}
 	account.Role, account.ExpiresAt, account.TOTPRequired = role, expires, totpRequired
 	return account, s.put(account)

@@ -381,3 +381,35 @@ func TestAllowedServices(t *testing.T) {
 		t.Fatalf("restriction levée : %+v", paul)
 	}
 }
+
+// Nouvelle adresse (pia user edit --email, console) : à vérifier ; le code par
+// e-mail ne sert plus de double authentification d'ici là. Adresse invalide :
+// rien ne change.
+func TestEditEmail(t *testing.T) {
+	store, _ := withAdmin(t)
+	account, err := store.Get("marie")
+	if err != nil {
+		t.Fatal(err)
+	}
+	account.EmailVerified, account.EmailCode = true, true
+	store.mu.Lock()
+	store.put(account)
+	store.mu.Unlock()
+	if _, err := store.Edit("marie", "pas une adresse", RoleUser, nil, false); !errors.Is(err, ErrInvalid) {
+		t.Fatalf("adresse invalide : %v", err)
+	}
+	if account, _ := store.Get("marie"); account.Role != RoleAdmin || !account.EmailVerified {
+		t.Fatalf("changé malgré l'erreur : %+v", account)
+	}
+	same, err := store.Edit("marie", account.Email, RoleAdmin, nil, false)
+	if err != nil || !same.EmailVerified || !same.EmailCode {
+		t.Fatalf("même adresse : %+v, %v", same, err)
+	}
+	changed, err := store.Edit("marie", "Marie.Nouvelle@Example.org", RoleAdmin, nil, false)
+	if err != nil || changed.EmailVerified || changed.EmailCode || changed.HasTwoFactor() {
+		t.Fatalf("nouvelle adresse : %+v, %v", changed, err)
+	}
+	if reread, _ := store.Get("marie"); reread.Email != changed.Email {
+		t.Fatalf("adresse non gardée : %q", reread.Email)
+	}
+}

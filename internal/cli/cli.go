@@ -129,6 +129,7 @@ var aliases = map[string]string{
 	"démarrer": "demarrer", "stop": "arreter", "arrêter": "arreter", "restart": "redemarrer",
 	"redémarrer": "redemarrer", "mise-a-jour": "update", "mise-à-jour": "update",
 	"mettre-a-jour": "update", "mettre-à-jour": "update", "upgrade": "update",
+	"email": "mail", "e-mail": "mail", "courriel": "mail",
 }
 
 // usageError : mauvaise utilisation ; l'aide de la commande suit le message.
@@ -184,6 +185,7 @@ func Run(args []string, env Env) int {
 		"ssh":          sshCommand,
 		"update":       updateCommand,
 		"user":         userCommand,
+		"mail":         mailCommand,
 	}
 	run, ok := commands[command]
 	if !ok {
@@ -201,7 +203,8 @@ func Run(args []string, env Env) int {
 		fmt.Fprintln(env.Err, err)
 		var usage usageError
 		var userUsage userUsageError
-		if errors.As(err, &userUsage) {
+		var mailUsage mailUsageError
+		if errors.As(err, &userUsage) || errors.As(err, &mailUsage) {
 			return 2
 		}
 		if errors.As(err, &usage) {
@@ -231,7 +234,14 @@ const help = `pia : ligne de commande du Pi (la console reste le moyen le plus s
   pia update <version> [--oui]    installer cette version (plus récente ou plus ancienne)
 
   pia user list|show|add|edit|reset|2fa-off|delete
-                                  comptes de la console (pia user : aide détaillée)
+                                  comptes de la console (pia user : aide détaillée ;
+                                  pia user edit <compte> --email ADRESSE)
+
+  pia mail                        envoi des e-mails du Pi : réglage actuel
+  pia mail regler --serveur NOM [--securite starttls|tls] [--port N]
+                  [--identifiant ID] [--expediteur ADRESSE] [--essai ADRESSE]
+  pia mail essai <adresse>        e-mail d'essai
+  pia mail effacer [--oui]        (pia mail aide : aide détaillée)
 
   pia ssh [etat]                  SSH en marche ? mots de passe ? clés ?
   pia ssh activer|desactiver [--oui]
