@@ -49,7 +49,7 @@ func TestInternetPath(t *testing.T) {
 			t.Errorf("%s (%s) : %q", id, mode, got)
 		}
 	}
-	for _, id := range []string{"nextcloud", "etherpad", "dokuwiki", "astro", "nextjs", CustomApp} {
+	for _, id := range []string{"nextcloud", "etherpad", "astro", "nextjs", CustomApp} {
 		if got := m.InternetPath(Instance{Name: "site", App: id}); got != PathUnsupported {
 			t.Errorf("%s : %q", id, got)
 		}

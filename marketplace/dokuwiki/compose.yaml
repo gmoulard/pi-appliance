@@ -42,6 +42,16 @@ services:
           printf '*\t@ALL\t1\n*\t@user\t8\n' > "$$conf/acl.auth.php"
           printf '%s\n' '<?php' '$$conf["title"] = "Wiki";' '$$conf["lang"] = "fr";' '$$conf["useacl"] = 1;' '$$conf["superuser"] = "@admin";' '$$conf["disableactions"] = "register";' > "$$conf/local.php"
         fi
+        # Sous l'adresse internet du Pi (https://<adresse>/<nom>/), Traefik
+        # retire /<nom> et pose X-Forwarded-Prefix : DokuWiki y prend son
+        # chemin de base (basedir) ; à la maison, rien ne change. Réécrit à
+        # chaque démarrage (local.protected.php, que l'administration du wiki
+        # ne modifie pas).
+        printf '%s\n' '<?php' '// pi-appliance : chemin sous X-Forwarded-Prefix (Traefik).' \
+          '$$pi_prefix = $$_SERVER["HTTP_X_FORWARDED_PREFIX"] ?? "";' \
+          'if (preg_match("#^/[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?/?\$$#", $$pi_prefix)) {' \
+          '    $$conf["basedir"] = rtrim($$pi_prefix, "/") . "/";' \
+          '}' > "$$conf/local.protected.php"
         exec /dokuwiki-entrypoint.sh
     volumes:
       - storage:/storage

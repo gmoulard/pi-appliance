@@ -63,6 +63,10 @@ var pathApps = map[string]string{
 	"mkdocs":   "relative",
 	"hugo":     "build",
 	"jekyll":   "build",
+	// Adresse du site (WordPress) ou chemin de base (DokuWiki) pris dans
+	// X-Forwarded-Prefix (demande de l'utilisateur du 2026-11-25).
+	"wordpress": "build",
+	"dokuwiki":  "build",
 	// Page et appels du serveur en adresses relatives (TODO-2.69).
 	"wordpress-markdown": "relative",
 	// baseURL /<nom>/ ; à la maison, l'application renvoie / vers /<nom>/.
@@ -74,6 +78,8 @@ var pathApps = map[string]string{
 var pathMarkers = map[string]string{
 	"hugo":        "SITE_PATH",
 	"jekyll":      "SITE_PATH",
+	"wordpress":   "HTTP_X_FORWARDED_PREFIX",
+	"dokuwiki":    "HTTP_X_FORWARDED_PREFIX",
 	"filebrowser": "baseURL: /${PI_INSTANCE}/",
 }
 
