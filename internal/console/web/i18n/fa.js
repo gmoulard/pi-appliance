@@ -823,5 +823,15 @@ piTranslations("fa", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "هشدارها به‌محض تنظیم ارسال ایمیل، درست در بالا، فرستاده می‌شوند.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "هنوز هیچ مدیری نشانی ایمیل خود را تأیید نکرده است: برای دریافت هشدارها نشانی خود را در «حساب من» تأیید کنید.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "هشدارها برای {0} مدیر فرستاده می‌شوند. برای اینکه شما هم دریافت کنید، نشانی خود را در «حساب من» تأیید کنید.",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "هشدارها برای {0} مدیر، از جمله شما، فرستاده می‌شوند."
+  "Les alertes partent à {0} administrateur(s), vous compris.": "هشدارها برای {0} مدیر، از جمله شما، فرستاده می‌شوند.",
+  "Hébergement": "میزبانی",
+  "{0} : réglage enregistré.": "{0}: تنظیم ذخیره شد.",
+  "Ce service marche sous le chemin /{0}/ : le publier sur internet à cette adresse, chemin gardé.": "این سرویس زیر مسیر /{0}/ کار می‌کند: آن را با حفظ مسیر در این نشانی روی اینترنت منتشر کن.",
+  "Envoi d'e-mails : le service envoie par le relais du Pi (serveur {0}, port {1}, sans mot de passe), avec l'envoi des e-mails réglé dans la console.": "ارسال ایمیل: سرویس از طریق رله‌ی Pi (سرور {0}، درگاه {1}، بدون گذرواژه) و با تنظیم ارسال ایمیل در کنسول می‌فرستد.",
+  "Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.": "پایگاه داده‌ی {0} در سرویس PostgreSQL «{1}». فایل Compose سرویس با متغیرهای PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER و PI_DATABASE_PASSWORD از آن استفاده می‌کند.",
+  "Créer sa base dans PostgreSQL": "ساخت پایگاه داده‌اش در PostgreSQL",
+  "Base de données : un compte et une base réservés à ce service, dans le service PostgreSQL de la marketplace, joignables par ce service seulement.": "پایگاه داده: یک حساب و یک پایگاه داده ویژه‌ی این سرویس، در سرویس PostgreSQL بازارچه، که فقط این سرویس به آن دسترسی دارد.",
+  "Domaines renvoyés vers ce service": "دامنه‌های هدایت‌شده به این سرویس",
+  "Enregistrer les domaines": "ذخیره‌ی دامنه‌ها",
+  "Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet.": "دامنه‌های هدایت‌شده به این سرویس: در هر خط یک نام، مثلاً nautilink.example.org. نخست DNS آن را به نشانی اینترنتی Pi ببرید (نام مستعار CNAME). هدایت فقط وقتی کار می‌کند که سرویس روی اینترنت منتشر شده باشد."
 });

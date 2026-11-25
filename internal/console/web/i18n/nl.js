@@ -823,5 +823,15 @@ piTranslations("nl", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Waarschuwingen worden verstuurd zodra het versturen van e-mails is ingesteld, hierboven.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Nog geen beheerder heeft zijn e-mailadres bevestigd: bevestig het uwe in ‘Mijn account’ om waarschuwingen te ontvangen.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Waarschuwingen gaan naar {0} beheerder(s). Bevestig uw adres in ‘Mijn account’ om ze ook te ontvangen.",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "Waarschuwingen gaan naar {0} beheerder(s), u inbegrepen."
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Waarschuwingen gaan naar {0} beheerder(s), u inbegrepen.",
+  "Hébergement": "Hosting",
+  "{0} : réglage enregistré.": "{0}: instelling opgeslagen.",
+  "Ce service marche sous le chemin /{0}/ : le publier sur internet à cette adresse, chemin gardé.": "Deze dienst werkt onder het pad /{0}/: publiceer hem op internet op dat adres, met behoud van het pad.",
+  "Envoi d'e-mails : le service envoie par le relais du Pi (serveur {0}, port {1}, sans mot de passe), avec l'envoi des e-mails réglé dans la console.": "E-mails versturen: de dienst verstuurt via het relais van de Pi (server {0}, poort {1}, zonder wachtwoord), met de e-mailverzending die in de console is ingesteld.",
+  "Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.": "Database {0} in de PostgreSQL-dienst ‘{1}’. Het Compose-bestand van de dienst gebruikt hem via de variabelen PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER en PI_DATABASE_PASSWORD.",
+  "Créer sa base dans PostgreSQL": "Zijn database in PostgreSQL aanmaken",
+  "Base de données : un compte et une base réservés à ce service, dans le service PostgreSQL de la marketplace, joignables par ce service seulement.": "Database: een account en een database alleen voor deze dienst, in de PostgreSQL-dienst van de marketplace, alleen bereikbaar voor deze dienst.",
+  "Domaines renvoyés vers ce service": "Domeinen doorgestuurd naar deze dienst",
+  "Enregistrer les domaines": "Domeinen opslaan",
+  "Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet.": "Domeinen doorgestuurd naar deze dienst: één naam per regel, bijvoorbeeld nautilink.voorbeeld.org. Laat eerst zijn DNS naar het internetadres van de Pi wijzen (CNAME-alias). Het doorsturen werkt alleen als de dienst op internet is gepubliceerd."
 });

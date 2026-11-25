@@ -823,5 +823,15 @@ piTranslations("de", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Warnungen werden gesendet, sobald der E-Mail-Versand eingerichtet ist, direkt darüber.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Noch kein Administrator hat seine E-Mail-Adresse bestätigt: Bestätigen Sie Ihre unter „Mein Konto“, um Warnungen zu erhalten.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Warnungen gehen an {0} Administrator(en). Bestätigen Sie Ihre Adresse unter „Mein Konto“, um sie auch zu erhalten.",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "Warnungen gehen an {0} Administrator(en), Sie eingeschlossen."
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Warnungen gehen an {0} Administrator(en), Sie eingeschlossen.",
+  "Hébergement": "Hosting",
+  "{0} : réglage enregistré.": "{0}: Einstellung gespeichert.",
+  "Ce service marche sous le chemin /{0}/ : le publier sur internet à cette adresse, chemin gardé.": "Dieser Dienst funktioniert unter dem Pfad /{0}/: ihn unter dieser Adresse im Internet veröffentlichen, Pfad beibehalten.",
+  "Envoi d'e-mails : le service envoie par le relais du Pi (serveur {0}, port {1}, sans mot de passe), avec l'envoi des e-mails réglé dans la console.": "E-Mail-Versand: Der Dienst sendet über das Relais des Pi (Server {0}, Port {1}, ohne Passwort), mit dem in der Konsole eingerichteten E-Mail-Versand.",
+  "Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.": "Datenbank {0} im PostgreSQL-Dienst „{1}“. Die Compose-Datei des Dienstes nutzt sie über die Variablen PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER und PI_DATABASE_PASSWORD.",
+  "Créer sa base dans PostgreSQL": "Seine Datenbank in PostgreSQL anlegen",
+  "Base de données : un compte et une base réservés à ce service, dans le service PostgreSQL de la marketplace, joignables par ce service seulement.": "Datenbank: ein Konto und eine Datenbank nur für diesen Dienst, im PostgreSQL-Dienst des Marktplatzes, nur von diesem Dienst erreichbar.",
+  "Domaines renvoyés vers ce service": "Auf diesen Dienst umgeleitete Domains",
+  "Enregistrer les domaines": "Domains speichern",
+  "Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet.": "Auf diesen Dienst umgeleitete Domains: ein Name pro Zeile, zum Beispiel nautilink.beispiel.org. Lassen Sie zuerst sein DNS auf die Internetadresse des Pi zeigen (CNAME-Alias). Die Umleitung funktioniert nur, wenn der Dienst im Internet veröffentlicht ist."
 });

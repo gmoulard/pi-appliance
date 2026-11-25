@@ -823,5 +823,15 @@ piTranslations("zh", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "一旦在上方设置好电子邮件发送，提醒就会发出。",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "还没有管理员验证自己的电子邮件地址：请在“我的账户”中验证您的地址以接收提醒。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "提醒会发给 {0} 位管理员。请在“我的账户”中验证您的地址，以便您也能收到。",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "提醒会发给 {0} 位管理员，包括您。"
+  "Les alertes partent à {0} administrateur(s), vous compris.": "提醒会发给 {0} 位管理员，包括您。",
+  "Hébergement": "托管",
+  "{0} : réglage enregistré.": "{0}：设置已保存。",
+  "Ce service marche sous le chemin /{0}/ : le publier sur internet à cette adresse, chemin gardé.": "此服务可在路径 /{0}/ 下运行：以该地址在互联网上发布，并保留路径。",
+  "Envoi d'e-mails : le service envoie par le relais du Pi (serveur {0}, port {1}, sans mot de passe), avec l'envoi des e-mails réglé dans la console.": "发送邮件：服务通过 Pi 的中继发送（服务器 {0}，端口 {1}，无需密码），使用控制台中设置的邮件发送。",
+  "Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.": "PostgreSQL 服务“{1}”中的数据库 {0}。服务的 Compose 文件通过变量 PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER 和 PI_DATABASE_PASSWORD 使用它。",
+  "Créer sa base dans PostgreSQL": "在 PostgreSQL 中创建其数据库",
+  "Base de données : un compte et une base réservés à ce service, dans le service PostgreSQL de la marketplace, joignables par ce service seulement.": "数据库：在应用市场的 PostgreSQL 服务中为此服务保留一个账户和一个数据库，只有此服务可以访问。",
+  "Domaines renvoyés vers ce service": "转发到此服务的域名",
+  "Enregistrer les domaines": "保存域名",
+  "Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet.": "转发到此服务的域名：每行一个，例如 nautilink.example.org。请先将其 DNS 指向 Pi 的互联网地址（CNAME 别名）。只有服务已在互联网上发布时转发才有效。"
 });

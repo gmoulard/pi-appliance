@@ -823,5 +823,15 @@ piTranslations("ja", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "すぐ上でメールの送信を設定すると、お知らせが送られるようになります。",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "メールアドレスを確認した管理者がまだいません：お知らせを受け取るには「マイアカウント」でご自分のアドレスを確認してください。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "お知らせは {0} 人の管理者に送られます。あなたも受け取るには「マイアカウント」でアドレスを確認してください。",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "お知らせはあなたを含む {0} 人の管理者に送られます。"
+  "Les alertes partent à {0} administrateur(s), vous compris.": "お知らせはあなたを含む {0} 人の管理者に送られます。",
+  "Hébergement": "ホスティング",
+  "{0} : réglage enregistré.": "{0}：設定を保存しました。",
+  "Ce service marche sous le chemin /{0}/ : le publier sur internet à cette adresse, chemin gardé.": "このサービスはパス /{0}/ の下で動作します：パスを保ったまま、このアドレスでインターネットに公開します。",
+  "Envoi d'e-mails : le service envoie par le relais du Pi (serveur {0}, port {1}, sans mot de passe), avec l'envoi des e-mails réglé dans la console.": "メール送信：コンソールで設定したメール送信を使い、Pi のリレー（サーバー {0}、ポート {1}、パスワードなし）経由で送信します。",
+  "Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.": "PostgreSQL サービス「{1}」のデータベース {0}。サービスの Compose ファイルは変数 PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER と PI_DATABASE_PASSWORD で利用します。",
+  "Créer sa base dans PostgreSQL": "PostgreSQL にデータベースを作成",
+  "Base de données : un compte et une base réservés à ce service, dans le service PostgreSQL de la marketplace, joignables par ce service seulement.": "データベース：マーケットプレイスの PostgreSQL サービス内に、このサービス専用のアカウントとデータベースを作成し、このサービスだけが接続できます。",
+  "Domaines renvoyés vers ce service": "このサービスへ転送するドメイン",
+  "Enregistrer les domaines": "ドメインを保存",
+  "Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet.": "このサービスへ転送するドメイン：1 行に 1 つ、例えば nautilink.example.org。まずその DNS を Pi のインターネットアドレスに向けてください（CNAME エイリアス）。転送はサービスがインターネットに公開されている場合にのみ機能します。"
 });

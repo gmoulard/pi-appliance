@@ -823,5 +823,15 @@ piTranslations("pt", {
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Os alertas serão enviados assim que o envio de e-mails estiver configurado, logo acima.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Nenhum administrador verificou ainda o seu endereço de e-mail: verifique o seu em «A minha conta» para receber os alertas.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Os alertas são enviados a {0} administrador(es). Verifique o seu endereço em «A minha conta» para os receber também.",
-  "Les alertes partent à {0} administrateur(s), vous compris.": "Os alertas são enviados a {0} administrador(es), incluindo você."
+  "Les alertes partent à {0} administrateur(s), vous compris.": "Os alertas são enviados a {0} administrador(es), incluindo você.",
+  "Hébergement": "Alojamento",
+  "{0} : réglage enregistré.": "{0}: definição guardada.",
+  "Ce service marche sous le chemin /{0}/ : le publier sur internet à cette adresse, chemin gardé.": "Este serviço funciona sob o caminho /{0}/: publicá-lo na internet nesse endereço, mantendo o caminho.",
+  "Envoi d'e-mails : le service envoie par le relais du Pi (serveur {0}, port {1}, sans mot de passe), avec l'envoi des e-mails réglé dans la console.": "Envio de e-mails: o serviço envia pelo relé do Pi (servidor {0}, porta {1}, sem palavra-passe), com o envio de e-mails configurado na consola.",
+  "Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.": "Base {0} no serviço PostgreSQL «{1}». O ficheiro Compose do serviço usa-a através das variáveis PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER e PI_DATABASE_PASSWORD.",
+  "Créer sa base dans PostgreSQL": "Criar a sua base no PostgreSQL",
+  "Base de données : un compte et une base réservés à ce service, dans le service PostgreSQL de la marketplace, joignables par ce service seulement.": "Base de dados: uma conta e uma base reservadas a este serviço, no serviço PostgreSQL do marketplace, acessíveis apenas por este serviço.",
+  "Domaines renvoyés vers ce service": "Domínios redirecionados para este serviço",
+  "Enregistrer les domaines": "Guardar os domínios",
+  "Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet.": "Domínios redirecionados para este serviço: um nome por linha, por exemplo nautilink.exemplo.org. Primeiro aponte o seu DNS para o endereço de internet do Pi (alias CNAME). O redirecionamento só funciona se o serviço estiver publicado na internet."
 });

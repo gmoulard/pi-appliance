@@ -44,6 +44,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/oidc"
+	"github.com/gmoulard/pi-appliance/internal/relay"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
@@ -121,6 +122,7 @@ func main() {
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
 	upnpEnabled := flag.Bool("upnp", true, "ouverture des ports de la box par UPnP, avec l'accord de l'administrateur (false : à la main seulement)")
 	mailURL := flag.String("mail-url", mail.DefaultServiceURL, "service d'envoi d'e-mails du projet, pour « mot de passe oublié » et les invitations (vide : pas d'e-mail)")
+	mailRelay := flag.Bool("mail-relay", true, "relais d'e-mails des services, sur l'adresse du Pi vue des conteneurs (false : aucun relais)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
 	flag.Parse()
 	if *showVersion {
@@ -294,6 +296,11 @@ func main() {
 		go portMapper.Run(ctx)
 	}
 	go backups.Run(ctx)
+	if *mailRelay {
+		// Relais d'e-mails des services (TODO-2.74), par le SMTP réglé dans la console.
+		mailRelayServer := &relay.Server{Services: manager, Sender: smtpSender, Logf: log.Printf}
+		go mailRelayServer.Run(ctx, manager.RelayAddress)
+	}
 	go manager.Relocate(ctx, log.Printf)
 	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
 	go checker.Run(ctx, 5*time.Minute)
