@@ -905,5 +905,7 @@ piTranslations("ar", {
   "Envoyer le lien par e-mail": "إرسال الرابط بالبريد الإلكتروني",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} حاول مرة أخرى، أو أرسل هذا الرابط بنفسك إلى {1}. صالح لمدة 7 أيام ولا يُستخدم إلا مرة واحدة.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "لكي يرسل الـ Pi الدعوات، اضبط «إرسال البريد الإلكتروني» في «الـPi الخاص بي».",
-  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "لا يمكن تغيير هذا الإعداد من الإنترنت: خادم الإرسال يتلقى رموز تسجيل الدخول. غيّره من شبكتك على العنوان https://{0}.local/pi-appliance (حتى في المنزل، يُعدّ عنوان الـ Pi على الإنترنت إنترنتًا)."
+  "Mot de passe de votre compte de la console": "كلمة مرور حسابك في وحدة التحكم",
+  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "من الإنترنت، أكّد كل تغيير بكلمة مرور حسابك في وحدة التحكم ورمز المصادقة الثنائية: خادم الإرسال يتلقى رموز تسجيل الدخول.",
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "من الإنترنت، يتطلب هذا الإعداد المصادقة الثنائية: فعّلها أولًا في «حسابي» (تطبيق المصادقة)، أو قم بذلك من المنزل."
 });

@@ -33,7 +33,8 @@ import (
 //
 //	GET    api/mail                 réglage sans le mot de passe (administrateur)
 //	PUT    api/mail                 {host, port, security, username, password, from}
-//	DELETE api/mail                 efface le réglage
+//	                                (+ account_password, code depuis internet)
+//	DELETE api/mail                 efface le réglage ({account_password, code} depuis internet)
 //	POST   api/mail/test            {to, lang, settings} e-mail d'essai (à soi par
 //	                                défaut), avec le réglage tapé (settings) ou
 //	                                celui enregistré ; parti, le réglage est
@@ -59,6 +60,51 @@ type MailTestRequest struct {
 	To       string             `json:"to"`
 	Lang     string             `json:"lang"`
 	Settings *mail.SMTPSettings `json:"settings"`
+	MailConfirm
+}
+
+// MailConfirm : depuis internet, changer l'envoi des e-mails demande le mot de
+// passe du compte et son code de double authentification (le serveur d'envoi
+// reçoit tous les codes de connexion par e-mail).
+type MailConfirm struct {
+	AccountPassword string `json:"account_password"`
+	Code            string `json:"code"`
+}
+
+// MailSaveRequest : PUT api/mail.
+type MailSaveRequest struct {
+	mail.SMTPSettings
+	MailConfirm
+}
+
+// NE PAS relâcher : depuis internet, une session volée ne doit pas pouvoir
+// détourner les codes de connexion vers un autre serveur d'envoi. Il faut un
+// compte avec double authentification, son mot de passe et un code frais.
+func (c *console) confirmFromInternet(w http.ResponseWriter, r *http.Request, confirm MailConfirm) bool {
+	if !fromInternet(r) {
+		return true
+	}
+	account, ok := c.account(r)
+	if !ok {
+		writeError(w, http.StatusUnauthorized, "Connectez-vous.")
+		return false
+	}
+	if !account.HasTwoFactor() {
+		writeError(w, http.StatusForbidden, "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.")
+		return false
+	}
+	if confirm.AccountPassword == "" {
+		writeJSON(w, http.StatusUnauthorized, map[string]any{"error": "Depuis internet, confirmez avec le mot de passe de votre compte et votre code de double authentification.", "confirm_needed": true})
+		return false
+	}
+	token, _, err := c.Accounts.Login(account.Name, confirm.AccountPassword, confirm.Code, clientIP(r))
+	if err != nil {
+		writeAuthError(w, err)
+		return false
+	}
+	c.Accounts.Logout(token)
+	log.Printf("envoi des e-mails : changement confirmé depuis internet par %s", account.Name)
+	return true
 }
 
 // MailTestReply : où l'e-mail d'essai est parti, et le réglage tel qu'il est
@@ -149,12 +195,15 @@ func (c *console) mailSave(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotImplemented, "L'envoi des e-mails ne se règle pas ici.")
 		return
 	}
-	var request mail.SMTPSettings
+	var request MailSaveRequest
 	if !decodeJSON(w, r, &request) {
 		return
 	}
+	if !c.confirmFromInternet(w, r, request.MailConfirm) {
+		return
+	}
 	account, _ := c.account(r)
-	if err := c.SMTP.Save(request, account.Name); err != nil {
+	if err := c.SMTP.Save(request.SMTPSettings, account.Name); err != nil {
 		if errors.Is(err, mail.ErrInvalid) {
 			writeError(w, http.StatusBadRequest, strings.TrimPrefix(err.Error(), mail.ErrInvalid.Error()+" : "))
 			return
@@ -170,6 +219,13 @@ func (c *console) mailSave(w http.ResponseWriter, r *http.Request) {
 func (c *console) mailForget(w http.ResponseWriter, r *http.Request) {
 	if c.SMTP == nil {
 		writeError(w, http.StatusNotImplemented, "L'envoi des e-mails ne se règle pas ici.")
+		return
+	}
+	var confirm MailConfirm
+	if r.ContentLength != 0 && !decodeJSON(w, r, &confirm) {
+		return
+	}
+	if !c.confirmFromInternet(w, r, confirm) {
 		return
 	}
 	if err := c.SMTP.Forget(); err != nil {
@@ -192,10 +248,8 @@ func (c *console) mailTest(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusNotImplemented, "L'envoi des e-mails ne se règle pas ici.")
 		return
 	}
-	// NE PAS relâcher : un réglage tapé est enregistré s'il marche, et le
-	// réglage ne change que depuis la maison (homeOnlyPaths).
-	if request.Settings != nil && fromInternet(r) {
-		writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
+	// Un réglage tapé est enregistré s'il marche : même confirmation que PUT.
+	if request.Settings != nil && !c.confirmFromInternet(w, r, request.MailConfirm) {
 		return
 	}
 	if request.Settings == nil && !c.SMTP.Configured() {

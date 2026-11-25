@@ -257,9 +257,8 @@ var homeOnlyPaths = []string{
 	"PUT " + BasePath + "/api/internet-console/domain",
 	// Ouvrir ou refermer les ports de la box (accès direct, 7.2).
 	"PUT " + BasePath + "/api/internet-access",
-	// Le serveur d'envoi reçoit tous les codes de connexion par e-mail.
-	"PUT " + BasePath + "/api/mail",
-	"DELETE " + BasePath + "/api/mail",
+	// L'envoi des e-mails (api/mail) n'est plus ici : depuis internet, il se
+	// change avec le mot de passe et la double authentification (confirmFromInternet).
 }
 
 // NE PAS relâcher : console fermée sur internet par défaut (spécification 8.3).

@@ -905,5 +905,7 @@ piTranslations("zh", {
   "Envoyer le lien par e-mail": "通过邮件发送链接",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} 请重试，或自行将此链接转给 {1}。链接有效期 7 天，只能使用一次。",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "要让 Pi 发送邀请，请在“我的 Pi”中设置“发送邮件”。",
-  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "从互联网无法更改此设置：发送服务器会收到登录验证码。请在您的网络中通过 https://{0}.local/pi-appliance 更改（即使在家，Pi 的互联网地址也算作互联网）。"
+  "Mot de passe de votre compte de la console": "控制台账户的密码",
+  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "从互联网操作时，每次更改都需用控制台账户密码和双重验证码确认：发送服务器会收到登录验证码。",
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "从互联网更改此设置需要双重验证：请先在“我的账户”中开启（身份验证应用），或在家中操作。"
 });

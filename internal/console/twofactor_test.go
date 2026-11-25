@@ -430,13 +430,6 @@ func TestMailSettings(t *testing.T) {
 	}
 }
 
-// C. Depuis internet, le serveur d'envoi ne change pas (il reçoit tous les codes).
-func TestMailSettingsHomeOnly(t *testing.T) {
-	if !slicesContains(homeOnlyPaths, "PUT "+BasePath+"/api/mail") || !slicesContains(homeOnlyPaths, "DELETE "+BasePath+"/api/mail") {
-		t.Fatal("réglage de l'envoi des e-mails ouvert depuis internet")
-	}
-}
-
 func slicesContains(list []string, value string) bool {
 	for _, item := range list {
 		if item == value {

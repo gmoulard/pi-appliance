@@ -905,5 +905,7 @@ piTranslations("nl", {
   "Envoyer le lien par e-mail": "Link per e-mail versturen",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Probeer het opnieuw, of geef deze link zelf door aan {1}. Hij is 7 dagen geldig en werkt maar één keer.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Stel „E-mails versturen” in onder „Mijn Pi” zodat de Pi uitnodigingen verstuurt.",
-  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "Vanaf internet kan deze instelling niet worden gewijzigd: de verzendserver ontvangt de inlogcodes. Wijzig haar vanuit uw netwerk, op https://{0}.local/pi-appliance (ook thuis telt het internetadres van de Pi als internet)."
+  "Mot de passe de votre compte de la console": "Wachtwoord van uw consoleaccount",
+  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "Bevestig vanaf internet elke wijziging met het wachtwoord van uw consoleaccount en uw code voor tweestapsverificatie: de verzendserver ontvangt de inlogcodes.",
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Vanaf internet vereist deze instelling tweestapsverificatie: zet die eerst aan in „Mijn account” (authenticatie-app), of doe het vanuit huis."
 });

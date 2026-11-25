@@ -905,5 +905,7 @@ piTranslations("tr", {
   "Envoyer le lien par e-mail": "Bağlantıyı e-postayla gönder",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Yeniden deneyin ya da bu bağlantıyı {1} adresine kendiniz iletin. 7 gün geçerlidir ve yalnızca bir kez kullanılabilir.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi'nin davetleri göndermesi için «Pi'm» içinde «E-posta gönderimi»ni ayarlayın.",
-  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "İnternetten bu ayar değiştirilemez: gönderim sunucusu oturum açma kodlarını alır. Ağınızdan, https://{0}.local/pi-appliance adresinden değiştirin (evde bile Pi'nin internet adresi internet sayılır)."
+  "Mot de passe de votre compte de la console": "Konsol hesabınızın parolası",
+  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "İnternetten her değişikliği konsol hesabınızın parolası ve iki adımlı doğrulama kodunuzla onaylayın: gönderim sunucusu oturum açma kodlarını alır.",
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "İnternetten bu ayar iki adımlı doğrulama gerektirir: önce «Hesabım» içinde açın (kimlik doğrulama uygulaması) ya da bunu evden yapın."
 });

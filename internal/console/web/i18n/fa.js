@@ -905,5 +905,7 @@ piTranslations("fa", {
   "Envoyer le lien par e-mail": "فرستادن پیوند با ایمیل",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} دوباره امتحان کنید، یا خودتان این پیوند را به {1} بدهید. ۷ روز معتبر است و فقط یک بار کار می‌کند.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "برای اینکه Pi دعوت‌ها را بفرستد، «ارسال ایمیل» را در «Pi من» تنظیم کنید.",
-  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "از اینترنت نمی‌توان این تنظیم را تغییر داد: سرور ارسال کدهای ورود را دریافت می‌کند. آن را از شبکهٔ خودتان در نشانی https://{0}.local/pi-appliance تغییر دهید (حتی در خانه، نشانی اینترنتی Pi اینترنت به شمار می‌آید)."
+  "Mot de passe de votre compte de la console": "گذرواژهٔ حساب شما در کنسول",
+  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "از اینترنت، هر تغییر را با گذرواژهٔ حساب کنسول و کد احراز هویت دومرحله‌ای تأیید کنید: سرور ارسال کدهای ورود را دریافت می‌کند.",
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "از اینترنت، این تنظیم به احراز هویت دومرحله‌ای نیاز دارد: نخست آن را در «حساب من» فعال کنید (برنامهٔ احراز هویت)، یا این کار را از خانه انجام دهید."
 });

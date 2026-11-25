@@ -378,6 +378,11 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <label>Identifiant (souvent votre adresse e-mail)<input name="username" autocapitalize="none" autocomplete="off" maxlength="254"></label>
 <label>Mot de passe<input name="password" type="password" autocomplete="new-password" maxlength="256"></label>
 <label>Adresse d'expédition<input name="from" type="email" autocomplete="off" maxlength="254"></label>
+<div id="mailConfirm" hidden>
+<label>Mot de passe de votre compte de la console<input name="account_password" type="password" autocomplete="current-password" maxlength="256"></label>
+<label>Code de vérification, si la double authentification est activée<input name="code" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" maxlength="16"></label>
+<button id="mailEmailCode" class="secondary" type="button" hidden>Recevoir un code par e-mail</button>
+</div>
 <div class="controls">
 <button id="mailSave">Enregistrer</button>
 <button id="mailTest" class="secondary" type="button">Envoyer un e-mail d'essai</button>

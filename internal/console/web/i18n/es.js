@@ -905,5 +905,7 @@ piTranslations("es", {
   "Envoyer le lien par e-mail": "Enviar el enlace por correo",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Vuelva a intentarlo, o pase usted mismo este enlace a {1}. Es válido 7 días y solo sirve una vez.",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Para que la Pi envíe las invitaciones, configure «Envío de correos» en «Mi Pi».",
-  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "Desde internet, este ajuste no se puede cambiar: el servidor de envío recibe los códigos de inicio de sesión. Cámbielo desde su red, en https://{0}.local/pi-appliance (incluso en casa, la dirección de internet de la Pi cuenta como internet)."
+  "Mot de passe de votre compte de la console": "Contraseña de su cuenta de la consola",
+  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "Desde internet, confirme cada cambio con la contraseña de su cuenta de la consola y su código de verificación en dos pasos: el servidor de envío recibe los códigos de inicio de sesión.",
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "Desde internet, este ajuste requiere la verificación en dos pasos: actívela primero en «Mi cuenta» (aplicación de autenticación), o hágalo desde casa."
 });

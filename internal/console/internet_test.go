@@ -16,6 +16,7 @@ package console
 import (
 	"context"
 	"errors"
+	"github.com/gmoulard/pi-appliance/internal/mail"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -51,11 +52,16 @@ func internetFixture(t *testing.T) (fixture, string) {
 	if err := os.MkdirAll(filepath.Dir(traefik), 0o755); err != nil {
 		t.Fatal(err)
 	}
+	smtp, err := mail.OpenSMTP(filepath.Join(dir, "smtp.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	handler := Handler(Config{
 		Version:             "1.2.3",
 		Catalog:             catalog,
 		Services:            manager,
 		Accounts:            accounts,
+		SMTP:                smtp,
 		InternetFile:        filepath.Join(dir, "internet-console.json"),
 		TraefikInternetFile: traefik,
 	})
@@ -192,6 +198,33 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/factory-reset", `{}`, outside); response.Code != http.StatusForbidden {
 		t.Fatalf("remise à zéro depuis internet : code %d", response.Code)
 	}
+	// Envoi des e-mails depuis internet : mot de passe et code de double
+	// authentification demandés (le serveur d'envoi reçoit les codes).
+	settings := `"host": "smtp.gmail.com", "port": 587, "security": "starttls", "username": "pi@gmail.com", "password": "abcd efgh ijkl mnop", "from": "pi@gmail.com"`
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/mail", `{`+settings+`}`, outside); response.Code != http.StatusUnauthorized || !strings.Contains(response.Body.String(), `"confirm_needed":true`) {
+		t.Fatalf("réglage sans confirmation : %d %s", response.Code, response.Body.String())
+	}
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/mail", `{`+settings+`, "account_password": "mauvais"}`, outside); response.Code != http.StatusUnauthorized {
+		t.Fatalf("réglage avec un mauvais mot de passe : %d %s", response.Code, response.Body.String())
+	}
+	// Le code de la connexion a déjà servi : on avance l'horloge des comptes.
+	later := time.Now().Add(2 * time.Minute)
+	clock := f.accounts.Now
+	f.accounts.Now = func() time.Time { return later }
+	mailCode, err := totp.GenerateCode(secret, later)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/mail", `{`+settings+`, "account_password": "`+adminPassword+`", "code": "`+mailCode+`"}`, outside); response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"configured":true`) {
+		t.Fatalf("réglage confirmé depuis internet : %d %s", response.Code, response.Body.String())
+	}
+	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/mail", `{`+settings+`, "account_password": "`+adminPassword+`", "code": "`+mailCode+`"}`, outside); response.Code != http.StatusUnauthorized {
+		t.Fatalf("code déjà servi : %d %s", response.Code, response.Body.String())
+	}
+	if response := f.fromOutside(http.MethodDelete, "/pi-appliance/api/mail", "", outside); response.Code != http.StatusUnauthorized {
+		t.Fatalf("effacement sans confirmation : %d %s", response.Code, response.Body.String())
+	}
+	f.accounts.Now = clock
 	// Fermer depuis internet : permis ; ensuite tout est refusé, fichier retiré.
 	if response := f.fromOutside(http.MethodPut, "/pi-appliance/api/internet-console?enabled=false", "", outside); response.Code != http.StatusOK {
 		t.Fatalf("fermeture depuis internet : code %d %s", response.Code, response.Body.String())

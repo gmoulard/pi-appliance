@@ -905,5 +905,7 @@ piTranslations("ja", {
   "Envoyer le lien par e-mail": "リンクをメールで送信",
   "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} もう一度試すか、このリンクを {1} にご自身で渡してください。有効期間は 7 日間で、一度だけ使えます。",
   "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi が招待を送れるように、「マイ Pi」で「メールの送信」を設定してください。",
-  "Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).": "インターネットからはこの設定を変更できません。送信サーバーはログインコードを受け取るためです。ご自身のネットワークから https://{0}.local/pi-appliance で変更してください（自宅でも、Pi のインターネットアドレスはインターネット扱いです）。"
+  "Mot de passe de votre compte de la console": "コンソールのアカウントのパスワード",
+  "Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.": "インターネットからは、変更のたびにコンソールのアカウントのパスワードと 2 段階認証のコードで確認してください。送信サーバーはログインコードを受け取るためです。",
+  "Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.": "インターネットからこの設定を変更するには 2 段階認証が必要です。先に「マイアカウント」で有効にする（認証アプリ）か、自宅から行ってください。"
 });

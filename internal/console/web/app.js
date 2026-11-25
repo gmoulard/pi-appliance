@@ -4816,6 +4816,8 @@ let mailStatus = null;
 // réglage de l'envoi ne change alors pas (homeOnlyPaths du serveur).
 let sessionInternet = false;
 const mailHome = document.getElementById("mailHome");
+const mailConfirm = document.getElementById("mailConfirm");
+const mailEmailCode = document.getElementById("mailEmailCode");
 
 function showMailResult(text, kind) {
   mailResult.replaceChildren(element("p", text));
@@ -4833,14 +4835,20 @@ function showMail(status) {
   fields.password.value = "";
   fields.password.placeholder = status.password_set ? t("Enregistré : laissez vide pour le garder") : "";
   fields.from.value = status.from || "";
-  for (const field of fields) {
-    if (field.tagName !== "BUTTON") field.disabled = sessionInternet;
-  }
-  mailSave.hidden = sessionInternet;
-  mailForget.hidden = !status.configured || sessionInternet;
-  mailTest.hidden = sessionInternet && !status.configured;
+  // Depuis internet : chaque changement est confirmé par le mot de passe du
+  // compte et un code de double authentification (confirmFromInternet).
+  const twoFactor = Boolean(currentAccount && currentAccount.two_factor);
+  fields.account_password.value = "";
+  fields.code.value = "";
+  mailConfirm.hidden = !sessionInternet || !twoFactor;
+  mailEmailCode.hidden = !(currentAccount && currentAccount.email_code);
+  mailSave.hidden = sessionInternet && !twoFactor;
+  mailForget.hidden = !status.configured || (sessionInternet && !twoFactor);
+  mailTest.hidden = sessionInternet && !twoFactor && !status.configured;
   mailHome.hidden = !sessionInternet;
-  mailHome.textContent = t("Depuis internet, ce réglage ne se change pas : le serveur d'envoi reçoit les codes de connexion. Changez-le depuis votre réseau, à l'adresse https://{0}.local/pi-appliance (même chez vous, l'adresse internet du Pi compte comme internet).", piName);
+  mailHome.textContent = twoFactor
+    ? t("Depuis internet, confirmez chaque changement avec le mot de passe de votre compte de la console et votre code de double authentification : le serveur d'envoi reçoit les codes de connexion.")
+    : t("Depuis internet, ce réglage demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.");
   const dot = element("span", undefined, `dot ${status.verified ? "ok" : ""}`);
   let text;
   if (status.configured && status.verified) {
@@ -4887,6 +4895,24 @@ async function mailChanged() {
   loadAlerts();
 }
 
+// mailConfirmFields : mot de passe du compte et code, depuis internet.
+function mailConfirmFields() {
+  if (!sessionInternet) return {};
+  return { account_password: mailForm.elements.account_password.value, code: mailForm.elements.code.value };
+}
+
+mailEmailCode.addEventListener("click", async () => {
+  mailEmailCode.disabled = true;
+  try {
+    const reply = await api("login/email-code", jsonBody("POST", { name: currentAccount.name, password: mailForm.elements.account_password.value, lang: LANGUAGE }));
+    showMailResult(t("Un code vient de partir à {0} : il est valable 10 minutes. Regardez aussi dans les courriers indésirables.", reply.email), "success");
+  } catch (error) {
+    showMailResult(error.message, "error");
+  } finally {
+    mailEmailCode.disabled = false;
+  }
+});
+
 function mailSettings() {
   const fields = mailForm.elements;
   return {
@@ -4910,7 +4936,7 @@ mailForm.addEventListener("submit", async (event) => {
   const button = mailSave;
   button.disabled = true;
   try {
-    showMail(await api("mail", jsonBody("PUT", mailSettings())));
+    showMail(await api("mail", jsonBody("PUT", { ...mailSettings(), ...mailConfirmFields() })));
     showMailResult(t("Réglage enregistré. Envoyez-vous un e-mail d'essai pour vérifier qu'il marche."), "success");
     await mailChanged();
   } catch (error) {
@@ -4923,12 +4949,13 @@ mailForm.addEventListener("submit", async (event) => {
 // L'e-mail d'essai part avec les réglages tapés ; s'il part, le Pi les
 // enregistre et les note vérifiés (rien à enregistrer avant).
 mailTest.addEventListener("click", async () => {
-  if (!sessionInternet && !mailForm.reportValidity()) return;
+  if (!(sessionInternet && !(currentAccount && currentAccount.two_factor)) && !mailForm.reportValidity()) return;
   mailTest.disabled = true;
   showMailResult(t("Envoi de l'e-mail d'essai…"), "info");
   try {
-    // Depuis internet : essai du réglage enregistré seulement.
-    const body = sessionInternet ? { lang: LANGUAGE } : { lang: LANGUAGE, settings: mailSettings() };
+    // Sans double authentification depuis internet : essai du réglage enregistré.
+    const locked = sessionInternet && !(currentAccount && currentAccount.two_factor);
+    const body = locked ? { lang: LANGUAGE } : { lang: LANGUAGE, settings: mailSettings(), ...mailConfirmFields() };
     const reply = await api("mail/test", jsonBody("POST", body));
     if (reply.status) showMail(reply.status);
     showMailResult(t("E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).", reply.email), "success");
@@ -4948,7 +4975,7 @@ mailForget.addEventListener("click", async () => {
   if (!window.confirm(question)) return;
   mailForget.disabled = true;
   try {
-    showMail(await api("mail", { method: "DELETE" }));
+    showMail(await api("mail", jsonBody("DELETE", mailConfirmFields())));
     showMailResult(t("Le Pi n'envoie plus d'e-mails par ce serveur."), "success");
     await mailChanged();
   } catch (error) {
