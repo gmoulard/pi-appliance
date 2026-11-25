@@ -408,6 +408,20 @@ func TestInstallListRemove(t *testing.T) {
 	}
 }
 
+// Un nom tapé librement est ramené au format d'une adresse (« Mon Cloud »
+// donne « mon-cloud ») au lieu d'être refusé.
+func TestInstallNormalizesName(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	response := f.install(`{"app": "nextcloud", "name": "  Mon Clôud ! "}`, cookie)
+	if response.Code != http.StatusCreated {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+	if result := decode[services.Result](t, response); result.Instance.Name != "mon-cloud" {
+		t.Fatalf("nom %q", result.Instance.Name)
+	}
+}
+
 func TestInstallErrors(t *testing.T) {
 	f := newFixture(t)
 	cookie := f.admin(t)
@@ -419,7 +433,8 @@ func TestInstallErrors(t *testing.T) {
 		"illisible":         {"application/json", `{"app":`, http.StatusBadRequest},
 		"champ inconnu":     {"application/json", `{"app": "nextcloud", "privileged": true}`, http.StatusBadRequest},
 		"application":       {"application/json", `{"app": "inconnue"}`, http.StatusNotFound},
-		"nom":               {"application/json", `{"app": "nextcloud", "name": "Mon Cloud"}`, http.StatusBadRequest},
+		"nom":               {"application/json", `{"app": "nextcloud", "name": "2 Cloud"}`, http.StatusBadRequest},
+		"nom sans lettre":   {"application/json", `{"app": "nextcloud", "name": "!!!"}`, http.StatusBadRequest},
 		"paramètre inconnu": {"application/json", `{"app": "nextcloud", "parameters": {"X": "1"}}`, http.StatusBadRequest},
 	}
 	for label, c := range cases {

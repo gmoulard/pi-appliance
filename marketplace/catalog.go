@@ -108,6 +108,46 @@ func ValidLabel(name string) bool {
 	return labelPattern.MatchString(name)
 }
 
+// labelLetters : lettres accentuées ou liées ramenées à des lettres simples
+// par NormalizeLabel (« Été » donne « ete », « Œuvre » donne « oeuvre »).
+var labelLetters = strings.NewReplacer(
+	"à", "a", "á", "a", "â", "a", "ã", "a", "ä", "a", "å", "a", "æ", "ae",
+	"ç", "c", "è", "e", "é", "e", "ê", "e", "ë", "e",
+	"ì", "i", "í", "i", "î", "i", "ï", "i", "ñ", "n",
+	"ò", "o", "ó", "o", "ô", "o", "õ", "o", "ö", "o", "ø", "o", "œ", "oe",
+	"ù", "u", "ú", "u", "û", "u", "ü", "u", "ý", "y", "ÿ", "y", "ß", "ss",
+)
+
+// NormalizeLabel met un nom de service tapé librement au format de ValidLabel :
+// minuscules, sans accents, chaque suite d'espaces ou d'autres signes devenue
+// un seul tiret, sans tiret au début ni à la fin, 32 caractères au plus
+// (« Mon blog » donne « mon-blog »). La console fait le même calcul pendant
+// la saisie (normalizeServiceName, app.js), qui retire en plus les accents des
+// lettres absentes de labelLetters ; ici, une telle lettre devient un tiret.
+// Un nom qui reste
+// invalide (vide, ou commençant par un chiffre) est refusé ensuite par ValidLabel.
+func NormalizeLabel(name string) string {
+	name = labelLetters.Replace(strings.ToLower(name))
+	var out strings.Builder
+	dash := false
+	for _, r := range name {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			if dash && out.Len() > 0 {
+				out.WriteByte('-')
+			}
+			out.WriteRune(r)
+			dash = false
+			continue
+		}
+		dash = true
+	}
+	result := out.String()
+	if len(result) > 32 {
+		result = strings.TrimRight(result[:32], "-")
+	}
+	return result
+}
+
 func Builtin() (Catalog, error) {
 	return Load(builtin)
 }

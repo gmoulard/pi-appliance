@@ -968,6 +968,42 @@ function showFooter(health) {
   footer.replaceChildren(...parts.flatMap((part, index) => (index === 0 ? [part] : [" · ", part])));
 }
 
+// Nom du service tapé librement (« Mon blog ») ramené au format d'une adresse
+// (« mon-blog ») : minuscules, sans accents, un tiret à la place des espaces et
+// autres signes. Même calcul que NormalizeLabel côté serveur
+// (marketplace/catalog.go). Pendant la saisie (final faux), un tiret en fin de
+// nom est gardé pour pouvoir taper le mot suivant.
+function normalizeServiceName(value, final) {
+  let name = value.toLowerCase()
+    .replace(/æ/g, "ae").replace(/œ/g, "oe").replace(/ß/g, "ss").replace(/ø/g, "o")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+/, "");
+  if (final) {
+    name = name.slice(0, 32).replace(/-+$/, "");
+  }
+  return name;
+}
+
+// Champ « Nom du service » : converti pendant la saisie, puis une dernière fois
+// avant l'envoi (clic sur le bouton ou touche Entrée, qui passe aussi par un
+// clic), avant que le navigateur ne contrôle le format.
+function serviceNameField(input, button) {
+  input.autocapitalize = "none";
+  input.spellcheck = false;
+  input.addEventListener("input", () => {
+    const name = normalizeServiceName(input.value, false);
+    if (name !== input.value) {
+      input.value = name;
+    }
+  });
+  const finish = () => {
+    input.value = normalizeServiceName(input.value, true);
+  };
+  input.addEventListener("change", finish);
+  button.addEventListener("click", finish);
+}
+
 async function loadCatalog() {
   const { apps, source } = await api("catalog");
   showCatalogSource(source);
@@ -1008,6 +1044,7 @@ async function loadCatalog() {
       form.append(element("p", APP_WARNINGS[app.id], "note"));
     }
     const button = element("button", t("Installer"));
+    serviceNameField(name, button);
     const fit = gauges(app.memory_mb, app.disk_mb);
     if (fit.length > 0) {
       const box = element("div");
@@ -1672,7 +1709,7 @@ function customComposeCard() {
       const guess = guessComposeService(result.compose);
       if (guess.service) {
         service.value = guess.service;
-        const slug = guess.service.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^[^a-z]+|-+$/g, "").slice(0, 32);
+        const slug = normalizeServiceName(guess.service.replace(/^[^A-Za-z]+/, ""), true);
         if (slug) name.value = slug;
       }
       if (guess.port) port.value = guess.port;
@@ -1699,6 +1736,7 @@ function customComposeCard() {
   port.required = true;
   portLabel.append(port);
   const button = element("button", t("Installer"));
+  serviceNameField(name, button);
   form.append(nameLabel, urlLabel, composeLabel, serviceLabel, portLabel, button);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();

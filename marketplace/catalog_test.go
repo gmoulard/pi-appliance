@@ -282,6 +282,27 @@ func TestValidLabel(t *testing.T) {
 	}
 }
 
+func TestNormalizeLabel(t *testing.T) {
+	for name, want := range map[string]string{
+		"Mon blog":       "mon-blog",
+		"mon-blog":       "mon-blog",
+		"  Café  Été ! ": "cafe-ete",
+		"Œuvre_d'Art":    "oeuvre-d-art",
+		"--a--b--":       "a-b",
+		"":               "",
+		"un nom beaucoup trop long pour une adresse": "un-nom-beaucoup-trop-long-pour-u",
+		"abcdefghijklmnopqrstuvwxyz12345 x":          "abcdefghijklmnopqrstuvwxyz12345",
+	} {
+		got := NormalizeLabel(name)
+		if got != want {
+			t.Errorf("NormalizeLabel(%q) = %q, attendu %q", name, got, want)
+		}
+		if want != "" && !ValidLabel(got) {
+			t.Errorf("NormalizeLabel(%q) = %q, refusé par ValidLabel", name, got)
+		}
+	}
+}
+
 // Les générateurs de sites statiques (TODO-2.46) reçoivent leurs fichiers
 // source dans le constructeur, et le site web dans Apache.
 func TestBuiltinSiteFiles(t *testing.T) {

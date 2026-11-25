@@ -837,6 +837,9 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 	if request.Name == "" {
 		request.Name = app.Subdomain
 	}
+	// Nom tapé librement (« Mon blog ») : ramené au format d'une adresse ; un
+	// nom sans lettre ni chiffre reste vide et est refusé par Install.
+	request.Name = marketplace.NormalizeLabel(request.Name)
 	if request.Access != "" && request.Access != app.Access {
 		if app.Access == services.AccessAdmins {
 			writeError(w, http.StatusBadRequest, app.Name+" a la main sur tout le Pi : il reste réservé aux administrateurs, à la maison.")
@@ -1009,7 +1012,7 @@ func (c *console) installCompose(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	result, err := c.Services.InstallCustom(r.Context(), services.CustomRequest{
-		Name:         request.Name,
+		Name:         marketplace.NormalizeLabel(request.Name),
 		Compose:      []byte(request.Compose),
 		Service:      request.Service,
 		Port:         request.Port,
