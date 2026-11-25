@@ -2,13 +2,13 @@
 layout: default
 lang: de
 ref: marketplace
-traduit_le: 2026-11-24
+traduit_le: 2026-11-25
 ---
 # pi-appliance-Marketplace
 
-Der Marketplace versammelt die Anwendungen, die Sie über die pi-appliance-Konsole installieren und verwalten können. Der Katalog ist noch in das Programm eingebaut: Eine vorgeschlagene Anwendung steht erst zur Verfügung, wenn der Beitrag angenommen und eine neue Version der Konsole veröffentlicht wurde.
+Der Marketplace versammelt die Anwendungen, die Sie über die pi-appliance-Konsole installieren und verwalten können. Der Katalog wird auf dieser Website veröffentlicht: Bereits installierte Konsolen lesen ihn alle 6 Stunden neu, und eine angenommene Anwendung erscheint dort ohne neue Version von pi-appliance.
 
-> **Experimentelle Version.** Das Image ist auf Raspberry Pi 3 B+ und Raspberry Pi 4 geprüft; jede Anwendung muss noch einzeln auf einem echten Pi getestet werden. Der Zugang zu den Diensten aus dem Internet ist noch nicht verfügbar.
+> **Experimentelle Version.** Das Image ist auf Raspberry Pi 3 B+ und Raspberry Pi 4 geprüft; bei jeder Änderung installiert ein automatischer Test jede Anwendung und öffnet ihre Seite, zu Hause und aus dem Internet, aber jede muss noch auf einem echten Pi ausprobiert werden. Die Dienste öffnen sich auch aus dem Internet, unter der Adresse des Pi (siehe die [Anleitung, auf Französisch]({{ '/guide-utilisateur.html#services-sur-internet' | relative_url }})).
 
 ## Die pi-appliance-Basis
 
@@ -40,6 +40,8 @@ Diese Anwendungen lassen sich noch nicht über den Marketplace installieren. Die
 <ul id="marketplace-planned" hidden></ul>
 
 **In die Konsole eingebaut, außerhalb des Katalogs**: [Cockpit](https://cockpit-project.org/), die Verwaltung des Pi-Systems (Protokolle, Programme, Netzwerk, Festplatten und Terminal im Browser, für erfahrene Nutzer). Es ist kein Container, sondern Systemsoftware: Der Marketplace der Konsole bietet es Administratoren an, nur zu Hause, und man meldet sich mit seinem pi-appliance-Konto an, ohne weiteres Passwort (siehe die [Spezifikation]({{ '/specification.html' | relative_url }}) (auf Französisch), Abschnitt 6.4).
+
+**Außerhalb des Katalogs, freies Docker Compose**: Ein Administrator kann auch eine Anwendung installieren, die nicht im Katalog ist, aus ihrer Docker-Compose-Datei, eingefügt oder von einer Webadresse gelesen (zum Beispiel einer GitHub-Seite). Ein solcher Dienst wird vom Projekt weder geprüft noch unterstützt (siehe die [Anleitung, auf Französisch]({{ '/guide-utilisateur.html#docker-compose-libre' | relative_url }})).
 
 Datenbanken: PostgreSQL ist verfügbar, mit der Weboberfläche Adminer. MongoDB (nur Pi 5), Redis, MSSQL (kein Image für den Pi) und SQLite (eine einfache Datei) werden nicht einzeln angeboten: siehe die [Spezifikation]({{ '/specification.html' | relative_url }}) (auf Französisch), Abschnitt 6.3.
 

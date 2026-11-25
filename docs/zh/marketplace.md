@@ -2,13 +2,13 @@
 layout: default
 lang: zh
 ref: marketplace
-traduit_le: 2026-11-24
+traduit_le: 2026-11-25
 ---
 # pi-appliance 的 marketplace
 
-marketplace 汇集了可以在 pi-appliance 控制台中安装和管理的应用。目录目前仍内置在程序中：提交的应用要等贡献通过审核、并发布新版本的控制台之后才能使用。
+marketplace 汇集了可以在 pi-appliance 控制台中安装和管理的应用。目录发布在本网站上：已安装的控制台每 6 小时重新读取一次，被接受的应用无需 pi-appliance 新版本即可出现在其中。
 
-> **实验版本。** 镜像已在 Raspberry Pi 3 B+ 和 Raspberry Pi 4 上验证；每个应用仍需在真实的 Pi 上逐一测试。目前还不能从互联网访问服务。
+> **实验版本。** 镜像已在 Raspberry Pi 3 B+ 和 Raspberry Pi 4 上验证；每次修改后，自动测试都会安装每个应用并打开其页面（在家中和从互联网），但每个应用仍需在真实的 Pi 上试用。服务也可以从互联网通过 Pi 的地址打开（见[指南，法语]({{ '/guide-utilisateur.html#services-sur-internet' | relative_url }})）。
 
 ## pi-appliance 底座
 
@@ -40,6 +40,8 @@ marketplace 汇集了可以在 pi-appliance 控制台中安装和管理的应用
 <ul id="marketplace-planned" hidden></ul>
 
 **内置于控制台、不在目录中**：[Cockpit](https://cockpit-project.org/)，用于管理 Pi 的系统（日志、程序、网络、磁盘以及浏览器中的终端，适合有经验的用户）。它不是容器，而是系统软件：控制台的 Marketplace 只在家中向管理员提供它，使用 pi-appliance 账户即可进入，无需另外的密码（见[规格说明]({{ '/specification.html' | relative_url }})（法文）第 6.4 节）。
+
+**目录之外：自由 Docker Compose**：管理员也可以根据 Docker Compose 文件安装不在目录中的应用，文件可以粘贴，也可以从网址读取（例如 GitHub 页面）。这类服务既不经项目检查，也不受项目支持（见[指南，法语]({{ '/guide-utilisateur.html#docker-compose-libre' | relative_url }})）。
 
 数据库：已提供 PostgreSQL，并带有 Adminer 网页界面。MongoDB（仅 Pi 5）、Redis、MSSQL（没有适用于 Pi 的镜像）和 SQLite（一个简单的文件）不单独提供：见[规格说明]({{ '/specification.html' | relative_url }})（法文）第 6.3 节。
 

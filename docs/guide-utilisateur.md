@@ -36,7 +36,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 - L'[ouverture des ports de la box](#ouvrir-les-ports) par le Pi lui-même (UPnP), avec votre accord, ou à la main avec le guide de votre box, et un test de l'accès depuis internet ; pas encore essayé sur une vraie box.
 - La configuration du réseau filaire ou du Wi-Fi depuis la console, ainsi qu'un point d'accès Wi-Fi de configuration au premier démarrage de l'image.
 - Un tableau de bord avec l'état du Pi, des graphiques et des alertes de mémoire et de stockage.
-- Une marketplace avec les applications installables du catalogue.
+- Une marketplace avec les applications installables du catalogue, rangées par ordre alphabétique avec leurs étiquettes sous leur nom, et le [Docker Compose libre](#docker-compose-libre) pour installer une application qui n'y est pas.
 - L'installation de plusieurs instances, les commandes de démarrage et d'arrêt, la mise à jour des applications avec retour arrière, et le choix de conserver ou supprimer leurs données à la désinstallation.
 - La gestion d'un disque USB pour les données des services.
 - Les sauvegardes chiffrées sur un second disque USB, chaque nuit et à la demande, et la restauration d'un service à une date choisie (écran « Sauvegardes » dans « Mon Pi »), pas encore essayées sur un vrai Pi.
@@ -174,9 +174,32 @@ Un service s'ouvre depuis internet à l'adresse internet du Pi suivie de son nom
 - **« Les personnes qui ont un compte sur ce Pi »** : seulement quand la console est ouverte sur internet, car la connexion passe par elle.
 - **« La maison seulement »** : jamais depuis internet.
 
-Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, n8n, Etherpad, Astro, Next.js, Docker Compose libre) : elles restent à la maison, la fiche le dit. Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. WordPress et DokuWiki s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple `https://vdl.moulard.org/wiki/`) ; s'ils ont été installés avant cette version, touchez **Mettre à jour** sur leur fiche (vos pages et articles sont gardés). FileBrowser Quantum s'ouvre aussi depuis internet, à l'adresse du Pi suivie de son nom (par exemple `https://vdl.moulard.org/fichiers/`) ; s'il a été installé avant cette version, touchez **Mettre à jour** sur sa fiche (vos fichiers sont gardés). Son adresse de la maison ne change pas : elle mène toute seule à la page de FileBrowser. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`). MkDocs et WordPress vers Markdown y marchent tels quels.
+Sur la fiche du service (« Mes services »), la ligne « Depuis internet » donne son adresse. Quand vous ouvrez la console depuis internet, le bouton **Ouvrir** mène à cette adresse ; il est grisé, avec une phrase qui explique pourquoi, si le service ne s'ouvre pas depuis internet. Certaines applications ne marchent pas sous une adresse partagée avec la console (Nextcloud, n8n, Etherpad, Astro, Next.js) : elles restent à la maison, la fiche le dit. Un [Docker Compose libre](#docker-compose-libre) n'y est publié que si vous cochez sur sa fiche « Ce service marche sous le chemin /<nom>/ ». Pour un site Hugo ou Jekyll installé avant cette version, touchez **Mettre à jour** : il est alors construit aussi pour son adresse sur internet. WordPress et DokuWiki s'ouvrent aussi depuis internet, à l'adresse du Pi suivie de leur nom (par exemple `https://vdl.moulard.org/wiki/`) ; s'ils ont été installés avant cette version, touchez **Mettre à jour** sur leur fiche (vos pages et articles sont gardés). FileBrowser Quantum s'ouvre aussi depuis internet, à l'adresse du Pi suivie de son nom (par exemple `https://vdl.moulard.org/fichiers/`) ; s'il a été installé avant cette version, touchez **Mettre à jour** sur sa fiche (vos fichiers sont gardés). Son adresse de la maison ne change pas : elle mène toute seule à la page de FileBrowser. Un « Site web » simple marche sous cette adresse si ses liens sont relatifs (`page.html`, pas `/page.html`). MkDocs et WordPress vers Markdown y marchent tels quels.
 
 **À savoir :** sous internet, le service partage l'adresse de la console. Une page de ce service pourrait donc agir dans la console au nom d'une personne connectée. N'ouvrez sur internet que des services de confiance, dont vous connaissez le contenu.
+
+## Installer une application hors du catalogue : le Docker Compose libre {#docker-compose-libre}
+
+La marketplace propose aussi, en dernier, la carte **Docker Compose libre** (administrateurs seulement). Elle installe n'importe quelle application qui se décrit par un fichier Docker Compose (`compose.yaml`), même si elle n'est pas dans le catalogue.
+
+1. Ouvrez la carte. Elle est déjà remplie avec un petit exemple qui s'installe tel quel, **whoami** : une page qui affiche ce que votre navigateur a envoyé. Installez-le pour voir comment cela marche, ou remplacez-le par votre propre fichier.
+2. Pour prendre le fichier d'une application, deux façons :
+   - **collez-le** dans la zone du fichier ;
+   - ou touchez **Lire le fichier à une adresse web** et donnez son adresse, par exemple la page GitHub du fichier ou même du dossier qui le contient : la console le télécharge, puis remplit le fichier, le nom du service, le conteneur à ouvrir et son port. Relisez-les avant d'installer.
+3. Donnez un **nom** au service (lettres minuscules, chiffres et tirets : la console corrige pendant la saisie). Il s'ouvrira à la maison à l'adresse `https://<nom>-<nom du Pi>.local`.
+4. Dites **quel conteneur** ouvrir à cette adresse et **sur quel port** il répond.
+5. Touchez **Installer**.
+
+Des exemples à adapter se trouvent dans la bibliothèque de [Websoft9](https://github.com/Websoft9/docker-library/tree/main/apps) (lien sur la carte) : leurs réglages sont dans un fichier `.env` à part, à recopier dans le fichier Compose.
+
+**À savoir :**
+
+- Ce service n'est **ni vérifié ni pris en charge** par le projet pi-appliance : la console le rappelle avant l'installation.
+- Si le fichier donne la main sur tout le Pi (conteneur privilégié, dossiers du système, réseau du Pi, accès à Docker), la console vous prévient clairement et vous demande de confirmer.
+- Les images doivent être prêtes à télécharger : un fichier qui construit sa propre image (`build`) est refusé.
+- Il s'installe et se désinstalle comme les autres services (mêmes niveaux d'accès, même question sur les données, mêmes sauvegardes). Pour le changer, modifiez le fichier et réinstallez-le : il n'a pas de mise à jour depuis la marketplace.
+- Sur internet, il ne s'ouvre à `https://<adresse du Pi>/<nom>/` que si vous cochez sur sa fiche **Ce service marche sous le chemin /<nom>/**, et seulement si l'application elle-même est réglée pour ce chemin (voir [Ouvrir ses services depuis internet](#services-sur-internet)).
+- Si l'application ne démarre pas ou s'arrête, son adresse affiche « Service indisponible » : regardez alors son état dans « Mes services ».
 
 ## Ouvrir les ports de la box {#ouvrir-les-ports}
 

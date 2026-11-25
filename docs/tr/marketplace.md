@@ -2,13 +2,13 @@
 layout: default
 lang: tr
 ref: marketplace
-traduit_le: 2026-11-24
+traduit_le: 2026-11-25
 ---
 # pi-appliance marketplace
 
-Marketplace, pi-appliance konsolundan kurup yönetebileceğiniz uygulamaları bir araya getirir. Katalog hâlâ programın içinde yer alıyor: önerilen bir uygulama, ancak katkı onaylanıp konsolun yeni bir sürümü yayımlandıktan sonra kullanılabilir olur.
+Marketplace, pi-appliance konsolundan kurup yönetebileceğiniz uygulamaları bir araya getirir. Katalog bu sitede yayımlanır: kurulu konsollar onu 6 saatte bir yeniden okur ve kabul edilen bir uygulama, pi-appliance'ın yeni bir sürümü olmadan orada görünür.
 
-> **Deneysel sürüm.** İmaj Raspberry Pi 3 B+ ve Raspberry Pi 4 üzerinde doğrulanmıştır; her uygulamanın gerçek bir Pi üzerinde tek tek denenmesi gerekiyor. Hizmetlere internetten erişim henüz kullanılamıyor.
+> **Deneysel sürüm.** İmaj Raspberry Pi 3 B+ ve Raspberry Pi 4 üzerinde doğrulanmıştır; her değişiklikte otomatik bir deneme her uygulamayı kurar ve sayfasını evden ve internetten açar, ancak her birinin yine de gerçek bir Pi üzerinde denenmesi gerekir. Hizmetler internetten de Pi'nin adresi altında açılır ([Fransızca kılavuza]({{ '/guide-utilisateur.html#services-sur-internet' | relative_url }}) bakın).
 
 ## pi-appliance temeli
 
@@ -40,6 +40,8 @@ Bu uygulamalar henüz marketplace'ten kurulamıyor. Liste aynı JSON kataloğund
 <ul id="marketplace-planned" hidden></ul>
 
 **Konsola yerleşik, katalog dışında**: [Cockpit](https://cockpit-project.org/), Pi sisteminin yönetimi (günlükler, programlar, ağ, diskler ve tarayıcıda terminal, deneyimli kullanıcılar için). Bir konteyner değil, bir sistem yazılımıdır: konsolun Marketplace'i onu yöneticilere yalnızca evde sunar ve başka bir parola olmadan pi-appliance hesabınızla girilir (bkz. [şartname]({{ '/specification.html' | relative_url }}) (Fransızca), bölüm 6.4).
+
+**Katalog dışında, serbest Docker Compose**: bir yönetici, katalogda olmayan bir uygulamayı da Docker Compose dosyasından kurabilir; dosya yapıştırılır ya da bir web adresinden (örneğin bir GitHub sayfasından) okunur. Böyle bir hizmet proje tarafından ne denetlenir ne de desteklenir ([Fransızca kılavuza]({{ '/guide-utilisateur.html#docker-compose-libre' | relative_url }}) bakın).
 
 Veritabanları: PostgreSQL, Adminer web arayüzüyle birlikte kullanılabilir. MongoDB (yalnızca Pi 5), Redis, MSSQL (Pi için imaj yok) ve SQLite (basit bir dosya) tek başına sunulmaz: bkz. [şartname]({{ '/specification.html' | relative_url }}) (Fransızca), bölüm 6.3.
 

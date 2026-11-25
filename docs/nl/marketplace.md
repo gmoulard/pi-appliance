@@ -2,13 +2,13 @@
 layout: default
 lang: nl
 ref: marketplace
-traduit_le: 2026-11-24
+traduit_le: 2026-11-25
 ---
 # pi-appliance-marketplace
 
-De marketplace brengt de toepassingen samen die u vanuit de pi-appliance-console kunt installeren en beheren. De catalogus is nog in het programma ingebouwd: een voorgestelde toepassing wordt pas beschikbaar nadat de bijdrage is goedgekeurd en er een nieuwe versie van de console is gepubliceerd.
+De marketplace brengt de toepassingen samen die u vanuit de pi-appliance-console kunt installeren en beheren. De catalogus wordt op deze site gepubliceerd: al geïnstalleerde consoles lezen hem elke 6 uur opnieuw, en een goedgekeurde toepassing verschijnt daar zonder nieuwe versie van pi-appliance.
 
-> **Experimentele versie.** De image is gevalideerd op Raspberry Pi 3 B+ en Raspberry Pi 4; elke toepassing moet nog één voor één op een echte Pi worden getest. Toegang tot de diensten via internet is nog niet beschikbaar.
+> **Experimentele versie.** De image is gevalideerd op Raspberry Pi 3 B+ en Raspberry Pi 4; bij elke wijziging installeert een automatische test elke toepassing en opent hij haar pagina, thuis en via internet, maar elke toepassing moet nog op een echte Pi worden geprobeerd. De diensten openen ook via internet, onder het adres van de Pi (zie de [handleiding, in het Frans]({{ '/guide-utilisateur.html#services-sur-internet' | relative_url }})).
 
 ## De pi-appliance-basis
 
@@ -40,6 +40,8 @@ Deze toepassingen kunnen nog niet vanuit de marketplace worden geïnstalleerd. D
 <ul id="marketplace-planned" hidden></ul>
 
 **Ingebouwd in de console, buiten de catalogus**: [Cockpit](https://cockpit-project.org/), het beheer van het systeem van de Pi (logboeken, programma's, netwerk, schijven en terminal in de browser, voor ervaren gebruikers). Het is geen container maar systeemsoftware: de Marketplace van de console biedt het aan beheerders aan, alleen thuis, en u logt in met uw pi-appliance-account, zonder ander wachtwoord (zie de [specificatie]({{ '/specification.html' | relative_url }}) (in het Frans), sectie 6.4).
+
+**Buiten de catalogus, vrije Docker Compose**: een beheerder kan ook een toepassing installeren die niet in de catalogus staat, vanuit haar Docker Compose-bestand, geplakt of gelezen van een webadres (bijvoorbeeld een GitHub-pagina). Zo'n dienst wordt door het project niet gecontroleerd en niet ondersteund (zie de [handleiding, in het Frans]({{ '/guide-utilisateur.html#docker-compose-libre' | relative_url }})).
 
 Databases: PostgreSQL is beschikbaar, met de webinterface Adminer. MongoDB (alleen Pi 5), Redis, MSSQL (geen image voor de Pi) en SQLite (een gewoon bestand) worden niet los aangeboden: zie de [specificatie]({{ '/specification.html' | relative_url }}) (in het Frans), sectie 6.3.
 

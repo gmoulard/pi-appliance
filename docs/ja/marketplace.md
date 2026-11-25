@@ -2,13 +2,13 @@
 layout: default
 lang: ja
 ref: marketplace
-traduit_le: 2026-11-24
+traduit_le: 2026-11-25
 ---
 # pi-appliance の marketplace
 
-marketplace には、pi-appliance のコンソールからインストールして管理できるアプリケーションが集まっています。カタログはまだプログラムに組み込まれています。提案したアプリケーションは、貢献が承認され、コンソールの新しいバージョンが公開されてから利用できるようになります。
+marketplace には、pi-appliance のコンソールからインストールして管理できるアプリケーションが集まっています。カタログはこのサイトで公開されています。インストール済みのコンソールは 6 時間ごとに読み直し、承認されたアプリケーションは pi-appliance の新しいバージョンなしでそこに表示されます。
 
-> **実験版です。** イメージは Raspberry Pi 3 B+ と Raspberry Pi 4 で検証済みです。各アプリケーションは、実際の Pi でひとつずつ試す必要があります。インターネットからサービスへのアクセスはまだ利用できません。
+> **実験版です。** イメージは Raspberry Pi 3 B+ と Raspberry Pi 4 で検証済みです。変更のたびに自動テストが各アプリケーションをインストールし、自宅とインターネットからそのページを開きますが、各アプリケーションは実際の Pi でも試す必要があります。サービスはインターネットからも Pi のアドレスの下で開けます（[ガイド（フランス語）]({{ '/guide-utilisateur.html#services-sur-internet' | relative_url }})を参照）。
 
 ## pi-appliance の基盤
 
@@ -40,6 +40,8 @@ marketplace には、pi-appliance のコンソールからインストールし�
 <ul id="marketplace-planned" hidden></ul>
 
 **コンソールに組み込み、カタログ外**：[Cockpit](https://cockpit-project.org/)。Pi のシステム管理（ログ、プログラム、ネットワーク、ディスク、ブラウザー上のターミナル。上級者向け）です。コンテナではなくシステムのソフトウェアで、コンソールの Marketplace が自宅でのみ管理者に提供し、別のパスワードなしで pi-appliance のアカウントで入れます（[仕様]({{ '/specification.html' | relative_url }})（フランス語）の 6.4 節を参照）。
+
+**カタログ外：自由な Docker Compose**：管理者は、カタログにないアプリケーションも、その Docker Compose ファイルから（貼り付けるか、GitHub のページなどの Web アドレスから読み込んで）インストールできます。このサービスはプロジェクトによる確認もサポートもありません（[ガイド（フランス語）]({{ '/guide-utilisateur.html#docker-compose-libre' | relative_url }})を参照）。
 
 データベース：PostgreSQL を Web インターフェース Adminer とともに利用できます。MongoDB（Pi 5 のみ）、Redis、MSSQL（Pi 用のイメージなし）、SQLite（単なるファイル）は単独では提供しません。[仕様]({{ '/specification.html' | relative_url }})（フランス語）の 6.3 節を参照してください。
 
