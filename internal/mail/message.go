@@ -104,7 +104,7 @@ var texts = map[Kind]map[string][2]string{
 // déjà mis en forme (« pi-appliance <adresse> »).
 func Compose(from string, m Message, now time.Time) ([]byte, error) {
 	text, ok := texts[m.Kind][Language(m.Lang)]
-	if m.Kind == KindAlert {
+	if m.Kind == KindAlert || m.Kind == KindService {
 		// Le texte de l'alerte peut tenir sur plusieurs lignes, jamais le sujet.
 		if m.Subject == "" || m.Body == "" || strings.ContainsAny(m.Subject, "\r\n") || strings.Contains(m.Body, "\r") || len(m.Subject) > 200 || len(m.Body) > 20000 {
 			return nil, ErrInvalid

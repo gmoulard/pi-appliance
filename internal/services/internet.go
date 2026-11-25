@@ -56,12 +56,17 @@ const (
 // pour ses deux adresses (chemin de base dans son manifeste, pathMarkers) :
 // Traefik ne retire pas le chemin (KeepsPath). Pour « build » et « base », un
 // service installé avant doit être mis à jour.
-// Un Docker Compose libre n'y est pas : rien ne dit qu'il y marcherait.
+// Un Docker Compose libre n'y est que si l'administrateur dit qu'il y marche
+// (Instance.SubPath, chemin gardé : InstanceKeepsPath).
 var pathApps = map[string]string{
 	"site-web": "relative",
 	"mkdocs":   "relative",
 	"hugo":     "build",
 	"jekyll":   "build",
+	// Adresse du site (WordPress) ou chemin de base (DokuWiki) pris dans
+	// X-Forwarded-Prefix (demande de l'utilisateur du 2026-11-25).
+	"wordpress": "build",
+	"dokuwiki":  "build",
 	// Page et appels du serveur en adresses relatives (TODO-2.69).
 	"wordpress-markdown": "relative",
 	// baseURL /<nom>/ ; à la maison, l'application renvoie / vers /<nom>/.
@@ -73,6 +78,8 @@ var pathApps = map[string]string{
 var pathMarkers = map[string]string{
 	"hugo":        "SITE_PATH",
 	"jekyll":      "SITE_PATH",
+	"wordpress":   "HTTP_X_FORWARDED_PREFIX",
+	"dokuwiki":    "HTTP_X_FORWARDED_PREFIX",
 	"filebrowser": "baseURL: /${PI_INSTANCE}/",
 }
 
@@ -81,6 +88,9 @@ var pathMarkers = map[string]string{
 func (m *Manager) InternetPath(instance Instance) string {
 	if slices.Contains(ReservedNames, instance.Name) {
 		return PathReserved
+	}
+	if instance.App == CustomApp && instance.SubPath {
+		return PathReady
 	}
 	switch pathApps[instance.App] {
 	case "relative":
@@ -99,6 +109,12 @@ func (m *Manager) InternetPath(instance Instance) string {
 // (mode « base ») : son routeur sous l'adresse internet du Pi ne le retire pas.
 func KeepsPath(app string) bool {
 	return pathApps[app] == "base"
+}
+
+// InstanceKeepsPath : comme KeepsPath, et pour un Docker Compose libre
+// déclaré capable de marcher sous /<nom>/ (SubPath, TODO-2.72).
+func InstanceKeepsPath(instance Instance) bool {
+	return KeepsPath(instance.App) || (instance.App == CustomApp && instance.SubPath)
 }
 
 // RouterMiddlewares : middlewares Traefik du routeur d'un service (page

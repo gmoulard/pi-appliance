@@ -254,6 +254,22 @@ func (s *SMTP) Forget() error {
 
 // Send compose et envoie un message par le serveur réglé.
 func (s *SMTP) Send(m Message) error {
+	return s.send("pi-appliance", m)
+}
+
+// SendService envoie l'e-mail d'un service du Pi (relais, TODO-2.74) : il part
+// de l'adresse réglée, sous le nom « <service> (pi-appliance) », avec la même
+// limite par heure que les autres e-mails du Pi.
+func (s *SMTP) SendService(service, to, subject, body string) error {
+	if !serviceNamePattern.MatchString(service) {
+		return fmt.Errorf("%w : nom du service", ErrInvalid)
+	}
+	return s.send(service+" (pi-appliance)", Message{Kind: KindService, To: to, Subject: subject, Body: body})
+}
+
+var serviceNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,62}$`)
+
+func (s *SMTP) send(sender string, m Message) error {
 	s.mu.Lock()
 	if s.settings == nil {
 		s.mu.Unlock()
@@ -278,7 +294,7 @@ func (s *SMTP) Send(m Message) error {
 	if err != nil || address.Address != m.To {
 		return fmt.Errorf("%w : adresse e-mail", ErrInvalid)
 	}
-	message, err := Compose("pi-appliance <"+settings.From+">", m, now)
+	message, err := Compose(sender+" <"+settings.From+">", m, now)
 	if err != nil {
 		return err
 	}

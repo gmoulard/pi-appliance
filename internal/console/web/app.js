@@ -216,6 +216,9 @@ async function loadServices() {
       if (service.tags_editable) {
         actions.append(tagsChooser(service));
       }
+      if (!service.no_web_page && service.app !== POSTGRES_APP) {
+        actions.append(hostingChooser(service));
+      }
       if (devices) {
         actions.append(devices.panel);
       }
@@ -660,6 +663,75 @@ function tagList(tags) {
   const list = element("ul", undefined, "app-tags");
   list.append(...tags.filter((tag) => TAG_LABELS[tag]).map((tag) => element("li", TAG_LABELS[tag])));
   return list;
+}
+
+// hostingChooser : hébergement d'une application hors catalogue, par exemple
+// le serveur de NautiLink (spécification 6.4) : publication sous le chemin
+// /<nom>/ (Docker Compose libre, TODO-2.72), relais d'e-mails (TODO-2.74),
+// base dans le PostgreSQL partagé (TODO-2.73), domaines renvoyés vers
+// l'adresse internet du service (TODO-3.18).
+const POSTGRES_APP = "postgresql";
+function hostingChooser(service) {
+  const details = element("details", undefined, "tags-chooser");
+  details.append(element("summary", t("Hébergement")));
+  const form = element("div");
+  const send = async (path, method, body, button) => {
+    if (button) {
+      button.disabled = true;
+    }
+    try {
+      await api(`services/${encodeURIComponent(service.name)}/${path}`, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      showMessage([t("{0} : réglage enregistré.", service.name)], "success");
+      await loadServices();
+    } catch (error) {
+      showMessage([error.message], "error");
+      await loadServices();
+    } finally {
+      if (button) {
+        button.disabled = false;
+      }
+    }
+  };
+  const checkbox = (label, checked, onChange) => {
+    const field = element("label", undefined, "check");
+    const box = element("input");
+    box.type = "checkbox";
+    box.checked = checked;
+    box.addEventListener("change", () => {
+      box.disabled = true;
+      onChange(box.checked);
+    });
+    field.append(box, label);
+    return field;
+  };
+  if (service.app === CUSTOM_APP) {
+    form.append(checkbox(t("Ce service marche sous le chemin /{0}/ : le publier sur internet à cette adresse, chemin gardé.", service.name), Boolean(service.sub_path),
+      (on) => send("subpath", "PUT", { sub_path: on })));
+  }
+  form.append(checkbox(t("Envoi d'e-mails : le service envoie par le relais du Pi (serveur {0}, port {1}, sans mot de passe), avec l'envoi des e-mails réglé dans la console.", "pi-appliance-mail", 2525), Boolean(service.mail),
+    (on) => send("mail", "PUT", { mail: on })));
+  if (service.database) {
+    form.append(element("p", t("Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.", service.database.name, service.database.server), "meta"));
+  } else {
+    const create = element("button", t("Créer sa base dans PostgreSQL"), "secondary");
+    create.type = "button";
+    create.addEventListener("click", () => send("database", "POST", {}, create));
+    form.append(element("p", t("Base de données : un compte et une base réservés à ce service, dans le service PostgreSQL de la marketplace, joignables par ce service seulement."), "meta"), create);
+  }
+  const hosts = element("textarea");
+  hosts.rows = 2;
+  hosts.value = (service.redirect_hosts || []).join("\n");
+  hosts.setAttribute("aria-label", t("Domaines renvoyés vers ce service"));
+  const save = element("button", t("Enregistrer les domaines"), "secondary");
+  save.type = "button";
+  save.addEventListener("click", () => send("redirects", "PUT", { hosts: hosts.value.split(/\s+/).filter(Boolean) }, save));
+  form.append(element("p", t("Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet."), "meta"), hosts, save);
+  details.append(form);
+  return details;
 }
 
 // tagsChooser : étiquettes d'un service hors catalogue (Docker Compose libre,

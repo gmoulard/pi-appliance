@@ -118,6 +118,30 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 </nav>
 <section id="piSection" data-kind="pi" hidden>
 <h2>Mon Pi</h2>
+<div id="updatesBox" class="card" data-theme="etat entretien" hidden>
+<h3>Mises à jour</h3>
+<p id="updatesState" class="state" aria-live="polite"></p>
+<div id="updatesDetails"></div>
+<div class="controls">
+<button id="updatesApply" type="button" hidden>Installer les mises à jour du système</button>
+<button id="updatesAppliance" type="button" hidden></button>
+<button id="updatesCheck" class="secondary" type="button">Chercher maintenant</button>
+</div>
+<label>Versions proposées<select id="updatesChannel">
+<option value="stable">Stables (conseillé)</option>
+<option value="beta">Bêta : nouveautés en avance, moins éprouvées</option>
+</select></label>
+</div>
+<div id="versionsBox" class="card" data-theme="entretien" hidden>
+<h3>Versions de la console</h3>
+<p id="versionsCurrent"></p>
+<details id="versionsDetails">
+<summary>Voir les versions publiées</summary>
+<p class="meta">Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.</p>
+<p id="versionsState" class="state" aria-live="polite"></p>
+<ul id="versionsList" class="backup-list"></ul>
+</details>
+</div>
 <div class="card" data-theme="etat">
 <div id="piNow" class="tiles"></div>
 <p id="piServices" class="state" hidden></p>
@@ -142,30 +166,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <button id="mobileShare" class="secondary" type="button" hidden>Partager</button>
 </div>
 <p><a href="https://app.pi-appliance.com" target="_blank" rel="noopener">Ouvrir l'application mobile</a></p>
-</div>
-<div id="updatesBox" class="card" data-theme="etat entretien" hidden>
-<h3>Mises à jour</h3>
-<p id="updatesState" class="state" aria-live="polite"></p>
-<div id="updatesDetails"></div>
-<div class="controls">
-<button id="updatesApply" type="button" hidden>Installer les mises à jour du système</button>
-<button id="updatesAppliance" type="button" hidden></button>
-<button id="updatesCheck" class="secondary" type="button">Chercher maintenant</button>
-</div>
-<label>Versions proposées<select id="updatesChannel">
-<option value="stable">Stables (conseillé)</option>
-<option value="beta">Bêta : nouveautés en avance, moins éprouvées</option>
-</select></label>
-</div>
-<div id="versionsBox" class="card" data-theme="entretien" hidden>
-<h3>Versions de la console</h3>
-<p id="versionsCurrent"></p>
-<details id="versionsDetails">
-<summary>Voir les versions publiées</summary>
-<p class="meta">Vous pouvez installer une version plus récente, ou revenir à une version précédente si la dernière vous gêne. Vos services et leurs données sont gardés.</p>
-<p id="versionsState" class="state" aria-live="polite"></p>
-<ul id="versionsList" class="backup-list"></ul>
-</details>
 </div>
 <div id="storageBox" class="card" data-theme="entretien" hidden>
 <h3>Disque USB</h3>

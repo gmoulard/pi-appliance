@@ -57,6 +57,7 @@ var pageKeys = []string{
 	"Page introuvable",
 	"Cette page n'existe pas, ou le service qui la donne est arrêté ou désinstallé.",
 	"Service indisponible",
+	"Cockpit ne s'ouvre que depuis la maison. Un administrateur peut l'ouvrir aussi depuis internet, dans la carte Cockpit de la console.",
 	"Cockpit n'est pas prêt pour l'instant. Réessayez dans une minute.",
 	"Activez d'abord dans la console la double authentification, exigée pour ce compte.",
 	"Ce service ne répond pas pour l'instant : il est peut-être en train de démarrer. Réessayez dans une minute ; s'il ne répond toujours pas, regardez son état dans la console.",
@@ -225,6 +226,12 @@ func (c *console) errorPage(w http.ResponseWriter, r *http.Request) {
 		links = append(links, pageLink{"", pageT(lang, "Réessayer")})
 	default:
 		code = http.StatusNotFound
+		// Cockpit demandé depuis internet sans y être ouvert (TODO-3.4) :
+		// replacePath (dynamic/console.yml) garde le chemin d'origine dans
+		// X-Replaced-Path. Rien d'autre du Pi n'est dit.
+		if original := r.Header.Get("X-Replaced-Path"); fromInternet(r) && (original == "/cockpit" || strings.HasPrefix(original, "/cockpit/")) {
+			title, text = "Cockpit", pageT(lang, "Cockpit ne s'ouvre que depuis la maison. Un administrateur peut l'ouvrir aussi depuis internet, dans la carte Cockpit de la console.")
+		}
 	}
 	// Adresse complète : sur l'adresse d'un service, /pi-appliance/ mène au service.
 	if !fromInternet(r) && c.Services != nil && c.Services.CurrentDomain() != "" {

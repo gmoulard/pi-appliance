@@ -57,9 +57,26 @@ services:
       # la réécrit quand le nom du Pi change, et WordPress suit sans réglage.
       # Les liens déjà écrits dans les articles gardent l'ancienne adresse.
       # HTTPS : posé par l'image d'après l'en-tête X-Forwarded-Proto de Traefik.
+      # Sous l'adresse internet du Pi (https://<adresse>/<nom>/), Traefik retire
+      # /<nom> et pose X-Forwarded-Prefix (HTTP_X_FORWARDED_PREFIX) : l'adresse
+      # du site devient https://<adresse>/<nom>, et les liens déjà écrits avec
+      # l'adresse de la maison (images, articles) sont réécrits dans la page.
       WORDPRESS_CONFIG_EXTRA: |
-        define('WP_HOME', 'https://${PI_HOST}');
-        define('WP_SITEURL', 'https://${PI_HOST}');
+        $$pi_home = 'https://${PI_HOST}';
+        $$pi_prefix = $$_SERVER['HTTP_X_FORWARDED_PREFIX'] ?? '';
+        $$pi_host = $$_SERVER['HTTP_HOST'] ?? '';
+        if (preg_match('#^/[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?/?$$#', $$pi_prefix) && preg_match('#^[A-Za-z0-9.-]+(:[0-9]+)?$$#', $$pi_host)) {
+          $$pi_url = 'https://' . strtolower($$pi_host) . rtrim($$pi_prefix, '/');
+          // Chemin demandé avec /<nom> : WordPress en tire ses renvois
+          // (connexion, administration) et le retire lui-même (WP_HOME).
+          $$_SERVER['REQUEST_URI'] = rtrim($$pi_prefix, '/') . ($$_SERVER['REQUEST_URI'] ?? '/');
+          ob_start(function ($$page) use ($$pi_home, $$pi_url) {
+            return str_replace([$$pi_home, str_replace('/', '\/', $$pi_home)], [$$pi_url, str_replace('/', '\/', $$pi_url)], $$page);
+          });
+          $$pi_home = $$pi_url;
+        }
+        define('WP_HOME', $$pi_home);
+        define('WP_SITEURL', $$pi_home);
     # Installation faite au premier démarrage, avec le compte « admin » et le
     # mot de passe tiré au hasard : sinon le premier visiteur du site
     # choisirait le compte administrateur dans l'assistant de WordPress. La

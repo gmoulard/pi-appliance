@@ -56,6 +56,9 @@ const (
 	// KindAlert : alerte aux administrateurs (spécification 8.6), dont le sujet
 	// et le texte sont écrits par le paquet alerts (Message.Subject, Message.Body).
 	KindAlert Kind = "alert"
+	// KindService : e-mail d'un service du Pi passé par le relais
+	// (internal/relay, TODO-2.74), sujet et texte écrits par le service.
+	KindService Kind = "service"
 )
 
 // Request : corps de POST /api/send.

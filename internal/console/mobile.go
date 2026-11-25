@@ -57,6 +57,10 @@ type Hello struct {
 type HelloService struct {
 	Name    string `json:"name"`
 	Address string `json:"address"`
+	// Internet : adresse du service depuis internet, s'il s'y ouvre (comme
+	// internet_address de GET api/services) ; l'application mobile la prend
+	// quand la maison ne répond pas (téléphone loin de chez soi).
+	Internet string `json:"internet,omitempty"`
 }
 
 // MobileLink : lien d'ajout du Pi à l'application et son code QR (PNG en adresse data:).
@@ -141,11 +145,12 @@ func (c *console) helloServices() []HelloService {
 		log.Printf("liste des services : %v", err)
 		return list
 	}
+	published := c.publications()
 	for _, instance := range instances {
 		if instance.NoWebPage || instance.Address == "" {
 			continue
 		}
-		list = append(list, HelloService{Name: instance.Name, Address: "https://" + strings.ToLower(instance.Address)})
+		list = append(list, HelloService{Name: instance.Name, Address: "https://" + strings.ToLower(instance.Address), Internet: published[instance.Name].Address})
 	}
 	slices.SortFunc(list, func(a, b HelloService) int { return strings.Compare(a.Name, b.Name) })
 	return list
@@ -157,7 +162,8 @@ func (c *console) hello() Hello {
 
 // NE PAS élargir : api/hello est ouverte à tous, sans connexion, et sur
 // internet (Traefik, console.yml) ; elle ne dit que le nom, la version,
-// l'empreinte de la clé publique et les adresses des services. CORS pour
+// l'empreinte de la clé publique et les adresses des services (à la maison,
+// et sur internet pour ceux qui y sont déjà ouverts). CORS pour
 // l'application mobile seulement (mobileOrigins : adresse définitive et
 // adresse provisoire de GitHub Pages), sans cookie ; une autre origine reçoit
 // l'adresse définitive, que le navigateur refuse.
