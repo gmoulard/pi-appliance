@@ -62,6 +62,10 @@ type InvitationReply struct {
 	Account auth.Public `json:"account"`
 	Link    string      `json:"link,omitempty"`
 	Sent    bool        `json:"sent"`
+	// CanMail : le Pi sait envoyer des e-mails ; MailError : pourquoi
+	// l'invitation n'est pas partie, en langage courant (lien à transmettre).
+	CanMail   bool   `json:"can_mail"`
+	MailError string `json:"mail_error,omitempty"`
 }
 
 // AccountDetails : réponse de GET api/accounts/{name} (pia user show) : le
@@ -203,11 +207,13 @@ func (c *console) invitationReply(r *http.Request, account auth.Account, token s
 	link := base + BasePath + "/#invite=" + token
 	reply := InvitationReply{Account: account.Public()}
 	if mailer := c.mailer(); mailer != nil {
+		reply.CanMail = true
 		if err := mailer.Invite(account.Public(), link, requestLanguage(r, "")); err == nil {
 			reply.Sent = true
 			return reply
 		} else {
 			log.Printf("invitation de %s : %v", account.Name, err)
+			reply.MailError = sendErrorText(err)
 		}
 	}
 	reply.Link = link

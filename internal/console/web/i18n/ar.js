@@ -901,5 +901,8 @@ piTranslations("ar", {
   "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "لا تستجيب وحدة التحكم في الوقت الحالي: محاولة جديدة خلال بضع ثوانٍ.",
   "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "يرسل الـ Pi رسائله عبر {0} باسم {1}. تم التحقق في {2}: أُرسلت رسالة الاختبار.",
   "Envoi de l'e-mail d'essai…": "جارٍ إرسال رسالة الاختبار…",
-  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "أُرسلت رسالة الاختبار إلى {0}: تم التحقق من الإعدادات وحفظها. تأكد من وصولها (وفي مجلد الرسائل غير المرغوب فيها أيضًا)."
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "أُرسلت رسالة الاختبار إلى {0}: تم التحقق من الإعدادات وحفظها. تأكد من وصولها (وفي مجلد الرسائل غير المرغوب فيها أيضًا).",
+  "Envoyer le lien par e-mail": "إرسال الرابط بالبريد الإلكتروني",
+  "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} حاول مرة أخرى، أو أرسل هذا الرابط بنفسك إلى {1}. صالح لمدة 7 أيام ولا يُستخدم إلا مرة واحدة.",
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "لكي يرسل الـ Pi الدعوات، اضبط «إرسال البريد الإلكتروني» في «الـPi الخاص بي»."
 });

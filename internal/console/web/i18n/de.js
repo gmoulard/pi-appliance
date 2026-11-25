@@ -901,5 +901,8 @@ piTranslations("de", {
   "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Die Konsole antwortet gerade nicht: neuer Versuch in einigen Sekunden.",
   "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Der Pi versendet seine E-Mails über {0}, im Namen von {1}. Geprüft am {2}: Die Test-E-Mail ist abgeschickt worden.",
   "Envoi de l'e-mail d'essai…": "Test-E-Mail wird gesendet…",
-  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Test-E-Mail an {0} gesendet: Einstellungen geprüft und gespeichert. Sehen Sie nach, ob sie angekommen ist (auch im Spam-Ordner)."
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Test-E-Mail an {0} gesendet: Einstellungen geprüft und gespeichert. Sehen Sie nach, ob sie angekommen ist (auch im Spam-Ordner).",
+  "Envoyer le lien par e-mail": "Link per E-Mail senden",
+  "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Versuchen Sie es erneut, oder geben Sie diesen Link selbst an {1} weiter. Er ist 7 Tage gültig und funktioniert nur einmal.",
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Damit der Pi Einladungen verschickt, richten Sie „E-Mail-Versand“ unter „Mein Pi“ ein."
 });

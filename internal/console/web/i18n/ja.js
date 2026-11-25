@@ -901,5 +901,8 @@ piTranslations("ja", {
   "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "コンソールが現在応答していません。数秒後に再試行します。",
   "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi は {0} を通じて {1} の名前でメールを送信します。{2} に確認済み：テストメールは送信されました。",
   "Envoi de l'e-mail d'essai…": "テストメールを送信中…",
-  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "テストメールを {0} に送信しました：設定を確認して保存しました。届いたか確認してください（迷惑メールフォルダーも）。"
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "テストメールを {0} に送信しました：設定を確認して保存しました。届いたか確認してください（迷惑メールフォルダーも）。",
+  "Envoyer le lien par e-mail": "リンクをメールで送信",
+  "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} もう一度試すか、このリンクを {1} にご自身で渡してください。有効期間は 7 日間で、一度だけ使えます。",
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi が招待を送れるように、「マイ Pi」で「メールの送信」を設定してください。"
 });

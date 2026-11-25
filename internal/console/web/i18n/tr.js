@@ -901,5 +901,8 @@ piTranslations("tr", {
   "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Konsol şu anda yanıt vermiyor: birkaç saniye içinde yeniden denenecek.",
   "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi e-postalarını {0} üzerinden, {1} adına gönderiyor. {2} tarihinde denendi: deneme e-postası gönderildi.",
   "Envoi de l'e-mail d'essai…": "Deneme e-postası gönderiliyor…",
-  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Deneme e-postası {0} adresine gönderildi: ayarlar denendi ve kaydedildi. Gelip gelmediğine bakın (istenmeyen postalara da)."
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Deneme e-postası {0} adresine gönderildi: ayarlar denendi ve kaydedildi. Gelip gelmediğine bakın (istenmeyen postalara da).",
+  "Envoyer le lien par e-mail": "Bağlantıyı e-postayla gönder",
+  "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} Yeniden deneyin ya da bu bağlantıyı {1} adresine kendiniz iletin. 7 gün geçerlidir ve yalnızca bir kez kullanılabilir.",
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "Pi'nin davetleri göndermesi için «Pi'm» içinde «E-posta gönderimi»ni ayarlayın."
 });

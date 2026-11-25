@@ -237,18 +237,31 @@ func (c *console) mailTest(w http.ResponseWriter, r *http.Request) {
 
 // writeSendError : un e-mail qui n'est pas parti, avec ce qu'il faut vérifier.
 func writeSendError(w http.ResponseWriter, err error) {
+	status := http.StatusBadGateway
+	switch {
+	case errors.Is(err, mail.ErrTooMany):
+		status = http.StatusTooManyRequests
+	case errors.Is(err, mail.ErrInvalid):
+		status = http.StatusBadRequest
+	}
+	writeError(w, status, sendErrorText(err))
+}
+
+// sendErrorText : pourquoi un e-mail n'est pas parti, en langage courant
+// (journalisé sans le contenu du message).
+func sendErrorText(err error) string {
 	var refused mail.SMTPError
 	switch {
 	case errors.As(err, &refused):
 		log.Printf("envoi d'un e-mail : %s (%v)", refused.Advice, refused.Err)
-		writeError(w, http.StatusBadGateway, "L'e-mail n'est pas parti. "+refused.Advice)
+		return "L'e-mail n'est pas parti. " + refused.Advice
 	case errors.Is(err, mail.ErrTooMany):
-		writeError(w, http.StatusTooManyRequests, "Le Pi a envoyé beaucoup d'e-mails dans l'heure : réessayez plus tard.")
+		return "Le Pi a envoyé beaucoup d'e-mails dans l'heure : réessayez plus tard."
 	case errors.Is(err, mail.ErrInvalid):
-		writeError(w, http.StatusBadRequest, "Cette adresse e-mail ne semble pas valide.")
+		return "Cette adresse e-mail ne semble pas valide."
 	default:
 		log.Printf("envoi d'un e-mail : %v", err)
-		writeError(w, http.StatusBadGateway, "L'e-mail n'est pas parti : vérifiez le réglage de l'envoi des e-mails.")
+		return "L'e-mail n'est pas parti : vérifiez le réglage de l'envoi des e-mails."
 	}
 }
 

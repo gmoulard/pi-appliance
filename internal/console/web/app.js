@@ -4996,16 +4996,39 @@ function dayText(time) {
   return new Date(time).toLocaleDateString(LOCALE, { dateStyle: "long" });
 }
 
+// showInvite : invitation envoyée par e-mail, ou lien à transmettre ; un
+// envoi qui a échoué dit pourquoi et peut être relancé (nouveau lien).
+const inviteMail = document.getElementById("inviteMail");
+let invitedAccount = null;
+
 function showInvite(reply) {
+  invitedAccount = reply.account;
   inviteBox.hidden = false;
   inviteLink.hidden = reply.sent;
   inviteCopy.hidden = reply.sent;
+  inviteMail.hidden = reply.sent || !reply.can_mail;
   inviteLink.value = reply.link || "";
-  inviteHelp.textContent = reply.sent
-    ? t("Invitation envoyée par e-mail à {0}.", reply.account.email)
-    : t("L'appliance ne sait pas encore envoyer d'e-mail : transmettez vous-même ce lien à {0}. Il est valable 7 jours et ne sert qu'une fois.", reply.account.email);
+  if (reply.sent) {
+    inviteHelp.textContent = t("Invitation envoyée par e-mail à {0}.", reply.account.email);
+  } else if (reply.can_mail) {
+    inviteHelp.textContent = t("{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.", reply.mail_error || "", reply.account.email);
+  } else {
+    inviteHelp.textContent = `${t("L'appliance ne sait pas encore envoyer d'e-mail : transmettez vous-même ce lien à {0}. Il est valable 7 jours et ne sert qu'une fois.", reply.account.email)} ${t("Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».")}`;
+  }
   inviteBox.scrollIntoView({ block: "nearest" });
 }
+
+inviteMail.addEventListener("click", async () => {
+  if (!invitedAccount) return;
+  inviteMail.disabled = true;
+  try {
+    showInvite(await api(`accounts/${encodeURIComponent(invitedAccount.name)}/invitation`, { method: "POST" }));
+  } catch (error) {
+    inviteHelp.textContent = error.message;
+  } finally {
+    inviteMail.disabled = false;
+  }
+});
 
 inviteCopy.addEventListener("click", async () => {
   try {

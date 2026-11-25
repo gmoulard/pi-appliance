@@ -901,5 +901,8 @@ piTranslations("fa", {
   "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "کنسول در حال حاضر پاسخ نمی‌دهد: تلاش دوباره تا چند ثانیه دیگر.",
   "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi ایمیل‌هایش را از راه {0} و به نام {1} می‌فرستد. بررسی‌شده در {2}: ایمیل آزمایشی فرستاده شد.",
   "Envoi de l'e-mail d'essai…": "در حال فرستادن ایمیل آزمایشی…",
-  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "ایمیل آزمایشی به {0} فرستاده شد: تنظیمات بررسی و ذخیره شد. ببینید رسیده است یا نه (پوشهٔ هرزنامه را هم نگاه کنید)."
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "ایمیل آزمایشی به {0} فرستاده شد: تنظیمات بررسی و ذخیره شد. ببینید رسیده است یا نه (پوشهٔ هرزنامه را هم نگاه کنید).",
+  "Envoyer le lien par e-mail": "فرستادن پیوند با ایمیل",
+  "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} دوباره امتحان کنید، یا خودتان این پیوند را به {1} بدهید. ۷ روز معتبر است و فقط یک بار کار می‌کند.",
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "برای اینکه Pi دعوت‌ها را بفرستد، «ارسال ایمیل» را در «Pi من» تنظیم کنید."
 });

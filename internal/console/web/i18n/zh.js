@@ -901,5 +901,8 @@ piTranslations("zh", {
   "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "控制台暂时没有响应：几秒钟后重试。",
   "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi 通过 {0} 以 {1} 的名义发送邮件。已于 {2} 验证：测试邮件已发出。",
   "Envoi de l'e-mail d'essai…": "正在发送测试邮件…",
-  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "测试邮件已发送到 {0}：设置已验证并保存。请查看是否收到（也请查看垃圾邮件）。"
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "测试邮件已发送到 {0}：设置已验证并保存。请查看是否收到（也请查看垃圾邮件）。",
+  "Envoyer le lien par e-mail": "通过邮件发送链接",
+  "{0} Réessayez, ou transmettez vous-même ce lien à {1}. Il est valable 7 jours et ne sert qu'une fois.": "{0} 请重试，或自行将此链接转给 {1}。链接有效期 7 天，只能使用一次。",
+  "Pour que le Pi envoie les invitations, réglez « Envoi des e-mails » dans « Mon Pi ».": "要让 Pi 发送邀请，请在“我的 Pi”中设置“发送邮件”。"
 });

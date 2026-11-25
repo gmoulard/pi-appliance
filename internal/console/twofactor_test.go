@@ -14,6 +14,7 @@
 package console
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -450,5 +451,30 @@ func TestMaskEmail(t *testing.T) {
 		if got := maskEmail(in); got != want {
 			t.Errorf("%q : %q", in, got)
 		}
+	}
+}
+
+// Invitation dont l'e-mail ne part pas (serveur d'envoi injoignable) : le lien
+// est rendu avec la raison, et l'administrateur peut réessayer.
+func TestInvitationMailError(t *testing.T) {
+	f := newTwoFactorFixture(t, false)
+	admin := f.admin(t)
+	listener, _ := net.Listen("tcp", "127.0.0.1:0")
+	port := listener.Addr().(*net.TCPAddr).Port
+	listener.Close()
+	if err := f.smtp.Save(mail.SMTPSettings{Host: "127.0.0.1", Port: port, Security: mail.SecurityTLS, Username: "pi@example.org", Password: "secret", From: "pi@example.org"}, "admin"); err != nil {
+		t.Fatal(err)
+	}
+	response := f.do(http.MethodPost, "/pi-appliance/api/accounts", "application/json", `{"name": "lea", "email": "lea@example.org", "role": "user"}`, admin)
+	var reply InvitationReply
+	if err := json.Unmarshal(response.Body.Bytes(), &reply); err != nil {
+		t.Fatalf("%d %s", response.Code, response.Body.String())
+	}
+	if reply.Sent || !reply.CanMail || !strings.Contains(reply.MailError, "ne répond pas") || !strings.Contains(reply.Link, "#invite=") || strings.Contains(response.Body.String(), "secret") {
+		t.Fatalf("invitation non envoyée : %+v", reply)
+	}
+	again := f.do(http.MethodPost, "/pi-appliance/api/accounts/lea/invitation", "application/json", "", admin)
+	if again.Code != http.StatusOK || !strings.Contains(again.Body.String(), `"can_mail":true`) {
+		t.Fatalf("nouvel essai : %d %s", again.Code, again.Body.String())
 	}
 }
