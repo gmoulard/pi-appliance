@@ -19,7 +19,7 @@ traduction:
   note: "译自 %DATE% 的法文版本。如有疑问，以法文原文为准：%LIEN%。"
   lien: "法文版本"
 pied:
-  licence: "自由软件，AGPL-3.0 许可证"
+  licence: "公开代码，CC BY-NC-ND 4.0 许可证"
   projet: "项目"
   version: "版本"
   pas_publiee: "尚未发布"

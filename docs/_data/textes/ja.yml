@@ -19,7 +19,7 @@ traduction:
   note: "%DATE% のフランス語版から翻訳しました。疑わしい場合はフランス語の原文が優先されます：%LIEN%。"
   lien: "フランス語版"
 pied:
-  licence: "フリーソフトウェア、AGPL-3.0 ライセンス"
+  licence: "公開コード、CC BY-NC-ND 4.0 ライセンス"
   projet: "プロジェクト"
   version: "バージョン"
   pas_publiee: "未公開"

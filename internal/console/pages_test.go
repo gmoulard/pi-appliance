@@ -1,17 +1,15 @@
 // This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
 // Copyright (c) 2026 Guillaume Moulard.
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, version 3.
+// Licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+// 4.0 International License (CC BY-NC-ND 4.0), with the additional permissions
+// of the LICENSE file at the root of the project: this file may be shared and
+// integrated into another project unmodified, keeping this notice and a link to
+// the project; modified versions may only be published to propose them to the
+// official repository. Commercial use requires a separate licence from the
+// author: guillaume@moulard.org.
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
 package console
 
@@ -57,9 +55,9 @@ func TestErrorPages(t *testing.T) {
 		want, absent           []string
 	}{
 		{"/pi-appliance/erreur/404", "192.168.1.20:5000", "", http.StatusNotFound,
-			[]string{"Page introuvable", `lang="fr"`, "pi-appliance 0.1.4", "/commit/0123456789abcdef0123456789abcdef01234567", "<code>0123456</code>", "du 22 novembre 2026", "licence AGPL-3.0", LicenseURL, `href="https://maison.example.org/pi-appliance/"`}, nil},
+			[]string{"Page introuvable", `lang="fr"`, "pi-appliance 0.1.4", "/commit/0123456789abcdef0123456789abcdef01234567", "<code>0123456</code>", "du 22 novembre 2026", "licence CC BY-NC-ND 4.0", LicenseURL, `href="https://maison.example.org/pi-appliance/"`}, nil},
 		{"/pi-appliance/erreur/502", "192.168.1.20:5000", "en-GB,en;q=0.8", http.StatusBadGateway,
-			[]string{"Service unavailable", "Try again", "of November 22, 2026", "Free software, AGPL-3.0 license", "Source code"}, nil},
+			[]string{"Service unavailable", "Try again", "of November 22, 2026", "Public code, CC BY-NC-ND 4.0 license", "Source code"}, nil},
 		{"/pi-appliance/erreur/504?lang=ar", "192.168.1.20:5000", "", http.StatusGatewayTimeout,
 			[]string{`dir="rtl"`, "الخدمة غير متاحة"}, nil},
 		// Depuis internet : la page s'ouvre, sans lien vers la console.
@@ -112,7 +110,7 @@ func TestFooterDevelopment(t *testing.T) {
 	}
 	c = &console{Config: Config{Version: "dev"}}
 	footer = c.footerHTML("de")
-	if strings.Contains(footer, "commit") || strings.Contains(footer, "Commit") || !strings.Contains(footer, "Freie Software, Lizenz AGPL-3.0") || !strings.Contains(footer, "Quellcode") {
+	if strings.Contains(footer, "commit") || strings.Contains(footer, "Commit") || !strings.Contains(footer, "Öffentlicher Code, Lizenz CC BY-NC-ND 4.0") || !strings.Contains(footer, "Quellcode") {
 		t.Fatalf("pied de page %s", footer)
 	}
 }

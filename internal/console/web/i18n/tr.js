@@ -1,17 +1,15 @@
 // This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
 // Copyright (c) 2026 Guillaume Moulard.
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, version 3.
+// Licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+// 4.0 International License (CC BY-NC-ND 4.0), with the additional permissions
+// of the LICENSE file at the root of the project: this file may be shared and
+// integrated into another project unmodified, keeping this notice and a link to
+// the project; modified versions may only be published to propose them to the
+// official repository. Commercial use requires a separate licence from the
+// author: guillaume@moulard.org.
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
 // Traduction de la console : turc. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
@@ -651,7 +649,7 @@ piTranslations("tr", {
   "Types de tuiles": "Kutucuk türleri",
   "Réseau et internet": "Ağ ve internet",
   "Rien ne correspond à ce choix : touchez une autre étiquette.": "Bu seçime uyan bir şey yok: başka bir etikete dokunun.",
-  "Logiciel libre, licence AGPL-3.0": "Özgür yazılım, AGPL-3.0 lisansı",
+  "Code public, licence CC BY-NC-ND 4.0": "Herkese açık kod, CC BY-NC-ND 4.0 lisansı",
   "Entretien": "Bakım",
   "Enregistrer les étiquettes": "Etiketleri kaydet",
   "Comptes et appareils": "Hesaplar ve cihazlar",

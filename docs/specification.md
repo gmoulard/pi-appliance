@@ -32,7 +32,16 @@ pi-appliance s'adresse au **grand public** : des personnes sans connaissances te
 
 ### 1.2 Licence
 
-pi-appliance est un logiciel libre sous licence **GNU Affero General Public License version 3** (AGPL-3.0), fichier [`LICENSE`](../LICENSE). Toute personne qui modifie pi-appliance et le met à disposition d'autres utilisateurs, y compris à travers le réseau, doit publier ses modifications sous la même licence. Les applications de la marketplace gardent leur propre licence.
+**Réalisé** (2026-11-25, choix de l'utilisateur, à partir de la branche du 2026-11-22) : le code de pi-appliance est public, mais ce n'est plus un logiciel libre. Il est sous licence **Creative Commons Attribution - Pas d'utilisation commerciale - Pas de modification 4.0** (CC BY-NC-ND 4.0), avec des permissions supplémentaires, fichier [`LICENSE`](../LICENSE) :
+
+- chacun peut utiliser pi-appliance, le copier et le diffuser tel quel, et l'intégrer sans le modifier dans un autre projet non commercial (compilé ou empaqueté compris), en gardant les en-têtes et le fichier `LICENSE` et en citant le projet avec un lien et le nom de l'auteur ;
+- les versions modifiées et les projets dérivés sont interdits ; une version modifiée ne peut être publiée que pour être proposée au dépôt officiel ; changer les réglages de son propre appareil n'est pas une modification ;
+- tout usage commercial, y compris par une entreprise, demande une licence séparée de l'auteur (guillaume@moulard.org) ;
+- tout le monde peut contribuer, selon [`CONTRIBUTING.md`](../CONTRIBUTING.md) : le contributeur garde ses droits d'auteur et accorde à l'auteur du projet le droit de diffuser sa contribution sous toute licence, commerciale comprise (accord de contribution) ;
+- le code publié jusqu'à la version 0.2.1 (commit `7e1f519`) reste sous GNU AGPL-3.0 : cette licence ne se retire pas ;
+- les applications de la marketplace et les autres composants tiers gardent leur propre licence.
+
+Pieds de page de la console, des pages d'erreur et du site : « Code public, licence CC BY-NC-ND 4.0 », dans les 12 langues. Chaque fichier de code porte l'en-tête de licence donné dans `CLAUDE.md`. L'application mobile (dépôt `pi-appliance-pwa`) garde sa propre licence, AGPL-3.0.
 
 ### 1.3 Objectif de la première version
 
@@ -214,7 +223,7 @@ Versions numérotées `x.y.z`. Deux canaux : **stable** (par défaut) et **bêta
 
 **Pied de page** (TODO-5.21, réponses de l'utilisateur du 2026-11-22 ; réalisé, à vérifier sur un vrai Pi) : chaque page HTML du projet finit par la version, le commit, sa date, la licence et le lien vers le code source.
 
-- **Console** (tous ses écrans : connexion, assistant, console de secours compris) : « pi-appliance 0.1.6 · commit 1a2b3c4 du 22 novembre 2026 · Logiciel libre, licence AGPL-3.0 · Code source », puis le choix de la langue. Commit : 7 caractères, lien vers sa page sur GitHub ; date en toutes lettres, dans la langue de la console ; « Logiciel libre, licence AGPL-3.0 » mène à `LICENSE` sur GitHub, « Code source » au dépôt. Une **version de développement** (pas de la forme `x.y.z` ni `x.y.z-suffixe` : `dev`, `2026-11-22-1a2b3c4`) n'est pas montrée, seulement le commit. Le commit (complet) et sa date (`AAAA-MM-JJ`) sont gravés dans le binaire à la construction (`-ldflags "-X main.commit=… -X main.date=…"`, workflows « Image », « Go » et « Système » ; à défaut, `vcs.revision` et `vcs.time` de `go build`) et rendus par `GET api/health` (`version`, `release`, `commit`, `date`) : aucun appel réseau.
+- **Console** (tous ses écrans : connexion, assistant, console de secours compris) : « pi-appliance 0.1.6 · commit 1a2b3c4 du 22 novembre 2026 · Code public, licence CC BY-NC-ND 4.0 · Code source », puis le choix de la langue. Commit : 7 caractères, lien vers sa page sur GitHub ; date en toutes lettres, dans la langue de la console ; « Code public, licence CC BY-NC-ND 4.0 » mène à `LICENSE` sur GitHub, « Code source » au dépôt. Une **version de développement** (pas de la forme `x.y.z` ni `x.y.z-suffixe` : `dev`, `2026-11-22-1a2b3c4`) n'est pas montrée, seulement le commit. Le commit (complet) et sa date (`AAAA-MM-JJ`) sont gravés dans le binaire à la construction (`-ldflags "-X main.commit=… -X main.date=…"`, workflows « Image », « Go » et « Système » ; à défaut, `vcs.revision` et `vcs.time` de `go build`) et rendus par `GET api/health` (`version`, `release`, `commit`, `date`) : aucun appel réseau.
 - **Pages servies par la console hors de son interface** (`internal/console/pages.go`) : pages de message (lien de partage Etherpad périmé ou d'un autre document, connexion périmée) et **pages d'erreur** derrière Traefik, avec le même pied de page, dans la langue du navigateur (`Accept-Language`, ou `?lang=`) parmi les 12 de la console, traduites dans les mêmes fichiers `web/i18n/<code>.js`. Pas la page de passage de l'application mobile (redirection immédiate), ni Cockpit (interface à part).
 - **Pages d'erreur** (`/pi-appliance/erreur/<code>`, ouvertes aussi depuis internet, rien du Pi n'y est dit) : « Page introuvable » (404) quand aucun routeur ne répond, par le routeur de dernier recours `pi-appliance-not-found` de Traefik (priorité 1, sous tous les autres ; la console passe en priorité 2, `api/hello` en 3) : service arrêté ou désinstallé, console demandée depuis internet ; « Service indisponible » (502 à 504, avec « Réessayer ») par le middleware `pi-appliance-errors@file`, posé en premier sur le routeur de chaque service (labels écrits à l'installation, et au changement d'accès : un service installé avant n'en profite qu'à sa réinstallation ou à un changement de « Qui peut l'ouvrir ») et sur Cockpit. Pas sur la console elle-même, dont les réponses 502 et 503 sont du JSON. Depuis la maison, la page propose « Ouvrir la console » (adresse complète du Pi).
 - **Site** www.pi-appliance.com (section 13) et **application mobile** (dépôt `pi-appliance-pwa` : documentation, version, commit et date de pi-appliance ; application, son commit et sa date ; licence et code source de l'application).
@@ -789,7 +798,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | Chemin | Contenu |
 |--------|---------|
 | `README.md` | Présentation du projet |
-| `LICENSE` | Texte de la licence AGPL-3.0 |
+| `LICENSE` | Licence CC BY-NC-ND 4.0 et permissions supplémentaires (1.2) |
+| `CONTRIBUTING.md` | Comment contribuer et accord de contribution (1.2) |
 | `VERSION` | Numéro de la dernière version publiée, `x.y.z` (9.2) |
 | `CHANGELOG.md` | Historique des versions (9.2) |
 | `CLAUDE.md` | Instructions pour les agents et paramètres des skills |
@@ -838,7 +848,7 @@ Les prototypes cités dans ce document (`all-pi/`, `linux-tool/`, `docker-apache
 
 ## 13. Site www.pi-appliance.com
 
-**Réalisé** : chaque page se termine par un pied de page qui donne le dépôt du projet, la dernière version (étiquette `v…`) et sa date, le commit dont le site est construit (lien vers GitHub) et la date de ce commit, en toutes lettres et à l'heure de Paris, et « Logiciel libre, licence AGPL-3.0 », lien vers `LICENSE` (TODO-5.21). GitHub Pages fournit le commit à la construction ; la page lit ensuite la version et les dates dans l'API GitHub, et garde le texte de la construction sans réseau.
+**Réalisé** : chaque page se termine par un pied de page qui donne le dépôt du projet, la dernière version (étiquette `v…`) et sa date, le commit dont le site est construit (lien vers GitHub) et la date de ce commit, en toutes lettres et à l'heure de Paris, et « Code public, licence CC BY-NC-ND 4.0 », lien vers `LICENSE` (TODO-5.21). GitHub Pages fournit le commit à la construction ; la page lit ensuite la version et les dates dans l'API GitHub, et garde le texte de la construction sans réseau.
 
 - **Présentation** : ce qu'est pi-appliance, pour qui, captures d'écran.
 - **Téléchargement** : l'image, sa somme de contrôle et le guide de flashage.

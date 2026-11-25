@@ -20,7 +20,7 @@ traduction:
   note: "%DATE% tarihli Fransızca sürümden çevrilmiştir. Şüphe durumunda Fransızca metin geçerlidir: %LIEN%."
   lien: "Fransızca sürüm"
 pied:
-  licence: "Özgür yazılım, AGPL-3.0 lisansı"
+  licence: "Herkese açık kod, CC BY-NC-ND 4.0 lisansı"
   projet: "Proje"
   version: "Sürüm"
   pas_publiee: "henüz yayımlanmadı"

@@ -85,7 +85,7 @@ Pour tout le monde : aucune connaissance technique n'est nécessaire. Tout se fa
 
 Version : [`VERSION`](VERSION), historique : [`CHANGELOG.md`](CHANGELOG.md).
 
-pi-appliance est un logiciel libre, sous licence [GNU AGPL-3.0](LICENSE).
+Le code de pi-appliance est public, sous licence [CC BY-NC-ND 4.0 avec des permissions supplémentaires](LICENSE) : chacun peut l'utiliser, le diffuser tel quel et l'intégrer sans le modifier dans un projet non commercial, en citant le projet ; les versions modifiées et les projets dérivés ne sont pas permis, sauf pour proposer une contribution ([`CONTRIBUTING.md`](CONTRIBUTING.md)) ; un usage commercial demande l'accord de l'auteur (guillaume@moulard.org). Les versions jusqu'à 0.2.1 restent sous GNU AGPL-3.0.
 
 ## Site
 

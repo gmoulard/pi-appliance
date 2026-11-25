@@ -18,23 +18,21 @@ Ne jamais versionner de secret (mot de passe Wi-Fi, clé SSH, jeton DNS, mot de 
 
 - **`code-style`** :
   - code : `cmd/`, `internal/`, `marketplace/` (Go, `gofmt`, interface web dans `internal/console/web/`) ; pièges : `grep -rn "NE PAS" .` ;
-  - en-tête de licence AGPL-3.0, avec le commentaire du langage (`#`, `//`, `/* */`, `<!-- -->`), sur les fichiers de code (`.go`, `.sh`, `.py`, `.js`, `.css`, `.html`, `Dockerfile`, workflows) :
+  - en-tête de licence CC BY-NC-ND 4.0 (`LICENSE`, permissions supplémentaires et contributions dans `CONTRIBUTING.md` ; le code jusqu'à la 0.2.1 reste aussi sous AGPL-3.0), avec le commentaire du langage (`#`, `//`, `/* */`, `<!-- -->`), sur les fichiers de code (`.go`, `.sh`, `.py`, `.js`, `.css`, `.html`, `Dockerfile`, workflows) :
 
     ```
     This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
     Copyright (c) 2026 Guillaume Moulard.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as published
-    by the Free Software Foundation, version 3.
+    Licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+    4.0 International License (CC BY-NC-ND 4.0), with the additional permissions
+    of the LICENSE file at the root of the project: this file may be shared and
+    integrated into another project unmodified, keeping this notice and a link to
+    the project; modified versions may only be published to propose them to the
+    official repository. Commercial use requires a separate licence from the
+    author: guillaume@moulard.org.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+    See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
     ```
 - **`spec-sync`** :
   - référence : `docs/specification.md`, en français, qui fait foi ; pas de traduction pour l'instant ;

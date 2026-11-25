@@ -1,17 +1,15 @@
 // This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
 // Copyright (c) 2026 Guillaume Moulard.
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU Affero General Public License as published
-// by the Free Software Foundation, version 3.
+// Licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+// 4.0 International License (CC BY-NC-ND 4.0), with the additional permissions
+// of the LICENSE file at the root of the project: this file may be shared and
+// integrated into another project unmodified, keeping this notice and a link to
+// the project; modified versions may only be published to propose them to the
+// official repository. Commercial use requires a separate licence from the
+// author: guillaume@moulard.org.
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Affero General Public License for more details.
-//
-// You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
 // Traduction de la console : néerlandais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
@@ -651,7 +649,7 @@ piTranslations("nl", {
   "Types de tuiles": "Soorten tegels",
   "Réseau et internet": "Netwerk en internet",
   "Rien ne correspond à ce choix : touchez une autre étiquette.": "Niets past bij deze keuze: tik op een ander label.",
-  "Logiciel libre, licence AGPL-3.0": "Vrije software, licentie AGPL-3.0",
+  "Code public, licence CC BY-NC-ND 4.0": "Openbare code, licentie CC BY-NC-ND 4.0",
   "Entretien": "Onderhoud",
   "Enregistrer les étiquettes": "Labels opslaan",
   "Comptes et appareils": "Accounts en apparaten",
