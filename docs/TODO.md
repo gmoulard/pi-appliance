@@ -11,6 +11,29 @@ Feuille de route de pi-appliance, dans l'ordre de construction de la section 16 
   <label><input id="todo-show-blocked" type="checkbox" checked> Bloquées</label>
 </div>
 
+## Lots
+
+Groupes d'actions cohérents, réalisés chacun par le sous-agent `todo-lot` (une action = un commit poussé ; « Réalise LOT-n avec l'agent todo-lot »). La plupart des actions en cours n'attendent plus qu'un essai sur un vrai Pi.
+
+| Lot | Titre | Actions | Dépend de | État |
+|-----|-------|---------|-----------|------|
+| LOT-1 | Décisions et accès du projet | TODO-1.45, TODO-3.5, TODO-5.10, TODO-4.4, TODO-4.7 | aucun | [!] |
+| LOT-2 | Image et premier démarrage sur un vrai Pi | TODO-2.1, TODO-2.3, TODO-2.4, TODO-2.7, TODO-2.48, TODO-2.56, TODO-2.61, TODO-5.9 | aucun | [~] |
+| LOT-3 | Assistant : réseau de la maison | TODO-2.11, TODO-2.12, TODO-2.14, TODO-2.15, TODO-2.57, TODO-2.58, TODO-2.65, TODO-2.66 | LOT-2 | [~] |
+| LOT-4 | Assistant : suite et remise à zéro | TODO-2.63, TODO-2.19, TODO-2.20, TODO-2.22, TODO-2.52 | LOT-2 | [~] |
+| LOT-5 | Tableau de bord et santé du Pi | TODO-2.23, TODO-2.24, TODO-2.26, TODO-2.53, TODO-2.54, TODO-2.55 | LOT-2 | [~] |
+| LOT-6 | Écrans de la console | TODO-5.11, TODO-5.16, TODO-5.21, TODO-5.22, TODO-5.24, TODO-5.25, TODO-5.26 | LOT-2 | [~] |
+| LOT-7 | Ligne de commande `pia` | TODO-5.17, TODO-5.18, TODO-5.19, TODO-5.20 | LOT-2 | [~] |
+| LOT-8 | Catalogue et cycle de vie des services | TODO-2.29, TODO-2.33, TODO-2.45, TODO-2.51, TODO-2.60, TODO-2.70, TODO-2.72 | LOT-2 | [~] |
+| LOT-9 | Sites web | TODO-2.39, TODO-2.43, TODO-2.46, TODO-2.67, TODO-2.69 | LOT-8 | [~] |
+| LOT-10 | Applications de la marketplace | TODO-2.44, TODO-2.47, TODO-2.49, TODO-2.50, TODO-2.62, TODO-2.64, TODO-2.68, TODO-2.75 | LOT-8 | [~] |
+| LOT-11 | Services partagés et NautiLink | TODO-2.71, TODO-2.73, TODO-2.74 | LOT-8 | [~] |
+| LOT-12 | Accès depuis internet | TODO-3.1, TODO-3.2, TODO-3.8, TODO-3.10, TODO-3.17, TODO-3.18 | LOT-2 | [~] |
+| LOT-13 | Console sur internet et comptes | TODO-3.4, TODO-3.11, TODO-3.12, TODO-3.14, TODO-3.15, TODO-3.16, TODO-4.1 | LOT-12 | [~] |
+| LOT-14 | Services du projet | TODO-3.6, TODO-3.7, TODO-3.9 | LOT-1 | [ ] |
+| LOT-15 | Sauvegardes et restauration | TODO-4.3, TODO-4.10, TODO-4.11, TODO-4.12, TODO-4.13, TODO-4.14 | LOT-2 | [~] |
+| LOT-16 | Alertes, mises à jour et applications de l'étape 3 | TODO-4.2, TODO-4.5, TODO-4.6, TODO-4.8, TODO-4.9 | LOT-2 | [~] |
+
 ## 0. Ménage du dépôt
 
 Tout est réalisé : voir [Actions réalisées](Todo-done.md).

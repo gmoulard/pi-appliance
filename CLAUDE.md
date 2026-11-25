@@ -40,6 +40,11 @@ Ne jamais versionner de secret (mot de passe Wi-Fi, clé SSH, jeton DNS, mot de 
   - référence : `docs/specification.md`, en français, qui fait foi ; pas de traduction pour l'instant ;
   - évolutions non implémentées : `docs/TODO.md`, section 15 « Questions ouvertes » et section 16 « Ordre de construction » ;
   - schéma Mermaid et choix techniques : section 10 ; arborescence : section 12 et README.
+- **`todo`** :
+  - TODO : `docs/TODO.md` ; actions réalisées : `docs/Todo-done.md` ; boîte de réception : `docs/Todo-ithem-for-todo.md` ;
+  - spécification : `docs/specification.md` ;
+  - filtres : oui (site GitHub Pages, `docs/todo-filter.js`) ;
+  - lots : tableau « Lots » en tête du TODO, réalisés par l'agent `todo-lot` (`.claude/agents/todo-lot.md`, lien vers le sous-module) ; branche de push : celle de la session, puis `master` (choix du 2026-11-23 ci-dessous).
 - **Tests** : `go vet ./... && go test ./...` ; binaire du Pi : `GOOS=linux GOARCH=arm64 go build ./cmd/pi-appliance`.
 - **`release`** :
   - fichier de version : `VERSION` à la racine, `x.y.z` sans `v` (extraction : `cat VERSION`) ; étiquette `vX.Y.Z` ;
