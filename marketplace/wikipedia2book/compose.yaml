@@ -1,0 +1,122 @@
+x-pi-appliance:
+  name: Wikipedia2Book
+  description: Faire un livre PDF prêt à imprimer à partir d'articles Wikipédia, avec couverture, table des matières et chapitres. On choisit les articles depuis le navigateur, le livre se fabrique sur le Pi. Rien n'est gardé sur le Pi ; les articles sont demandés à Wikipédia au moment de faire le livre.
+  icon: M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5zM4 21.5A2.5 2.5 0 0 0 6.5 22H20M9 7h7M9 11h5
+  category: Documents
+  tags: [documents]
+  license: AGPL-3.0
+  subdomain: livre
+  service: livre
+  port: 8000
+  memory_mb: 512
+  disk_mb: 1536
+  login: console
+  access: users
+
+services:
+  # Wikipedia2Book (https://github.com/gmoulard/wikipedia2book, AGPL-3.0),
+  # spécification 6.3. Image officielle de Python, à version mineure fixée,
+  # sans image propre au projet (la console refuse « build ») : au premier
+  # démarrage du conteneur, le script ci-dessous installe les bibliothèques
+  # du rendu PDF et les polices (depuis Debian), puis télécharge le code de
+  # Wikipedia2Book à la version fixée (W2B_COMMIT, archive GitHub) et ses
+  # dépendances Python (PyPI) dans le volume « programme ».
+  # Le serveur tourne ensuite avec le compte « nobody » (pas root).
+  livre:
+    image: python:3.12-slim
+    restart: unless-stopped
+    entrypoint: ["bash", "/run/pi-appliance/demarrage.sh"]
+    environment:
+      # Version de Wikipedia2Book : 1.16.2.
+      W2B_COMMIT: 7f1174e2bd2b6e3f88b34a0afcb10222c0bb858f
+      PYTHONDONTWRITEBYTECODE: "1"
+      PYTHONUNBUFFERED: "1"
+      PIP_NO_CACHE_DIR: "1"
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      MALLOC_ARENA_MAX: "2"
+      # Au-delà de 100 articles, la page découpe le livre en plusieurs
+      # volumes : la mémoire du Pi reste suffisante.
+      WIKIPEDIA2BOOK_ARTICLE_LIMIT: "100"
+      # Politique de Wikimédia : 2 téléchargements de PDF à la fois au plus.
+      WIKIPEDIA2BOOK_DOWNLOADS: "2"
+      # Deux livres à la fois sur le Pi, dix commencés par minute au plus.
+      WIKIPEDIA2BOOK_TOTAL_GENERATIONS: "2"
+      WIKIPEDIA2BOOK_TOTAL_PER_MINUTE: "10"
+      # Traefik, devant le service, donne l'adresse du visiteur.
+      WIKIPEDIA2BOOK_CLIENT_IP_HEADER: x-forwarded-for
+    configs:
+      - source: demarrage
+        target: /run/pi-appliance/demarrage.sh
+    volumes:
+      - programme:/programme
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20m
+
+configs:
+  demarrage:
+    content: |
+      # This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+      # Copyright (c) 2026 Guillaume Moulard.
+      #
+      # This program is free software: you can redistribute it and/or modify
+      # it under the terms of the GNU Affero General Public License as published
+      # by the Free Software Foundation, version 3.
+      #
+      # This program is distributed in the hope that it will be useful,
+      # but WITHOUT ANY WARRANTY; without even the implied warranty of
+      # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+      # GNU Affero General Public License for more details.
+      #
+      # You should have received a copy of the GNU Affero General Public License
+      # along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+      # Démarrage du conteneur de Wikipedia2Book : bibliothèques et polices,
+      # code et dépendances Python à la version fixée, puis le serveur.
+      set -u
+      paquets="libcairo2 libgdk-pixbuf-2.0-0 libharfbuzz-subset0 libpango-1.0-0 libpangoft2-1.0-0 shared-mime-info fonts-dejavu-core fonts-noto-cjk fonts-hanazono"
+      if ! dpkg -s $$paquets >/dev/null 2>&1; then
+        until apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends $$paquets; do
+          echo "Les bibliothèques ne s'installent pas (le Pi a-t-il internet ?) : nouvel essai dans 30 secondes." >&2
+          sleep 30
+        done
+        rm -rf /var/lib/apt/lists/*
+      fi
+      dossier="/programme/$$W2B_COMMIT"
+      installer() {
+        rm -rf "$$dossier" && mkdir -p "$$dossier" &&
+        python3 - "$$W2B_COMMIT" "$$dossier" <<'PYTHON' &&
+      import sys, tarfile, urllib.request
+      commit, dossier = sys.argv[1], sys.argv[2]
+      adresse = "https://codeload.github.com/gmoulard/wikipedia2book/tar.gz/" + commit
+      with urllib.request.urlopen(adresse, timeout=120) as reponse:
+          with tarfile.open(fileobj=reponse, mode="r|gz") as archive:
+              archive.extractall(dossier, filter="data")
+      PYTHON
+        mv "$$dossier"/wikipedia2book-*/ "$$dossier/source" &&
+        python3 -m venv "$$dossier/venv" &&
+        "$$dossier/venv/bin/pip" install --no-cache-dir -r "$$dossier/source/requirements.txt" &&
+        touch "$$dossier/.pret"
+      }
+      if [ ! -e "$$dossier/.pret" ]; then
+        find /programme -mindepth 1 -maxdepth 1 ! -name "$$W2B_COMMIT" -exec rm -rf {} +
+        until installer; do
+          echo "Wikipedia2Book ne s'installe pas (le Pi a-t-il internet ?) : nouvel essai dans une minute." >&2
+          sleep 60
+        done
+      fi
+      cd "$$dossier/source" || exit 1
+      export GIT_COMMIT="$$W2B_COMMIT" HOME=/tmp
+      exec setpriv --reuid=65534 --regid=65534 --clear-groups \
+        "$$dossier/venv/bin/uvicorn" app.main:app --host 0.0.0.0 --port 8000
+
+volumes:
+  # Code et dépendances de Wikipedia2Book, retéléchargés au besoin : jamais
+  # sauvegardé (étiquette lue par les sauvegardes de la console). Aucun livre
+  # n'est gardé sur le Pi.
+  programme:
+    labels:
+      pi-appliance.backup: "false"
