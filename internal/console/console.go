@@ -293,6 +293,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/redirects", c.adminOnly(c.setRedirects))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/database", c.adminOnly(c.createDatabase))
 	mux.HandleFunc("POST "+BasePath+"/api/compose", c.adminOnly(c.installCompose))
+	mux.HandleFunc("POST "+BasePath+"/api/compose/fetch", c.adminOnly(c.fetchCompose))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/wireguard", c.adminOnly(c.wireGuard))
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/wireguard/devices", c.adminOnly(c.addDevice))
 	mux.HandleFunc("DELETE "+BasePath+"/api/services/{name}/wireguard/devices/{id}", c.adminOnly(c.removeDevice))

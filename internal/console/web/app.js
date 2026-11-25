@@ -1585,6 +1585,33 @@ async function sharesPanel(service, panel, created) {
   panel.replaceChildren(...nodes);
 }
 
+// guessComposeService : premier service d'un fichier Docker Compose et le
+// port de son conteneur (« ports: - "9001:80" » donne 80), pour préremplir
+// le formulaire ; une simple lecture du texte, l'administrateur corrige.
+function guessComposeService(text) {
+  const result = {};
+  const block = /^services:[ \t]*\r?\n((?:[ \t]+.*\r?\n?|[ \t]*\r?\n)*)/m.exec(text);
+  if (!block) return result;
+  const first = /^([ \t]+)([A-Za-z0-9][\w.-]*):/m.exec(block[1]);
+  if (!first) return result;
+  result.service = first[2];
+  const indent = first[1].length;
+  const lines = block[1].slice(first.index + first[0].length).split(/\r?\n/);
+  let inPorts = false;
+  for (const line of lines) {
+    const depth = line.search(/\S/);
+    if (depth < 0 || line.trim().startsWith("#")) continue;
+    if (depth <= indent) break;
+    if (/^\s*ports:\s*$/.test(line)) { inPorts = true; continue; }
+    if (inPorts) {
+      const item = /^\s*-\s*["']?(?:[^"'\s#]*:)?(\d+)(?:\/\w+)?["']?/.exec(line);
+      if (item) { result.port = Number(item[1]); break; }
+      if (!/^\s*-/.test(line)) inPorts = false;
+    }
+  }
+  return result;
+}
+
 // Carte « Docker Compose libre », à la fin de la marketplace.
 function customComposeCard() {
   const card = element("li", undefined, "card app");
@@ -1616,6 +1643,46 @@ function customComposeCard() {
   compose.autocapitalize = "none";
   compose.defaultValue = "services:\n  whoami:\n    image: traefik/whoami:v1.10\n    restart: unless-stopped\n";
   composeLabel.append(compose);
+  // Ou lire le fichier à une adresse (GitHub ou autre) : la console le
+  // télécharge et remplit le formulaire, à relire avant d'installer.
+  const urlLabel = element("label", t("Lire le fichier à une adresse web (GitHub ou autre)"));
+  const urlRow = element("span", undefined, "field-row");
+  const url = element("input");
+  url.type = "url";
+  url.placeholder = "https://github.com/…/compose.yaml";
+  url.spellcheck = false;
+  url.autocapitalize = "none";
+  const fetchButton = element("button", t("Lire le fichier"), "button-outline");
+  fetchButton.type = "button";
+  urlRow.append(url, fetchButton);
+  urlLabel.append(urlRow);
+  fetchButton.addEventListener("click", async () => {
+    if (!url.value.trim()) {
+      url.focus();
+      return;
+    }
+    fetchButton.disabled = true;
+    try {
+      const result = await api("compose/fetch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: url.value.trim() }),
+      });
+      compose.value = result.compose;
+      const guess = guessComposeService(result.compose);
+      if (guess.service) {
+        service.value = guess.service;
+        const slug = guess.service.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^[^a-z]+|-+$/g, "").slice(0, 32);
+        if (slug) name.value = slug;
+      }
+      if (guess.port) port.value = guess.port;
+      showMessage([t("Fichier lu : {0}. Relisez-le, ainsi que le nom, le conteneur et le port, avant d'installer.", result.url)], "info");
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      fetchButton.disabled = false;
+    }
+  });
   const serviceLabel = element("label", t("Conteneur à ouvrir à l'adresse du service"));
   const service = element("input");
   service.name = "service";
@@ -1632,7 +1699,7 @@ function customComposeCard() {
   port.required = true;
   portLabel.append(port);
   const button = element("button", t("Installer"));
-  form.append(nameLabel, composeLabel, serviceLabel, portLabel, button);
+  form.append(nameLabel, urlLabel, composeLabel, serviceLabel, portLabel, button);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(form);

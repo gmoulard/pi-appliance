@@ -358,6 +358,17 @@ input {
   font-weight: 400;
 }
 
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.field-row input {
+  flex: 1 1 14rem;
+  width: auto;
+}
+
 input:focus-visible,
 button:focus-visible,
 a:focus-visible {
