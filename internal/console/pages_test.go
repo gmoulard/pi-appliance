@@ -16,6 +16,7 @@
 package console
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -169,5 +170,35 @@ func TestServiceTags(t *testing.T) {
 	}
 	if response := put("wiki", `{"tags": ["maison"]}`); response.Code != http.StatusBadRequest {
 		t.Errorf("service du catalogue : code %d", response.Code)
+	}
+}
+
+// Adresse nue (routeur pi-appliance-root) : la console, ou la page « service
+// indisponible » sur l'adresse d'un service dont le routeur manque.
+func TestRootPage(t *testing.T) {
+	f := newFixture(t)
+	catalog, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, _ := catalog.Get("site-web")
+	if _, err := f.manager.Install(context.Background(), app, "www", nil); err != nil {
+		t.Fatal(err)
+	}
+	for host, want := range map[string]int{"maison.example.org": http.StatusFound, "www.maison.example.org": http.StatusServiceUnavailable, "autre.example.org": http.StatusFound} {
+		request := httptest.NewRequest(http.MethodGet, "/pi-appliance/erreur/racine", nil)
+		request.Host = host
+		request.RemoteAddr = "192.168.1.20:5000"
+		response := httptest.NewRecorder()
+		f.handler.ServeHTTP(response, request)
+		if response.Code != want {
+			t.Errorf("%s : code %d, %d attendu", host, response.Code, want)
+		}
+		if want == http.StatusFound && response.Header().Get("Location") != "/pi-appliance/" {
+			t.Errorf("%s : renvoi vers %q", host, response.Header().Get("Location"))
+		}
+		if want == http.StatusServiceUnavailable && !strings.Contains(response.Body.String(), "Service indisponible") {
+			t.Errorf("%s : %s", host, response.Body.String())
+		}
 	}
 }

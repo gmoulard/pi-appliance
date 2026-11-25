@@ -217,6 +217,16 @@ func (c *console) sharePage(w http.ResponseWriter, r *http.Request, status int, 
 func (c *console) errorPage(w http.ResponseWriter, r *http.Request) {
 	lang := pageLanguage(r)
 	code, _ := strconv.Atoi(r.PathValue("code"))
+	// Adresse nue (routeur pi-appliance-root) : la console, sauf sur l'adresse
+	// d'un service dont le routeur manque (conteneur arrêté ou qui redémarre en
+	// boucle) : la page « service indisponible », pas la connexion de la console.
+	if r.PathValue("code") == "racine" {
+		if c.Services == nil || c.serviceOf(r.Host, "/") == "" {
+			http.Redirect(w, r, BasePath+"/", http.StatusFound)
+			return
+		}
+		code = http.StatusServiceUnavailable
+	}
 	var links []pageLink
 	title, text := pageT(lang, "Page introuvable"), pageT(lang, "Cette page n'existe pas, ou le service qui la donne est arrêté ou désinstallé.")
 	switch code {

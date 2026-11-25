@@ -66,18 +66,25 @@ func (m *Manager) ShareReady(name string) (Instance, error) {
 // EtherpadLogin : pour l'adresse host d'un Etherpad en accès « utilisateurs
 // connectés », le nom du service et l'en-tête Authorization que Traefik
 // transmet à Etherpad.
+// NE PAS déduire le nom du service de la première partie de l'adresse : à la
+// maison, elle vaut <service>-<nom du Pi> (ServiceAddress), pas <service>.
 func (m *Manager) EtherpadLogin(host string) (string, string, bool) {
 	host = strings.ToLower(strings.TrimSuffix(host, "."))
-	name, _, _ := strings.Cut(host, ".")
-	instance, err := m.instance(name)
-	if err != nil || instance.App != EtherpadApp || instance.Access != AccessUsers || !strings.EqualFold(instance.Address, host) {
+	instances, err := m.List()
+	if err != nil || host == "" {
 		return "", "", false
 	}
-	authorization, ok := m.etherpadAuthorization(name)
-	if !ok {
-		return "", "", false
+	for _, instance := range instances {
+		if instance.App != EtherpadApp || instance.Access != AccessUsers || !strings.EqualFold(instance.Address, host) {
+			continue
+		}
+		authorization, ok := m.etherpadAuthorization(instance.Name)
+		if !ok {
+			return "", "", false
+		}
+		return instance.Name, authorization, true
 	}
-	return name, authorization, true
+	return "", "", false
 }
 
 func (m *Manager) etherpadAuthorization(name string) (string, bool) {

@@ -42,6 +42,10 @@ services:
   adminer:
     image: adminer:5
     restart: unless-stopped
+    # Écoute en IPv4 : la commande de l'image écoute sur [::], qui échoue
+    # quand IPv6 est coupé (noyau sans IPv6, ipv6.disable=1) ; Adminer
+    # redémarre alors en boucle et Traefik ne trouve plus le service.
+    command: ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]
     depends_on:
       db:
         condition: service_healthy

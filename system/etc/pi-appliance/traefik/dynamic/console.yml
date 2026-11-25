@@ -63,12 +63,14 @@ http:
       priority: 3
       service: pi-appliance-console
       tls: {}
-    # Adresse nue (https://pi-appliance.local/) : vers la console.
+    # Adresse nue (https://pi-appliance.local/) : la console y renvoie vers
+    # /pi-appliance/ ; sur l'adresse d'un service sans routeur (arrêté, ou qui
+    # redémarre en boucle), elle sert sa page « service indisponible ».
     pi-appliance-root:
       entryPoints: [websecure]
       rule: "Path(`/`)"
-      middlewares: [pi-appliance-to-console]
-      service: noop@internal
+      middlewares: [pi-appliance-root]
+      service: pi-appliance-errors
       tls: {}
     # Portail captif : sur le point d'accès Wi-Fi (10.42.0.0/24), toute page
     # demandée en HTTP mène à la console. Les téléphones ouvrent alors d'eux-mêmes
@@ -93,10 +95,9 @@ http:
         status: ["502-504"]
         service: pi-appliance-errors
         query: "/pi-appliance/erreur/{status}"
-    pi-appliance-to-console:
-      redirectRegex:
-        regex: "^https://([^/]+)/?$"
-        replacement: "https://${1}/pi-appliance/"
+    pi-appliance-root:
+      replacePath:
+        path: "/pi-appliance/erreur/racine"
     pi-appliance-captive:
       redirectRegex:
         regex: ".*"

@@ -194,6 +194,8 @@ request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /pi-appliance/
 request "$NET_PUBLIC" console.test 200 "/pi-appliance/erreur/404" /pi-appliance/api/session >/dev/null
 # Adresse sans routeur : page « introuvable » ; service muet : « indisponible ».
 request "$NET10" autre.test 200 "/pi-appliance/erreur/404" /un/chemin >/dev/null
+# Adresse nue : la console choisit (renvoi vers elle, ou service indisponible).
+request "$NET10" autre.test 200 "/pi-appliance/erreur/racine" / >/dev/null
 request "$NET10" down.test 502 "/pi-appliance/erreur/502" >/dev/null
 request "$NET10" console.test 502 "" /pi-appliance/api/hello >/dev/null
 request "$NET_PUBLIC" service.test 200 "service backend" /pi-appliance/api/hello >/dev/null

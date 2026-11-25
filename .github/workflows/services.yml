@@ -1,0 +1,69 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published
+# by the Free Software Foundation, version 3.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# Services de la marketplace installés pour de vrai, comme sur le Pi
+# (system/tests/services-e2e-test.sh) : Traefik du Pi, console de ce dépôt,
+# Docker, sur un exécuteur ARM 64 bits (mêmes images que le Pi). Une tâche par
+# application ; aussi chaque lundi, les images des applications changeant
+# sans nous.
+---
+name: Services
+
+on:
+  push:
+    paths:
+      - "marketplace/**"
+      - "internal/services/**"
+      - "internal/console/**"
+      - "system/etc/pi-appliance/traefik/**"
+      - "system/tests/services-*"
+      - ".github/workflows/services.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.apps.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: apps
+        name: Applications qui ont une page web
+        run: |
+          set -eu
+          apps=$(grep -l '^  port:' marketplace/*/compose.yaml | xargs -n1 dirname | xargs -n1 basename | jq -R . | jq -cs .)
+          echo "$apps"
+          echo "apps=$apps" >>"$GITHUB_OUTPUT"
+
+  service:
+    needs: list
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.list.outputs.apps) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: Installation et pages de ${{ matrix.app }}
+        run: sudo env "PATH=$PATH" sh system/tests/services-e2e-test.sh "${{ matrix.app }}"

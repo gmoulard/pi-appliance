@@ -61,6 +61,25 @@ func padOverride(t *testing.T, m *Manager) (string, string) {
 	return middleware, service.Environment["REQUIRE_AUTHENTICATION"]
 }
 
+// Adresse de la maison <service>-<nom>.local (TODO-2.61) : le nom du service
+// n'est pas la première partie de l'adresse.
+func TestEtherpadLoginLocal(t *testing.T) {
+	m := manager(t, &fakeRunner{})
+	m.Domain = "salon.local"
+	if _, err := m.Install(context.Background(), etherpad(t), "pad", nil); err != nil {
+		t.Fatal(err)
+	}
+	name, authorization, ok := m.EtherpadLogin("pad-salon.local")
+	if !ok || name != "pad" || authorization == "" {
+		t.Fatalf("connexion d'Etherpad à pad-salon.local : %q %q %v", name, authorization, ok)
+	}
+	for _, host := range []string{"pad.salon.local", "pad-cuisine.local", "salon.local"} {
+		if _, _, ok := m.EtherpadLogin(host); ok {
+			t.Fatalf("%q reconnu comme Etherpad", host)
+		}
+	}
+}
+
 func TestEtherpadAccess(t *testing.T) {
 	m := manager(t, &fakeRunner{})
 	if _, err := m.Install(context.Background(), etherpad(t), "pad", nil); err != nil {
