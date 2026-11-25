@@ -1,0 +1,3 @@
+- ordonne les blocs par ordre alphabétique
+- dans l'affichage d'un blocs,mes le tags que le caractérise exemple : caméra affiche le tag maison
+- validé que toutes les blocs sont bien afficher. le blocs mise a jour system disparaît ! 
