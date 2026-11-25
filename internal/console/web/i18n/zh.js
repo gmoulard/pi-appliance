@@ -690,7 +690,6 @@ piTranslations("zh", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "好的。您可以随时在“我的账户”中开启。",
   "Double authentification activée : code par e-mail et application.": "两步验证已开启：邮件验证码和应用。",
   "Double authentification activée : code par e-mail.": "两步验证已开启：邮件验证码。",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "测试邮件已发送到 {0}：请确认是否收到（也请查看垃圾邮件）。",
   "Enregistrer": "保存",
   "Enregistré : laissez vide pour le garder": "已保存：留空即保持不变",
   "Envoi des e-mails": "发送邮件",
@@ -899,5 +898,8 @@ piTranslations("zh", {
   "Espace réservé (Go)": "预留空间（GB）",
   "Obtenir un code": "获取代码",
   "Fermer": "关闭",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "控制台暂时没有响应：几秒钟后重试。"
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "控制台暂时没有响应：几秒钟后重试。",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi 通过 {0} 以 {1} 的名义发送邮件。已于 {2} 验证：测试邮件已发出。",
+  "Envoi de l'e-mail d'essai…": "正在发送测试邮件…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "测试邮件已发送到 {0}：设置已验证并保存。请查看是否收到（也请查看垃圾邮件）。"
 });

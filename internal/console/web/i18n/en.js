@@ -690,7 +690,6 @@ piTranslations("en", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "All right. You can turn it on whenever you like in “My account”.",
   "Double authentification activée : code par e-mail et application.": "Two-step verification is on: code by email and app.",
   "Double authentification activée : code par e-mail.": "Two-step verification is on: code by email.",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "Test email sent to {0}: check that it arrived (look in your spam folder too).",
   "Enregistrer": "Save",
   "Enregistré : laissez vide pour le garder": "Saved: leave empty to keep it",
   "Envoi des e-mails": "Sending emails",
@@ -899,5 +898,8 @@ piTranslations("en", {
   "Espace réservé (Go)": "Reserved space (GB)",
   "Obtenir un code": "Get a code",
   "Fermer": "Close",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "The console is not responding right now: trying again in a few seconds."
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "The console is not responding right now: trying again in a few seconds.",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "The Pi sends its emails through {0}, as {1}. Checked on {2}: the test email went out.",
+  "Envoi de l'e-mail d'essai…": "Sending the test email…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Test email sent to {0}: settings checked and saved. See if it arrived (and look in the spam folder)."
 });

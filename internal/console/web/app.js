@@ -4801,13 +4801,22 @@ offerLater.addEventListener("click", async () => {
 });
 
 // Envoi des e-mails par le SMTP du Pi (spécification 10.2, TODO-3.16), pour
-// l'administrateur : le mot de passe n'est jamais renvoyé par le Pi.
+// l'administrateur : le mot de passe n'est jamais renvoyé par le Pi. Les
+// réponses s'affichent dans la carte (mailResult) : le message du haut de la
+// page est hors de vue quand on règle l'envoi.
 const mailSection = document.getElementById("mailSection");
 const mailState = document.getElementById("mailState");
 const mailForm = document.getElementById("mailForm");
 const mailTest = document.getElementById("mailTest");
 const mailForget = document.getElementById("mailForget");
+const mailResult = document.getElementById("mailResult");
 let mailStatus = null;
+
+function showMailResult(text, kind) {
+  mailResult.replaceChildren(element("p", text));
+  mailResult.className = kind;
+  mailResult.hidden = false;
+}
 
 function showMail(status) {
   mailStatus = status;
@@ -4819,11 +4828,13 @@ function showMail(status) {
   fields.password.value = "";
   fields.password.placeholder = status.password_set ? t("Enregistré : laissez vide pour le garder") : "";
   fields.from.value = status.from || "";
-  mailTest.hidden = !status.configured;
   mailForget.hidden = !status.configured;
-  const dot = element("span", undefined, `dot ${status.configured ? "ok" : ""}`);
+  const dot = element("span", undefined, `dot ${status.verified ? "ok" : ""}`);
   let text;
-  if (status.configured) {
+  if (status.configured && status.verified) {
+    text = t("Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.", status.host, status.from,
+      new Date(status.verified_at).toLocaleString(LOCALE, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }));
+  } else if (status.configured) {
     text = t("Le Pi envoie ses e-mails par {0}, au nom de {1}. Envoyez-vous un e-mail d'essai pour vérifier.", status.host, status.from);
   } else if (status.project_service) {
     text = t("Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.");
@@ -4842,6 +4853,39 @@ async function loadMail() {
   }
 }
 
+// mailChanged : les autres cartes (Mon compte, rappel de vérification,
+// alertes) suivent le réglage de l'envoi des e-mails.
+async function mailChanged() {
+  try {
+    const session = await api("session");
+    emailCodes = Boolean(session.email_codes);
+    recoveryEmail = Boolean(session.recovery_email);
+    if (session.account) {
+      currentAccount = session.account;
+      showEmailCode(session.account);
+      emailReminder.hidden = session.account.email_verified;
+      emailReminder.textContent = emailCodes
+        ? t("Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.", session.account.email)
+        : t("Votre adresse {0} sera vérifiée par un code envoyé par e-mail dès que l'appliance pourra en envoyer.", session.account.email);
+    }
+  } catch {
+    // La carte garde son état ; la prochaine ouverture de la console le reprendra.
+  }
+  loadAlerts();
+}
+
+function mailSettings() {
+  const fields = mailForm.elements;
+  return {
+    host: fields.host.value,
+    port: Number(fields.port.value) || 0,
+    security: fields.security.value,
+    username: fields.username.value,
+    password: fields.password.value,
+    from: fields.from.value,
+  };
+}
+
 mailForm.elements.host.placeholder = "smtp.gmail.com";
 mailForm.elements.port.placeholder = "587";
 mailForm.elements.security.addEventListener("change", () => {
@@ -4850,38 +4894,32 @@ mailForm.elements.security.addEventListener("change", () => {
 
 mailForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const fields = mailForm.elements;
   const button = mailForm.querySelector("button");
   button.disabled = true;
   try {
-    const status = await api("mail", jsonBody("PUT", {
-      host: fields.host.value,
-      port: Number(fields.port.value) || 0,
-      security: fields.security.value,
-      username: fields.username.value,
-      password: fields.password.value,
-      from: fields.from.value,
-    }));
-    showMail(status);
-    emailCodes = true;
-    recoveryEmail = true;
-    showEmailCode(currentAccount);
-    showMessage([t("Réglage enregistré. Envoyez-vous un e-mail d'essai pour vérifier qu'il marche.")], "success");
-    loadAlerts();
+    showMail(await api("mail", jsonBody("PUT", mailSettings())));
+    showMailResult(t("Réglage enregistré. Envoyez-vous un e-mail d'essai pour vérifier qu'il marche."), "success");
+    await mailChanged();
   } catch (error) {
-    showMessage([error.message], "error");
+    showMailResult(error.message, "error");
   } finally {
     button.disabled = false;
   }
 });
 
+// L'e-mail d'essai part avec les réglages tapés ; s'il part, le Pi les
+// enregistre et les note vérifiés (rien à enregistrer avant).
 mailTest.addEventListener("click", async () => {
+  if (!mailForm.reportValidity()) return;
   mailTest.disabled = true;
+  showMailResult(t("Envoi de l'e-mail d'essai…"), "info");
   try {
-    const reply = await api("mail/test", jsonBody("POST", { lang: LANGUAGE }));
-    showMessage([t("E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).", reply.email)], "success");
+    const reply = await api("mail/test", jsonBody("POST", { lang: LANGUAGE, settings: mailSettings() }));
+    if (reply.status) showMail(reply.status);
+    showMailResult(t("E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).", reply.email), "success");
+    await mailChanged();
   } catch (error) {
-    showMessage([error.message], "error");
+    showMailResult(error.message, "error");
   } finally {
     mailTest.disabled = false;
   }
@@ -4896,14 +4934,10 @@ mailForget.addEventListener("click", async () => {
   mailForget.disabled = true;
   try {
     showMail(await api("mail", { method: "DELETE" }));
-    const session = await api("session");
-    emailCodes = Boolean(session.email_codes);
-    recoveryEmail = Boolean(session.recovery_email);
-    showEmailCode(session.account);
-    showMessage([t("Le Pi n'envoie plus d'e-mails par ce serveur.")], "success");
-    loadAlerts();
+    showMailResult(t("Le Pi n'envoie plus d'e-mails par ce serveur."), "success");
+    await mailChanged();
   } catch (error) {
-    showMessage([error.message], "error");
+    showMailResult(error.message, "error");
   } finally {
     mailForget.disabled = false;
   }

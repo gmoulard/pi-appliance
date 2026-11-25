@@ -690,7 +690,6 @@ piTranslations("tr", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "Tamam. İstediğiniz zaman «Hesabım» bölümünden açabilirsiniz.",
   "Double authentification activée : code par e-mail et application.": "İki adımlı doğrulama açık: e-postayla kod ve uygulama.",
   "Double authentification activée : code par e-mail.": "İki adımlı doğrulama açık: e-postayla kod.",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "Deneme e-postası {0} adresine gönderildi: ulaştığını kontrol edin (istenmeyen e-postalara da bakın).",
   "Enregistrer": "Kaydet",
   "Enregistré : laissez vide pour le garder": "Kayıtlı: korumak için boş bırakın",
   "Envoi des e-mails": "E-posta gönderimi",
@@ -899,5 +898,8 @@ piTranslations("tr", {
   "Espace réservé (Go)": "Ayrılan alan (GB)",
   "Obtenir un code": "Kod al",
   "Fermer": "Kapat",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Konsol şu anda yanıt vermiyor: birkaç saniye içinde yeniden denenecek."
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Konsol şu anda yanıt vermiyor: birkaç saniye içinde yeniden denenecek.",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi e-postalarını {0} üzerinden, {1} adına gönderiyor. {2} tarihinde denendi: deneme e-postası gönderildi.",
+  "Envoi de l'e-mail d'essai…": "Deneme e-postası gönderiliyor…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Deneme e-postası {0} adresine gönderildi: ayarlar denendi ve kaydedildi. Gelip gelmediğine bakın (istenmeyen postalara da)."
 });

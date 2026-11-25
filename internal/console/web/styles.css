@@ -404,22 +404,26 @@ button:disabled {
   cursor: wait;
 }
 
-#message {
+#message,
+#mailResult {
   border-radius: 1.25rem;
   padding: 0.25rem 1rem;
   overflow-wrap: anywhere;
 }
 
-#message.info {
+#message.info,
+#mailResult.info {
   background: var(--info);
 }
 
-#message.success {
+#message.success,
+#mailResult.success {
   background: var(--success);
   color: var(--success-ink);
 }
 
-#message.error {
+#message.error,
+#mailResult.error {
   background: var(--error);
   color: var(--brand-dark);
 }

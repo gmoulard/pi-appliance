@@ -690,7 +690,6 @@ piTranslations("nl", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "Goed. U kunt het wanneer u wilt aanzetten in „Mijn account”.",
   "Double authentification activée : code par e-mail et application.": "Tweestapsverificatie staat aan: code per e-mail en app.",
   "Double authentification activée : code par e-mail.": "Tweestapsverificatie staat aan: code per e-mail.",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "Test-e-mail verstuurd naar {0}: controleer of hij is aangekomen (kijk ook bij ongewenste e-mail).",
   "Enregistrer": "Opslaan",
   "Enregistré : laissez vide pour le garder": "Opgeslagen: laat leeg om te behouden",
   "Envoi des e-mails": "E-mails versturen",
@@ -899,5 +898,8 @@ piTranslations("nl", {
   "Espace réservé (Go)": "Gereserveerde ruimte (GB)",
   "Obtenir un code": "Code krijgen",
   "Fermer": "Sluiten",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "De console reageert op dit moment niet: nieuwe poging over een paar seconden."
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "De console reageert op dit moment niet: nieuwe poging over een paar seconden.",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "De Pi verstuurt zijn e-mails via {0}, namens {1}. Gecontroleerd op {2}: de test-e-mail is verstuurd.",
+  "Envoi de l'e-mail d'essai…": "Test-e-mail wordt verstuurd…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Test-e-mail verstuurd naar {0}: instellingen gecontroleerd en opgeslagen. Kijk of hij is aangekomen (ook in de map met ongewenste e-mail)."
 });

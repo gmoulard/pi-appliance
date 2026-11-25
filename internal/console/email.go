@@ -34,7 +34,10 @@ import (
 //	GET    api/mail                 réglage sans le mot de passe (administrateur)
 //	PUT    api/mail                 {host, port, security, username, password, from}
 //	DELETE api/mail                 efface le réglage
-//	POST   api/mail/test            {to, lang} e-mail d'essai (à soi par défaut)
+//	POST   api/mail/test            {to, lang, settings} e-mail d'essai (à soi par
+//	                                défaut), avec le réglage tapé (settings) ou
+//	                                celui enregistré ; parti, le réglage est
+//	                                enregistré et noté vérifié
 //	POST   api/login/email-code     {name, password, lang} code de connexion par e-mail
 //	POST   api/account/email/send   {lang} code de vérification de son adresse
 //	POST   api/account/email/confirm {code, enable} adresse vérifiée, code par e-mail activé
@@ -51,9 +54,19 @@ type MailStatus struct {
 	ProjectService bool `json:"project_service"`
 }
 
+// MailTestRequest : POST api/mail/test ; Settings absent : le réglage enregistré.
 type MailTestRequest struct {
-	To   string `json:"to"`
-	Lang string `json:"lang"`
+	To       string             `json:"to"`
+	Lang     string             `json:"lang"`
+	Settings *mail.SMTPSettings `json:"settings"`
+}
+
+// MailTestReply : où l'e-mail d'essai est parti, et le réglage tel qu'il est
+// désormais (enregistré et vérifié).
+type MailTestReply struct {
+	Sent   bool       `json:"sent"`
+	Email  string     `json:"email"`
+	Status MailStatus `json:"status"`
 }
 
 // EmailCodeRequest : POST api/login/email-code.
@@ -169,13 +182,24 @@ func (c *console) mailForget(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, c.mailState())
 }
 
+// NE PAS renvoyer ni journaliser le mot de passe du compte e-mail.
 func (c *console) mailTest(w http.ResponseWriter, r *http.Request) {
 	var request MailTestRequest
 	if !decodeJSON(w, r, &request) {
 		return
 	}
-	if !c.SMTP.Configured() {
-		writeError(w, http.StatusConflict, "Enregistrez d'abord le réglage de l'envoi des e-mails.")
+	if c.SMTP == nil {
+		writeError(w, http.StatusNotImplemented, "L'envoi des e-mails ne se règle pas ici.")
+		return
+	}
+	// NE PAS relâcher : un réglage tapé est enregistré s'il marche, et le
+	// réglage ne change que depuis la maison (homeOnlyPaths).
+	if request.Settings != nil && fromInternet(r) {
+		writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
+		return
+	}
+	if request.Settings == nil && !c.SMTP.Configured() {
+		writeError(w, http.StatusConflict, "Entrez d'abord les réglages de votre boîte e-mail.")
 		return
 	}
 	account, _ := c.account(r)
@@ -191,11 +215,24 @@ func (c *console) mailTest(w http.ResponseWriter, r *http.Request) {
 	if name == CLIAccount {
 		name = "pia"
 	}
-	if err := c.SMTP.Test(to, name, requestLanguage(r, request.Lang)); err != nil {
+	lang := requestLanguage(r, request.Lang)
+	var err error
+	if request.Settings != nil {
+		err = c.SMTP.TestSettings(*request.Settings, to, name, lang, account.Name)
+	} else {
+		err = c.SMTP.Test(to, name, lang)
+	}
+	if err != nil {
+		var invalid mail.SettingsError
+		if errors.As(err, &invalid) {
+			writeError(w, http.StatusBadRequest, invalid.Error())
+			return
+		}
 		writeSendError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, EmailCodeReply{Sent: true, Email: to})
+	log.Printf("envoi des e-mails : e-mail d'essai parti, réglage vérifié par %s", account.Name)
+	writeJSON(w, http.StatusOK, MailTestReply{Sent: true, Email: to, Status: c.mailState()})
 }
 
 // writeSendError : un e-mail qui n'est pas parti, avec ce qu'il faut vérifier.

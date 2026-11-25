@@ -14,6 +14,8 @@
 package console
 
 import (
+	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -379,6 +381,21 @@ func TestMailSettings(t *testing.T) {
 	paul := f.acceptInvite(t, f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`))
 	if state := f.session(t, admin); state.EmailCodes || state.RecoveryEmail {
 		t.Fatalf("sans réglage : %+v", state)
+	}
+	// E-mail d'essai avec le réglage tapé : refusé, rien n'est enregistré.
+	typed := `{"settings": {"host": "smtp.free.fr", "security": "tls", "username": "jean.dupont", "password": "secret"}}`
+	if test := f.do(http.MethodPost, "/pi-appliance/api/mail/test", "application/json", typed, admin); test.Code != http.StatusBadRequest || !strings.Contains(test.Body.String(), "adresse d'expédition") || strings.Contains(test.Body.String(), "secret") || f.smtp.Configured() {
+		t.Fatalf("essai d'un réglage incomplet : %d %s", test.Code, test.Body.String())
+	}
+	listener, _ := net.Listen("tcp", "127.0.0.1:0")
+	port := listener.Addr().(*net.TCPAddr).Port
+	listener.Close()
+	typed = fmt.Sprintf(`{"settings": {"host": "127.0.0.1", "port": %d, "security": "tls", "username": "pi@example.org", "password": "secret", "from": "pi@example.org"}}`, port)
+	if test := f.do(http.MethodPost, "/pi-appliance/api/mail/test", "application/json", typed, admin); test.Code != http.StatusBadGateway || !strings.Contains(test.Body.String(), "ne répond pas") || f.smtp.Configured() {
+		t.Fatalf("essai sans serveur : %d %s", test.Code, test.Body.String())
+	}
+	if test := f.do(http.MethodPost, "/pi-appliance/api/mail/test", "application/json", typed, paul); test.Code != http.StatusForbidden {
+		t.Fatalf("essai par un utilisateur : %d", test.Code)
 	}
 	body := `{"host": "smtp.gmail.com", "port": 587, "security": "starttls", "username": "pi@gmail.com", "password": "abcd efgh ijkl mnop", "from": "pi@gmail.com"}`
 	save := f.do(http.MethodPut, "/pi-appliance/api/mail", "application/json", body, admin)

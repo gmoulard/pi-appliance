@@ -690,7 +690,6 @@ piTranslations("fa", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "باشد. هر وقت خواستید می‌توانید آن را در «حساب من» فعال کنید.",
   "Double authentification activée : code par e-mail et application.": "تأیید دومرحله‌ای فعال است: کد با ایمیل و برنامه.",
   "Double authentification activée : code par e-mail.": "تأیید دومرحله‌ای فعال است: کد با ایمیل.",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "ایمیل آزمایشی به {0} فرستاده شد: بررسی کنید که رسیده باشد (پوشهٔ هرزنامه را هم ببینید).",
   "Enregistrer": "ذخیره",
   "Enregistré : laissez vide pour le garder": "ذخیره شده: برای نگه داشتن خالی بگذارید",
   "Envoi des e-mails": "ارسال ایمیل",
@@ -899,5 +898,8 @@ piTranslations("fa", {
   "Espace réservé (Go)": "فضای رزروشده (گیگابایت)",
   "Obtenir un code": "گرفتن کد",
   "Fermer": "بستن",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "کنسول در حال حاضر پاسخ نمی‌دهد: تلاش دوباره تا چند ثانیه دیگر."
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "کنسول در حال حاضر پاسخ نمی‌دهد: تلاش دوباره تا چند ثانیه دیگر.",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi ایمیل‌هایش را از راه {0} و به نام {1} می‌فرستد. بررسی‌شده در {2}: ایمیل آزمایشی فرستاده شد.",
+  "Envoi de l'e-mail d'essai…": "در حال فرستادن ایمیل آزمایشی…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "ایمیل آزمایشی به {0} فرستاده شد: تنظیمات بررسی و ذخیره شد. ببینید رسیده است یا نه (پوشهٔ هرزنامه را هم نگاه کنید)."
 });

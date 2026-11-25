@@ -432,3 +432,52 @@ func TestSMTPSendAlert(t *testing.T) {
 		t.Fatalf("texte vide : %v", err)
 	}
 }
+
+// E-mail d'essai avec le réglage tapé dans la console : parti, il est
+// enregistré et noté vérifié ; refusé, rien n'est enregistré. Un réglage de
+// connexion changé n'est plus vérifié.
+func TestSMTPTestSettings(t *testing.T) {
+	server := newFakeSMTP(t, false)
+	s, err := OpenSMTP(filepath.Join(t.TempDir(), "smtp.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.RootCAs = server.pool
+	typed := SMTPSettings{Host: "127.0.0.1", Port: server.port(), Security: SecuritySTARTTLS, Username: server.username, Password: "faux", From: "pi@example.org"}
+	var refused SMTPError
+	if err := s.TestSettings(typed, "marie@example.org", "marie", "fr", "marie"); !errors.As(err, &refused) {
+		t.Fatalf("mauvais mot de passe : %v", err)
+	}
+	if s.Configured() {
+		t.Fatal("réglage refusé enregistré")
+	}
+	typed.Password = server.password
+	typed.From = "pas une adresse"
+	if err := s.TestSettings(typed, "marie@example.org", "marie", "fr", "marie"); !errors.Is(err, ErrInvalid) || s.Configured() {
+		t.Fatalf("adresse d'expédition invalide : %v", err)
+	}
+	typed.From = "pi@example.org"
+	if err := s.TestSettings(typed, "marie@example.org", "marie", "fr", "marie"); err != nil {
+		t.Fatal(err)
+	}
+	status := s.Status()
+	if !status.Configured || !status.Verified || status.VerifiedAt.IsZero() || status.UpdatedBy != "marie" {
+		t.Fatalf("après l'essai : %+v", status)
+	}
+	reopened, err := OpenSMTP(s.path)
+	if err != nil || !reopened.Status().Verified {
+		t.Fatalf("vérification relue : %+v, %v", reopened.Status(), err)
+	}
+	// Mot de passe vide : celui enregistré ; réglage inchangé : toujours vérifié.
+	typed.Password = ""
+	if err := s.Save(typed, "paul"); err != nil || !s.Status().Verified {
+		t.Fatalf("réglage inchangé : %+v, %v", s.Status(), err)
+	}
+	if err := s.TestSettings(typed, "marie@example.org", "marie", "fr", "jean"); err != nil || s.Status().UpdatedBy != "paul" {
+		t.Fatalf("essai d'un réglage inchangé : %+v, %v", s.Status(), err)
+	}
+	typed.From = "autre@example.org"
+	if err := s.Save(typed, "paul"); err != nil || s.Status().Verified {
+		t.Fatalf("expéditeur changé : %+v, %v", s.Status(), err)
+	}
+}

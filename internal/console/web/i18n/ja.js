@@ -690,7 +690,6 @@ piTranslations("ja", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "わかりました。「マイアカウント」でいつでも有効にできます。",
   "Double authentification activée : code par e-mail et application.": "2 段階認証は有効です：メールでのコードとアプリ。",
   "Double authentification activée : code par e-mail.": "2 段階認証は有効です：メールでのコード。",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "テストメールを {0} に送りました：届いたか確認してください（迷惑メールフォルダーも見てください）。",
   "Enregistrer": "保存",
   "Enregistré : laissez vide pour le garder": "保存済み：変えない場合は空欄のままに",
   "Envoi des e-mails": "メールの送信",
@@ -899,5 +898,8 @@ piTranslations("ja", {
   "Espace réservé (Go)": "確保する容量（GB）",
   "Obtenir un code": "コードを取得",
   "Fermer": "閉じる",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "コンソールが現在応答していません。数秒後に再試行します。"
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "コンソールが現在応答していません。数秒後に再試行します。",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Pi は {0} を通じて {1} の名前でメールを送信します。{2} に確認済み：テストメールは送信されました。",
+  "Envoi de l'e-mail d'essai…": "テストメールを送信中…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "テストメールを {0} に送信しました：設定を確認して保存しました。届いたか確認してください（迷惑メールフォルダーも）。"
 });

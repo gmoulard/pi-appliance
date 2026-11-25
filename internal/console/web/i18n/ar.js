@@ -690,7 +690,6 @@ piTranslations("ar", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "حسنًا. يمكنك تفعيله متى شئت في «حسابي».",
   "Double authentification activée : code par e-mail et application.": "التحقق بخطوتين مفعّل: رمز عبر البريد الإلكتروني وتطبيق.",
   "Double authentification activée : code par e-mail.": "التحقق بخطوتين مفعّل: رمز عبر البريد الإلكتروني.",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "أُرسلت رسالة تجريبية إلى {0}: تحقق من وصولها (وانظر أيضًا في البريد غير المرغوب فيه).",
   "Enregistrer": "حفظ",
   "Enregistré : laissez vide pour le garder": "محفوظة: اتركه فارغًا للإبقاء عليها",
   "Envoi des e-mails": "إرسال البريد الإلكتروني",
@@ -899,5 +898,8 @@ piTranslations("ar", {
   "Espace réservé (Go)": "المساحة المحجوزة (غيغابايت)",
   "Obtenir un code": "الحصول على رمز",
   "Fermer": "إغلاق",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "لا تستجيب وحدة التحكم في الوقت الحالي: محاولة جديدة خلال بضع ثوانٍ."
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "لا تستجيب وحدة التحكم في الوقت الحالي: محاولة جديدة خلال بضع ثوانٍ.",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "يرسل الـ Pi رسائله عبر {0} باسم {1}. تم التحقق في {2}: أُرسلت رسالة الاختبار.",
+  "Envoi de l'e-mail d'essai…": "جارٍ إرسال رسالة الاختبار…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "أُرسلت رسالة الاختبار إلى {0}: تم التحقق من الإعدادات وحفظها. تأكد من وصولها (وفي مجلد الرسائل غير المرغوب فيها أيضًا)."
 });

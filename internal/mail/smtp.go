@@ -77,6 +77,15 @@ type SMTPSettings struct {
 	From      string    `json:"from"`
 	UpdatedAt time.Time `json:"updated_at,omitzero"`
 	UpdatedBy string    `json:"updated_by,omitempty"`
+	// VerifiedAt : dernier e-mail d'essai parti avec ce réglage ; remis à zéro
+	// quand le serveur, l'identifiant, le mot de passe ou l'expéditeur changent.
+	VerifiedAt time.Time `json:"verified_at,omitzero"`
+}
+
+// sameServer : mêmes réglages de connexion et d'expédition.
+func (v SMTPSettings) sameServer(other SMTPSettings) bool {
+	return v.Host == other.Host && v.Port == other.Port && v.Security == other.Security &&
+		v.Username == other.Username && v.Password == other.Password && v.From == other.From
 }
 
 // SMTPStatus : le réglage tel que l'API le rend, sans le mot de passe.
@@ -90,6 +99,9 @@ type SMTPStatus struct {
 	PasswordSet bool      `json:"password_set"`
 	UpdatedAt   time.Time `json:"updated_at,omitzero"`
 	UpdatedBy   string    `json:"updated_by,omitempty"`
+	// Verified : un e-mail d'essai est parti avec ce réglage (VerifiedAt).
+	Verified   bool      `json:"verified"`
+	VerifiedAt time.Time `json:"verified_at,omitzero"`
 }
 
 // SMTPError : un envoi refusé, avec ce qu'il faut vérifier, en langage courant.
@@ -101,6 +113,15 @@ type SMTPError struct {
 
 func (e SMTPError) Error() string { return e.Advice }
 func (e SMTPError) Unwrap() error { return e.Err }
+
+// SettingsError : un réglage tapé refusé avant tout envoi (TestSettings) ;
+// Error : ce qu'il faut corriger, en langage courant.
+type SettingsError struct{ Err error }
+
+func (e SettingsError) Error() string {
+	return strings.TrimPrefix(e.Err.Error(), ErrInvalid.Error()+" : ")
+}
+func (e SettingsError) Unwrap() error { return e.Err }
 
 // SMTP : le réglage et l'envoi. Sa méthode Invite, PasswordReset et SendCode
 // en font l'expéditeur de la console (auth.Mailer et auth.CodeMailer).
@@ -159,7 +180,7 @@ func (s *SMTP) Status() SMTPStatus {
 		return SMTPStatus{Port: 587, Security: SecuritySTARTTLS}
 	}
 	v := s.settings
-	return SMTPStatus{Configured: true, Host: v.Host, Port: v.Port, Security: v.Security, Username: v.Username, From: v.From, PasswordSet: v.Password != "", UpdatedAt: v.UpdatedAt, UpdatedBy: v.UpdatedBy}
+	return SMTPStatus{Configured: true, Host: v.Host, Port: v.Port, Security: v.Security, Username: v.Username, From: v.From, PasswordSet: v.Password != "", UpdatedAt: v.UpdatedAt, UpdatedBy: v.UpdatedBy, Verified: !v.VerifiedAt.IsZero(), VerifiedAt: v.VerifiedAt}
 }
 
 // Check vérifie un réglage et le renvoie nettoyé ; current : le réglage
@@ -201,6 +222,9 @@ func (v SMTPSettings) Check(current *SMTPSettings) (SMTPSettings, error) {
 	if v.From == "" && strings.Contains(v.Username, "@") {
 		v.From = v.Username
 	}
+	if v.From == "" {
+		return SMTPSettings{}, fmt.Errorf("%w : entrez l'adresse d'expédition, votre adresse e-mail complète (par exemple jean.dupont@free.fr)", ErrInvalid)
+	}
 	address, err := mail.ParseAddress(v.From)
 	if err != nil || address.Address != v.From || address.Name != "" || len(v.From) > 254 {
 		return SMTPSettings{}, fmt.Errorf("%w : l'adresse d'expédition « %s » ne semble pas valide", ErrInvalid, v.From)
@@ -209,7 +233,8 @@ func (v SMTPSettings) Check(current *SMTPSettings) (SMTPSettings, error) {
 }
 
 // Save enregistre un nouveau réglage (droits 600). Un mot de passe vide garde
-// l'ancien, si le serveur et l'identifiant ne changent pas.
+// l'ancien, si le serveur et l'identifiant ne changent pas. Un réglage de
+// connexion inchangé reste vérifié.
 func (s *SMTP) Save(v SMTPSettings, by string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -217,7 +242,16 @@ func (s *SMTP) Save(v SMTPSettings, by string) error {
 	if err != nil {
 		return err
 	}
+	v.VerifiedAt = time.Time{}
+	if s.settings != nil && s.settings.sameServer(v) {
+		v.VerifiedAt = s.settings.VerifiedAt
+	}
 	v.UpdatedAt, v.UpdatedBy = s.now().UTC(), by
+	return s.store(v)
+}
+
+// store écrit le réglage tel quel ; appelé verrou pris.
+func (s *SMTP) store(v SMTPSettings) error {
 	data, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return err
@@ -274,6 +308,13 @@ func (s *SMTP) send(sender string, m Message) error {
 		return ErrNotConfigured
 	}
 	settings := *s.settings
+	s.mu.Unlock()
+	return s.sendWith(settings, sender, m)
+}
+
+// sendWith envoie un message avec un réglage donné, dans la limite par heure.
+func (s *SMTP) sendWith(settings SMTPSettings, sender string, m Message) error {
+	s.mu.Lock()
 	now := s.now()
 	kept := s.sent[:0]
 	for _, at := range s.sent {
@@ -299,9 +340,41 @@ func (s *SMTP) send(sender string, m Message) error {
 	return s.deliver(settings, m.To, message)
 }
 
-// Test envoie l'e-mail d'essai à to, avec le réglage enregistré.
+// Test envoie l'e-mail d'essai à to, avec le réglage enregistré ; parti, le
+// réglage est noté vérifié.
 func (s *SMTP) Test(to, name, lang string) error {
-	return s.Send(Message{Kind: KindTest, To: to, Name: name, Lang: lang})
+	s.mu.Lock()
+	if s.settings == nil {
+		s.mu.Unlock()
+		return ErrNotConfigured
+	}
+	settings := *s.settings
+	s.mu.Unlock()
+	return s.TestSettings(settings, to, name, lang, settings.UpdatedBy)
+}
+
+// TestSettings envoie l'e-mail d'essai avec le réglage v, tel qu'il est tapé
+// dans la console (mot de passe vide : celui enregistré, comme Save) ; parti,
+// v est enregistré et noté vérifié au nom de by. Refusé, rien ne change.
+func (s *SMTP) TestSettings(v SMTPSettings, to, name, lang, by string) error {
+	s.mu.Lock()
+	v, err := v.Check(s.settings)
+	s.mu.Unlock()
+	if err != nil {
+		return SettingsError{Err: err}
+	}
+	if err := s.sendWith(v, "pi-appliance", Message{Kind: KindTest, To: to, Name: name, Lang: lang}); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.now().UTC()
+	v.UpdatedAt, v.UpdatedBy = now, by
+	if s.settings != nil && s.settings.sameServer(v) {
+		v.UpdatedAt, v.UpdatedBy = s.settings.UpdatedAt, s.settings.UpdatedBy
+	}
+	v.VerifiedAt = now
+	return s.store(v)
 }
 
 // deliver : une connexion par message, chiffrée avant l'identifiant.

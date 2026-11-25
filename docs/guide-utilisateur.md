@@ -127,7 +127,7 @@ Le code et le lien ne contiennent aucun mot de passe : seulement le nom du Pi, s
 
 ## Régler l'envoi des e-mails {#envoi-des-e-mails}
 
-Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « mot de passe oublié », codes de connexion), avec une boîte e-mail que vous avez déjà. Administrateur : dans la console, carte **Envoi des e-mails**, entrez les réglages d'envoi de votre boîte, touchez **Enregistrer**, puis **Envoyer un e-mail d'essai** : il arrive à votre adresse. S'il n'arrive pas, la console dit quoi vérifier ; regardez aussi dans les courriers indésirables.
+Le Pi envoie lui-même ses e-mails (invitations des nouveaux comptes, liens « mot de passe oublié », codes de connexion), avec une boîte e-mail que vous avez déjà. Administrateur : dans la console, carte **Envoi des e-mails**, entrez les réglages d'envoi de votre boîte, puis touchez **Envoyer un e-mail d'essai** : il arrive à votre adresse, et le Pi enregistre ces réglages comme vérifiés (« Vérifié le … »). S'il ne part pas, la carte dit quoi corriger, juste sous les boutons ; regardez aussi dans les courriers indésirables. **Enregistrer** garde les réglages sans les essayer.
 
 | Boîte e-mail | Serveur d'envoi | Sécurité et port | Identifiant et mot de passe |
 | --- | --- | --- | --- |

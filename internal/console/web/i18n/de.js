@@ -690,7 +690,6 @@ piTranslations("de", {
   "D'accord. Vous pourrez l'activer quand vous voudrez dans « Mon compte ».": "In Ordnung. Sie können sie jederzeit unter „Mein Konto“ einschalten.",
   "Double authentification activée : code par e-mail et application.": "Zwei-Schritt-Bestätigung aktiv: Code per E-Mail und App.",
   "Double authentification activée : code par e-mail.": "Zwei-Schritt-Bestätigung aktiv: Code per E-Mail.",
-  "E-mail d'essai envoyé à {0} : vérifiez qu'il est arrivé (regardez aussi dans les courriers indésirables).": "Test-E-Mail an {0} gesendet: Prüfen Sie, ob sie angekommen ist (sehen Sie auch im Spam-Ordner nach).",
   "Enregistrer": "Speichern",
   "Enregistré : laissez vide pour le garder": "Gespeichert: leer lassen, um es zu behalten",
   "Envoi des e-mails": "E-Mail-Versand",
@@ -899,5 +898,8 @@ piTranslations("de", {
   "Espace réservé (Go)": "Reservierter Platz (GB)",
   "Obtenir un code": "Code erhalten",
   "Fermer": "Schließen",
-  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Die Konsole antwortet gerade nicht: neuer Versuch in einigen Sekunden."
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Die Konsole antwortet gerade nicht: neuer Versuch in einigen Sekunden.",
+  "Le Pi envoie ses e-mails par {0}, au nom de {1}. Vérifié le {2} : l'e-mail d'essai est bien parti.": "Der Pi versendet seine E-Mails über {0}, im Namen von {1}. Geprüft am {2}: Die Test-E-Mail ist abgeschickt worden.",
+  "Envoi de l'e-mail d'essai…": "Test-E-Mail wird gesendet…",
+  "E-mail d'essai envoyé à {0} : réglage vérifié et enregistré. Regardez s'il est arrivé (et dans les courriers indésirables).": "Test-E-Mail an {0} gesendet: Einstellungen geprüft und gespeichert. Sehen Sie nach, ob sie angekommen ist (auch im Spam-Ordner)."
 });
