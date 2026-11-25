@@ -89,6 +89,16 @@ type Instance struct {
 	// Tags : étiquettes choisies par l'administrateur pour un service hors
 	// catalogue (SetTags) ; un service du catalogue prend celles de son application.
 	Tags []string `json:"tags,omitempty"`
+	// SubPath : Docker Compose libre qui marche sous le chemin /<nom>/,
+	// publié sur internet avec ce chemin gardé (SetSubPath, TODO-2.72).
+	SubPath bool `json:"sub_path,omitempty"`
+	// Mail : le service envoie des e-mails par le relais du Pi (SetMail, TODO-2.74).
+	Mail bool `json:"mail,omitempty"`
+	// RedirectHosts : domaines personnels renvoyés vers l'adresse internet du
+	// service (SetRedirectHosts, TODO-3.18).
+	RedirectHosts []string `json:"redirect_hosts,omitempty"`
+	// Database : base du PostgreSQL partagé créée pour ce service (database.go, TODO-2.73).
+	Database *Database `json:"database,omitempty"`
 }
 
 type Result struct {
@@ -233,6 +243,11 @@ func (m *Manager) install(ctx context.Context, app marketplace.App, name string,
 			return Result{}, fmt.Errorf("préparation du réseau impossible : %s", trimOutput(output, err))
 		}
 	}
+	if app.ID == PostgresApp {
+		if err := m.ensureNetwork(ctx, dir, DatabaseNetwork); err != nil {
+			return Result{}, err
+		}
+	}
 	m.setStep(name, StepDownload)
 	pullErr := m.pullImages(ctx, name)
 	for _, step := range []struct {
@@ -325,6 +340,7 @@ func (m *Manager) environment(app marketplace.App, dir, name, address string, va
 		}
 		env[parameter.Name] = value
 	}
+	m.hostingEnv(name, env)
 	return env, secrets, nil
 }
 
@@ -404,10 +420,21 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 	if app.ID == CameraApp {
 		addCameras(services)
 	}
-	return map[string]any{
+	doc := map[string]any{
 		"services": services,
 		"networks": map[string]any{Network: map[string]any{"external": true}},
 	}
+	// Hébergement (hosting.go, database.go) : sur la forme JSON du fichier.
+	data, err := json.Marshal(doc)
+	if err != nil {
+		return doc
+	}
+	var generic map[string]any
+	if err := json.Unmarshal(data, &generic); err != nil {
+		return doc
+	}
+	m.hostingOverride(name, app.ID, generic)
+	return generic
 }
 
 func (m *Manager) usesLetsEncrypt() bool {
@@ -470,6 +497,17 @@ func (m *Manager) Remove(ctx context.Context, name string, keepData bool) error 
 	}
 	if _, err := os.Stat(filepath.Join(dir, stateName)); err != nil {
 		return fmt.Errorf("%w : %s", ErrNotFound, name)
+	}
+	if instance, err := m.instance(name); err == nil {
+		// PostgreSQL partagé (database.go) : ses clients d'abord.
+		if clients := m.databaseClients(name); instance.App == PostgresApp && len(clients) > 0 {
+			return fmt.Errorf("%w : la base de %s sert aux services %s ; désinstallez-les d'abord", ErrInvalid, name, strings.Join(clients, ", "))
+		}
+		if !keepData {
+			if err := m.dropDatabase(ctx, instance); err != nil {
+				return fmt.Errorf("la base de %s n'a pas pu être effacée : %v", name, err)
+			}
+		}
 	}
 	args := []string{"down"}
 	if !keepData {

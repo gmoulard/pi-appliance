@@ -52,6 +52,10 @@ type servicePublication struct {
 	Access  string
 	Address string
 	Reason  string
+	// KeepPath : l'application attend /<nom>/ dans l'adresse (services.InstanceKeepsPath).
+	KeepPath bool
+	// RedirectHosts : domaines renvoyés vers Address (TODO-3.18).
+	RedirectHosts []string
 }
 
 // publications : pour chaque service installé avec une page web, son
@@ -71,7 +75,7 @@ func (c *console) publications() map[string]servicePublication {
 		if instance.NoWebPage {
 			continue
 		}
-		publication := servicePublication{App: instance.App, Access: instance.Access}
+		publication := servicePublication{App: instance.App, Access: instance.Access, KeepPath: services.InstanceKeepsPath(instance), RedirectHosts: instance.RedirectHosts}
 		switch {
 		case instance.Access != services.AccessPublic && instance.Access != services.AccessUsers:
 			publication.Reason = reasonHome
@@ -124,7 +128,7 @@ func traefikServices(hosts []string, published map[string]servicePublication) st
 		id := "pi-" + name + "-internet"
 		chain := []string{id + "-slash@file"}
 		chain = append(chain, services.RouterMiddlewares(publication.App, publication.Access)...)
-		strip := !services.KeepsPath(publication.App)
+		strip := !publication.KeepPath
 		if strip {
 			chain = append(chain, id+"-strip@file")
 		}
@@ -141,6 +145,7 @@ func traefikServices(hosts []string, published map[string]servicePublication) st
 		if strip {
 			fmt.Fprintf(&middlewares, "    %s-strip:\n      stripPrefix:\n        prefixes: [\"/%s\"]\n", id, name)
 		}
+		writeRedirect(&routers, &middlewares, name, publication)
 	}
 	var b strings.Builder
 	b.WriteString("# Écrit par la console pi-appliance (services sur internet, spécification 8.2).\n")
@@ -171,4 +176,46 @@ func (c *console) forwardTarget(host, uri string) (key, cookiePath string, servi
 	}
 	protected = publication.Access == services.AccessUsers || publication.Access == services.AccessAdmins
 	return host + "/" + first, "/" + first, true, protected
+}
+
+// writeRedirect : domaines personnels d'un service publié (TODO-3.18), renvoyés
+// pour de bon (301) vers son adresse internet, chemin de la demande gardé :
+// https://nautilink.exemple.org/x → https://<adresse du Pi>/nautilink/x.
+// Traefik obtient leur certificat (Let's Encrypt, défi HTTP) quand leur DNS
+// mène au Pi ; le port 80 renvoie déjà vers HTTPS (traefik.yml).
+func writeRedirect(routers, middlewares *strings.Builder, name string, publication servicePublication) {
+	var hosts []string
+	for _, host := range publication.RedirectHosts {
+		if validRedirectHost(host) {
+			hosts = append(hosts, "Host(`"+host+"`)")
+		}
+	}
+	if len(hosts) == 0 {
+		return
+	}
+	id := "pi-" + name + "-redirect"
+	fmt.Fprintf(routers, "    %s:\n", id)
+	routers.WriteString("      entryPoints: [websecure]\n")
+	fmt.Fprintf(routers, "      rule: \"%s\"\n", strings.Join(hosts, " || "))
+	routers.WriteString("      priority: 20\n")
+	fmt.Fprintf(routers, "      middlewares: [%s@file]\n", id)
+	routers.WriteString("      service: noop@internal\n")
+	routers.WriteString("      tls:\n        certResolver: letsencrypt\n")
+	fmt.Fprintf(middlewares, "    %s:\n      redirectRegex:\n", id)
+	middlewares.WriteString("        regex: '^https?://[^/]+/?(.*)$'\n")
+	fmt.Fprintf(middlewares, "        replacement: '%s${1}'\n", publication.Address)
+	middlewares.WriteString("        permanent: true\n")
+}
+
+// validRedirectHost : nom de domaine sûr à écrire dans une règle Traefik.
+func validRedirectHost(host string) bool {
+	if host == "" || len(host) > 253 {
+		return false
+	}
+	for _, label := range strings.Split(host, ".") {
+		if !marketplace.ValidLabel(label) {
+			return false
+		}
+	}
+	return strings.Contains(host, ".")
 }
