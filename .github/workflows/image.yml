@@ -99,6 +99,15 @@ jobs:
           # proposée seulement sur le canal bêta (spécification 5.4).
           prerelease=
           case "${GITHUB_REF_NAME}" in *-*) prerelease=--prerelease ;; esac
+          # « Dernière version » (releases/latest, canal stable des consoles) :
+          # seulement l'étiquette stable la plus haute. Une version plus
+          # ancienne publiée après (deux constructions en parallèle) ne la
+          # reprend pas ; workflow « Dernière version » pour la remettre.
+          highest=$(git ls-remote --tags --refs origin 'refs/tags/v*' | sed 's|.*refs/tags/||' | grep -v -- - | sort -V | tail -1)
+          latest=--latest
+          if [ -n "$prerelease" ] || [ "${GITHUB_REF_NAME}" != "$highest" ]; then
+            latest=--latest=false
+          fi
           # Résumé de la version d'après sa ligne du CHANGELOG, en premier
           # paragraphe des notes : la console le montre dans la liste des
           # versions (Mon Pi, Versions de la console, TODO-5.26).
@@ -110,7 +119,7 @@ jobs:
           fi
           if [ "$WITH_IMAGE" = true ]; then
             # shellcheck disable=SC2086
-            gh release create "${GITHUB_REF_NAME}" $prerelease deploy/*.img.xz deploy/*.img.xz.sha256 \
+            gh release create "${GITHUB_REF_NAME}" $prerelease $latest deploy/*.img.xz deploy/*.img.xz.sha256 \
               deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
               --title "pi-appliance ${GITHUB_REF_NAME}" \
               --notes "${summary}Image à flasher sur une carte SD (Raspberry Pi 5, 4, 3 B+, Zero 2 W).
@@ -126,7 +135,7 @@ jobs:
               "Pour flasher une carte SD, prenez l'image de la version ${last:-précédente}" \
               "(https://github.com/${GITHUB_REPOSITORY}/releases/tag/${last}), puis mettez le Pi à jour depuis la console.")
             # shellcheck disable=SC2086
-            gh release create "${GITHUB_REF_NAME}" $prerelease \
+            gh release create "${GITHUB_REF_NAME}" $prerelease $latest \
               deploy/*-arm64.tar.gz deploy/*-arm64.tar.gz.sha256 \
               --title "pi-appliance ${GITHUB_REF_NAME}" \
               --notes "${summary}${notes}"

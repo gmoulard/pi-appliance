@@ -1,0 +1,43 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# Licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+# 4.0 International License (CC BY-NC-ND 4.0), with the additional permissions
+# of the LICENSE file at the root of the project: this file may be shared and
+# integrated into another project unmodified, keeping this notice and a link to
+# the project; modified versions may only be published to propose them to the
+# official repository. Commercial use requires a separate licence from the
+# author: guillaume@moulard.org.
+#
+# See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
+
+# « Dernière version » : remet le titre de dernière version GitHub
+# (releases/latest, proposée aux consoles du canal stable) sur la version
+# stable la plus haute publiée, par exemple après une version plus ancienne
+# publiée plus tard (deux constructions en parallèle).
+---
+name: Dernière version
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Version stable la plus haute
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          tag=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 100 --exclude-drafts --exclude-pre-releases \
+            --json tagName --jq '.[].tagName' | sort -V | tail -1)
+          if [ -z "$tag" ]; then
+            echo "::error::aucune version publiée"
+            exit 1
+          fi
+          gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --latest
+          echo "Dernière version : $tag." >>"$GITHUB_STEP_SUMMARY"
