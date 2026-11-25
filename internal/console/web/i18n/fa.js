@@ -900,5 +900,6 @@ piTranslations("fa", {
   "Nom du proche": "نام نزدیک",
   "Espace réservé (Go)": "فضای رزروشده (گیگابایت)",
   "Obtenir un code": "گرفتن کد",
-  "Fermer": "بستن"
+  "Fermer": "بستن",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "کنسول در حال حاضر پاسخ نمی‌دهد: تلاش دوباره تا چند ثانیه دیگر."
 });

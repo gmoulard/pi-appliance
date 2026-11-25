@@ -900,5 +900,6 @@ piTranslations("tr", {
   "Nom du proche": "Yakının adı",
   "Espace réservé (Go)": "Ayrılan alan (GB)",
   "Obtenir un code": "Kod al",
-  "Fermer": "Kapat"
+  "Fermer": "Kapat",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Konsol şu anda yanıt vermiyor: birkaç saniye içinde yeniden denenecek."
 });

@@ -900,5 +900,6 @@ piTranslations("ja", {
   "Nom du proche": "知人の名前",
   "Espace réservé (Go)": "確保する容量（GB）",
   "Obtenir un code": "コードを取得",
-  "Fermer": "閉じる"
+  "Fermer": "閉じる",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "コンソールが現在応答していません。数秒後に再試行します。"
 });

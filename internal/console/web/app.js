@@ -350,7 +350,10 @@ function gauges(memoryMB, diskMB) {
 }
 
 async function loadResources() {
-  resources = await api("system").catch(() => ({ memory: null, disk: null, usb_disk: null }));
+  const fresh = await api("system").catch(() => null);
+  // NE PAS cacher « Mon Pi » quand la console ne répond pas un moment : la relecture de chaque minute ne la remontrerait plus (TODO-5.29).
+  if (!fresh && !piSection.hidden) return;
+  resources = fresh || { memory: null, disk: null, usb_disk: null };
   showHeroLoad();
   const list = gauges(0, 0);
   piGauges.replaceChildren(...list);
@@ -642,7 +645,7 @@ for (const button of periodButtons) {
 function startDashboard() {
   clearInterval(dashboardTimer);
   dashboardTimer = setInterval(() => {
-    if (!piSection.hidden) {
+    if (wizardStep === null) {
       loadResources().catch(() => null);
     }
   }, 60000);
@@ -2811,10 +2814,17 @@ function showUpdates() {
 async function loadUpdates() {
   try {
     updatesStatus = await api("updates");
-  } catch {
-    updatesBox.hidden = true;
-    versionsBox.hidden = true;
-    return true;
+  } catch (error) {
+    if ([401, 403, 404].includes(error.status)) {
+      updatesBox.hidden = true;
+      versionsBox.hidden = true;
+      return true;
+    }
+    // NE PAS cacher la carte sur une autre erreur : Docker et Traefik redémarrent pendant les correctifs du système (TODO-5.29).
+    updatesBox.hidden = false;
+    updatesState.replaceChildren(element("span", undefined, "dot orange"), element("span", t("La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.")));
+    watchUpdates();
+    return false;
   }
   updatesBox.hidden = false;
   showUpdates();

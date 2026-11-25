@@ -900,5 +900,6 @@ piTranslations("nl", {
   "Nom du proche": "Naam van de naaste",
   "Espace réservé (Go)": "Gereserveerde ruimte (GB)",
   "Obtenir un code": "Code krijgen",
-  "Fermer": "Sluiten"
+  "Fermer": "Sluiten",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "De console reageert op dit moment niet: nieuwe poging over een paar seconden."
 });

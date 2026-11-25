@@ -900,5 +900,6 @@ piTranslations("ar", {
   "Nom du proche": "اسم القريب",
   "Espace réservé (Go)": "المساحة المحجوزة (غيغابايت)",
   "Obtenir un code": "الحصول على رمز",
-  "Fermer": "إغلاق"
+  "Fermer": "إغلاق",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "لا تستجيب وحدة التحكم في الوقت الحالي: محاولة جديدة خلال بضع ثوانٍ."
 });

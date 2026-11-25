@@ -900,5 +900,6 @@ piTranslations("en", {
   "Nom du proche": "Friend's name",
   "Espace réservé (Go)": "Reserved space (GB)",
   "Obtenir un code": "Get a code",
-  "Fermer": "Close"
+  "Fermer": "Close",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "The console is not responding right now: trying again in a few seconds."
 });

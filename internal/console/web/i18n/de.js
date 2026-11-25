@@ -900,5 +900,6 @@ piTranslations("de", {
   "Nom du proche": "Name des Bekannten",
   "Espace réservé (Go)": "Reservierter Platz (GB)",
   "Obtenir un code": "Code erhalten",
-  "Fermer": "Schließen"
+  "Fermer": "Schließen",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "Die Konsole antwortet gerade nicht: neuer Versuch in einigen Sekunden."
 });

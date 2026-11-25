@@ -900,5 +900,6 @@ piTranslations("zh", {
   "Nom du proche": "亲友的名字",
   "Espace réservé (Go)": "预留空间（GB）",
   "Obtenir un code": "获取代码",
-  "Fermer": "关闭"
+  "Fermer": "关闭",
+  "La console ne répond pas pour l'instant : nouvel essai dans quelques secondes.": "控制台暂时没有响应：几秒钟后重试。"
 });
