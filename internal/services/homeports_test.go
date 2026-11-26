@@ -16,6 +16,7 @@ package services
 import (
 	"context"
 	"errors"
+	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -99,6 +100,54 @@ func TestHomeRangesMatchTraefik(t *testing.T) {
 	ours := append(append([]string{}, homeRanges4...), homeRanges6...)
 	if strings.Join(traefik, " ") != strings.Join(ours, " ") {
 		t.Fatalf("plages de Traefik %v, du pare-feu %v", traefik, ours)
+	}
+}
+
+// Console fermée sur internet (spécification 8.3, TODO-3.11) : le routeur
+// pi-appliance-console n'accepte que les plages de la maison, les mêmes que
+// pi-appliance-home@file et le pare-feu ; une adresse d'internet n'y est pas.
+func TestConsoleRangesMatchHome(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("..", "..", "system", "etc", "pi-appliance", "traefik", "dynamic", "console.yml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	block := regexp.MustCompile(`(?s)pi-appliance-console:\s*entryPoints:[^\n]*\n\s*rule: >-(.*?)\n\s*priority:`).FindSubmatch(data)
+	if block == nil {
+		t.Fatal("routeur pi-appliance-console absent de console.yml")
+	}
+	if !strings.Contains(string(block[1]), "PathPrefix(`/pi-appliance`) &&") {
+		t.Fatalf("règle de la console sans le chemin /pi-appliance : %s", block[1])
+	}
+	var ranges []string
+	for _, match := range regexp.MustCompile("ClientIP\\(`([^`]+)`\\)").FindAllSubmatch(block[1], -1) {
+		ranges = append(ranges, string(match[1]))
+	}
+	ours := append(append([]string{}, homeRanges4...), homeRanges6...)
+	if strings.Join(ranges, " ") != strings.Join(ours, " ") {
+		t.Fatalf("plages de la console %v, de la maison %v", ranges, ours)
+	}
+	inside := func(address string) bool {
+		ip := netip.MustParseAddr(address)
+		for _, r := range ranges {
+			if netip.MustParsePrefix(r).Contains(ip) {
+				return true
+			}
+		}
+		return false
+	}
+	// Refusées : adresses d'internet (IPv4, IPv6 globale), adresses partagées
+	// de l'opérateur (CGNAT), lien local IPv4.
+	for _, address := range []string{"203.0.113.7", "8.8.8.8", "100.64.0.1", "169.254.1.1", "2001:db8::1", "2a01:cb00::1"} {
+		if inside(address) {
+			t.Errorf("%s acceptée par la console", address)
+		}
+	}
+	// Acceptées : la maison, la boucle locale, Docker (les appareils du VPN,
+	// masqués derrière le conteneur WireGuard) et le réseau du VPN lui-même.
+	for _, address := range []string{"192.168.1.20", "10.0.0.5", "172.17.0.2", "127.0.0.1", "::1", "fd00::5", "fe80::1", wireGuardNetwork.Addr().Next().Next().String()} {
+		if !inside(address) {
+			t.Errorf("%s refusée par la console", address)
+		}
 	}
 }
 
