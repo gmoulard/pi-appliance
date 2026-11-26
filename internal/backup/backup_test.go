@@ -634,3 +634,20 @@ func TestApplianceBackupsNoDisk(t *testing.T) {
 		t.Fatalf("sans disque : %v", err)
 	}
 }
+
+func TestHostingOpensPeerRoute(t *testing.T) {
+	p := newPeerFixture(t)
+	if p.host.Hosting() {
+		t.Fatal("accueil sans code ni proche")
+	}
+	if _, _, err := p.host.HostingCode("Paul", 1024); err != nil {
+		t.Fatal(err)
+	}
+	if !p.host.Hosting() {
+		t.Fatal("code de jumelage en cours : API des proches fermée")
+	}
+	p.host.now = p.host.now.Add(2 * time.Hour)
+	if p.host.Hosting() {
+		t.Fatal("code périmé : API des proches encore ouverte")
+	}
+}
