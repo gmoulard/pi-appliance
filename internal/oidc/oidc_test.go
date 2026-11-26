@@ -62,7 +62,8 @@ func newFixture(t *testing.T) *fixture {
 		t.Fatal(err)
 	}
 	clients := &Clients{Path: filepath.Join(dir, "oidc-clients.json")}
-	f := &fixture{now: time.Date(2026, 11, 24, 10, 0, 0, 0, time.UTC)}
+	// La bibliothèque date les jetons d'identité à l'heure réelle.
+	f := &fixture{now: time.Now().UTC().Truncate(time.Second)}
 	f.client, f.secret, err = clients.Register("wiki", []string{redirect}, f.now)
 	if err != nil {
 		t.Fatal(err)
@@ -187,8 +188,11 @@ func TestFlow(t *testing.T) {
 	}
 	json.Unmarshal(response.Body.Bytes(), &tokens)
 	claims := verifyJWT(t, f, tokens.ID)
-	if claims["iss"] != "https://maison.local/pi-appliance/oidc" || claims["aud"] != f.client.ID || claims["nonce"] != "n-1" || claims["email"] != "marie@example.org" ||
-		claims["preferred_username"] != "marie" || claims["sub"] != Subject(f.accounts["marie"]) || claims["exp"].(float64) != float64(f.now.Add(time.Hour).Unix()) {
+	aud, _ := claims["aud"].([]any)
+	exp, _ := claims["exp"].(float64)
+	if claims["iss"] != "https://maison.local/pi-appliance/oidc" || len(aud) != 1 || aud[0] != f.client.ID || claims["azp"] != f.client.ID || claims["nonce"] != "n-1" ||
+		claims["email"] != "marie@example.org" || claims["preferred_username"] != "marie" || claims["sub"] != Subject(f.accounts["marie"]) ||
+		time.Unix(int64(exp), 0).Sub(time.Now().Add(time.Hour)).Abs() > time.Minute || claims["at_hash"] == nil {
 		t.Fatalf("revendications : %v", claims)
 	}
 	// Le code ne sert qu'une fois.
@@ -302,5 +306,147 @@ func TestClientsAndKey(t *testing.T) {
 	}
 	if info, _ := os.Stat(filepath.Join(dir, "key.pem")); info.Mode().Perm() != 0o600 {
 		t.Fatalf("droits de la clé : %v", info.Mode())
+	}
+}
+
+// tokenForm : échange d'un code, avec les champs donnés en plus (secret dans le formulaire).
+func (f *fixture) tokenForm(fields url.Values) *httptest.ResponseRecorder {
+	form := url.Values{"grant_type": {"authorization_code"}, "redirect_uri": {redirect}, "code_verifier": {verifier}, "client_id": {f.client.ID}, "client_secret": {f.secret}}
+	for k, v := range fields {
+		form[k] = v
+	}
+	r := httptest.NewRequest(http.MethodPost, "/pi-appliance/oidc/token", strings.NewReader(form.Encode()))
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	return f.do(r)
+}
+
+func errorOf(t *testing.T, r *httptest.ResponseRecorder) string {
+	t.Helper()
+	var body map[string]any
+	json.Unmarshal(r.Body.Bytes(), &body)
+	kind, _ := body["error"].(string)
+	return kind
+}
+
+// Flux « code » avec PKCE : le défi est obligatoire et en S256, le
+// vérificateur est exigé à l'échange et doit correspondre.
+func TestCodeFlowPKCE(t *testing.T) {
+	f := newFixture(t)
+	for name, change := range map[string]func(url.Values){
+		"sans défi":       func(v url.Values) { v.Del("code_challenge"); v.Del("code_challenge_method") },
+		"défi plain":      func(v url.Values) { v.Set("code_challenge_method", "plain"); v.Set("code_challenge", verifier) },
+		"défi trop court": func(v url.Values) { v.Set("code_challenge", "abc") },
+		"request_uri":     func(v url.Values) { v.Set("request_uri", "https://ailleurs.example/r") },
+		"response_mode":   func(v url.Values) { v.Set("response_mode", "fragment") },
+		"state trop long": func(v url.Values) { v.Set("state", strings.Repeat("e", 600)) },
+	} {
+		params := f.goodParams()
+		change(params)
+		r := f.authorize(t, params)
+		location, _ := url.Parse(r.Header().Get("Location"))
+		if r.Code != http.StatusFound || !strings.HasPrefix(location.String(), redirect) || (location.Query().Get("error") == "" && !strings.Contains(location.Fragment, "error=")) || location.Query().Get("code") != "" {
+			t.Errorf("%s : %d %s", name, r.Code, location)
+		}
+	}
+	// Échange sans vérificateur, puis avec un faux : refusés (et le code est perdu).
+	if r := f.tokenForm(url.Values{"code": {f.code(t, "marie")}, "code_verifier": nil}); r.Code != http.StatusBadRequest {
+		t.Fatalf("sans vérificateur : %d %s", r.Code, r.Body.String())
+	}
+	code := f.code(t, "marie")
+	if r := f.tokenForm(url.Values{"code": {code}, "code_verifier": {strings.Repeat("b", 50)}}); r.Code != http.StatusBadRequest || errorOf(t, r) != "invalid_grant" {
+		t.Fatalf("faux vérificateur : %d %s", r.Code, r.Body.String())
+	}
+	if r := f.tokenForm(url.Values{"code": {code}}); r.Code != http.StatusBadRequest {
+		t.Fatalf("code réutilisé après échec : %d", r.Code)
+	}
+	// Bon vérificateur, secret dans le formulaire (client_secret_post).
+	r := f.tokenForm(url.Values{"code": {f.code(t, "marie")}})
+	if r.Code != http.StatusOK || !strings.Contains(r.Body.String(), `"id_token"`) || r.Header().Get("Cache-Control") != "no-store" {
+		t.Fatalf("échange : %d %s", r.Code, r.Body.String())
+	}
+	// Secret à la fois en Basic et dans le formulaire : refusé.
+	both := httptest.NewRequest(http.MethodPost, "/pi-appliance/oidc/token", strings.NewReader(url.Values{"grant_type": {"authorization_code"}, "code": {f.code(t, "marie")},
+		"redirect_uri": {redirect}, "code_verifier": {verifier}, "client_secret": {f.secret}}.Encode()))
+	both.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	both.SetBasicAuth(f.client.ID, f.secret)
+	if r := f.do(both); r.Code == http.StatusOK {
+		t.Fatalf("deux méthodes d'authentification : %d", r.Code)
+	}
+}
+
+// Adresse de retour non enregistrée : pas de redirection à la demande, et
+// refus à l'échange si elle diffère de celle de la demande.
+func TestUnregisteredRedirect(t *testing.T) {
+	f := newFixture(t)
+	for _, other := range []string{"https://ailleurs.example/callback", redirect + "/autre", redirect + "?x=1", "http://wiki-maison.local/oidc/callback"} {
+		params := f.goodParams()
+		params.Set("redirect_uri", other)
+		if r := f.authorize(t, params); r.Code != http.StatusBadRequest || r.Header().Get("Location") != "" || strings.Contains(r.Body.String(), "redirect_uri") {
+			t.Errorf("%s : %d %s %s", other, r.Code, r.Header().Get("Location"), r.Body.String())
+		}
+	}
+	if r := f.tokenForm(url.Values{"code": {f.code(t, "marie")}, "redirect_uri": {"https://ailleurs.example/callback"}}); r.Code != http.StatusBadRequest || errorOf(t, r) != "invalid_grant" {
+		t.Fatalf("échange, autre adresse de retour : %d %s", r.Code, r.Body.String())
+	}
+}
+
+// Jetons expirés : code après 2 minutes, jeton d'accès après une heure ; le
+// jeton d'identité n'est pas accepté comme jeton d'accès.
+func TestExpiredTokens(t *testing.T) {
+	f := newFixture(t)
+	response := f.exchange(f.code(t, "marie"), verifier, f.secret)
+	var tokens struct {
+		Access string `json:"access_token"`
+		ID     string `json:"id_token"`
+	}
+	json.Unmarshal(response.Body.Bytes(), &tokens)
+	info := func(token string) int {
+		r := httptest.NewRequest(http.MethodGet, "/pi-appliance/oidc/userinfo", nil)
+		r.Header.Set("Authorization", "Bearer "+token)
+		return f.do(r).Code
+	}
+	if code := info(tokens.Access); code != http.StatusOK {
+		t.Fatalf("jeton valable : %d", code)
+	}
+	if code := info(tokens.ID); code != http.StatusUnauthorized {
+		t.Fatalf("jeton d'identité comme jeton d'accès : %d", code)
+	}
+	if code := info("faux"); code != http.StatusUnauthorized {
+		t.Fatalf("jeton inconnu : %d", code)
+	}
+	f.now = f.now.Add(tokenTTL + time.Second)
+	if code := info(tokens.Access); code != http.StatusUnauthorized {
+		t.Fatalf("jeton expiré : %d", code)
+	}
+	// Demande expirée avant l'accord.
+	r := f.authorize(t, f.goodParams())
+	location, _ := url.Parse(r.Header().Get("Location"))
+	f.now = f.now.Add(requestTTL + time.Second)
+	if _, err := f.provider.Approve(location.Query().Get("oidc"), f.accounts["marie"]); !errors.Is(err, ErrRequest) {
+		t.Fatalf("demande expirée : %v", err)
+	}
+}
+
+// Ce que la bibliothèque sait faire mais que la console n'ouvre pas.
+func TestClosedEndpoints(t *testing.T) {
+	f := newFixture(t)
+	for _, path := range []string{"/oauth/token", "/oauth/introspect", "/revoke", "/end_session", "/keys", "/device_authorization", "/healthz", "/ready", "/authorize/callback?id=x"} {
+		if r := f.do(httptest.NewRequest(http.MethodGet, "/pi-appliance/oidc"+path, nil)); r.Code != http.StatusNotFound && r.Code != http.StatusMethodNotAllowed {
+			t.Errorf("%s : %d", path, r.Code)
+		}
+	}
+	discovery := f.do(httptest.NewRequest(http.MethodGet, "/pi-appliance/oidc/.well-known/openid-configuration", nil)).Body.String()
+	for _, absent := range []string{"introspection_endpoint", "revocation_endpoint", "end_session_endpoint", "device_authorization_endpoint", "refresh_token", "jwt-bearer", "plain", "implicit"} {
+		if strings.Contains(discovery, absent) {
+			t.Errorf("découverte, %s annoncé : %s", absent, discovery)
+		}
+	}
+	if !strings.Contains(discovery, `"jwks_uri":"https://maison.local/pi-appliance/oidc/jwks"`) || !strings.Contains(discovery, `"S256"`) {
+		t.Fatalf("découverte : %s", discovery)
+	}
+	for _, grant := range []string{"client_credentials", "refresh_token", "urn:ietf:params:oauth:grant-type:jwt-bearer", "urn:ietf:params:oauth:grant-type:token-exchange", ""} {
+		if r := f.tokenForm(url.Values{"grant_type": {grant}, "code": {"x"}}); r.Code != http.StatusBadRequest || errorOf(t, r) != "unsupported_grant_type" {
+			t.Errorf("grant_type %q : %d %s", grant, r.Code, r.Body.String())
+		}
 	}
 }

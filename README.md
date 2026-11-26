@@ -60,7 +60,7 @@ git submodule update --init
 
 ## Console : construire et lancer
 
-Avec Go 1.24 ou plus :
+Avec Go 1.26 ou plus :
 
 ```shell
 go test ./...

@@ -383,7 +383,7 @@ Pour retirer l'adresse : **Retirer l'adresse** dans la carte, puis supprimez l'e
 
 ## Lancer la console depuis les sources {#depuis-les-sources}
 
-Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.24 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.
+Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.26 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.
 
 À la racine du dépôt :
 

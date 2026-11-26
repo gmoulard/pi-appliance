@@ -23,7 +23,7 @@ La réponse doit être `aarch64`.
 
 ## Construire la console
 
-Depuis un poste de développement équipé de Go 1.24 ou plus :
+Depuis un poste de développement équipé de Go 1.26 ou plus :
 
 ```shell
 GOOS=linux GOARCH=arm64 go build -o pi-appliance-arm64 ./cmd/pi-appliance

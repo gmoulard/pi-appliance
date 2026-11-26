@@ -14,83 +14,62 @@
 package oidc
 
 import (
+	"bytes"
+	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"net/url"
 	"regexp"
-	"slices"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	zoidc "github.com/zitadel/oidc/v3/pkg/oidc"
+	"github.com/zitadel/oidc/v3/pkg/op"
 )
 
-// Durées.
 const (
-	// requestTTL : temps pour se connecter à la console après la demande d'un service.
 	requestTTL = 10 * time.Minute
-	// codeTTL : un code d'autorisation sert une fois, dans les 2 minutes.
-	codeTTL = 2 * time.Minute
-	// tokenTTL : jeton d'identité et jeton d'accès (userinfo).
-	tokenTTL = time.Hour
-	// maxPending : demandes, codes et jetons gardés en mémoire au plus.
+	codeTTL    = 2 * time.Minute
+	tokenTTL   = time.Hour
 	maxPending = 10000
+	maxQuery   = 4096
 )
 
 var (
-	// ErrRequest : demande d'autorisation inconnue ou expirée.
-	ErrRequest = errors.New("demande de connexion inconnue ou expirée")
-	// ErrNotAllowed : le compte n'a pas accès à ce service.
+	ErrRequest    = errors.New("demande de connexion inconnue ou expirée")
 	ErrNotAllowed = errors.New("ce compte n'a pas accès à ce service")
 
-	verifierPattern  = regexp.MustCompile(`^[A-Za-z0-9._~-]{43,128}$`)
 	challengePattern = regexp.MustCompile(`^[A-Za-z0-9_-]{43}$`)
 	paramPattern     = regexp.MustCompile(`^[\x20-\x7e]{0,512}$`)
 )
 
-// Accounts : comptes de la console (*auth.Store).
 type Accounts interface {
 	Get(name string) (auth.Account, error)
 }
 
-// Provider : le fournisseur OpenID Connect.
 type Provider struct {
-	// Issuer : identifiant du fournisseur, https://<adresse>/pi-appliance/oidc.
 	Issuer   func() string
 	Signer   *Signer
 	Clients  *Clients
 	Accounts Accounts
-	// Allowed : le compte a accès au service ; nil : tous les comptes actifs.
-	Allowed func(account auth.Account, service string) bool
-	// LoginURL : page de la console qui reprend la demande (id), après connexion.
+	Allowed  func(account auth.Account, service string) bool
 	LoginURL func(id string) string
 	Now      func() time.Time
 
+	once    sync.Once
+	op      *op.Provider
+	opErr   error
+	storage *storage
+
 	mu       sync.Mutex
-	requests map[string]*request
-	codes    map[string]*grant
-	tokens   map[string]*grant
-}
-
-// request : une demande d'autorisation, en attente de la connexion.
-type request struct {
-	client    string
-	redirect  string
-	state     string
-	nonce     string
-	challenge string
-	scopes    []string
-	expires   time.Time
-}
-
-// grant : un code d'autorisation ou un jeton d'accès.
-type grant struct {
-	request
-	account  string
-	authTime time.Time
+	requests map[string]*authRequest
+	codes    map[string]string
+	tokens   map[string]*accessToken
 }
 
 func (p *Provider) now() time.Time {
@@ -100,23 +79,51 @@ func (p *Provider) now() time.Time {
 	return time.Now()
 }
 
-// Subject : identifiant stable d'un compte pour les services (« sub ») : tiré
-// du nom et de la date de création, il change si un compte supprimé est
-// recréé sous le même nom (ce n'est pas la même personne).
 func Subject(account auth.Account) string {
 	sum := sha256.Sum256([]byte(account.Name + "|" + account.CreatedAt.UTC().Format(time.RFC3339Nano)))
 	return b64(sum[:18])
 }
 
-// Routes ajoute les adresses publiques du fournisseur sous base
-// (/pi-appliance/oidc) : découverte, clés, autorisation, jeton, userinfo.
+func (p *Provider) setup() error {
+	p.once.Do(func() {
+		config := &op.Config{
+			CodeMethodS256:  true,
+			AuthMethodPost:  true,
+			SupportedScopes: []string{"openid", "profile", "email", "groups"},
+			SupportedClaims: []string{"sub", "iss", "aud", "exp", "iat", "auth_time", "nonce", "azp", "at_hash", "c_hash", "preferred_username", "name", "email", "email_verified", "groups"},
+		}
+		// NE PAS journaliser ni écrire cette clé : elle chiffre codes et jetons d'accès.
+		if _, err := rand.Read(config.CryptoKey[:]); err != nil {
+			p.opErr = err
+			return
+		}
+		p.storage = &storage{p: p}
+		issuer := func(bool) (op.IssuerFromRequest, error) {
+			return func(*http.Request) string { return p.Issuer() }, nil
+		}
+		p.op, p.opErr = op.NewProvider(config, p.storage, issuer,
+			op.WithCustomTokenEndpoint(op.NewEndpoint("token")),
+			op.WithCustomKeysEndpoint(op.NewEndpoint("jwks")),
+			op.WithCORSOptions(nil),
+		)
+	})
+	return p.opErr
+}
+
 func (p *Provider) Routes(mux *http.ServeMux, base string) {
+	if err := p.setup(); err != nil {
+		log.Printf("OpenID Connect : fournisseur non démarré : %v", err)
+		return
+	}
+	// NE PAS monter p.op en entier : il ouvrirait introspection, révocation, déconnexion et authorize/callback.
+	library := http.StripPrefix(base, p.op)
 	mux.HandleFunc("GET "+base+"/.well-known/openid-configuration", p.discovery)
-	mux.HandleFunc("GET "+base+"/jwks", p.jwks)
-	mux.HandleFunc("GET "+base+"/authorize", p.authorize)
-	mux.HandleFunc("POST "+base+"/token", p.token)
-	mux.HandleFunc("GET "+base+"/userinfo", p.userinfo)
-	mux.HandleFunc("POST "+base+"/userinfo", p.userinfo)
+	mux.Handle("GET "+base+"/jwks", library)
+	mux.HandleFunc("GET "+base+"/authorize", func(w http.ResponseWriter, r *http.Request) { p.authorize(w, r, library) })
+	mux.HandleFunc("POST "+base+"/token", func(w http.ResponseWriter, r *http.Request) { p.token(w, r, library) })
+	userinfo := func(w http.ResponseWriter, r *http.Request) { p.userinfo(w, r, library) }
+	mux.HandleFunc("GET "+base+"/userinfo", userinfo)
+	mux.HandleFunc("POST "+base+"/userinfo", userinfo)
 }
 
 func writeJSON(w http.ResponseWriter, code int, value any) {
@@ -126,164 +133,187 @@ func writeJSON(w http.ResponseWriter, code int, value any) {
 	json.NewEncoder(w).Encode(value)
 }
 
-func (p *Provider) discovery(w http.ResponseWriter, _ *http.Request) {
-	issuer := p.Issuer()
-	writeJSON(w, http.StatusOK, map[string]any{
-		"issuer":                                issuer,
-		"authorization_endpoint":                issuer + "/authorize",
-		"token_endpoint":                        issuer + "/token",
-		"userinfo_endpoint":                     issuer + "/userinfo",
-		"jwks_uri":                              issuer + "/jwks",
-		"response_types_supported":              []string{"code"},
-		"grant_types_supported":                 []string{"authorization_code"},
-		"subject_types_supported":               []string{"public"},
-		"id_token_signing_alg_values_supported": []string{"ES256"},
-		"scopes_supported":                      []string{"openid", "profile", "email", "groups"},
-		"claims_supported":                      []string{"sub", "iss", "aud", "exp", "iat", "auth_time", "nonce", "preferred_username", "name", "email", "email_verified", "groups"},
-		"token_endpoint_auth_methods_supported": []string{"client_secret_basic", "client_secret_post"},
-		"code_challenge_methods_supported":      []string{"S256"},
-	})
+func (p *Provider) discovery(w http.ResponseWriter, r *http.Request) {
+	ctx := op.ContextWithIssuer(r.Context(), p.Issuer())
+	config := op.CreateDiscoveryConfig(ctx, p.op, p.storage)
+	config.IntrospectionEndpoint = ""
+	config.RevocationEndpoint = ""
+	config.EndSessionEndpoint = ""
+	config.DeviceAuthorizationEndpoint = ""
+	config.CheckSessionIframe = ""
+	config.IntrospectionEndpointAuthMethodsSupported = nil
+	config.IntrospectionEndpointAuthSigningAlgValuesSupported = nil
+	config.RevocationEndpointAuthMethodsSupported = nil
+	config.RevocationEndpointAuthSigningAlgValuesSupported = nil
+	config.TokenEndpointAuthSigningAlgValuesSupported = nil
+	config.RequestObjectSigningAlgValuesSupported = nil
+	config.RequestParameterSupported = false
+	config.ResponseTypesSupported = []string{string(zoidc.ResponseTypeCode)}
+	config.ResponseModesSupported = []string{string(zoidc.ResponseModeQuery)}
+	config.GrantTypesSupported = []zoidc.GrantType{zoidc.GrantTypeCode}
+	config.CodeChallengeMethodsSupported = []zoidc.CodeChallengeMethod{zoidc.CodeChallengeMethodS256}
+	config.TokenEndpointAuthMethodsSupported = []zoidc.AuthMethod{zoidc.AuthMethodBasic, zoidc.AuthMethodPost}
+	writeJSON(w, http.StatusOK, config)
 }
 
-func (p *Provider) jwks(w http.ResponseWriter, _ *http.Request) {
-	writeJSON(w, http.StatusOK, p.Signer.JWKS())
+type capture struct {
+	header http.Header
+	status int
+	body   bytes.Buffer
 }
 
-// purge retire ce qui a expiré ; le verrou est pris.
-func (p *Provider) purge(now time.Time) {
-	for id, r := range p.requests {
-		if now.After(r.expires) {
-			delete(p.requests, id)
-		}
+func newCapture() *capture { return &capture{header: http.Header{}} }
+
+func (c *capture) Header() http.Header { return c.header }
+func (c *capture) Write(b []byte) (int, error) {
+	if c.status == 0 {
+		c.status = http.StatusOK
 	}
-	for _, m := range []map[string]*grant{p.codes, p.tokens} {
-		for id, g := range m {
-			if now.After(g.expires) {
-				delete(m, id)
-			}
-		}
+	return c.body.Write(b)
+}
+func (c *capture) WriteHeader(status int) {
+	if c.status == 0 {
+		c.status = status
 	}
 }
 
-// authorize : demande d'un service (navigation). Le client et l'adresse de
-// retour sont vérifiés avant toute redirection (sinon page d'erreur) ; la
-// demande est gardée et la console reprend la main (connexion si besoin).
-func (p *Provider) authorize(w http.ResponseWriter, r *http.Request) {
-	q := r.URL.Query()
-	client, ok := p.Clients.Get(q.Get("client_id"))
-	redirect := q.Get("redirect_uri")
-	if !ok || !slices.Contains(client.RedirectURIs, redirect) {
-		http.Error(w, "Demande de connexion refusée : ce service n'est pas enregistré auprès de la console.", http.StatusBadRequest)
-		return
+func (c *capture) send(w http.ResponseWriter) {
+	for k, v := range c.header {
+		w.Header()[k] = v
 	}
-	for _, name := range []string{"state", "nonce", "scope"} {
-		if !paramPattern.MatchString(q.Get(name)) {
-			redirectError(w, r, redirect, q.Get("state"), "invalid_request")
-			return
-		}
+	if c.status == 0 {
+		c.status = http.StatusOK
 	}
-	scopes := strings.Fields(q.Get("scope"))
-	switch {
-	case q.Get("response_type") != "code":
-		redirectError(w, r, redirect, q.Get("state"), "unsupported_response_type")
-		return
-	case !slices.Contains(scopes, "openid"):
-		redirectError(w, r, redirect, q.Get("state"), "invalid_scope")
-		return
-	case q.Get("code_challenge_method") != "S256" || !challengePattern.MatchString(q.Get("code_challenge")):
-		// PKCE obligatoire, en S256 seulement (pas de « plain »).
-		redirectError(w, r, redirect, q.Get("state"), "invalid_request")
-		return
-	case q.Get("request") != "" || q.Get("request_uri") != "":
-		redirectError(w, r, redirect, q.Get("state"), "request_not_supported")
-		return
-	}
-	now := p.now()
-	id := random(32)
-	p.mu.Lock()
-	if p.requests == nil {
-		p.requests = map[string]*request{}
-	}
-	p.purge(now)
-	if len(p.requests) >= maxPending {
-		p.mu.Unlock()
-		redirectError(w, r, redirect, q.Get("state"), "temporarily_unavailable")
-		return
-	}
-	p.requests[id] = &request{client: client.ID, redirect: redirect, state: q.Get("state"), nonce: q.Get("nonce"), challenge: q.Get("code_challenge"), scopes: scopes, expires: now.Add(requestTTL)}
-	p.mu.Unlock()
+	w.WriteHeader(c.status)
+	w.Write(c.body.Bytes())
+}
+
+type ctxKey int
+
+const requestURIKey ctxKey = 0
+
+func (p *Provider) authorize(w http.ResponseWriter, r *http.Request, library http.Handler) {
 	w.Header().Set("Cache-Control", "no-store")
-	http.Redirect(w, r, p.LoginURL(id), http.StatusFound)
-}
-
-func redirectError(w http.ResponseWriter, r *http.Request, redirect, state, code string) {
-	target, _ := url.Parse(redirect)
-	values := target.Query()
-	values.Set("error", code)
-	if state != "" && paramPattern.MatchString(state) {
-		values.Set("state", state)
+	if len(r.URL.RawQuery) > maxQuery {
+		http.Error(w, "Demande de connexion refusée : elle est trop longue.", http.StatusBadRequest)
+		return
 	}
-	target.RawQuery = values.Encode()
-	http.Redirect(w, r, target.String(), http.StatusFound)
+	if r.URL.Query().Get("request_uri") != "" {
+		r = r.WithContext(context.WithValue(r.Context(), requestURIKey, true))
+	}
+	c := newCapture()
+	library.ServeHTTP(c, r)
+	// NE PAS renvoyer le texte de la bibliothèque : page vue par la personne, en anglais technique.
+	if c.status >= 400 && c.header.Get("Location") == "" {
+		http.Error(w, "Demande de connexion refusée : ce service n'est pas enregistré auprès de la console, ou sa demande est incomplète.", http.StatusBadRequest)
+		return
+	}
+	c.send(w)
 }
 
-// Pending : nom du service d'une demande en attente (écran de la console).
+func (p *Provider) token(w http.ResponseWriter, r *http.Request, library http.Handler) {
+	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
+	if err := r.ParseForm(); err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid_request"})
+		return
+	}
+	// NE PAS retirer : la bibliothèque accepte toujours jwt-bearer, sans le dire dans la découverte.
+	if r.PostForm.Get("grant_type") != string(zoidc.GrantTypeCode) {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "unsupported_grant_type"})
+		return
+	}
+	if _, _, basic := r.BasicAuth(); basic && r.PostForm.Get("client_secret") != "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid_request"})
+		return
+	}
+	if r.PostForm.Get("client_assertion") != "" || r.PostForm.Get("client_assertion_type") != "" {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid_client"})
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Pragma", "no-cache")
+	c := newCapture()
+	library.ServeHTTP(c, r)
+	if c.status == http.StatusUnauthorized {
+		c.header.Set("WWW-Authenticate", `Basic realm="pi-appliance"`)
+	}
+	c.send(w)
+}
+
+func (p *Provider) userinfo(w http.ResponseWriter, r *http.Request, library http.Handler) {
+	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
+	w.Header().Set("Cache-Control", "no-store")
+	c := newCapture()
+	library.ServeHTTP(c, r)
+	if c.status != http.StatusOK {
+		w.Header().Set("WWW-Authenticate", `Bearer realm="pi-appliance", error="invalid_token"`)
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid_token"})
+		return
+	}
+	c.send(w)
+}
+
 func (p *Provider) Pending(id string) (string, bool) {
 	p.mu.Lock()
-	defer p.mu.Unlock()
 	req, ok := p.requests[id]
-	if !ok || p.now().After(req.expires) {
+	ok = ok && !req.done && !p.now().After(req.expires)
+	p.mu.Unlock()
+	if !ok {
 		return "", false
 	}
-	client, ok := p.Clients.Get(req.client)
+	client, ok := p.Clients.Get(req.ClientID)
 	return client.Service, ok
 }
 
-// Approve : la personne connectée à la console (account) accepte la demande
-// id ; renvoie l'adresse de retour du service, avec le code d'autorisation.
-// La demande ne sert qu'une fois, même refusée.
 func (p *Provider) Approve(id string, account auth.Account) (string, error) {
+	if err := p.setup(); err != nil {
+		return "", err
+	}
 	now := p.now()
 	p.mu.Lock()
 	req, ok := p.requests[id]
-	delete(p.requests, id)
-	p.mu.Unlock()
-	if !ok || now.After(req.expires) {
-		return "", ErrRequest
-	}
-	client, ok := p.Clients.Get(req.client)
-	if !ok {
-		return "", ErrRequest
-	}
-	if !p.active(account, client.Service, now) {
-		return "", ErrNotAllowed
-	}
-	code := random(32)
-	p.mu.Lock()
-	if p.codes == nil {
-		p.codes = map[string]*grant{}
-	}
-	p.purge(now)
-	if len(p.codes) >= maxPending {
+	if !ok || req.done || now.After(req.expires) {
+		// NE PAS supprimer une demande déjà acceptée : son code attend l'échange.
+		if ok && !req.done {
+			delete(p.requests, id)
+		}
 		p.mu.Unlock()
 		return "", ErrRequest
 	}
-	g := &grant{request: *req, account: account.Name, authTime: now}
-	g.expires = now.Add(codeTTL)
-	p.codes[hash(code)] = g
-	p.mu.Unlock()
-	target, _ := url.Parse(req.redirect)
-	values := target.Query()
-	values.Set("code", code)
-	if req.state != "" {
-		values.Set("state", req.state)
+	client, known := p.Clients.Get(req.ClientID)
+	if !known || !p.active(account, client.Service, now) {
+		delete(p.requests, id)
+		p.mu.Unlock()
+		if !known {
+			return "", ErrRequest
+		}
+		return "", ErrNotAllowed
 	}
-	values.Set("iss", p.Issuer())
+	req.done = true
+	req.account = account.Name
+	req.subject = Subject(account)
+	req.authTime = now
+	req.expires = now.Add(codeTTL)
+	p.mu.Unlock()
+	issuer := p.Issuer()
+	ctx := op.ContextWithIssuer(context.Background(), issuer)
+	back, err := op.BuildAuthResponseCallbackURL(ctx, req, p.op)
+	if err != nil {
+		p.mu.Lock()
+		delete(p.requests, id)
+		p.mu.Unlock()
+		return "", ErrRequest
+	}
+	target, err := url.Parse(back)
+	if err != nil {
+		return "", ErrRequest
+	}
+	values := target.Query()
+	values.Set("iss", issuer)
 	target.RawQuery = values.Encode()
 	return target.String(), nil
 }
 
-// active : compte qui existe, a un mot de passe, n'a pas expiré et a accès au service.
 func (p *Provider) active(account auth.Account, service string, now time.Time) bool {
 	if account.Name == "" || account.Hash == "" || account.Expired(now) {
 		return false
@@ -291,154 +321,54 @@ func (p *Provider) active(account auth.Account, service string, now time.Time) b
 	return p.Allowed == nil || p.Allowed(account, service)
 }
 
-func tokenError(w http.ResponseWriter, code int, kind string) {
-	if code == http.StatusUnauthorized {
-		w.Header().Set("WWW-Authenticate", `Basic realm="pi-appliance"`)
-	}
-	writeJSON(w, code, map[string]string{"error": kind})
-}
-
-// clientAuth : client_secret_basic ou client_secret_post, pas les deux.
-func (p *Provider) clientAuth(r *http.Request) (Client, bool) {
-	id, secret, basic := r.BasicAuth()
-	if basic {
-		if r.PostForm.Get("client_secret") != "" {
-			return Client{}, false
-		}
-		// RFC 6749 2.3.1 : identifiant et secret encodés en x-www-form-urlencoded.
-		if v, err := url.QueryUnescape(id); err == nil {
-			id = v
-		}
-		if v, err := url.QueryUnescape(secret); err == nil {
-			secret = v
-		}
-	} else {
-		id, secret = r.PostForm.Get("client_id"), r.PostForm.Get("client_secret")
-	}
-	return p.Clients.Authenticate(id, secret)
-}
-
-// token : échange du code contre les jetons, par le service (pas le navigateur).
-func (p *Provider) token(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
-	if err := r.ParseForm(); err != nil {
-		tokenError(w, http.StatusBadRequest, "invalid_request")
-		return
-	}
-	client, ok := p.clientAuth(r)
-	if !ok {
-		tokenError(w, http.StatusUnauthorized, "invalid_client")
-		return
-	}
-	if r.PostForm.Get("grant_type") != "authorization_code" {
-		tokenError(w, http.StatusBadRequest, "unsupported_grant_type")
-		return
-	}
-	now := p.now()
-	p.mu.Lock()
-	key := hash(r.PostForm.Get("code"))
-	g, found := p.codes[key]
-	// Un code ne sert qu'une fois, même si l'échange échoue.
-	delete(p.codes, key)
-	p.mu.Unlock()
-	verifier := r.PostForm.Get("code_verifier")
-	switch {
-	case !found || now.After(g.expires) || g.client != client.ID || g.redirect != r.PostForm.Get("redirect_uri"):
-		tokenError(w, http.StatusBadRequest, "invalid_grant")
-		return
-	case !verifierPattern.MatchString(verifier) || pkce(verifier) != g.challenge:
-		tokenError(w, http.StatusBadRequest, "invalid_grant")
-		return
-	}
-	account, err := p.Accounts.Get(g.account)
-	if err != nil || !p.active(account, client.Service, now) {
-		tokenError(w, http.StatusBadRequest, "invalid_grant")
-		return
-	}
-	claims := p.claims(account, g.scopes)
-	claims["iss"] = p.Issuer()
-	claims["aud"] = client.ID
-	claims["azp"] = client.ID
-	claims["iat"] = now.Unix()
-	claims["exp"] = now.Add(tokenTTL).Unix()
-	claims["auth_time"] = g.authTime.Unix()
-	if g.nonce != "" {
-		claims["nonce"] = g.nonce
-	}
-	idToken, err := p.Signer.Sign(claims)
+func (p *Provider) activeAccount(name, clientID string, now time.Time) (auth.Account, bool) {
+	account, err := p.Accounts.Get(name)
 	if err != nil {
-		tokenError(w, http.StatusInternalServerError, "server_error")
-		return
+		return auth.Account{}, false
 	}
-	access := random(32)
-	p.mu.Lock()
-	if p.tokens == nil {
-		p.tokens = map[string]*grant{}
+	client, ok := p.Clients.Get(clientID)
+	if !ok || !p.active(account, client.Service, now) {
+		return auth.Account{}, false
 	}
-	p.purge(now)
-	if len(p.tokens) < maxPending {
-		t := *g
-		t.expires = now.Add(tokenTTL)
-		p.tokens[hash(access)] = &t
-	}
-	p.mu.Unlock()
-	writeJSON(w, http.StatusOK, map[string]any{
-		"access_token": access,
-		"token_type":   "Bearer",
-		"expires_in":   int(tokenTTL / time.Second),
-		"id_token":     idToken,
-		"scope":        strings.Join(g.scopes, " "),
-	})
+	return account, true
 }
 
-// pkce : BASE64URL(SHA256(verifier)), RFC 7636.
-func pkce(verifier string) string {
-	sum := sha256.Sum256([]byte(verifier))
-	return b64(sum[:])
+func fill(info *zoidc.UserInfo, account auth.Account, scopes []string) {
+	info.Subject = Subject(account)
+	for _, scope := range scopes {
+		switch scope {
+		case zoidc.ScopeProfile:
+			info.PreferredUsername = account.Name
+			info.Name = account.Name
+		case zoidc.ScopeEmail:
+			if account.Email != "" {
+				info.Email = account.Email
+				info.EmailVerified = zoidc.Bool(account.EmailVerified)
+			}
+		case "groups":
+			info.AppendClaims("groups", []string{string(account.Role)})
+		}
+	}
 }
 
-// claims : ce que le service apprend du compte, selon les scopes demandés.
-func (p *Provider) claims(account auth.Account, scopes []string) map[string]any {
-	claims := map[string]any{"sub": Subject(account)}
-	if slices.Contains(scopes, "profile") {
-		claims["preferred_username"] = account.Name
-		claims["name"] = account.Name
-	}
-	if slices.Contains(scopes, "email") && account.Email != "" {
-		claims["email"] = account.Email
-		claims["email_verified"] = account.EmailVerified
-	}
-	if slices.Contains(scopes, "groups") {
-		claims["groups"] = []string{string(account.Role)}
-	}
-	return claims
+func pkceOK(challenge string, method zoidc.CodeChallengeMethod) bool {
+	return method == zoidc.CodeChallengeMethodS256 && challengePattern.MatchString(challenge)
 }
 
-// userinfo : le compte du jeton d'accès, s'il est toujours actif.
-func (p *Provider) userinfo(w http.ResponseWriter, r *http.Request) {
-	token, ok := strings.CutPrefix(r.Header.Get("Authorization"), "Bearer ")
-	if !ok || token == "" {
-		w.Header().Set("WWW-Authenticate", `Bearer realm="pi-appliance"`)
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid_token"})
-		return
+func (p *Provider) purge(now time.Time) {
+	for id, r := range p.requests {
+		if now.After(r.expires) {
+			delete(p.requests, id)
+		}
 	}
-	now := p.now()
-	p.mu.Lock()
-	g, found := p.tokens[hash(token)]
-	p.mu.Unlock()
-	var account auth.Account
-	var err error
-	if found {
-		account, err = p.Accounts.Get(g.account)
+	for code, id := range p.codes {
+		if _, ok := p.requests[id]; !ok {
+			delete(p.codes, code)
+		}
 	}
-	client, known := Client{}, false
-	if found {
-		client, known = p.Clients.Get(g.client)
+	for id, t := range p.tokens {
+		if now.After(t.expires) {
+			delete(p.tokens, id)
+		}
 	}
-	if !found || now.After(g.expires) || err != nil || !known || !p.active(account, client.Service, now) {
-		w.Header().Set("WWW-Authenticate", `Bearer realm="pi-appliance", error="invalid_token"`)
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "invalid_token"})
-		return
-	}
-	writeJSON(w, http.StatusOK, p.claims(account, g.scopes))
 }
