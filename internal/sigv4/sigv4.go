@@ -12,8 +12,8 @@
 // See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
 // Package sigv4 signe les requêtes HTTP selon AWS Signature Version 4, avec
-// la bibliothèque standard seulement : Route 53 (service d'adresses) et les
-// stockages en ligne compatibles S3 (sauvegardes, spécification 9.1).
+// la bibliothèque standard seulement : stockages en ligne compatibles S3
+// (sauvegardes, spécification 9.1).
 package sigv4
 
 import (

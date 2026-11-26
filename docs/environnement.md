@@ -38,27 +38,9 @@ Le service d'envoi (`cmd/pi-appliance-mail`, [spécification 10.2](specification
 
 ### Service d'adresses
 
-Le service d'adresses (`cmd/pi-appliance-addresses`, [spécification 7.1](specification.md)) écrit dans cette zone les alias `<nom>.pi-appliance.com` et `*.<nom>.pi-appliance.com` des appliances. Il n'est pas encore installé. Il lui faut :
+Le service d'adresses (`cmd/pi-appliance-addresses`, [spécification 7.1](specification.md)) écrit dans la zone chez OVH les enregistrements `A` de `<nom>.pi-appliance.com` et `*.<nom>.pi-appliance.com`, vers l'adresse IP que chaque appliance lui envoie. Il n'est pas encore installé. Il lui faut :
 
-- un **utilisateur IAM réservé**, sans accès à la console AWS, avec seulement cette politique (aucun autre droit, pas de droit sur `www`, `@` ni les enregistrements e-mail) :
-
-  ```json
-  {
-    "Version": "2012-10-17",
-    "Statement": [{
-      "Effect": "Allow",
-      "Action": "route53:ChangeResourceRecordSets",
-      "Resource": "arn:aws:route53:::hostedzone/Z01037363SBTB2LIT0ZB4",
-      "Condition": {
-        "ForAllValues:StringEquals": { "route53:ChangeResourceRecordSetsRecordTypes": ["CNAME"] },
-        "ForAllValues:StringLike": { "route53:ChangeResourceRecordSetsNormalizedRecordNames": ["*.pi-appliance.com"] }
-      }
-    }]
-  }
-  ```
-
-  Les noms du projet (`www`, `mail`…) sont aussi refusés par le service lui-même (`internal/addresses/names.go`) ;
-- ses clés d'accès dans `/etc/pi-appliance-addresses/aws-credentials` **sur le Pi du projet seulement** (droits 600, format de la CLI AWS, profil `default` ou `-aws-profile`), jamais dans le dépôt ;
+- les **clés de l'API OVH**, les mêmes que les secrets GitHub Actions `OVH_Application_key`, `OVH_Application_secret`, `OVH_Consumer_Key` (décision de l'utilisateur du 2026-11-26), copiées à l'installation dans `/etc/pi-appliance-addresses/ovh` **sur le Pi du projet seulement** (droits 600, une ligne `NOM=valeur` par clé, aux noms des secrets), jamais dans le dépôt ni sur les Pi des utilisateurs ; leurs droits se lisent avec le workflow « OVH » (action « verifier »). Les noms du projet (`www`, `mail`…) sont refusés par le service lui-même (`internal/addresses/names.go`) ;
 - le nom `adresses.pi-appliance.com` vers le Pi du projet, derrière son reverse proxy qui pose `X-Real-IP` et dont le journal des accès est coupé (TODO-4.4).
 
 ## Site web

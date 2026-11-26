@@ -38,13 +38,13 @@ func TestKey(t *testing.T) {
 	}
 
 	now := time.Date(2026, 11, 20, 10, 0, 0, 0, time.UTC)
-	body := []byte(`{"target":"x.duckdns.org"}`)
+	body := []byte(`{"ip":"90.12.34.56"}`)
 	request, _ := http.NewRequest(http.MethodPut, "https://adresses.pi-appliance.com/api/names/maison", nil)
 	key.Sign(request, body, now)
 	if public, err := Verify(request, body, now.Add(time.Minute)); err != nil || public != key.Public() {
 		t.Fatalf("signature refusée : %v", err)
 	}
-	if _, err := Verify(request, []byte(`{"target":"y.duckdns.org"}`), now); !errors.Is(err, ErrSignature) {
+	if _, err := Verify(request, []byte(`{"ip":"90.12.34.57"}`), now); !errors.Is(err, ErrSignature) {
 		t.Fatal("corps modifié accepté")
 	}
 	if _, err := Verify(request, body, now.Add(MaxClockSkew+time.Second)); !errors.Is(err, ErrSignature) {
@@ -54,10 +54,12 @@ func TestKey(t *testing.T) {
 	if _, err := Verify(request, body, now); !errors.Is(err, ErrSignature) {
 		t.Fatal("signature rejouée sur une autre adresse acceptée")
 	}
-	if _, err := CheckTarget("Maison.DuckDNS.org."); err != nil {
-		t.Fatal(err)
+	if ip, err := CheckIP(" 90.12.34.56\n"); err != nil || ip != "90.12.34.56" {
+		t.Fatalf("%q %v", ip, err)
 	}
-	if _, err := CheckTarget("evil.example.com"); !errors.Is(err, ErrInvalid) {
-		t.Fatal("cible hors DuckDNS acceptée")
+	for _, bad := range []string{"192.168.1.10", "10.0.0.1", "127.0.0.1", "100.64.1.1", "203.0.113.5", "2001:db8::1", "90.12.34", "box.example.org"} {
+		if _, err := CheckIP(bad); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%s accepté", bad)
+		}
 	}
 }

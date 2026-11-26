@@ -21,6 +21,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -29,25 +30,25 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/addresses"
 )
 
-// fakeDNS garde les alias en mémoire, comme Route 53.
+// fakeDNS garde les enregistrements A en mémoire (le faux OVH est dans ovh_test.go).
 type fakeDNS struct {
 	mu      sync.Mutex
 	records map[string]string
 	fail    bool
 }
 
-func (f *fakeDNS) Set(_ context.Context, hostname, target string) error {
+func (f *fakeDNS) Set(_ context.Context, hostname, ip string) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.fail {
 		return errors.New("panne")
 	}
-	f.records[hostname] = target
-	f.records["*."+hostname] = target
+	f.records[hostname] = ip
+	f.records["*."+hostname] = ip
 	return nil
 }
 
-func (f *fakeDNS) Remove(_ context.Context, hostname, _ string) error {
+func (f *fakeDNS) Remove(_ context.Context, hostname string) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.fail {
@@ -105,8 +106,9 @@ func newFixture(t *testing.T) *fixture {
 	return &fixture{dns: dns, clock: now, service: service, server: server, dir: dir}
 }
 
-// appliance : console d'une appliance, avec sa clé, sa connexion et son nom DuckDNS.
-func (f *fixture) appliance(t *testing.T, name, ip, duckdns string) *addresses.Client {
+// appliance : console d'une appliance, avec sa clé, sa connexion vue par le
+// reverse proxy (ip) et l'adresse IP publique de sa box (public).
+func (f *fixture) appliance(t *testing.T, name, ip, public string) *addresses.Client {
 	t.Helper()
 	key, err := addresses.LoadOrCreateKey(filepath.Join(f.dir, name, "address-key"))
 	if err != nil {
@@ -119,8 +121,7 @@ func (f *fixture) appliance(t *testing.T, name, ip, duckdns string) *addresses.C
 	client.URL = f.server.URL
 	client.Now = f.clock.Now
 	client.HTTP = ipDoer{ip: ip}
-	target := duckdns
-	client.Target = func() string { return target }
+	client.PublicIP = func(context.Context) (string, error) { return public, nil }
 	return client
 }
 
@@ -143,8 +144,8 @@ func refusal(t *testing.T, err error, status int, text string) {
 func TestReserveUpdateRelease(t *testing.T) {
 	f := newFixture(t)
 	ctx := context.Background()
-	alice := f.appliance(t, "alice", "203.0.113.1", "alice.duckdns.org")
-	bob := f.appliance(t, "bob", "203.0.113.2", "bob.duckdns.org")
+	alice := f.appliance(t, "alice", "203.0.113.1", "90.1.1.1")
+	bob := f.appliance(t, "bob", "203.0.113.2", "90.1.1.3")
 
 	if a, err := alice.Check(ctx, "maison"); err != nil || !a.Available || a.Hostname != "maison.pi-appliance.com" {
 		t.Fatalf("libre : %+v %v", a, err)
@@ -153,10 +154,10 @@ func TestReserveUpdateRelease(t *testing.T) {
 		t.Fatalf("www : %+v %v", a, err)
 	}
 	state, err := alice.Reserve(ctx, "Maison")
-	if err != nil || state.Hostname != "maison.pi-appliance.com" || state.Target != "alice.duckdns.org" {
+	if err != nil || state.Hostname != "maison.pi-appliance.com" || state.IP != "90.1.1.1" {
 		t.Fatalf("réservation : %+v %v", state, err)
 	}
-	if f.dns.get("maison.pi-appliance.com") != "alice.duckdns.org" || f.dns.get("*.maison.pi-appliance.com") != "alice.duckdns.org" {
+	if f.dns.get("maison.pi-appliance.com") != "90.1.1.1" || f.dns.get("*.maison.pi-appliance.com") != "90.1.1.1" {
 		t.Fatalf("alias : %v", f.dns.records)
 	}
 	if a, _ := bob.Check(ctx, "maison"); a.Available || a.Reason != "ce nom est déjà pris" {
@@ -167,15 +168,15 @@ func TestReserveUpdateRelease(t *testing.T) {
 	_, err = alice.Reserve(ctx, "autre")
 	refusal(t, err, http.StatusConflict, "déjà l'adresse maison.pi-appliance.com")
 
-	// Le registre ne garde ni adresse IP ni e-mail.
+	// Le registre ne garde pas l'adresse de la connexion, seulement l'adresse IP écrite dans la zone.
 	data, err := os.ReadFile(filepath.Join(f.dir, "registry.json"))
-	if err != nil || strings.Contains(string(data), "203.0.113") {
+	if err != nil || strings.Contains(string(data), "203.0.113") || !strings.Contains(string(data), `"ip": "90.1.1.1"`) {
 		t.Fatalf("registre : %s %v", data, err)
 	}
 
-	// Nouvelle cible : l'alias suit le nom DuckDNS.
-	alice.Target = func() string { return "alice2.duckdns.org" }
-	if err := alice.Sync(ctx); err != nil || alice.Status().Target != "alice2.duckdns.org" || f.dns.get("maison.pi-appliance.com") != "alice2.duckdns.org" {
+	// Nouvelle adresse IP de la box : l'enregistrement A est remplacé.
+	alice.PublicIP = func(context.Context) (string, error) { return "90.1.1.2", nil }
+	if err := alice.Sync(ctx); err != nil || alice.Status().IP != "90.1.1.2" || f.dns.get("maison.pi-appliance.com") != "90.1.1.2" {
 		t.Fatalf("mise à jour : %+v %v", alice.Status(), err)
 	}
 
@@ -205,13 +206,13 @@ func TestReserveUpdateRelease(t *testing.T) {
 func TestRecoverAndSignature(t *testing.T) {
 	f := newFixture(t)
 	ctx := context.Background()
-	alice := f.appliance(t, "alice", "203.0.113.1", "alice.duckdns.org")
+	alice := f.appliance(t, "alice", "203.0.113.1", "90.1.1.1")
 	if _, err := alice.Reserve(ctx, "maison"); err != nil {
 		t.Fatal(err)
 	}
 	// Fichier d'état perdu, clé gardée : l'adresse revient du service.
 	os.Remove(filepath.Join(f.dir, "alice", "address.json"))
-	again := f.appliance(t, "alice", "203.0.113.1", "alice.duckdns.org")
+	again := f.appliance(t, "alice", "203.0.113.1", "90.1.1.1")
 	if err := again.Recover(ctx); err != nil || again.Status().Name != "maison" {
 		t.Fatalf("reprise : %+v %v", again.Status(), err)
 	}
@@ -219,9 +220,9 @@ func TestRecoverAndSignature(t *testing.T) {
 	again.Now = func() time.Time { return f.clock.Now().Add(time.Hour) }
 	refusal(t, again.Sync(ctx), http.StatusUnauthorized, "date et l'heure")
 	// Corps modifié après la signature.
-	request, _ := http.NewRequest(http.MethodPut, f.server.URL+"/api/names/maison", strings.NewReader(`{"target":"pirate.duckdns.org"}`))
+	request, _ := http.NewRequest(http.MethodPut, f.server.URL+"/api/names/maison", strings.NewReader(`{"ip":"90.6.6.6"}`))
 	key, _ := addresses.LoadOrCreateKey(filepath.Join(f.dir, "alice", "address-key"))
-	key.Sign(request, []byte(`{"target":"alice.duckdns.org"}`), f.clock.Now())
+	key.Sign(request, []byte(`{"ip":"90.1.1.1"}`), f.clock.Now())
 	response, err := http.DefaultClient.Do(request)
 	if err != nil || response.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("corps modifié : %v %v", response, err)
@@ -232,7 +233,7 @@ func TestRecoverAndSignature(t *testing.T) {
 func TestExpiry(t *testing.T) {
 	f := newFixture(t)
 	ctx := context.Background()
-	alice := f.appliance(t, "alice", "203.0.113.1", "alice.duckdns.org")
+	alice := f.appliance(t, "alice", "203.0.113.1", "90.1.1.1")
 	if _, err := alice.Reserve(ctx, "maison"); err != nil {
 		t.Fatal(err)
 	}
@@ -256,12 +257,12 @@ func TestLimits(t *testing.T) {
 	f := newFixture(t)
 	ctx := context.Background()
 	for i := range addresses.ReservationsPerIP {
-		client := f.appliance(t, "pi"+string(rune('a'+i)), "198.51.100.7", "x.duckdns.org")
+		client := f.appliance(t, "pi"+string(rune('a'+i)), "198.51.100.7", "90.2.0.1")
 		if _, err := client.Reserve(ctx, "maison-"+string(rune('a'+i))); err != nil {
 			t.Fatalf("réservation %d : %v", i, err)
 		}
 	}
-	extra := f.appliance(t, "piz", "198.51.100.7", "x.duckdns.org")
+	extra := f.appliance(t, "piz", "198.51.100.7", "90.2.0.1")
 	_, err := extra.Reserve(ctx, "maison-z")
 	refusal(t, err, http.StatusTooManyRequests, "depuis votre connexion")
 	f.clock.add(24 * time.Hour)
@@ -269,14 +270,17 @@ func TestLimits(t *testing.T) {
 		t.Fatalf("le lendemain : %v", err)
 	}
 
-	// Changements de cible limités par jour.
-	for i := range addresses.TargetChangesPerDay {
-		extra.Target = func() string { return "t" + string(rune('a'+i)) + ".duckdns.org" }
+	// Changements d'adresse IP limités par jour ; le signe de vie, lui, passe toujours.
+	for i := range addresses.IPChangesPerDay {
+		extra.PublicIP = func(context.Context) (string, error) { return "90.2.0." + strconv.Itoa(i+10), nil }
 		if err := extra.Sync(ctx); err != nil {
 			t.Fatalf("changement %d : %v", i, err)
 		}
 	}
-	extra.Target = func() string { return "trop.duckdns.org" }
+	if err := extra.Sync(ctx); err != nil {
+		t.Fatalf("signe de vie : %v", err)
+	}
+	extra.PublicIP = func(context.Context) (string, error) { return "90.2.1.1", nil }
 	refusal(t, extra.Sync(ctx), http.StatusTooManyRequests, "trop souvent")
 
 	// Questions « libre ? » limitées par minute et par connexion.
@@ -302,7 +306,7 @@ func TestDNSFailure(t *testing.T) {
 	f := newFixture(t)
 	ctx := context.Background()
 	f.dns.fail = true
-	alice := f.appliance(t, "alice", "203.0.113.1", "alice.duckdns.org")
+	alice := f.appliance(t, "alice", "203.0.113.1", "90.1.1.1")
 	_, err := alice.Reserve(ctx, "maison")
 	refusal(t, err, http.StatusServiceUnavailable, "réessayez plus tard")
 	f.dns.fail = false
@@ -314,13 +318,34 @@ func TestDNSFailure(t *testing.T) {
 	}
 }
 
-func TestTargetMustBeDuckDNS(t *testing.T) {
+func TestIPMustBePublic(t *testing.T) {
 	f := newFixture(t)
-	alice := f.appliance(t, "alice", "203.0.113.1", "evil.example.com")
-	_, err := alice.Reserve(context.Background(), "maison")
-	refusal(t, err, http.StatusBadRequest, "DuckDNS")
-	alice.Target = func() string { return "" }
-	if _, err := alice.Reserve(context.Background(), "maison"); !errors.Is(err, addresses.ErrNoTarget) {
-		t.Fatalf("sans DuckDNS : %v", err)
+	key, err := addresses.LoadOrCreateKey(filepath.Join(f.dir, "pirate", "address-key"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, ip := range []string{"192.168.1.20", "127.0.0.1", "2001:db8::1", "pirate.duckdns.org", ""} {
+		body := []byte(`{"name":"maison","ip":"` + ip + `"}`)
+		request, _ := http.NewRequest(http.MethodPost, f.server.URL+"/api/names", strings.NewReader(string(body)))
+		key.Sign(request, body, f.clock.Now())
+		response, err := http.DefaultClient.Do(request)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var refused addresses.ErrorBody
+		json.NewDecoder(response.Body).Decode(&refused)
+		response.Body.Close()
+		if response.StatusCode != http.StatusBadRequest || !strings.Contains(refused.Error, "adresse IP publique") {
+			t.Errorf("%q : %d %+v", ip, response.StatusCode, refused)
+		}
+	}
+	if f.dns.get("maison.pi-appliance.com") != "" {
+		t.Fatal("adresse écrite malgré le refus")
+	}
+	// Adresse IP de la box illisible côté console : rien n'est demandé au service.
+	alice := f.appliance(t, "alice", "203.0.113.1", "")
+	alice.PublicIP = func(context.Context) (string, error) { return "", errors.New("hors ligne") }
+	if _, err := alice.Reserve(context.Background(), "maison"); !errors.Is(err, addresses.ErrNoIP) {
+		t.Fatalf("sans adresse IP : %v", err)
 	}
 }

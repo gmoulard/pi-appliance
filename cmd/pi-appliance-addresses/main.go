@@ -14,7 +14,7 @@
 // pi-appliance-addresses : service d'adresses du projet (spécification 7.1,
 // 10.2), sur le Pi du projet, derrière son reverse proxy
 // (adresses.pi-appliance.com, journal des accès coupé). Il réserve les noms
-// <nom>.pi-appliance.com et écrit leurs alias dans AWS Route 53.
+// <nom>.pi-appliance.com et écrit chez OVH l'adresse IP de chaque appliance.
 package main
 
 import (
@@ -35,19 +35,19 @@ import (
 func main() {
 	addr := flag.String("addr", "127.0.0.1:8092", "adresse d'écoute")
 	data := flag.String("data", "/var/lib/pi-appliance-addresses", "dossier du registre des adresses")
-	zone := flag.String("zone-id", "Z01037363SBTB2LIT0ZB4", "zone hébergée pi-appliance.com dans Route 53")
-	credentialsFile := flag.String("aws-credentials", "/etc/pi-appliance-addresses/aws-credentials", "clés AWS au format de la CLI AWS, droits 600 (jamais dans le dépôt)")
-	profile := flag.String("aws-profile", "default", "profil du fichier des clés AWS")
+	zone := flag.String("zone", "pi-appliance.com", "zone DNS chez OVH")
+	credentialsFile := flag.String("ovh-credentials", "/etc/pi-appliance-addresses/ovh", "clés de l'API OVH (lignes OVH_Application_key=, OVH_Application_secret=, OVH_Consumer_Key=), droits 600, jamais dans le dépôt")
+	endpoint := flag.String("ovh-endpoint", service.DefaultOVHEndpoint, "API OVH")
 	behindProxy := flag.Bool("behind-proxy", true, "lire l'adresse du client dans X-Real-IP, posé par le reverse proxy")
 	flag.Parse()
-	credentials, err := service.LoadCredentials(*credentialsFile, *profile)
+	credentials, err := service.LoadCredentials(*credentialsFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if err := os.MkdirAll(*data, 0o700); err != nil {
 		log.Fatal(err)
 	}
-	addresses, err := service.Open(*data+"/registry.json", &service.Route53{ZoneID: *zone, Credentials: credentials})
+	addresses, err := service.Open(*data+"/registry.json", &service.OVH{Zone: *zone, Credentials: credentials, Endpoint: *endpoint})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -208,7 +208,6 @@ func main() {
 		}
 		address.URL = *addressesURL
 		address.Logf = log.Printf
-		address.Target = func() string { return duckdns.Status().Hostname }
 	}
 	// Sauvegardes chaque nuit sur le disque USB de sauvegarde (spécification 9.1).
 	host := backup.Hostname()
@@ -281,7 +280,7 @@ func main() {
 	}()
 	go duckdns.Run(ctx)
 	if address != nil {
-		go address.Run(ctx, 5*time.Minute)
+		go address.Run(ctx, addresses.IPCheck)
 	}
 	// Accès direct : ports de la box ouverts par UPnP une fois l'accord donné (spécification 7.2).
 	var portMapper *upnp.Manager

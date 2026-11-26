@@ -13,7 +13,8 @@
 
 // Package service est le service d'adresses du projet (spécification 7.1,
 // 10.2), sur le Pi du projet : il réserve les noms <nom>.pi-appliance.com,
-// chacun lié à la clé d'une appliance, et écrit leurs alias dans Route 53.
+// chacun lié à la clé d'une appliance, et écrit chez OVH l'adresse IP que
+// chaque appliance lui envoie (enregistrements A).
 package service
 
 import (
@@ -39,7 +40,7 @@ const maxBody = 4 << 10
 
 type entry struct {
 	Key      string    `json:"key"`
-	Target   string    `json:"target"`
+	IP       string    `json:"ip"`
 	Reserved time.Time `json:"reserved"`
 	LastSeen time.Time `json:"last_seen"`
 }
@@ -49,8 +50,8 @@ type released struct {
 	At  time.Time `json:"at"`
 }
 
-// registry : seul fichier du service. Il ne contient ni adresse IP ni e-mail
-// (spécification 10.2) : nom, clé publique, cible, dates.
+// registry : seul fichier du service (spécification 10.2) : nom, clé publique,
+// adresse IP écrite dans la zone (publique de toute façon), dates ; pas d'e-mail.
 type registry struct {
 	Names    map[string]*entry   `json:"names"`
 	Released map[string]released `json:"released"`
@@ -129,7 +130,7 @@ func (s *Service) Expire(ctx context.Context) {
 		if now.Sub(e.LastSeen) < addresses.Expiry {
 			continue
 		}
-		if err := s.DNS.Remove(ctx, addresses.Hostname(name), e.Target); err != nil {
+		if err := s.DNS.Remove(ctx, addresses.Hostname(name)); err != nil {
 			s.logf("adresse %s sans signe de vie, non retirée : %v", name, err)
 			continue
 		}
@@ -237,7 +238,7 @@ func (s *Service) reserve(w http.ResponseWriter, r *http.Request, key string, bo
 		writeError(w, http.StatusBadRequest, strings.TrimPrefix(err.Error(), addresses.ErrInvalid.Error()+" : "))
 		return
 	}
-	target, err := addresses.CheckTarget(request.Target)
+	ip, err := addresses.CheckIP(request.IP)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, strings.TrimPrefix(err.Error(), addresses.ErrInvalid.Error()+" : "))
 		return
@@ -253,8 +254,8 @@ func (s *Service) reserve(w http.ResponseWriter, r *http.Request, key string, bo
 		writeError(w, http.StatusConflict, reason)
 		return
 	}
-	ip := "ip|" + s.clientIP(r)
-	if !s.limits.peek(ip, 24*time.Hour, addresses.ReservationsPerIP, now) {
+	client := "ip|" + s.clientIP(r)
+	if !s.limits.peek(client, 24*time.Hour, addresses.ReservationsPerIP, now) {
 		writeError(w, http.StatusTooManyRequests, "trop de réservations depuis votre connexion aujourd'hui, réessayez demain")
 		return
 	}
@@ -262,14 +263,14 @@ func (s *Service) reserve(w http.ResponseWriter, r *http.Request, key string, bo
 		writeError(w, http.StatusTooManyRequests, "trop de réservations aujourd'hui pour le service, réessayez demain")
 		return
 	}
-	if err := s.DNS.Set(r.Context(), addresses.Hostname(name), target); err != nil {
+	if err := s.DNS.Set(r.Context(), addresses.Hostname(name), ip); err != nil {
 		s.logf("réservation de %s : %v", name, err)
 		writeError(w, http.StatusServiceUnavailable, "l'adresse ne peut pas être écrite pour l'instant, réessayez plus tard")
 		return
 	}
-	s.limits.allow(ip, 24*time.Hour, addresses.ReservationsPerIP, now)
+	s.limits.allow(client, 24*time.Hour, addresses.ReservationsPerIP, now)
 	s.limits.allow("day", 24*time.Hour, addresses.ReservationsPerDay, now)
-	e := &entry{Key: key, Target: target, Reserved: now, LastSeen: now}
+	e := &entry{Key: key, IP: ip, Reserved: now, LastSeen: now}
 	s.data.Names[name] = e
 	delete(s.data.Released, name)
 	if err := s.save(); err != nil {
@@ -298,7 +299,7 @@ func (s *Service) update(w http.ResponseWriter, r *http.Request, key string, bod
 	if !decode(w, body, &request) {
 		return
 	}
-	target, err := addresses.CheckTarget(request.Target)
+	ip, err := addresses.CheckIP(request.IP)
 	if err != nil {
 		writeError(w, http.StatusBadRequest, strings.TrimPrefix(err.Error(), addresses.ErrInvalid.Error()+" : "))
 		return
@@ -311,17 +312,17 @@ func (s *Service) update(w http.ResponseWriter, r *http.Request, key string, bod
 		return
 	}
 	now := s.now()
-	if target != e.Target {
-		if !s.limits.allow("target|"+name, 24*time.Hour, addresses.TargetChangesPerDay, now) {
+	if ip != e.IP {
+		if !s.limits.allow("ip-change|"+name, 24*time.Hour, addresses.IPChangesPerDay, now) {
 			writeError(w, http.StatusTooManyRequests, "l'adresse a changé trop souvent aujourd'hui, réessayez demain")
 			return
 		}
-		if err := s.DNS.Set(r.Context(), addresses.Hostname(name), target); err != nil {
-			s.logf("nouvelle cible de %s : %v", name, err)
+		if err := s.DNS.Set(r.Context(), addresses.Hostname(name), ip); err != nil {
+			s.logf("nouvelle adresse IP de %s : %v", name, err)
 			writeError(w, http.StatusServiceUnavailable, "l'adresse ne peut pas être écrite pour l'instant, réessayez plus tard")
 			return
 		}
-		e.Target = target
+		e.IP = ip
 	}
 	e.LastSeen = now
 	if err := s.save(); err != nil {
@@ -338,7 +339,7 @@ func (s *Service) release(w http.ResponseWriter, r *http.Request, key string, _ 
 	if e == nil {
 		return
 	}
-	if err := s.DNS.Remove(r.Context(), addresses.Hostname(name), e.Target); err != nil {
+	if err := s.DNS.Remove(r.Context(), addresses.Hostname(name)); err != nil {
 		s.logf("libération de %s : %v", name, err)
 		writeError(w, http.StatusServiceUnavailable, "l'adresse ne peut pas être retirée pour l'instant, réessayez plus tard")
 		return
@@ -353,7 +354,7 @@ func (s *Service) release(w http.ResponseWriter, r *http.Request, key string, _ 
 }
 
 func record(name string, e *entry) addresses.Record {
-	return addresses.Record{Name: name, Hostname: addresses.Hostname(name), Target: e.Target, Reserved: e.Reserved, LastSeen: e.LastSeen}
+	return addresses.Record{Name: name, Hostname: addresses.Hostname(name), IP: e.IP, Reserved: e.Reserved, LastSeen: e.LastSeen}
 }
 
 // save écrit le registre (droits 600) en remplaçant l'ancien d'un coup. À appeler sous s.mu.

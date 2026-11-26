@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math/rand/v2"
 	"net/http"
 	"net/url"
 	"os"
@@ -33,8 +34,8 @@ import (
 var (
 	// ErrUnreachable : le service d'adresses ne répond pas.
 	ErrUnreachable = errors.New("le service d'adresses ne répond pas, réessayez plus tard")
-	// ErrNoTarget : pas encore de nom DuckDNS vers lequel faire pointer l'adresse.
-	ErrNoTarget = errors.New("réglez d'abord DuckDNS : votre adresse pointera vers votre nom DuckDNS")
+	// ErrNoIP : l'adresse IP publique de la box n'a pas pu être lue.
+	ErrNoIP = errors.New("l'adresse IP publique de la box n'a pas pu être lue : vérifiez que le Pi est relié à internet, puis réessayez")
 	// ErrNotReserved : l'appliance n'a pas d'adresse.
 	ErrNotReserved = errors.New("cette appliance n'a pas d'adresse pi-appliance.com")
 )
@@ -56,22 +57,27 @@ type Doer interface {
 type State struct {
 	Name     string    `json:"name,omitempty"`
 	Hostname string    `json:"hostname,omitempty"`
-	Target   string    `json:"target,omitempty"`
+	IP       string    `json:"ip,omitempty"`
 	Reserved time.Time `json:"reserved,omitzero"`
 	LastSync time.Time `json:"last_sync,omitzero"`
 	Error    string    `json:"error,omitempty"`
 }
 
-// Client : côté console du service d'adresses. Il réserve, libère, et tient la
-// cible de l'alias à jour avec le nom DuckDNS de l'appliance (spécification 7.1).
+// DefaultLookupURL : service qui renvoie l'adresse IPv4 publique de qui le demande.
+const DefaultLookupURL = "https://api.ipify.org"
+
+// Client : côté console du service d'adresses. Il réserve, libère, et envoie
+// au service l'adresse IP publique de la box (spécification 7.1).
 type Client struct {
-	URL    string
-	Key    *Key
-	Path   string
-	Target func() string // nom DuckDNS actuel, "" s'il n'est pas réglé
-	HTTP   Doer
-	Now    func() time.Time
-	Logf   func(string, ...any)
+	URL       string
+	Key       *Key
+	Path      string
+	LookupURL string // DefaultLookupURL par défaut
+	// PublicIP lit l'adresse IP publique de la box ; nil : par LookupURL.
+	PublicIP func(context.Context) (string, error)
+	HTTP     Doer
+	Now      func() time.Time
+	Logf     func(string, ...any)
 
 	mu    sync.Mutex
 	state State
@@ -112,18 +118,19 @@ func (c *Client) Check(ctx context.Context, name string) (Availability, error) {
 	return result, err
 }
 
-// Reserve réserve name, alias vers le nom DuckDNS actuel.
+// Reserve réserve name, vers l'adresse IP publique actuelle de la box.
 func (c *Client) Reserve(ctx context.Context, name string) (State, error) {
 	name = Normalize(name)
 	if err := Check(name); err != nil {
 		return State{}, err
 	}
-	target := c.target()
-	if target == "" {
-		return State{}, ErrNoTarget
+	ip, err := c.publicIP(ctx)
+	if err != nil {
+		c.logf("adresse IP publique : %v", err)
+		return State{}, ErrNoIP
 	}
 	var record Record
-	if err := c.call(ctx, http.MethodPost, "/api/names", Request{Name: name, Target: target}, true, &record); err != nil {
+	if err := c.call(ctx, http.MethodPost, "/api/names", Request{Name: name, IP: ip}, true, &record); err != nil {
 		return State{}, err
 	}
 	return c.store(record, "")
@@ -144,19 +151,31 @@ func (c *Client) Release(ctx context.Context) error {
 	return err
 }
 
-// Sync envoie la cible actuelle au service ; c'est aussi le signe de vie.
+// Sync lit l'adresse IP publique de la box et l'envoie au service ; c'est aussi le signe de vie.
 func (c *Client) Sync(ctx context.Context) error {
+	ip, err := c.publicIP(ctx)
+	if err != nil {
+		c.logf("adresse IP publique : %v", err)
+		ip = ""
+	}
+	return c.send(ctx, ip)
+}
+
+// send envoie ip au service ("" : l'adresse déjà connue, signe de vie seulement).
+func (c *Client) send(ctx context.Context, ip string) error {
 	state := c.Status()
 	if state.Name == "" {
 		return ErrNotReserved
 	}
-	target := c.target()
-	if target == "" {
-		// DuckDNS effacé : l'alias garde son ancienne cible, le signe de vie part quand même.
-		target = state.Target
+	if ip == "" {
+		ip = state.IP
+	}
+	if ip == "" {
+		c.setError(ErrNoIP.Error())
+		return ErrNoIP
 	}
 	var record Record
-	err := c.call(ctx, http.MethodPut, "/api/names/"+url.PathEscape(state.Name), Request{Target: target}, true, &record)
+	err := c.call(ctx, http.MethodPut, "/api/names/"+url.PathEscape(state.Name), Request{IP: ip}, true, &record)
 	var refused *ServiceError
 	switch {
 	case errors.As(err, &refused) && refused.Status == http.StatusNotFound:
@@ -189,7 +208,7 @@ func (c *Client) Recover(ctx context.Context) error {
 	return err
 }
 
-// WakeUp demande une synchronisation tout de suite (nouveau nom DuckDNS).
+// WakeUp demande un envoi tout de suite (chargement de la console), un par minute au plus.
 func (c *Client) WakeUp() {
 	select {
 	case c.wake <- struct{}{}:
@@ -197,36 +216,98 @@ func (c *Client) WakeUp() {
 	}
 }
 
-// Run tient l'adresse à jour jusqu'à la fin de ctx : cible changée, ou signe de vie chaque jour.
+// Run tient l'adresse à jour jusqu'à la fin de ctx (décision du 2026-11-26) :
+// envoi au démarrage et à chaque chargement de la console (WakeUp), adresse IP
+// publique regardée tous les interval (IPCheck) et envoyée seulement si elle a
+// changé, et un envoi par jour à une heure tirée au hasard entre 5 h et 8 h
+// (heure du Pi), qui vaut signe de vie. Après un échec, nouvel essai à chaque tour.
 func (c *Client) Run(ctx context.Context, interval time.Duration) {
 	if err := c.Recover(ctx); err != nil {
 		c.logf("adresse : %v", err)
 	}
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
+	daily := NextDaily(c.now(), rand.N[time.Duration])
+	force := true // démarrage de la console
+	var lastWake time.Time
 	for {
-		state := c.Status()
-		target := c.target()
-		due := state.Name != "" && (target != "" && target != state.Target || c.now().Sub(state.LastSync) >= Heartbeat || state.Error != "")
-		if due {
-			if err := c.Sync(ctx); err != nil {
-				c.logf("adresse : %v", err)
+		now := c.now()
+		dailyDue := !now.Before(daily)
+		if state := c.Status(); state.Name != "" {
+			ip, err := c.publicIP(ctx)
+			if err != nil {
+				c.logf("adresse IP publique : %v", err)
+				ip = ""
+			}
+			if force || dailyDue || state.Error != "" || ip != "" && ip != state.IP {
+				if err := c.send(ctx, ip); err != nil {
+					c.logf("adresse : %v", err)
+				}
 			}
 		}
+		if dailyDue {
+			daily = NextDaily(now, rand.N[time.Duration])
+		}
+		force = false
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
 		case <-c.wake:
+			if now := c.now(); now.Sub(lastWake) >= time.Minute {
+				force, lastWake = true, now
+			}
 		}
 	}
 }
 
-func (c *Client) target() string {
-	if c.Target == nil {
-		return ""
+// NextDaily : heure du prochain envoi quotidien après now, entre DailyFrom et
+// DailyFrom+DailySpan (heure locale du Pi) ; random tire une durée dans [0, n).
+func NextDaily(now time.Time, random func(n time.Duration) time.Duration) time.Time {
+	day := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	next := day.Add(DailyFrom + random(DailySpan))
+	if !next.After(now) {
+		day = time.Date(now.Year(), now.Month(), now.Day()+1, 0, 0, 0, 0, now.Location())
+		next = day.Add(DailyFrom + random(DailySpan))
 	}
-	return c.Target()
+	return next
+}
+
+// publicIP lit l'adresse IPv4 publique de la box.
+func (c *Client) publicIP(ctx context.Context) (string, error) {
+	if c.PublicIP != nil {
+		ip, err := c.PublicIP(ctx)
+		if err != nil {
+			return "", err
+		}
+		return CheckIP(ip)
+	}
+	return LookupPublicIP(ctx, c.HTTP, c.LookupURL)
+}
+
+// LookupPublicIP demande l'adresse IPv4 publique de la box à lookupURL
+// (DefaultLookupURL si vide), qui la renvoie en texte.
+func LookupPublicIP(ctx context.Context, doer Doer, lookupURL string) (string, error) {
+	if lookupURL == "" {
+		lookupURL = DefaultLookupURL
+	}
+	if doer == nil {
+		doer = &http.Client{Timeout: 15 * time.Second}
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, lookupURL, nil)
+	if err != nil {
+		return "", err
+	}
+	response, err := doer.Do(request)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+	data, _ := io.ReadAll(io.LimitReader(response.Body, 256))
+	if response.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("réponse %d de %s", response.StatusCode, lookupURL)
+	}
+	return CheckIP(string(data))
 }
 
 func (c *Client) now() time.Time {
@@ -252,7 +333,7 @@ func (c *Client) setError(message string) {
 func (c *Client) store(record Record, message string) (State, error) {
 	state := State{Error: message}
 	if record.Name != "" {
-		state = State{Name: record.Name, Hostname: Hostname(record.Name), Target: record.Target, Reserved: record.Reserved, LastSync: c.now()}
+		state = State{Name: record.Name, Hostname: Hostname(record.Name), IP: record.IP, Reserved: record.Reserved, LastSync: c.now()}
 	}
 	data, err := json.MarshalIndent(state, "", "  ")
 	if err != nil {

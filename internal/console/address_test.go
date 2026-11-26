@@ -29,20 +29,23 @@ import (
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
-// memoryDNS : alias gardés en mémoire à la place de Route 53.
+// memoryDNS : enregistrements A gardés en mémoire à la place d'OVH.
 type memoryDNS map[string]string
 
-func (m memoryDNS) Set(_ context.Context, hostname, target string) error {
-	m[hostname] = target
+func (m memoryDNS) Set(_ context.Context, hostname, ip string) error {
+	m[hostname] = ip
 	return nil
 }
 
-func (m memoryDNS) Remove(_ context.Context, hostname, _ string) error {
+func (m memoryDNS) Remove(_ context.Context, hostname string) error {
 	delete(m, hostname)
 	return nil
 }
 
-// newAddressFixture : console reliée à un vrai service d'adresses, Route 53 en mémoire.
+// boxIP : adresse IP publique de la box dans les essais.
+const boxIP = "90.12.34.56"
+
+// newAddressFixture : console reliée à un vrai service d'adresses, OVH en mémoire.
 func newAddressFixture(t *testing.T) (fixture, memoryDNS) {
 	t.Helper()
 	dir := t.TempDir()
@@ -74,7 +77,7 @@ func newAddressFixture(t *testing.T) (fixture, memoryDNS) {
 		t.Fatal(err)
 	}
 	client.URL = server.URL
-	client.Target = func() string { return updater.Status().Hostname }
+	client.PublicIP = func(context.Context) (string, error) { return boxIP, nil }
 	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}}
 	return fixture{handler: Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, DuckDNS: updater, Address: client}), accounts: accounts}, dns
 }
@@ -115,25 +118,20 @@ func TestAddressReserveAndRelease(t *testing.T) {
 	if check := decode[AddressCheck](t, response); !check.Valid || !check.Available {
 		t.Fatalf("libre : %+v", check)
 	}
-	// Sans DuckDNS, l'adresse n'a vers quoi pointer.
-	response = f.do(http.MethodPost, "/pi-appliance/api/address", "application/json", `{"name": "maison"}`, cookie)
-	if response.Code != http.StatusConflict || !strings.Contains(response.Body.String(), "Réglez d'abord DuckDNS") {
-		t.Fatalf("sans DuckDNS : code %d : %s", response.Code, response.Body.String())
-	}
-	f.do(http.MethodPut, "/pi-appliance/api/duckdns", "application/json", `{"domain": "monpi", "token": "`+duckdnsToken+`"}`, cookie)
+	// Sans DuckDNS : l'adresse IP publique de la box est envoyée au service.
 	response = f.do(http.MethodPost, "/pi-appliance/api/address", "application/json", `{"name": "Maison"}`, cookie)
-	if status := decode[AddressStatus](t, response); response.Code != http.StatusOK || status.Hostname != "maison.pi-appliance.com" || status.Target != "monpi.duckdns.org" {
+	if status := decode[AddressStatus](t, response); response.Code != http.StatusOK || status.Hostname != "maison.pi-appliance.com" || status.IP != boxIP {
 		t.Fatalf("réservation : code %d : %+v", response.Code, status)
 	}
-	if dns["maison.pi-appliance.com"] != "monpi.duckdns.org" {
-		t.Fatalf("alias : %v", dns)
+	if dns["maison.pi-appliance.com"] != boxIP {
+		t.Fatalf("enregistrement A : %v", dns)
 	}
 	response = f.do(http.MethodPost, "/pi-appliance/api/address", "application/json", `{"name": "autre"}`, cookie)
 	if response.Code != http.StatusConflict || !strings.Contains(response.Body.String(), "Cette appliance a déjà l'adresse maison.pi-appliance.com") {
 		t.Fatalf("deuxième adresse : code %d : %s", response.Code, response.Body.String())
 	}
 	response = f.do(http.MethodGet, "/pi-appliance/api/address", "", "", cookie)
-	if status := decode[AddressStatus](t, response); !status.Service || status.Name != "maison" || status.DuckDNS != "monpi.duckdns.org" {
+	if status := decode[AddressStatus](t, response); !status.Service || status.Name != "maison" || status.IP != boxIP {
 		t.Fatalf("état : %+v", status)
 	}
 	if response := f.do(http.MethodDelete, "/pi-appliance/api/address", "", "", cookie); response.Code != http.StatusNoContent {

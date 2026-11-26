@@ -3766,9 +3766,6 @@ function showAddress(status) {
   }
   if (!reserved) {
     addressState.replaceChildren(element("span", undefined, "dot orange"), element("span", status.error || t("Pas encore d'adresse pi-appliance.com.")));
-    if (!status.duckdns) {
-      addressDetails.append(element("p", t("Réglez d'abord DuckDNS plus bas : votre adresse pointera vers votre nom DuckDNS."), "meta"));
-    }
     return;
   }
   const state = status.error
@@ -3781,7 +3778,7 @@ function showAddress(status) {
   const linkLine = element("p", undefined, "meta");
   linkLine.append(link);
   addressDetails.append(linkLine);
-  if (status.target) addressDetails.append(element("p", t("Elle pointe vers votre nom DuckDNS {0}.", status.target), "meta"));
+  if (status.ip) addressDetails.append(element("p", t("Elle mène à l'adresse IP de votre box, {0}.", status.ip), "meta"));
   const lastSync = duckDNSDate(status.last_sync);
   if (lastSync) addressDetails.append(element("p", t("Dernier contact avec le service d'adresses le {0}.", lastSync), "meta"));
 }

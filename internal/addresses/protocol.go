@@ -15,7 +15,7 @@ package addresses
 
 import (
 	"fmt"
-	"regexp"
+	"net/netip"
 	"strings"
 	"time"
 )
@@ -24,8 +24,8 @@ import (
 //
 //	GET    /api/names/{name}  libre ou non (public, aussi pour le site)
 //	GET    /api/mine          adresse de l'appliance qui signe
-//	POST   /api/names         réserver {name, target}
-//	PUT    /api/names/{name}  nouvelle cible {target}, vaut aussi signe de vie
+//	POST   /api/names         réserver {name, ip}
+//	PUT    /api/names/{name}  adresse IP {ip}, vaut aussi signe de vie
 //	DELETE /api/names/{name}  libérer
 //
 // Toutes les demandes sauf la première sont signées par la clé de l'appliance (Key.Sign).
@@ -39,14 +39,19 @@ const (
 	Expiry = 90 * 24 * time.Hour
 	// Cooldown : délai avant qu'un nom libéré puisse être repris par une autre appliance.
 	Cooldown = 30 * 24 * time.Hour
-	// Heartbeat : la console donne signe de vie au moins à ce rythme.
-	Heartbeat = 24 * time.Hour
+	// IPCheck : la console regarde l'adresse IP publique de la box à ce rythme
+	// et ne l'envoie au service que si elle a changé (décision du 2026-11-26).
+	IPCheck = 5 * time.Minute
+	// DailyFrom, DailySpan : envoi quotidien, signe de vie, à une heure tirée au
+	// hasard entre 5 h et 8 h, heure du Pi (décision du 2026-11-26).
+	DailyFrom = 5 * time.Hour
+	DailySpan = 3 * time.Hour
 	// ReservationsPerIP : nouvelles réservations par adresse IP et par jour.
 	ReservationsPerIP = 3
 	// ReservationsPerDay : nouvelles réservations par jour, toutes appliances confondues.
 	ReservationsPerDay = 200
-	// TargetChangesPerDay : changements de cible par adresse et par jour.
-	TargetChangesPerDay = 10
+	// IPChangesPerDay : changements d'adresse IP par adresse et par jour.
+	IPChangesPerDay = 10
 	// ChecksPerMinute : questions « ce nom est-il libre ? » par adresse IP et par minute.
 	ChecksPerMinute = 30
 )
@@ -61,15 +66,15 @@ type Availability struct {
 
 // Request : corps de POST /api/names et de PUT /api/names/{name}.
 type Request struct {
-	Name   string `json:"name,omitempty"`
-	Target string `json:"target"`
+	Name string `json:"name,omitempty"`
+	IP   string `json:"ip"`
 }
 
 // Record : adresse réservée, telle que le service la renvoie à son appliance.
 type Record struct {
 	Name     string    `json:"name"`
 	Hostname string    `json:"hostname"`
-	Target   string    `json:"target"`
+	IP       string    `json:"ip"`
 	Reserved time.Time `json:"reserved"`
 	LastSeen time.Time `json:"last_seen"`
 }
@@ -79,14 +84,34 @@ type ErrorBody struct {
 	Error string `json:"error"`
 }
 
-var targetPattern = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.duckdns\.org$`)
-
-// CheckTarget vérifie la cible d'un alias : un nom DuckDNS (spécification 7.1).
-// Le relais du projet (TODO-3.9) s'ajoutera ici.
-func CheckTarget(target string) (string, error) {
-	target = strings.TrimSuffix(strings.ToLower(strings.TrimSpace(target)), ".")
-	if !targetPattern.MatchString(target) {
-		return "", fmt.Errorf("%w : l'adresse doit pointer vers un nom DuckDNS (<nom>.duckdns.org)", ErrInvalid)
+// CheckIP vérifie l'adresse IP envoyée par l'appliance : l'adresse IPv4
+// publique de sa box, écrite en enregistrement A (spécification 7.1).
+func CheckIP(ip string) (string, error) {
+	address, err := netip.ParseAddr(strings.TrimSpace(ip))
+	if err != nil || !address.Is4() || !address.IsGlobalUnicast() || address.IsPrivate() || isUnroutable(address) {
+		return "", fmt.Errorf("%w : l'adresse IP publique de la box est attendue (IPv4)", ErrInvalid)
 	}
-	return target, nil
+	return address.String(), nil
+}
+
+// unroutable : plages IPv4 qui ne sont pas joignables sur internet, en plus des
+// plages privées (RFC 6890) : partage d'opérateur, documentation, essais.
+var unroutable = []netip.Prefix{
+	netip.MustParsePrefix("0.0.0.0/8"),
+	netip.MustParsePrefix("100.64.0.0/10"),
+	netip.MustParsePrefix("192.0.0.0/24"),
+	netip.MustParsePrefix("192.0.2.0/24"),
+	netip.MustParsePrefix("198.18.0.0/15"),
+	netip.MustParsePrefix("198.51.100.0/24"),
+	netip.MustParsePrefix("203.0.113.0/24"),
+	netip.MustParsePrefix("240.0.0.0/4"),
+}
+
+func isUnroutable(address netip.Addr) bool {
+	for _, prefix := range unroutable {
+		if prefix.Contains(address) {
+			return true
+		}
+	}
+	return false
 }

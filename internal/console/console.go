@@ -488,6 +488,11 @@ func (c *console) session(w http.ResponseWriter, r *http.Request) {
 		public := account.Public()
 		state.Account = &public
 		state.Wizard = account.Role == auth.RoleAdmin && c.wizardPending()
+		if c.Address != nil {
+			// Chargement de la console : l'adresse IP de la box part au service
+			// d'adresses (décision du 2026-11-26, un envoi par minute au plus).
+			c.Address.WakeUp()
+		}
 	}
 	writeJSON(w, http.StatusOK, state)
 }
@@ -1118,17 +1123,12 @@ type AddressStatus struct {
 	addresses.State
 	// Service : false si la console ne parle pas au service d'adresses.
 	Service bool `json:"service"`
-	// DuckDNS : nom DuckDNS vers lequel pointera l'adresse ("" : DuckDNS pas réglé).
-	DuckDNS string `json:"duckdns,omitempty"`
 }
 
 func (c *console) addressStatus(w http.ResponseWriter, _ *http.Request) {
 	status := AddressStatus{Service: c.Address != nil}
 	if c.Address != nil {
 		status.State = c.Address.Status()
-	}
-	if c.DuckDNS != nil {
-		status.DuckDNS = c.DuckDNS.Status().Hostname
 	}
 	writeJSON(w, http.StatusOK, status)
 }
@@ -1180,7 +1180,7 @@ func (c *console) addressReserve(w http.ResponseWriter, r *http.Request) {
 		addressError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, AddressStatus{State: state, Service: true, DuckDNS: state.Target})
+	writeJSON(w, http.StatusOK, AddressStatus{State: state, Service: true})
 }
 
 func (c *console) addressRelease(w http.ResponseWriter, r *http.Request) {
@@ -1214,9 +1214,9 @@ func addressError(w http.ResponseWriter, err error) {
 		writeError(w, status, sentence(refused.Message))
 	case errors.Is(err, addresses.ErrInvalid):
 		writeError(w, http.StatusBadRequest, sentence(err.Error()))
-	case errors.Is(err, addresses.ErrNoTarget), errors.Is(err, addresses.ErrNotReserved):
+	case errors.Is(err, addresses.ErrNotReserved):
 		writeError(w, http.StatusConflict, sentence(err.Error()))
-	case errors.Is(err, addresses.ErrUnreachable):
+	case errors.Is(err, addresses.ErrUnreachable), errors.Is(err, addresses.ErrNoIP):
 		writeError(w, http.StatusServiceUnavailable, sentence(err.Error()))
 	default:
 		log.Printf("adresse : %v", err)
@@ -1257,10 +1257,6 @@ func (c *console) duckdnsSave(w http.ResponseWriter, r *http.Request) {
 		log.Printf("DuckDNS : %v", err)
 		writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer les réglages DuckDNS.")
 		return
-	}
-	if c.Address != nil {
-		// Nouveau nom DuckDNS : l'alias pi-appliance.com le suit tout de suite.
-		c.Address.WakeUp()
 	}
 	writeJSON(w, http.StatusOK, c.DuckDNS.Status())
 }
