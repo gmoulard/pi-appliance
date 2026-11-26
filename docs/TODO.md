@@ -36,7 +36,7 @@ Groupes d'actions cohérents, réalisés chacun par le sous-agent `todo-lot` (un
 | LOT-17 | Cartes de la console : affichage, ordre, étiquettes | TODO-5.27, TODO-5.28, TODO-5.29, TODO-5.30 | LOT-6 | [~] |
 | LOT-19 | Branche principale `main` | TODO-0.9 | aucun | [~] |
 | LOT-20 | Docker Compose libre : Rebuild et Source | TODO-2.81, TODO-2.82 | LOT-8 | [~] |
-| LOT-21 | DNS chez OVH et DynDNS des Pi (sans DuckDNS) | TODO-3.19, TODO-3.20, TODO-3.21, TODO-3.2 | aucun (installation du service : LOT-1) | [ ] |
+| LOT-21 | DNS chez OVH et DynDNS des Pi (sans DuckDNS) | TODO-3.19, TODO-3.20, TODO-3.21, TODO-3.2 | aucun (installation du service : LOT-1) | [~] |
 
 LOT-18 (installer un nouveau Pi par l'application, TODO-2.78 à TODO-2.80) a été retiré le 2026-11-26 avec ses actions ; son numéro n'est pas repris.
 
