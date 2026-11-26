@@ -30,7 +30,7 @@ Groupes d'actions cohérents, réalisés chacun par le sous-agent `todo-lot` (un
 | LOT-11 | Services partagés et NautiLink | TODO-2.71, TODO-2.73, TODO-2.74 | LOT-8 | [~] |
 | LOT-12 | Accès depuis internet | TODO-3.1, TODO-3.8, TODO-3.10, TODO-3.17, TODO-3.18 | LOT-2 | [~] |
 | LOT-13 | Console sur internet et comptes | TODO-3.4, TODO-3.11, TODO-3.12, TODO-3.14, TODO-3.15, TODO-3.16, TODO-4.1 | LOT-12 | [~] |
-| LOT-14 | Services du projet | TODO-3.6, TODO-3.7, TODO-3.9 | LOT-1 | [ ] |
+| LOT-14 | Services du projet | TODO-3.6, TODO-3.7, TODO-3.9 | LOT-1 | [~] |
 | LOT-15 | Sauvegardes et restauration | TODO-4.3, TODO-4.10, TODO-4.11, TODO-4.12, TODO-4.13, TODO-4.14 | LOT-2 | [~] |
 | LOT-16 | Alertes, mises à jour et applications de l'étape 3 | TODO-4.2, TODO-4.5, TODO-4.6, TODO-4.8, TODO-4.9 | LOT-2 | [~] |
 | LOT-17 | Cartes de la console : affichage, ordre, étiquettes | TODO-5.27, TODO-5.28, TODO-5.29, TODO-5.30 | LOT-6 | [~] |
