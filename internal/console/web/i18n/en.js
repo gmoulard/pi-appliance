@@ -921,5 +921,14 @@ piTranslations("en", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild of {0}: its images will be downloaded again, even those already on the Pi, then the service recreated and restarted. Its data is kept. Continue?",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuilding {0}… The download may take several minutes.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} has restarted with new images, without data.",
-  "{0} est relancé avec de nouvelles images, données gardées.": "{0} has restarted with new images, data kept."
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} has restarted with new images, data kept.",
+  "Source": "Source",
+  "Fichier lu à l'adresse : ": "File read at the address: ",
+  ", puis modifié avant l'installation.": ", then changed before installation.",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "No web address noted for this file (pasted into the console, or installed before this version).",
+  "Copier le fichier": "Copy the file",
+  "Fichier copié.": "File copied.",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "Container opened at the service address: {0}, port {1}.",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "Container opened at the service address: unknown.",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "This file may contain passwords: show it only to people you trust."
 });

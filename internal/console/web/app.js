@@ -304,10 +304,13 @@ async function loadServices() {
       }
       const advanced = advancedButton(service, card);
       buttons.append(advanced.button);
+      const source = service.app === CUSTOM_APP ? sourceButton(service) : null;
+      if (source) buttons.append(source.button);
       const remove = element("button", t("Désinstaller"), "secondary");
       remove.addEventListener("click", () => uninstall(service, remove));
       buttons.append(remove);
       actions.append(buttons, advanced.panel);
+      if (source) actions.append(source.panel);
       // Hors catalogue : l'administrateur choisit les étiquettes (TODO-5.22).
       if (service.tags_editable) {
         actions.append(tagsChooser(service));
@@ -1531,6 +1534,64 @@ function advancedButton(service, card) {
   return { button, panel };
 }
 
+// Source d'un Docker Compose libre (TODO-2.82) : le fichier tel qu'installé,
+// en lecture seule ; il peut contenir des mots de passe (administrateurs).
+function sourceButton(service) {
+  const button = element("button", t("Source"), "secondary");
+  button.setAttribute("aria-expanded", "false");
+  const panel = element("div", undefined, "compose-source");
+  panel.hidden = true;
+  button.addEventListener("click", async () => {
+    const open = panel.hidden;
+    panel.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    if (!open) {
+      panel.replaceChildren();
+      return;
+    }
+    try {
+      const source = await api(`services/${encodeURIComponent(service.name)}/source`);
+      const origin = element("p", undefined, "meta");
+      if (source.url) {
+        const address = element("span", source.url);
+        address.dir = "ltr";
+        origin.append(t("Fichier lu à l'adresse : "), address, source.edited ? t(", puis modifié avant l'installation.") : ".");
+      } else {
+        origin.textContent = t("Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).");
+      }
+      const text = element("textarea");
+      text.readOnly = true;
+      text.rows = Math.min(20, Math.max(6, source.compose.split("\n").length + 1));
+      text.value = source.compose;
+      text.dir = "ltr";
+      text.spellcheck = false;
+      text.setAttribute("aria-label", t("Fichier compose.yaml"));
+      const copy = element("button", t("Copier le fichier"), "secondary");
+      copy.type = "button";
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(text.value);
+          showMessage([t("Fichier copié.")], "success");
+        } catch {
+          text.select();
+        }
+      });
+      const controls = element("div", undefined, "controls");
+      controls.append(copy);
+      const published = source.service
+        ? t("Conteneur ouvert à l'adresse du service : {0}, port {1}.", source.service, source.port)
+        : t("Conteneur ouvert à l'adresse du service : inconnu.");
+      panel.replaceChildren(origin, element("p", published, "meta"),
+        element("p", t("Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance."), "note"), text, controls);
+    } catch (error) {
+      panel.hidden = true;
+      button.setAttribute("aria-expanded", "false");
+      showMessage([error.message], "error");
+    }
+  });
+  return { button, panel };
+}
+
 // VPN WireGuard (spécification 6.3) : les appareils autorisés et, pour un
 // nouvel appareil, sa configuration en QR code, montrée une seule fois.
 const WIREGUARD_APP = "wireguard";
@@ -1803,6 +1864,7 @@ function customComposeCard() {
   url.placeholder = "https://github.com/…/compose.yaml";
   url.spellcheck = false;
   url.autocapitalize = "none";
+  let fetched = null;
   const fetchButton = element("button", t("Lire le fichier"), "button-outline");
   fetchButton.type = "button";
   urlRow.append(url, fetchButton);
@@ -1820,6 +1882,7 @@ function customComposeCard() {
         body: JSON.stringify({ url: url.value.trim() }),
       });
       compose.value = result.compose;
+      fetched = { url: result.url, compose: compose.value };
       const guess = guessComposeService(result.compose);
       if (guess.service) {
         service.value = guess.service;
@@ -1866,6 +1929,7 @@ function customComposeCard() {
         body: JSON.stringify({
           name: data.get("name"), compose: data.get("compose"), service: data.get("service"),
           port: Number(data.get("port")), confirm_risks: confirm,
+          source_url: fetched ? fetched.url : "", source_edited: Boolean(fetched) && compose.value !== fetched.compose,
         }),
       }));
       if (!result) {
@@ -1875,6 +1939,7 @@ function customComposeCard() {
       succeeded = true;
       showMessage([t("{0} est prêt : https://{1}", result.instance.name, result.instance.address), ...(result.warnings || [])], "success");
       form.reset();
+      fetched = null;
       await loadServices();
       await refreshResources();
     } catch (error) {
@@ -1971,7 +2036,8 @@ async function rebuildService(service, cleanup, button) {
   if (!window.confirm(question)) return;
   button.disabled = true;
   showMessage([t("Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.", service.name)], "info");
-  const stop = watchInstall(service.name, button);
+  // Avancement au-dessus de la rangée de boutons, pas dedans.
+  const stop = watchInstall(service.name, button.parentElement);
   let succeeded = false;
   try {
     await api(`services/${encodeURIComponent(service.name)}/rebuild?data=${cleanup ? "delete" : "keep"}`, { method: "POST" });

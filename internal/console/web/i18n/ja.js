@@ -921,5 +921,14 @@ piTranslations("ja", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "{0} の Rebuild：Pi にすでにあるものも含めてイメージを再ダウンロードし、サービスを作り直して再起動します。データは保持されます。続けますか？",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "{0} を Rebuild しています… ダウンロードには数分かかることがあります。",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} は新しいイメージで、データなしで再起動しました。",
-  "{0} est relancé avec de nouvelles images, données gardées.": "{0} は新しいイメージで再起動しました。データは保持されています。"
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} は新しいイメージで再起動しました。データは保持されています。",
+  "Source": "ソース",
+  "Fichier lu à l'adresse : ": "ファイルの読み込み元アドレス：",
+  ", puis modifié avant l'installation.": "、その後インストール前に変更されました。",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "このファイルには Web アドレスが記録されていません（コンソールに貼り付けたか、このバージョンより前にインストールされました）。",
+  "Copier le fichier": "ファイルをコピー",
+  "Fichier copié.": "ファイルをコピーしました。",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "サービスのアドレスで開くコンテナー：{0}、ポート {1}。",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "サービスのアドレスで開くコンテナー：不明。",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "このファイルにはパスワードが含まれている場合があります。信頼できる人にだけ見せてください。"
 });

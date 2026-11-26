@@ -116,3 +116,31 @@ func TestRebuildCompose(t *testing.T) {
 		t.Fatalf("service du catalogue : code %d : %s", response.Code, response.Body.String())
 	}
 }
+
+func TestComposeSourceAPI(t *testing.T) {
+	f := newFixture(t)
+	admin := f.admin(t)
+	body, _ := json.Marshal(ComposeRequest{Name: "outils", Compose: freeCompose, Service: "web", Port: 80, ConfirmRisks: true, SourceURL: "https://github.com/exemple/depot/blob/main/compose.yaml"})
+	if response := f.do(http.MethodPost, "/pi-appliance/api/compose", "application/json", string(body), admin); response.Code != http.StatusCreated {
+		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
+	}
+	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
+	paul := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil))
+	if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/source", "", "", paul); response.Code != http.StatusForbidden || strings.Contains(response.Body.String(), "nginx") {
+		t.Fatalf("par un utilisateur : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/source", "", "", nil); response.Code != http.StatusUnauthorized {
+		t.Fatalf("sans session : code %d", response.Code)
+	}
+	response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/source", "", "", admin)
+	var source struct {
+		Compose string `json:"compose"`
+		URL     string `json:"url"`
+		Service string `json:"service"`
+		Port    int    `json:"port"`
+	}
+	json.Unmarshal(response.Body.Bytes(), &source)
+	if response.Code != http.StatusOK || response.Header().Get("Cache-Control") != "no-store" || source.Compose != freeCompose || source.URL != "https://github.com/exemple/depot/blob/main/compose.yaml" || source.Service != "web" || source.Port != 80 {
+		t.Fatalf("code %d : %s", response.Code, response.Body.String())
+	}
+}

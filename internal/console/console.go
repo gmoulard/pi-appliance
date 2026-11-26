@@ -127,6 +127,10 @@ type ComposeRequest struct {
 	Service      string `json:"service"`
 	Port         int    `json:"port"`
 	ConfirmRisks bool   `json:"confirm_risks"`
+	// SourceURL : adresse où le fichier a été lu (api/compose/fetch) ;
+	// SourceEdited : modifié dans la console avant l'installation.
+	SourceURL    string `json:"source_url"`
+	SourceEdited bool   `json:"source_edited"`
 }
 
 // StorageUseRequest : placer les données des services sur cette partition ext4.
@@ -284,6 +288,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.advancedSettings))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/progress", c.adminOnly(c.installProgress))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
+	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/source", c.adminOnly(c.composeSource))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/access", c.adminOnly(c.setAccess))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/tags", c.adminOnly(c.setTags))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/subpath", c.adminOnly(c.setSubPath))
@@ -1032,6 +1037,18 @@ func (c *console) removeDevice(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// composeSource : fichier d'un Docker Compose libre tel qu'installé (TODO-2.82) ;
+// il peut contenir des mots de passe : administrateur seulement, pas de cache.
+func (c *console) composeSource(w http.ResponseWriter, r *http.Request) {
+	source, err := c.Services.ComposeSource(r.PathValue("name"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusOK, source)
+}
+
 func (c *console) installCompose(w http.ResponseWriter, r *http.Request) {
 	var request ComposeRequest
 	if !decodeJSON(w, r, &request) {
@@ -1043,6 +1060,8 @@ func (c *console) installCompose(w http.ResponseWriter, r *http.Request) {
 		Service:      request.Service,
 		Port:         request.Port,
 		ConfirmRisks: request.ConfirmRisks,
+		SourceURL:    request.SourceURL,
+		SourceEdited: request.SourceEdited,
 	})
 	if err != nil {
 		writeServiceError(w, err)

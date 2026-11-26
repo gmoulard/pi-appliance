@@ -921,5 +921,14 @@ piTranslations("zh", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "{0} 的 Rebuild：将重新下载其镜像（包括 Pi 上已有的），然后重新创建并启动服务。数据会保留。是否继续？",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "正在 Rebuild {0}… 下载可能需要几分钟。",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} 已使用新镜像重新启动，无数据。",
-  "{0} est relancé avec de nouvelles images, données gardées.": "{0} 已使用新镜像重新启动，数据已保留。"
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} 已使用新镜像重新启动，数据已保留。",
+  "Source": "源文件",
+  "Fichier lu à l'adresse : ": "文件读取自地址：",
+  ", puis modifié avant l'installation.": "，然后在安装前做了修改。",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "此文件没有记录网址（粘贴到控制台的，或在此版本之前安装的）。",
+  "Copier le fichier": "复制文件",
+  "Fichier copié.": "文件已复制。",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "在服务地址打开的容器：{0}，端口 {1}。",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "在服务地址打开的容器：未知。",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "此文件可能包含密码：只给您信任的人看。"
 });

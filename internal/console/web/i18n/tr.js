@@ -921,5 +921,14 @@ piTranslations("tr", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "{0} için Rebuild: imajları, Pi'de zaten bulunanlar dahil yeniden indirilecek, ardından hizmet yeniden oluşturulup başlatılacak. Verileri korunur. Devam edilsin mi?",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "{0} için Rebuild… İndirme birkaç dakika sürebilir.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} yeni imajlarla, verisiz olarak yeniden başlatıldı.",
-  "{0} est relancé avec de nouvelles images, données gardées.": "{0} yeni imajlarla yeniden başlatıldı, veriler korundu."
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} yeni imajlarla yeniden başlatıldı, veriler korundu.",
+  "Source": "Kaynak",
+  "Fichier lu à l'adresse : ": "Dosyanın okunduğu adres: ",
+  ", puis modifié avant l'installation.": ", ardından kurulumdan önce değiştirildi.",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "Bu dosya için kayıtlı web adresi yok (konsola yapıştırıldı veya bu sürümden önce kuruldu).",
+  "Copier le fichier": "Dosyayı kopyala",
+  "Fichier copié.": "Dosya kopyalandı.",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "Hizmetin adresinde açılan konteyner: {0}, port {1}.",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "Hizmetin adresinde açılan konteyner: bilinmiyor.",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "Bu dosya parolalar içerebilir: yalnızca güvendiğiniz kişilere gösterin."
 });

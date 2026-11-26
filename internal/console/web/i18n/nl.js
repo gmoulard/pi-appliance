@@ -921,5 +921,14 @@ piTranslations("nl", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild van {0}: zijn images worden opnieuw gedownload, ook die al op de Pi staan, daarna wordt de dienst opnieuw aangemaakt en gestart. Zijn gegevens blijven bewaard. Doorgaan?",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild van {0}… Het downloaden kan enkele minuten duren.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} draait weer met nieuwe images, zonder gegevens.",
-  "{0} est relancé avec de nouvelles images, données gardées.": "{0} draait weer met nieuwe images, gegevens bewaard."
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} draait weer met nieuwe images, gegevens bewaard.",
+  "Source": "Bron",
+  "Fichier lu à l'adresse : ": "Bestand gelezen op het adres: ",
+  ", puis modifié avant l'installation.": ", daarna gewijzigd vóór de installatie.",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "Geen webadres genoteerd voor dit bestand (in de console geplakt, of vóór deze versie geïnstalleerd).",
+  "Copier le fichier": "Bestand kopiëren",
+  "Fichier copié.": "Bestand gekopieerd.",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "Container geopend op het adres van de dienst: {0}, poort {1}.",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "Container geopend op het adres van de dienst: onbekend.",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "Dit bestand kan wachtwoorden bevatten: laat het alleen zien aan mensen die u vertrouwt."
 });

@@ -675,6 +675,10 @@ select {
   color: #d62839;
 }
 
+.actions > .install-progress {
+  flex-basis: 100%;
+}
+
 .install-progress progress {
   display: block;
   width: 100%;

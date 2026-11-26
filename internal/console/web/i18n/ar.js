@@ -921,5 +921,14 @@ piTranslations("ar", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild لـ {0}: ستُنزَّل صوره من جديد، حتى الموجودة على الـ Pi، ثم تُنشأ الخدمة من جديد وتُشغَّل. تُحفظ بياناته. هل تريد المتابعة؟",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild لـ {0}… قد يستغرق التنزيل عدة دقائق.",
   "{0} est relancé avec de nouvelles images, sans données.": "أُعيد تشغيل {0} بصور جديدة، بلا بيانات.",
-  "{0} est relancé avec de nouvelles images, données gardées.": "أُعيد تشغيل {0} بصور جديدة، مع حفظ البيانات."
+  "{0} est relancé avec de nouvelles images, données gardées.": "أُعيد تشغيل {0} بصور جديدة، مع حفظ البيانات.",
+  "Source": "المصدر",
+  "Fichier lu à l'adresse : ": "قُرئ الملف من العنوان: ",
+  ", puis modifié avant l'installation.": "، ثم عُدِّل قبل التثبيت.",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "لا يوجد عنوان ويب مسجَّل لهذا الملف (لُصق في وحدة التحكم، أو ثُبِّت قبل هذا الإصدار).",
+  "Copier le fichier": "نسخ الملف",
+  "Fichier copié.": "نُسخ الملف.",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "الحاوية المفتوحة على عنوان الخدمة: {0}، المنفذ {1}.",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "الحاوية المفتوحة على عنوان الخدمة: غير معروفة.",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "قد يحتوي هذا الملف على كلمات مرور: لا تُطلع عليه إلا أشخاصًا تثق بهم."
 });

@@ -921,5 +921,14 @@ piTranslations("fa", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild برای {0}: ایمیج‌هایش دوباره دانلود می‌شود، حتی آن‌هایی که روی Pi هستند، سپس سرویس دوباره ساخته و راه‌اندازی می‌شود. داده‌هایش نگه داشته می‌شود. ادامه می‌دهید؟",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild برای {0}… دانلود ممکن است چند دقیقه طول بکشد.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} با ایمیج‌های تازه، بدون داده، دوباره راه‌اندازی شد.",
-  "{0} est relancé avec de nouvelles images, données gardées.": "{0} با ایمیج‌های تازه دوباره راه‌اندازی شد، داده‌ها نگه داشته شد."
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} با ایمیج‌های تازه دوباره راه‌اندازی شد، داده‌ها نگه داشته شد.",
+  "Source": "منبع",
+  "Fichier lu à l'adresse : ": "فایل از این نشانی خوانده شد: ",
+  ", puis modifié avant l'installation.": "، سپس پیش از نصب تغییر کرد.",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "هیچ نشانی وبی برای این فایل ثبت نشده است (در کنسول چسبانده شده، یا پیش از این نسخه نصب شده است).",
+  "Copier le fichier": "کپی فایل",
+  "Fichier copié.": "فایل کپی شد.",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "کانتینری که در نشانی سرویس باز می‌شود: {0}، پورت {1}.",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "کانتینری که در نشانی سرویس باز می‌شود: نامشخص.",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "این فایل ممکن است گذرواژه داشته باشد: آن را فقط به افراد مورد اعتماد نشان دهید."
 });

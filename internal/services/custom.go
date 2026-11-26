@@ -212,6 +212,10 @@ type CustomRequest struct {
 	Port    int
 	// ConfirmRisks : l'administrateur a confirmé les options dangereuses.
 	ConfirmRisks bool
+	// SourceURL : adresse où la console a lu le fichier ; SourceEdited : il a
+	// été modifié avant l'installation (source.go).
+	SourceURL    string
+	SourceEdited bool
 }
 
 // InstallCustom installe un fichier Docker Compose hors marketplace, avec les
@@ -247,6 +251,11 @@ func (m *Manager) InstallCustom(ctx context.Context, request CustomRequest) (Res
 	warnings := []string{Unsupported}
 	for _, risk := range risks {
 		warnings = append(warnings, risk.Message)
+	}
+	if err == nil {
+		if err := m.writeSource(request.Name, sourceFile{URL: request.SourceURL, Edited: request.SourceEdited, Service: request.Service, Port: request.Port}); err != nil {
+			warnings = append(warnings, fmt.Sprintf("Le fichier est installé, mais son adresse, son conteneur et son port n'ont pas pu être notés pour le bouton « Source » : %v", err))
+		}
 	}
 	result.Warnings = append(warnings, result.Warnings...)
 	return result, err

@@ -921,5 +921,14 @@ piTranslations("it", {
   "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild di {0}: le sue immagini saranno riscaricate, anche quelle già sul Pi, poi il servizio sarà ricreato e riavviato. I suoi dati sono conservati. Continuare?",
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild di {0}… Il download può richiedere diversi minuti.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} è ripartito con immagini nuove, senza dati.",
-  "{0} est relancé avec de nouvelles images, données gardées.": "{0} è ripartito con immagini nuove, dati conservati."
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} è ripartito con immagini nuove, dati conservati.",
+  "Source": "Sorgente",
+  "Fichier lu à l'adresse : ": "File letto all'indirizzo: ",
+  ", puis modifié avant l'installation.": ", poi modificato prima dell'installazione.",
+  "Pas d'adresse web notée pour ce fichier (collé dans la console, ou installé avant cette version).": "Nessun indirizzo web annotato per questo file (incollato nella console, o installato prima di questa versione).",
+  "Copier le fichier": "Copia il file",
+  "Fichier copié.": "File copiato.",
+  "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "Container aperto all'indirizzo del servizio: {0}, porta {1}.",
+  "Conteneur ouvert à l'adresse du service : inconnu.": "Container aperto all'indirizzo del servizio: sconosciuto.",
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "Questo file può contenere password: mostralo solo a persone di fiducia."
 });

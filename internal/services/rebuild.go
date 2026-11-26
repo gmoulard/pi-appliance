@@ -24,7 +24,7 @@ import (
 
 // keptFiles : réglages d'un service gardés par « Rebuild cleanup » ; le reste
 // de son dossier (dossiers montés en ./…) est de la donnée.
-var keptFiles = []string{composeName, overrideName, envName, stateName, advancedName, advancedSettings, previousName, databaseFile}
+var keptFiles = []string{composeName, overrideName, envName, stateName, advancedName, advancedSettings, previousName, databaseFile, sourceName}
 
 func (m *Manager) customInstance(name string) (Instance, error) {
 	instance, err := m.instance(name)
