@@ -920,5 +920,18 @@ piTranslations("ja", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi を更新しています：まずシステム、次に pi-appliance です。数分から 30 分ほどかかります。Pi の電源を抜かず、このページを開いたままにしてください。",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Pi は最新です。続けてください：設定の最後に再起動し、それで更新が完了します。",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "更新できませんでした。後で「マイ Pi」でやり直せます。設定を続けてください。",
-  "La mise à jour prend trop de temps.": "更新に時間がかかりすぎています。"
+  "La mise à jour prend trop de temps.": "更新に時間がかかりすぎています。",
+  "Remettre une sauvegarde": "バックアップを復元する",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "新しい SD カードですか？バックアップ用の USB ディスクを接続してください。アカウント、設定、サービスが選んだ日付の状態に戻ります。",
+  "Sauvegarde": "バックアップ",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "バックアップの日付に使われていた管理者パスワード",
+  "Remettre cette sauvegarde": "このバックアップを復元する",
+  "Créer plutôt un nouveau compte": "代わりに新しいアカウントを作成する",
+  "Choisissez le disque USB des sauvegardes :": "バックアップ用の USB ディスクを選んでください：",
+  "Branchez le disque USB des sauvegardes.": "バックアップ用の USB ディスクを接続してください。",
+  "Aucune sauvegarde sur ce disque.": "このディスクにはバックアップがありません。",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}、Pi「{1}」（{2}、{3}）",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "アプライアンスを {0} の状態に戻しますか？バックアップのアカウント、設定、サービスがこの Pi のものに置き換わります。",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "復元中… 最後にコンソールが再起動します。数分かかることがあります。",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "アプライアンスを復元しました。バックアップのアカウントでサインインしてください。"
 });

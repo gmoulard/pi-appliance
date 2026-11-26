@@ -29,6 +29,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/addresses"
@@ -256,10 +257,12 @@ type Config struct {
 	PublicIP func(context.Context) (string, error)
 	// LookupHost : résolution des adresses internet du Pi ; nil : résolveur du système.
 	LookupHost func(context.Context, string) ([]string, error)
+	Restart    func()
 }
 
 type console struct {
 	Config
+	restoring atomic.Bool
 }
 
 func Handler(config Config) http.Handler {
@@ -332,6 +335,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
 	c.accountRoutes(mux)
+	c.restoreRoutes(mux)
 	c.mailRoutes(mux)
 	c.alertRoutes(mux)
 	c.oidcRoutes(mux)
@@ -506,6 +510,11 @@ func (c *console) session(w http.ResponseWriter, r *http.Request) {
 func (c *console) setup(w http.ResponseWriter, r *http.Request) {
 	var request SetupRequest
 	if !decodeJSON(w, r, &request) {
+		return
+	}
+	// NE PAS retirer : un compte créé pendant la restauration de l'appliance écraserait les comptes remis.
+	if c.restoring.Load() {
+		writeError(w, http.StatusConflict, "Une sauvegarde est en train d'être remise : ses comptes reviennent, attendez la fin.")
 		return
 	}
 	account, err := c.Accounts.CreateAdmin(request.Name, request.Email, request.Password)

@@ -531,6 +531,24 @@ func (s *Store) fail(keys []string, now time.Time) {
 	}
 }
 
+func (s *Store) Throttled(keys ...string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	now := s.Now()
+	for _, key := range keys {
+		if wait := s.blocked(key, now); wait > 0 {
+			return TooManyError{Wait: wait}
+		}
+	}
+	return nil
+}
+
+func (s *Store) Failed(keys ...string) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.fail(keys, s.Now())
+}
+
 func (s *Store) blocked(key string, now time.Time) time.Duration {
 	f, ok := s.failures[key]
 	if !ok || f.count < freeAttempts {

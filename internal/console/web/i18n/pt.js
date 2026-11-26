@@ -920,5 +920,18 @@ piTranslations("pt", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "O Pi está a atualizar-se: primeiro o sistema, depois o pi-appliance. Demora de alguns minutos a meia hora. Não desligue o Pi e mantenha esta página aberta.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "O Pi está atualizado. Continue: vai reiniciar no fim da configuração, o que termina a atualização.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "Não foi possível fazer a atualização. Poderá refazê-la mais tarde em «O meu Pi». Continue a configuração.",
-  "La mise à jour prend trop de temps.": "A atualização está a demorar demasiado."
+  "La mise à jour prend trop de temps.": "A atualização está a demorar demasiado.",
+  "Remettre une sauvegarde": "Restaurar uma cópia de segurança",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "Cartão SD novo? Ligue o disco USB das cópias de segurança: as contas, as definições e os serviços voltam tal como estavam na data escolhida.",
+  "Sauvegarde": "Cópia de segurança",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "Palavra-passe de administrador em vigor na data da cópia de segurança",
+  "Remettre cette sauvegarde": "Restaurar esta cópia de segurança",
+  "Créer plutôt un nouveau compte": "Criar antes uma conta nova",
+  "Choisissez le disque USB des sauvegardes :": "Escolha o disco USB das cópias de segurança:",
+  "Branchez le disque USB des sauvegardes.": "Ligue o disco USB das cópias de segurança.",
+  "Aucune sauvegarde sur ce disque.": "Nenhuma cópia de segurança neste disco.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi «{1}» ({2}, {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "Repor o appliance tal como estava a {0}? As contas, as definições e os serviços da cópia de segurança substituem os deste Pi.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Restauro em curso… A consola reinicia no fim: pode demorar vários minutos.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "O appliance está restaurado: inicie sessão com uma conta da cópia de segurança."
 });

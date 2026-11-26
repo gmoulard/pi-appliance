@@ -920,5 +920,18 @@ piTranslations("tr", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi şimdi güncelleniyor: önce sistemi, sonra pi-appliance. Bu birkaç dakikadan yarım saate kadar sürer. Pi'nin fişini çekmeyin ve bu sayfayı açık tutun.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Pi güncel. Devam edin: kurulumun sonunda yeniden başlayacak ve böylece güncelleme tamamlanacak.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "Güncelleme yapılamadı. Daha sonra “Pi'm” bölümünden yeniden yapabilirsiniz. Kuruluma devam edin.",
-  "La mise à jour prend trop de temps.": "Güncelleme çok uzun sürüyor."
+  "La mise à jour prend trop de temps.": "Güncelleme çok uzun sürüyor.",
+  "Remettre une sauvegarde": "Bir yedeği geri yükle",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "Yeni SD kart mı? Yedeklerin bulunduğu USB diski takın: hesaplar, ayarlar ve hizmetler seçilen tarihteki hâlleriyle geri gelir.",
+  "Sauvegarde": "Yedek",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "Yedeğin alındığı tarihte geçerli olan yönetici parolası",
+  "Remettre cette sauvegarde": "Bu yedeği geri yükle",
+  "Créer plutôt un nouveau compte": "Bunun yerine yeni bir hesap oluştur",
+  "Choisissez le disque USB des sauvegardes :": "Yedeklerin bulunduğu USB diski seçin:",
+  "Branchez le disque USB des sauvegardes.": "Yedeklerin bulunduğu USB diski takın.",
+  "Aucune sauvegarde sur ce disque.": "Bu diskte yedek yok.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi “{1}” ({2}, {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "Cihaz {0} tarihindeki hâline geri getirilsin mi? Yedeğin hesapları, ayarları ve hizmetleri bu Pi'ninkilerin yerini alır.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Geri yükleniyor… Konsol sonunda yeniden başlar: bu birkaç dakika sürebilir.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "Cihaz geri yüklendi: yedekteki bir hesapla oturum açın."
 });

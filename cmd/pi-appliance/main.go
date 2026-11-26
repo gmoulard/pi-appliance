@@ -334,6 +334,10 @@ func main() {
 		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),
 		PortMapper:       portMapper,
 		PublicIP:         func(ctx context.Context) (string, error) { return addresses.LookupPublicIP(ctx, nil, "") },
+		Restart: func() {
+			log.Printf("appliance restaurée : la console redémarre pour relire sa configuration")
+			os.Exit(75)
+		},
 	}
 	if *cliTokenFile != "" {
 		token, err := cli.WriteToken(*cliTokenFile)

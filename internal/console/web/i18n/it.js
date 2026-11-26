@@ -920,5 +920,18 @@ piTranslations("it", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Il Pi si sta aggiornando: prima il sistema, poi pi-appliance. Ci vogliono da pochi minuti a mezz'ora. Non scollegare il Pi e tieni aperta questa pagina.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Il Pi è aggiornato. Continua: si riavvierà alla fine della configurazione, il che completa l'aggiornamento.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "Non è stato possibile fare l'aggiornamento. Potrai rifarlo più tardi in «Il mio Pi». Continua la configurazione.",
-  "La mise à jour prend trop de temps.": "L'aggiornamento richiede troppo tempo."
+  "La mise à jour prend trop de temps.": "L'aggiornamento richiede troppo tempo.",
+  "Remettre une sauvegarde": "Ripristinare un backup",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "Nuova scheda SD? Collega il disco USB dei backup: gli account, le impostazioni e i servizi tornano come erano alla data scelta.",
+  "Sauvegarde": "Backup",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "Password di amministratore in vigore alla data del backup",
+  "Remettre cette sauvegarde": "Ripristinare questo backup",
+  "Créer plutôt un nouveau compte": "Creare invece un nuovo account",
+  "Choisissez le disque USB des sauvegardes :": "Scegli il disco USB dei backup:",
+  "Branchez le disque USB des sauvegardes.": "Collega il disco USB dei backup.",
+  "Aucune sauvegarde sur ce disque.": "Nessun backup su questo disco.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi «{1}» ({2}, {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "Riportare l'appliance com'era il {0}? Gli account, le impostazioni e i servizi del backup sostituiscono quelli di questo Pi.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Ripristino in corso… La console si riavvia alla fine: può richiedere diversi minuti.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "L'appliance è ripristinata: accedi con un account del backup."
 });

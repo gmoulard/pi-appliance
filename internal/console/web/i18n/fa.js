@@ -920,5 +920,18 @@ piTranslations("fa", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi اکنون در حال به‌روزرسانی است: نخست سیستم آن، سپس pi-appliance. این کار از چند دقیقه تا نیم ساعت طول می‌کشد. Pi را از برق نکشید و این صفحه را باز نگه دارید.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Pi به‌روز است. ادامه دهید: در پایان راه‌اندازی دوباره راه‌اندازی می‌شود و به‌روزرسانی کامل می‌شود.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "به‌روزرسانی انجام نشد. می‌توانید بعداً آن را در «Pi من» دوباره انجام دهید. راه‌اندازی را ادامه دهید.",
-  "La mise à jour prend trop de temps.": "به‌روزرسانی بیش از حد طول می‌کشد."
+  "La mise à jour prend trop de temps.": "به‌روزرسانی بیش از حد طول می‌کشد.",
+  "Remettre une sauvegarde": "بازگرداندن یک پشتیبان",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "کارت SD تازه؟ دیسک USB پشتیبان‌ها را وصل کنید: حساب‌ها، تنظیمات و سرویس‌ها همان‌طور که در تاریخ انتخاب‌شده بودند برمی‌گردند.",
+  "Sauvegarde": "پشتیبان",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "گذرواژهٔ مدیر که در تاریخ پشتیبان معتبر بود",
+  "Remettre cette sauvegarde": "بازگرداندن این پشتیبان",
+  "Créer plutôt un nouveau compte": "به‌جای آن یک حساب تازه بسازید",
+  "Choisissez le disque USB des sauvegardes :": "دیسک USB پشتیبان‌ها را انتخاب کنید:",
+  "Branchez le disque USB des sauvegardes.": "دیسک USB پشتیبان‌ها را وصل کنید.",
+  "Aucune sauvegarde sur ce disque.": "هیچ پشتیبانی روی این دیسک نیست.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}، Pi «{1}» ({2}، {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "دستگاه به همان حالتی که در {0} بود برگردد؟ حساب‌ها، تنظیمات و سرویس‌های پشتیبان جای موارد این Pi را می‌گیرند.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "بازگردانی در جریان است… کنسول در پایان دوباره راه‌اندازی می‌شود: ممکن است چند دقیقه طول بکشد.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "دستگاه بازگردانده شد: با یکی از حساب‌های پشتیبان وارد شوید."
 });

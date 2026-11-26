@@ -920,5 +920,18 @@ piTranslations("ar", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "يجري الآن تحديث Pi: نظامه أولًا، ثم pi-appliance. يستغرق ذلك من بضع دقائق إلى نصف ساعة. لا تفصل Pi عن الكهرباء وأبقِ هذه الصفحة مفتوحة.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Pi محدَّث. تابع: سيُعاد تشغيله في نهاية الإعداد، وبذلك يكتمل التحديث.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "تعذّر إجراء التحديث. يمكنك إعادته لاحقًا من «الـPi الخاص بي». تابع الإعداد.",
-  "La mise à jour prend trop de temps.": "يستغرق التحديث وقتًا طويلًا جدًا."
+  "La mise à jour prend trop de temps.": "يستغرق التحديث وقتًا طويلًا جدًا.",
+  "Remettre une sauvegarde": "استعادة نسخة احتياطية",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "بطاقة SD جديدة؟ صِل قرص USB الخاص بالنسخ الاحتياطية: تعود الحسابات والإعدادات والخدمات كما كانت في التاريخ المختار.",
+  "Sauvegarde": "النسخة الاحتياطية",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "كلمة مرور المسؤول السارية في تاريخ النسخة الاحتياطية",
+  "Remettre cette sauvegarde": "استعادة هذه النسخة الاحتياطية",
+  "Créer plutôt un nouveau compte": "إنشاء حساب جديد بدلًا من ذلك",
+  "Choisissez le disque USB des sauvegardes :": "اختر قرص USB الخاص بالنسخ الاحتياطية:",
+  "Branchez le disque USB des sauvegardes.": "صِل قرص USB الخاص بالنسخ الاحتياطية.",
+  "Aucune sauvegarde sur ce disque.": "لا توجد نسخة احتياطية على هذا القرص.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}، Pi «{1}» ({2}، {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "هل تريد إعادة الجهاز كما كان في {0}؟ تحلّ حسابات النسخة الاحتياطية وإعداداتها وخدماتها محلّ ما في هذا الـPi.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "الاستعادة جارية… تُعيد وحدة التحكم تشغيل نفسها في النهاية: قد يستغرق ذلك عدة دقائق.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "تمت استعادة الجهاز: سجّل الدخول بحساب من النسخة الاحتياطية."
 });

@@ -920,5 +920,18 @@ piTranslations("en", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "The Pi is now updating: its system, then pi-appliance. This takes from a few minutes to half an hour. Do not unplug the Pi and keep this page open.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "The Pi is up to date. Continue: it will restart at the end of the setup, which finishes the update.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "The update could not be done. You can do it again later in “My Pi”. Continue the setup.",
-  "La mise à jour prend trop de temps.": "The update is taking too long."
+  "La mise à jour prend trop de temps.": "The update is taking too long.",
+  "Remettre une sauvegarde": "Restore a backup",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "New SD card? Plug in the USB backup disk: accounts, settings and services come back as they were on the chosen date.",
+  "Sauvegarde": "Backup",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "Administrator password in use on the date of the backup",
+  "Remettre cette sauvegarde": "Restore this backup",
+  "Créer plutôt un nouveau compte": "Create a new account instead",
+  "Choisissez le disque USB des sauvegardes :": "Choose the USB backup disk:",
+  "Branchez le disque USB des sauvegardes.": "Plug in the USB backup disk.",
+  "Aucune sauvegarde sur ce disque.": "No backup on this disk.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi “{1}” ({2}, {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "Put the appliance back as it was on {0}? The accounts, settings and services of the backup replace those of this Pi.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Restoring… The console restarts at the end: this can take several minutes.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "The appliance is restored: sign in with an account from the backup."
 });

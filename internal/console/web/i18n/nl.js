@@ -920,5 +920,18 @@ piTranslations("nl", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "De Pi wordt nu bijgewerkt: eerst zijn systeem, dan pi-appliance. Dit duurt van enkele minuten tot een half uur. Haal de stekker van de Pi er niet uit en houd deze pagina open.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "De Pi is bijgewerkt. Ga verder: hij herstart aan het einde van de installatie, waarmee de update wordt afgerond.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "De update kon niet worden uitgevoerd. U kunt hem later opnieuw doen in „Mijn Pi”. Ga verder met de installatie.",
-  "La mise à jour prend trop de temps.": "De update duurt te lang."
+  "La mise à jour prend trop de temps.": "De update duurt te lang.",
+  "Remettre une sauvegarde": "Een back-up terugzetten",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "Nieuwe SD-kaart? Sluit de USB-schijf met de back-ups aan: de accounts, de instellingen en de diensten komen terug zoals ze waren op de gekozen datum.",
+  "Sauvegarde": "Back-up",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "Beheerderswachtwoord dat gold op de datum van de back-up",
+  "Remettre cette sauvegarde": "Deze back-up terugzetten",
+  "Créer plutôt un nouveau compte": "Liever een nieuw account aanmaken",
+  "Choisissez le disque USB des sauvegardes :": "Kies de USB-schijf met de back-ups:",
+  "Branchez le disque USB des sauvegardes.": "Sluit de USB-schijf met de back-ups aan.",
+  "Aucune sauvegarde sur ce disque.": "Geen back-up op deze schijf.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi „{1}” ({2}, {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "De appliance terugzetten zoals hij was op {0}? De accounts, instellingen en diensten van de back-up vervangen die van deze Pi.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Bezig met terugzetten… De console start aan het eind opnieuw: dit kan enkele minuten duren.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "De appliance is teruggezet: meld u aan met een account uit de back-up."
 });
