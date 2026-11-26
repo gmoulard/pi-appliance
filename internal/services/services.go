@@ -98,6 +98,8 @@ type Instance struct {
 	RedirectHosts []string `json:"redirect_hosts,omitempty"`
 	// Database : base du PostgreSQL partagé créée pour ce service (database.go, TODO-2.73).
 	Database *Database `json:"database,omitempty"`
+	// LocalCertificate : certificat local du Pi vu par le service (clé local_certificate).
+	LocalCertificate string `json:"local_certificate,omitempty"`
 }
 
 type Result struct {
@@ -129,14 +131,17 @@ type Manager struct {
 	Images ImagePuller
 	// Firewall charge le pare-feu des ports « maison seulement »
 	// (homeports.go) ; nil : « nft -f ».
-	Firewall   func(ctx context.Context, path string) error
-	mu         sync.Mutex
-	progressMu sync.Mutex
-	progress   map[string]*Progress
-	renamed    atomic.Pointer[string]
-	linkMu     sync.Mutex
-	wakeOnce   sync.Once
-	wake       chan struct{}
+	Firewall func(ctx context.Context, path string) error
+	// LocalCertificate : certificat local du Pi (local.crt), copié dans les
+	// services qui le demandent (clé local_certificate) ; vide : aucun.
+	LocalCertificate string
+	mu               sync.Mutex
+	progressMu       sync.Mutex
+	progress         map[string]*Progress
+	renamed          atomic.Pointer[string]
+	linkMu           sync.Mutex
+	wakeOnce         sync.Once
+	wake             chan struct{}
 }
 
 // CurrentDomain : adresse de l'appliance, d'où vient l'adresse de chaque service (ServiceAddress).
@@ -285,6 +290,9 @@ func (m *Manager) install(ctx context.Context, app marketplace.App, name string,
 		return Result{Warnings: warnings}, fmt.Errorf("%s n'a pas pu démarrer : %s", app.Name, trimOutput(output, err))
 	}
 	instance := Instance{Name: name, App: app.ID, AppName: app.Name, Address: address, InstalledAt: time.Now().UTC(), NoWebPage: app.Port == 0, HostPorts: app.HostPorts, Access: webAccess(app)}
+	if m.wantsLocalCertificate(app) {
+		instance.LocalCertificate = localCertificateTarget(app)
+	}
 	if err := writeJSON(filepath.Join(dir, stateName), instance, 0o600); err != nil {
 		return Result{}, err
 	}
@@ -368,6 +376,11 @@ func (m *Manager) writeFiles(dir string, app marketplace.App, name, address stri
 	if err := os.WriteFile(filepath.Join(dir, composeName), app.Compose, 0o600); err != nil {
 		return err
 	}
+	if m.wantsLocalCertificate(app) {
+		if _, err := m.copyLocalCertificate(name); err != nil {
+			return err
+		}
+	}
 	if err := writeEnv(dir, env); err != nil {
 		return err
 	}
@@ -437,6 +450,7 @@ func (m *Manager) override(app marketplace.App, name, address string) map[string
 	if app.ID == CameraApp {
 		addCameras(services)
 	}
+	m.localCertificateOverride(app, name, services)
 	doc := map[string]any{
 		"services": services,
 		"networks": map[string]any{Network: map[string]any{"external": true}},

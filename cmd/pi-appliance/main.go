@@ -153,7 +153,7 @@ func main() {
 	if *diagnosticScript != "" {
 		diag = &diagnostic.Client{Runner: network.Script(*diagnosticScript)}
 	}
-	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Images: services.DockerAPI{}, Measure: services.Measure, FollowName: true}
+	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Images: services.DockerAPI{}, Measure: services.Measure, FollowName: true, LocalCertificate: filepath.Join(*tlsDir, "local.crt")}
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name == "domain" {
 			manager.FollowName = false

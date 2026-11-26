@@ -119,6 +119,9 @@ func (m *Manager) LinkNextcloud(ctx context.Context) error {
 			if err := m.linkSites(ctx, instance.Name, sites); err != nil {
 				errs = append(errs, fmt.Errorf("%s : %w", instance.Name, err))
 			}
+			if err := m.trustLocalCertificate(ctx, instance); err != nil {
+				errs = append(errs, fmt.Errorf("%s, certificat local du Pi : %w", instance.Name, err))
+			}
 		}
 	}
 	return errors.Join(errs...)

@@ -366,15 +366,16 @@ func TestPublishedTags(t *testing.T) {
 	}
 }
 
-func TestWithoutTags(t *testing.T) {
+func TestWithoutPublishedKeys(t *testing.T) {
 	cases := map[string]string{
-		"x-pi-appliance:\n  name: A\n  tags: [site-web]\n  port: 80\nservices: {}\n":                    "x-pi-appliance:\n  name: A\n  port: 80\nservices: {}\n",
-		"x-pi-appliance:\n  name: A\n  tags:\n    - site-web\n    - maison\n  port: 80\nservices: {}\n": "x-pi-appliance:\n  name: A\n  port: 80\nservices: {}\n",
-		"x-pi-appliance:\n  name: A\n  tags:\n  - site-web\n  port: 80\nservices:\n  tags: {}\n":        "x-pi-appliance:\n  name: A\n  port: 80\nservices:\n  tags: {}\n",
+		"x-pi-appliance:\n  name: A\n  local_certificate:\n    service: app\n    path: /pi\n  port: 80\nservices: {}\n": "x-pi-appliance:\n  name: A\n  port: 80\nservices: {}\n",
+		"x-pi-appliance:\n  name: A\n  tags: [site-web]\n  port: 80\nservices: {}\n":                                    "x-pi-appliance:\n  name: A\n  port: 80\nservices: {}\n",
+		"x-pi-appliance:\n  name: A\n  tags:\n    - site-web\n    - maison\n  port: 80\nservices: {}\n":                 "x-pi-appliance:\n  name: A\n  port: 80\nservices: {}\n",
+		"x-pi-appliance:\n  name: A\n  tags:\n  - site-web\n  port: 80\nservices:\n  tags: {}\n":                        "x-pi-appliance:\n  name: A\n  port: 80\nservices:\n  tags: {}\n",
 	}
 	for in, want := range cases {
-		if got := string(withoutTags([]byte(in))); got != want {
-			t.Errorf("withoutTags(%q) = %q", in, got)
+		if got := string(withoutPublishedKeys([]byte(in))); got != want {
+			t.Errorf("withoutPublishedKeys(%q) = %q", in, got)
 		}
 	}
 }
@@ -402,5 +403,41 @@ func TestHomeOnlyPortsNotPublished(t *testing.T) {
 	}
 	if published["partage"] || !published["wireguard"] || !published["dokuwiki"] {
 		t.Fatalf("publiés : %v", published)
+	}
+}
+
+func TestLocalCertificateKey(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	cloud, _ := catalog.Get("nextcloud")
+	if cloud.LocalCertificate == nil || cloud.LocalCertificate.Service != "app" || strings.Contains(string(cloud.Compose), "local_certificate") {
+		t.Fatalf("nextcloud : %+v", cloud.LocalCertificate)
+	}
+	planned, err := BuiltinPlanned(catalog)
+	if err != nil {
+		t.Fatal(err)
+	}
+	data, _ := json.Marshal(Publish(catalog, planned))
+	manifests, err := ReadDocument(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, manifest := range manifests {
+		if manifest.ID == "nextcloud" && (manifest.Err != nil || manifest.App.LocalCertificate == nil || *manifest.App.LocalCertificate != *cloud.LocalCertificate) {
+			t.Fatalf("relu du catalogue publié : %+v %v", manifest.App.LocalCertificate, manifest.Err)
+		}
+	}
+	base := "x-pi-appliance:\n  name: A\n  description: d\n  icon: M0 0\n  category: c\n  tags: [site-web]\n  license: MIT\n  subdomain: a\n  service: app\n  port: 80\n  memory_mb: 1\n  disk_mb: 1\n  login: application\n  access: public\n"
+	for name, key := range map[string]string{
+		"service absent": "  local_certificate:\n    service: autre\n    path: /pi\n",
+		"chemin relatif": "  local_certificate:\n    service: app\n    path: pi\n",
+		"racine":         "  local_certificate:\n    service: app\n    path: /\n",
+		"chemin non net": "  local_certificate:\n    service: app\n    path: /a/../etc\n",
+	} {
+		if _, err := Parse("a", []byte(base+key+"services:\n  app:\n    image: nginx\n")); err == nil {
+			t.Errorf("%s accepté", name)
+		}
 	}
 }

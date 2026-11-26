@@ -58,6 +58,11 @@ type FileMount struct {
 	Path    string `yaml:"path" json:"-"`
 }
 
+type LocalCertificate struct {
+	Service string `yaml:"service" json:"service"`
+	Path    string `yaml:"path" json:"path"`
+}
+
 type Parameter struct {
 	Name     string `yaml:"name" json:"name"`
 	Label    string `yaml:"label" json:"label"`
@@ -83,6 +88,8 @@ type App struct {
 	Parameters  []Parameter `yaml:"parameters" json:"parameters"`
 	HostPorts   []HostPort  `yaml:"host_ports" json:"host_ports,omitempty"`
 	Files       []FileMount `yaml:"files" json:"-"`
+	// NE PAS publier dans le fichier Compose : les consoles 0.2.7 et avant refusent la clé (withoutPublishedKeys).
+	LocalCertificate *LocalCertificate `yaml:"local_certificate" json:"local_certificate,omitempty"`
 	// SiteFiles : le service reçoit des fichiers déposés (champ files).
 	SiteFiles bool `yaml:"-" json:"site_files"`
 	// Web est faux pour un service sans page web (port absent) : rien n'est
@@ -199,7 +206,7 @@ func Parse(id string, data []byte) (App, error) {
 	app.ID = id
 	app.Web = app.Port != 0
 	app.SiteFiles = len(app.Files) > 0
-	app.Compose = withoutTags(data)
+	app.Compose = withoutPublishedKeys(data)
 	if problems := check(app, file); len(problems) > 0 {
 		return App{}, fmt.Errorf("manifeste %s : %s", id, strings.Join(problems, " ; "))
 	}
@@ -267,6 +274,7 @@ func check(app App, file composeFile) []string {
 			fail("files : chemin %q invalide (chemin absolu, autre que /)", mount.Path)
 		}
 	}
+	problems = append(problems, checkLocalCertificate(app.LocalCertificate, file)...)
 	if app.MemoryMB <= 0 || app.DiskMB <= 0 {
 		fail("memory_mb et disk_mb doivent être positifs")
 	}
@@ -289,6 +297,20 @@ func check(app App, file composeFile) []string {
 			fail("paramètre %s sans label", parameter.Name)
 		}
 		seen[parameter.Name] = true
+	}
+	return problems
+}
+
+func checkLocalCertificate(certificate *LocalCertificate, file composeFile) []string {
+	if certificate == nil {
+		return nil
+	}
+	var problems []string
+	if _, ok := file.Services[certificate.Service]; !ok {
+		problems = append(problems, fmt.Sprintf("local_certificate : service %q absent de services", certificate.Service))
+	}
+	if !path.IsAbs(certificate.Path) || path.Clean(certificate.Path) != certificate.Path || certificate.Path == "/" {
+		problems = append(problems, fmt.Sprintf("local_certificate : chemin %q invalide (chemin absolu, autre que /)", certificate.Path))
 	}
 	return problems
 }

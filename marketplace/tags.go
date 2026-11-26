@@ -72,10 +72,7 @@ func checkTags(tags []string) []string {
 	return problems
 }
 
-// withoutTags retire la clé tags de x-pi-appliance du fichier Compose : les
-// consoles 0.1.0 à 0.1.3 refusent cette clé, et les étiquettes voyagent dans
-// le champ tags du catalogue publié (spécification 6.5).
-func withoutTags(data []byte) []byte {
+func withoutPublishedKeys(data []byte) []byte {
 	lines := strings.SplitAfter(string(data), "\n")
 	var kept strings.Builder
 	inMeta, skipping := false, false
@@ -93,7 +90,7 @@ func withoutTags(data []byte) []byte {
 				keyIndent = indent
 			}
 			if indent == keyIndent && !strings.HasPrefix(trimmed, "- ") {
-				skipping = strings.HasPrefix(trimmed, "tags:")
+				skipping = strings.HasPrefix(trimmed, "tags:") || strings.HasPrefix(trimmed, "local_certificate:")
 			}
 		}
 		if inMeta && skipping && (blank || indent >= keyIndent) {
