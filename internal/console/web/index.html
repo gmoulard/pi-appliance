@@ -183,6 +183,19 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <p id="storageState"></p>
 <ul id="storageDisks" class="wifi-list"></ul>
 </div>
+<div id="sdcardBox" class="card" data-theme="entretien" hidden>
+<h3>Préparer une carte SD</h3>
+<p class="meta">Copiez pi-appliance sur une carte SD pour installer un autre Pi : mettez la carte dans un lecteur de cartes branché sur un port USB de ce Pi.</p>
+<p id="sdcardState" aria-live="polite"></p>
+<div id="sdcardProgressBox" class="install-progress" hidden>
+<progress id="sdcardProgress" max="100" value="0"></progress>
+</div>
+<ul id="sdcardCards" class="wifi-list"></ul>
+<div class="controls">
+<button type="button" id="sdcardRefresh" class="secondary">Chercher à nouveau</button>
+<button type="button" id="sdcardCancel" class="secondary" hidden>Annuler la copie</button>
+</div>
+</div>
 <div id="backupBox" class="card" data-theme="entretien" hidden>
 <h3>Sauvegardes</h3>
 <p id="backupState"></p>

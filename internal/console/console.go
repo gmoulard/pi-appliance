@@ -43,6 +43,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/oidc"
+	"github.com/gmoulard/pi-appliance/internal/sdcard"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
@@ -186,6 +187,7 @@ type Config struct {
 	Network *network.Client
 	// Storage peut être nil (poste de développement) : pas de disque USB.
 	Storage *storage.Client
+	SDCard  *sdcard.Manager
 	// Resources lit l'état du Pi ; nil : jauges absentes.
 	Resources func() system.Resources
 	// History : historique des graphiques sur 30 jours ; nil : pas de graphiques.
@@ -334,6 +336,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
+	mux.HandleFunc("GET "+BasePath+"/api/sdcard", c.adminOnly(c.sdcardStatus))
+	mux.HandleFunc("POST "+BasePath+"/api/sdcard/write", c.adminOnly(c.sdcardWrite))
+	mux.HandleFunc("POST "+BasePath+"/api/sdcard/cancel", c.adminOnly(c.sdcardCancel))
 	c.accountRoutes(mux)
 	c.restoreRoutes(mux)
 	c.mailRoutes(mux)

@@ -52,7 +52,7 @@ here=$(cd "$(dirname "$0")" && pwd)
 # Clé du dépôt Docker (https://docs.docker.com/engine/install/debian/), vérifiée.
 DOCKER_KEY_FINGERPRINT=9DC858229FC7DD38854AE2D88D81803C0EBFCD88
 
-PACKAGES="ca-certificates curl gnupg jq openssl iw network-manager dnsmasq-base avahi-daemon avahi-utils fdisk e2fsprogs nftables"
+PACKAGES="ca-certificates curl gnupg jq openssl iw network-manager dnsmasq-base avahi-daemon avahi-utils fdisk e2fsprogs nftables xz-utils"
 
 export DEBIAN_FRONTEND=noninteractive
 # NE PAS sauter les paquets à la mise à jour : un paquet ajouté par une nouvelle

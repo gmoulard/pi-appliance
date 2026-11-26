@@ -37,6 +37,7 @@ Groupes d'actions cohérents, réalisés chacun par le sous-agent `todo-lot` (un
 | LOT-19 | Branche principale `main` | TODO-0.9 | aucun | [~] |
 | LOT-20 | Docker Compose libre : Rebuild et Source | TODO-2.81, TODO-2.82 | LOT-8 | [~] |
 | LOT-21 | DNS chez OVH et DynDNS des Pi (sans DuckDNS) | TODO-3.19, TODO-3.20, TODO-3.21, TODO-3.2 | aucun (installation du service : LOT-1) | [~] |
+| LOT-22 | Préparer une carte SD depuis la console | TODO-2.83 | aucun | [~] |
 
 LOT-18 (installer un nouveau Pi par l'application, TODO-2.78 à TODO-2.80) a été retiré le 2026-11-26 avec ses actions ; son numéro n'est pas repris.
 
@@ -159,6 +160,16 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - [~] Console : bouton « Associer avec le bouton de la box » en premier (`POST api/network/wifi/wps`, réponse avant la fermeture du point d'accès), confirmation avant la coupure, consignes ensuite, résultat lu dans l'état (`lastError`) ; textes dans les 12 langues ; saisie à la main gardée.
   - [ ] Piste : code QR Wi-Fi de l'étiquette de la box lu par l'application mobile (pi-appliance-pwa, jsQR), le mot de passe n'allant qu'au Pi.
   - [ ] Piste : Wi-Fi Easy Connect (DPP), si le pilote de la puce du Pi et `wpa_supplicant` le permettent.
+- [~] **TODO-2.83**: Préparer une carte SD (spécification 4 ; demande de l'utilisateur du 2026-11-26 : « un service pour copier des images pi-appliance sur une carte SD qui est dans un des ports USB » ; tranché le même jour : une carte « Préparer une carte SD » de « Mon Pi », pas un service de la marketplace). Réalisé (`internal/sdcard`, `internal/console/sdcard.go`, API `api/sdcard`, carte de « Mon Pi », textes dans les 12 langues ; `xz-utils` ajouté aux paquets de `install.sh`), pas encore essayé sur un vrai Pi avec une vraie carte. Dépend de : aucune.
+  - Critères d'acceptation : sur un vrai Pi, une carte SD dans un lecteur USB est listée avec son modèle et sa taille (la carte du Pi, le disque des données, le disque des sauvegardes et un disque monté ne le sont pas, ou refusés) ; après la confirmation, la jauge avance, la relecture passe et « Vous pouvez retirer la carte » s'affiche ; la carte démarre un autre Pi (assistant du premier démarrage) ; une copie annulée laisse une carte effacée ; un lecteur débranché pendant la copie donne un échec en langage courant.
+  - [x] Liste des disques USB amovibles (`lsblk`, transport `usb`, `RM`) avec modèle et taille ; refusés avec la raison : disque du système (`/`, `/boot`, `/boot/firmware`), disque des données ou des sauvegardes choisi dans la console (UUID de `/etc/fstab`), disque monté, disque non amovible, lecteur sans carte, carte plus petite que l'image ; le disque est ouvert avec `O_EXCL`, qui refuse aussi un disque utilisé ; tests Go.
+  - [x] Image : la plus récente des versions stables qui ont une image `*.img.xz` et son `.sha256` (les versions « socle seulement » n'en ont pas) ; taille de l'image lue dans l'index du fichier xz (deux lectures partielles), sans le télécharger.
+  - [x] Copie en flux, sans rien écrire sur la carte du Pi : téléchargement, empreinte SHA-256 du fichier calculée en route et comparée au `.sha256` publié, décompression par `xz -dc`, écriture directe sur le périphérique, `fsync` et vidage du cache (`BLKFLSBUF`), relecture et comparaison de l'empreinte de ce qui a été écrit ; en cas d'échec ou d'annulation, le premier mégaoctet est effacé pour qu'un Pi ne démarre pas sur une carte à moitié écrite ; tests Go (empreinte fausse refusée, relecture différente = échec, annulation, une seule copie à la fois).
+  - [x] Écran : liste, confirmation qui nomme la carte (modèle, taille) et dit que tout sera effacé, jauge en %, annulation, « Vous pouvez retirer la carte » ; réservé aux administrateurs, écriture depuis la maison seulement ; essai dans Chromium avec une console simulée.
+  - [ ] Essai sur un vrai Pi avec une vraie carte et un lecteur USB (durée, jauge, relecture, carte qui démarre un autre Pi).
+  - [!] Bloqué par : décision de l'utilisateur. Préréglage de la nouvelle carte (Wi-Fi de la maison, nom, langue) : pas fait, question ouverte (spécification 15).
+  - [!] Bloqué par : décision de l'utilisateur. Disques USB non amovibles (SSD USB pour démarrer un Pi 4 ou 5 dessus) : refusés aujourd'hui ; question ouverte (spécification 15).
+  - [ ] La copie n'est pas gardée si la console redémarre (mise à jour, panne) : la carte reste à moitié écrite sans message. Question ouverte (spécification 15).
 
 ### Marketplace (6)
 
