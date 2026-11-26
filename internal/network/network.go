@@ -170,6 +170,12 @@ func (c *Client) SetName(ctx context.Context, name string) (json.RawMessage, err
 	return c.run(ctx, scanTimeout, nil, "name", name)
 }
 
+// ResetName rend au Pi son nom de départ, celui du premier démarrage
+// (remise à zéro, spécification 8.5).
+func (c *Client) ResetName(ctx context.Context) (json.RawMessage, error) {
+	return c.run(ctx, scanTimeout, nil, "name-default")
+}
+
 // Test vérifie le réseau choisi (relié, adresse, box, internet, retrouvé après
 // un redémarrage) sans toucher au point d'accès, qui partage la puce Wi-Fi.
 func (c *Client) Test(ctx context.Context) (json.RawMessage, error) {

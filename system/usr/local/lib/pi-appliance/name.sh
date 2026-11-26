@@ -21,6 +21,7 @@
 #   name.sh boot        au démarrage, avant NetworkManager et avahi (pi-appliance-secrets.service)
 #   name.sh get         nom actuel
 #   name.sh set <nom>   nouveau nom, choisi dans la console (par « network.sh name »)
+#   name.sh default     nom de départ du Pi (remise à zéro, par « network.sh name-default »)
 #   name.sh check       une fois sur le réseau de la maison : si <nom>.local est déjà
 #                       pris par un autre appareil, choisit et applique un autre nom
 #
@@ -196,9 +197,10 @@ case "${1:-}" in
 boot) boot ;;
 get) current_name ;;
 set) set_name "${2:-}" ;;
+default) default_name ;;
 check) check ;;
 *)
-	echo "usage : name.sh boot | get | set <nom> | check" >&2
+	echo "usage : name.sh boot | get | set <nom> | default | check" >&2
 	exit 2
 	;;
 esac

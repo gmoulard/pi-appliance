@@ -333,7 +333,7 @@ func main() {
 		PortMapper:       portMapper,
 		PublicIP:         func(ctx context.Context) (string, error) { return addresses.LookupPublicIP(ctx, nil, "") },
 		Restart: func() {
-			log.Printf("appliance restaurée : la console redémarre pour relire sa configuration")
+			log.Printf("appliance restaurée ou remise à zéro : la console redémarre pour relire sa configuration")
 			os.Exit(75)
 		},
 	}

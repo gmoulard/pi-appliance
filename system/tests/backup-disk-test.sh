@@ -43,6 +43,30 @@ lsblk='{"blockdevices": [
 expect "données sur la carte SD : tous les disques" "" '["/dev/sda","/dev/sdb"]'
 expect "sans le disque des données" "/dev/sda" '["/dev/sdb"]'
 
+# Remise à zéro : le disque est oublié (fstab, démontage), jamais effacé.
+TMP=$(mktemp -d)
+trap 'rm -rf "$TMP"' EXIT
+FSTAB=$TMP/fstab
+printf 'PARTUUID=1 / ext4 defaults 0 1\nUUID=abc %s ext4 defaults,noatime,nofail 0 2\n' "$BACKUP_MOUNT" >"$FSTAB"
+backup_device() { echo /dev/sdb1; }
+umount() { echo "$*" >>"$TMP/umount"; }
+sync() { :; }
+systemctl() { :; }
+wipefs() { echo wipefs >>"$TMP/forbidden"; }
+got=$(forget_disk)
+if [ "$got" != '{"ok":true}' ] && [ "$(echo "$got" | jq -c .)" != '{"ok":true}' ]; then
+	echo "ÉCHEC oubli : $got"
+	failures=$((failures + 1))
+fi
+if grep -q "$BACKUP_MOUNT" "$FSTAB" || ! grep -q '^PARTUUID=1 ' "$FSTAB"; then
+	echo "ÉCHEC oubli : fstab $(cat "$FSTAB")"
+	failures=$((failures + 1))
+fi
+if [ "$(cat "$TMP/umount")" != "$BACKUP_MOUNT" ] || [ -e "$TMP/forbidden" ]; then
+	echo "ÉCHEC oubli : démontage $(cat "$TMP/umount" 2>/dev/null)"
+	failures=$((failures + 1))
+fi
+
 if [ "$failures" -gt 0 ]; then
 	echo "$failures échec(s)"
 	exit 1

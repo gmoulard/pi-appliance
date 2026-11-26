@@ -14,11 +14,20 @@
 package console
 
 import (
+	"context"
+	"encoding/json"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
+
+	"github.com/gmoulard/pi-appliance/internal/alerts"
+	"github.com/gmoulard/pi-appliance/internal/backup"
+	"github.com/gmoulard/pi-appliance/internal/cockpit"
+	"github.com/gmoulard/pi-appliance/internal/network"
+	"github.com/gmoulard/pi-appliance/marketplace"
 )
 
 const factoryPath = "/pi-appliance/api/factory-reset"
@@ -40,41 +49,101 @@ func TestFactoryResetNeedsAdminPassword(t *testing.T) {
 	}
 }
 
-func TestFactoryResetKeepsServices(t *testing.T) {
+type scriptCalls struct {
+	mu    sync.Mutex
+	out   map[string]string
+	calls []string
+}
+
+func (s *scriptCalls) Run(_ context.Context, _ []byte, args ...string) ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.calls = append(s.calls, strings.Join(args, " "))
+	return []byte(s.out[args[0]]), nil
+}
+
+func (s *scriptCalls) list() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return strings.Join(s.calls, ",")
+}
+
+// Tout est effacé sauf le Wi-Fi ; le disque de sauvegarde est seulement oublié.
+func TestFactoryResetErasesAllButWiFi(t *testing.T) {
 	f := newFixture(t)
 	cookie := f.admin(t)
-	if response := f.install(`{"app": "dokuwiki", "name": "wiki"}`, cookie); response.Code != http.StatusCreated {
-		t.Fatalf("installation : %d %s", response.Code, response.Body.String())
+	for _, body := range []string{`{"app": "postgresql", "name": "base"}`, `{"app": "dokuwiki", "name": "wiki"}`} {
+		if response := f.install(body, cookie); response.Code != http.StatusCreated {
+			t.Fatalf("installation : %d %s", response.Code, response.Body.String())
+		}
 	}
+	dir := t.TempDir()
+	disk := &scriptCalls{out: map[string]string{"forget": `{"ok": true}`}}
+	backups := &backup.Manager{Dir: dir, Services: f.manager, Disks: &backup.Disks{Runner: disk}}
+	if err := backups.SetSettings(backup.DefaultSettings); err != nil {
+		t.Fatal(err)
+	}
+	if err := backups.Protect(adminPassword); err != nil {
+		t.Fatal(err)
+	}
+	net := &scriptCalls{out: map[string]string{"name-default": `{"ok": true, "name": "pi-appliance-3f2a"}`}}
+	alertsFile := filepath.Join(dir, "alerts.json")
+	monitor := &alerts.Monitor{Path: alertsFile}
+	if err := monitor.SetEnabled(alerts.Disk, false); err != nil {
+		t.Fatal(err)
+	}
+	internetFile := filepath.Join(dir, "internet-console.json")
+	if err := os.WriteFile(internetFile, []byte(`{"enabled": true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cockpitAccess := &cockpit.AccessFile{Path: filepath.Join(dir, "cockpit-access.json")}
+	if err := cockpitAccess.Set(cockpit.Access{Internet: true, Users: true}); err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.handler = Handler(Config{Version: "1.2.3", Catalog: catalog, Services: f.manager, Accounts: f.accounts, ACMEEmailFile: f.acmeEmailFile,
+		Backups: backups, Network: &network.Client{Runner: net}, Alerts: monitor, InternetFile: internetFile, CockpitAccess: cockpitAccess})
 	response := f.do(http.MethodPost, factoryPath, "application/json", `{"confirm": true, "password": "`+adminPassword+`"}`, cookie)
 	if response.Code != http.StatusOK {
 		t.Fatalf("code %d : %s", response.Code, response.Body.String())
 	}
+	var result FactoryResetResult
+	if err := json.Unmarshal(response.Body.Bytes(), &result); err != nil || result.Name != "pi-appliance-3f2a" || len(result.Problems) != 0 {
+		t.Fatalf("%s %v", response.Body.String(), err)
+	}
 	if !f.accounts.SetupNeeded() {
 		t.Fatal("comptes gardés")
 	}
-	if _, err := os.Stat(f.acmeEmailFile); !os.IsNotExist(err) {
-		t.Fatalf("adresse e-mail de l'administrateur gardée : %v", err)
+	if instances, _ := f.manager.List(); len(instances) != 0 {
+		t.Fatalf("services gardés : %v", instances)
 	}
-	instances, err := f.manager.List()
-	if err != nil || len(instances) != 1 {
-		t.Fatalf("services %v %v", instances, err)
+	if got := net.list(); got != "name-default" {
+		t.Fatalf("réseau : %s (le Wi-Fi ne doit pas être touché)", got)
+	}
+	if got := disk.list(); got != "forget" {
+		t.Fatalf("disque de sauvegarde : %s (jamais formaté)", got)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "backup")); !os.IsNotExist(err) {
+		t.Fatalf("réglages et clé des sauvegardes gardés : %v", err)
+	}
+	for _, file := range []string{internetFile, f.acmeEmailFile} {
+		if _, err := os.Stat(file); !os.IsNotExist(err) {
+			t.Fatalf("%s gardé : %v", file, err)
+		}
+	}
+	if access := cockpitAccess.Get(); access.Internet || access.Users {
+		t.Fatalf("accès à Cockpit gardé : %+v", access)
+	}
+	for _, setting := range (&alerts.Monitor{Path: alertsFile}).Settings() {
+		if !setting.Enabled {
+			t.Fatalf("alerte %s encore coupée", setting.Type)
+		}
 	}
 	if response := f.do(http.MethodGet, "/pi-appliance/api/services", "", "", cookie); response.Code != http.StatusUnauthorized {
 		t.Fatalf("ancienne session encore ouverte : %d", response.Code)
-	}
-}
-
-func TestFactoryResetDeletesServicesOnRequest(t *testing.T) {
-	f := newFixture(t)
-	cookie := f.admin(t)
-	f.install(`{"app": "dokuwiki", "name": "wiki"}`, cookie)
-	response := f.do(http.MethodPost, factoryPath, "application/json", `{"confirm": true, "delete_services": true, "password": "`+adminPassword+`"}`, cookie)
-	if response.Code != http.StatusOK {
-		t.Fatalf("code %d : %s", response.Code, response.Body.String())
-	}
-	if instances, _ := f.manager.List(); len(instances) != 0 {
-		t.Fatalf("services gardés : %v", instances)
 	}
 }
 

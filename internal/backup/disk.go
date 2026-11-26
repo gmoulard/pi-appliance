@@ -117,6 +117,13 @@ func (d *Disks) Use(ctx context.Context, partition string) error {
 	return err
 }
 
+// Forget démonte le disque de sauvegarde et le retire de /etc/fstab, sans
+// rien effacer dessus.
+func (d *Disks) Forget(ctx context.Context) error {
+	_, err := d.run(ctx, time.Minute, "forget")
+	return err
+}
+
 // Format efface un disque, y crée une partition ext4 et l'utilise.
 func (d *Disks) Format(ctx context.Context, disk string) error {
 	if !devicePattern.MatchString(disk) {
