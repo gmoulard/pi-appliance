@@ -1,0 +1,149 @@
+# This file is part of pi-appliance <https://github.com/gmoulard/pi-appliance>.
+# Copyright (c) 2026 Guillaume Moulard.
+#
+# Licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives
+# 4.0 International License (CC BY-NC-ND 4.0), with the additional permissions
+# of the LICENSE file at the root of the project: this file may be shared and
+# integrated into another project unmodified, keeping this notice and a link to
+# the project; modified versions may only be published to propose them to the
+# official repository. Commercial use requires a separate licence from the
+# author: guillaume@moulard.org.
+#
+# See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
+
+# Zone pi-appliance.com chez OVH, par l'API OVH et les secrets OVH_* :
+# « verifier » lit les droits des clés, la zone et ses enregistrements sans rien
+# changer ; « dynhost » crée ou met à jour l'entrée DynHost <nom>.pi-appliance.com
+# (adresse donnée, sinon celle du nom « depuis »), puis recharge la zone.
+# NE PAS afficher les secrets ni les en-têtes signés dans le journal.
+
+---
+name: OVH
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "verifier (lecture seule) ou dynhost (créer ou mettre à jour)"
+        type: choice
+        options: [verifier, dynhost]
+        default: verifier
+      nom:
+        description: "Sous-domaine de pi-appliance.com"
+        default: vdl
+      ip:
+        description: "Adresse IPv4 (vide : celle du nom « depuis »)"
+        default: ""
+      depuis:
+        description: "Nom dont l'adresse IPv4 est reprise si « ip » est vide"
+        default: vdl.moulard.org
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ovh
+  cancel-in-progress: false
+
+jobs:
+  ovh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: API OVH
+        env:
+          OVH_AK: ${{ secrets.OVH_Application_key }}
+          OVH_AS: ${{ secrets.OVH_Application_secret }}
+          OVH_CK: ${{ secrets.OVH_Consumer_Key }}
+          ACTION: ${{ inputs.action }}
+          NOM: ${{ inputs.nom }}
+          IP: ${{ inputs.ip }}
+          DEPUIS: ${{ inputs.depuis }}
+        shell: python3 {0}
+        run: |
+          import hashlib, ipaddress, json, os, re, socket, subprocess, sys, time, urllib.error, urllib.request
+
+          ZONE = "pi-appliance.com"
+          BASE = "https://eu.api.ovh.com/1.0"
+          ak, sec, ck = os.environ["OVH_AK"], os.environ["OVH_AS"], os.environ["OVH_CK"]
+          if not (ak and sec and ck):
+              print("::error::secrets OVH_Application_key, OVH_Application_secret ou OVH_Consumer_Key absents")
+              sys.exit(1)
+          resume = open(os.environ["GITHUB_STEP_SUMMARY"], "a")
+
+          def note(ligne):
+              print(ligne)
+              resume.write(ligne + "\n")
+
+          def heure():
+              with urllib.request.urlopen(BASE + "/auth/time", timeout=20) as r:
+                  return int(r.read())
+
+          decalage = heure() - int(time.time())
+
+          def api(methode, chemin, corps=None):
+              url = BASE + chemin
+              donnees = "" if corps is None else json.dumps(corps)
+              ts = str(int(time.time()) + decalage)
+              signe = "$1$" + hashlib.sha1("+".join([sec, ck, methode, url, donnees, ts]).encode()).hexdigest()
+              req = urllib.request.Request(url, method=methode, data=donnees.encode() if corps is not None else None)
+              req.add_header("X-Ovh-Application", ak)
+              req.add_header("X-Ovh-Consumer", ck)
+              req.add_header("X-Ovh-Timestamp", ts)
+              req.add_header("X-Ovh-Signature", signe)
+              req.add_header("Content-Type", "application/json")
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      texte = r.read().decode()
+                      return json.loads(texte) if texte else None
+              except urllib.error.HTTPError as e:
+                  message = e.read().decode(errors="replace")
+                  print(f"::error::{methode} {chemin} : HTTP {e.code} {message}")
+                  sys.exit(1)
+
+          moi = api("GET", "/auth/currentCredential")
+          note(f"## Clés OVH : {moi.get('status')}, expiration {moi.get('expiration') or 'aucune'}")
+          for regle in moi.get("rules", []):
+              note(f"- {regle.get('method')} {regle.get('path')}")
+
+          zone = api("GET", f"/domain/zone/{ZONE}")
+          note(f"## Zone {ZONE}")
+          note(f"- serveurs OVH de la zone : {', '.join(zone.get('nameServers', []))}")
+          try:
+              ns = subprocess.run(["dig", "+short", "NS", ZONE], capture_output=True, text=True, timeout=20).stdout.split()
+              note(f"- serveurs annoncés sur internet : {', '.join(ns) or 'aucun'}")
+          except (OSError, subprocess.SubprocessError):
+              note("- serveurs annoncés sur internet : dig indisponible")
+
+          nom = os.environ["NOM"].strip().lower()
+          if not re.fullmatch(r"[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?", nom):
+              print(f"::error::nom invalide : {nom!r}")
+              sys.exit(1)
+
+          for rid in api("GET", f"/domain/zone/{ZONE}/record?subDomain={nom}"):
+              r = api("GET", f"/domain/zone/{ZONE}/record/{rid}")
+              note(f"- enregistrement {nom} : {r['fieldType']} {r['target']} (ttl {r.get('ttl')})")
+          dyn = api("GET", f"/domain/zone/{ZONE}/dynHost/record?subDomain={nom}")
+          for did in dyn:
+              d = api("GET", f"/domain/zone/{ZONE}/dynHost/record/{did}")
+              note(f"- DynHost {nom} : {d['ip']}")
+
+          if os.environ["ACTION"] != "dynhost":
+              sys.exit(0)
+
+          ip = os.environ["IP"].strip()
+          if not ip:
+              depuis = os.environ["DEPUIS"].strip()
+              ip = socket.getaddrinfo(depuis, None, socket.AF_INET)[0][4][0]
+              note(f"- adresse de {depuis} : {ip}")
+          if not isinstance(ipaddress.ip_address(ip), ipaddress.IPv4Address) or not ipaddress.ip_address(ip).is_global:
+              print(f"::error::adresse IPv4 publique attendue : {ip}")
+              sys.exit(1)
+
+          if dyn:
+              api("PUT", f"/domain/zone/{ZONE}/dynHost/record/{dyn[0]}", {"ip": ip})
+              note(f"## DynHost {nom}.{ZONE} mis à jour : {ip}")
+          else:
+              api("POST", f"/domain/zone/{ZONE}/dynHost/record", {"subDomain": nom, "ip": ip})
+              note(f"## DynHost {nom}.{ZONE} créé : {ip}")
+          api("POST", f"/domain/zone/{ZONE}/refresh")
+          note("- zone rechargée")
