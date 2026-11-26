@@ -14,6 +14,15 @@
 // Traduction de la console : néerlandais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("nl", {
+  "Tous les services qui demandent une connexion.": "Alle diensten die om aanmelden vragen.",
+  "Seulement : {0}.": "Alleen: {0}.",
+  "Aucun service.": "Geen enkele dienst.",
+  "Services ouverts à ce compte": "Diensten open voor dit account",
+  "Limiter ce compte à certains services": "Dit account beperken tot bepaalde diensten",
+  "Aucun service installé ne demande de connexion.": "Geen geïnstalleerde dienst vraagt om aanmelden.",
+  "Enregistrer les services": "Diensten opslaan",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "Diensten die voor iedereen of alleen thuis open zijn, vragen niet om aanmelden: deze instelling sluit ze niet af.",
+  "Services de {0} enregistrés.": "Diensten van {0} opgeslagen.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "De console opent alleen thuis. Aanbevolen voordat u hem opent: zet tweestapsverificatie aan in „Mijn account”.",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "De console op internet openen? Elk account kan dan vanaf internet aanmelden met zijn wachtwoord. Aanbevolen: tweestapsverificatie, in „Mijn account”.",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Beheer uw Pi overal vandaan, op zijn internetadres. Aanbevolen: zet tweestapsverificatie aan in „Mijn account”, want vanaf internet kan iedereen proberen een wachtwoord te raden.",

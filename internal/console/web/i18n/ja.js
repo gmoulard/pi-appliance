@@ -14,6 +14,15 @@
 // Traduction de la console : japonais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ja", {
+  "Tous les services qui demandent une connexion.": "ログインが必要なすべてのサービス。",
+  "Seulement : {0}.": "次のみ：{0}。",
+  "Aucun service.": "サービスなし。",
+  "Services ouverts à ce compte": "このアカウントが使えるサービス",
+  "Limiter ce compte à certains services": "このアカウントを一部のサービスに限定する",
+  "Aucun service installé ne demande de connexion.": "ログインが必要なサービスはインストールされていません。",
+  "Enregistrer les services": "サービスを保存",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "全員に公開、または自宅のみのサービスはログインを求めません。この設定ではそれらは閉じられません。",
+  "Services de {0} enregistrés.": "{0} のサービスを保存しました。",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "コンソールは自宅でのみ開きます。開く前に推奨：「マイアカウント」で 2 段階認証を有効にしてください。",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "コンソールをインターネットに公開しますか？各アカウントがパスワードでインターネットからログインできるようになります。推奨：「マイアカウント」の 2 段階認証。",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "インターネット上のアドレスで、どこからでも Pi を管理できます。推奨：「マイアカウント」で 2 段階認証を有効にしてください。インターネットからは誰でもパスワードの推測を試せるためです。",

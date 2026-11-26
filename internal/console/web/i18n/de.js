@@ -14,6 +14,15 @@
 // Traduction de la console : allemand. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("de", {
+  "Tous les services qui demandent une connexion.": "Alle Dienste, die eine Anmeldung verlangen.",
+  "Seulement : {0}.": "Nur: {0}.",
+  "Aucun service.": "Kein Dienst.",
+  "Services ouverts à ce compte": "Für dieses Konto geöffnete Dienste",
+  "Limiter ce compte à certains services": "Dieses Konto auf bestimmte Dienste beschränken",
+  "Aucun service installé ne demande de connexion.": "Kein installierter Dienst verlangt eine Anmeldung.",
+  "Enregistrer les services": "Dienste speichern",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "Dienste, die für alle oder nur zu Hause geöffnet sind, verlangen keine Anmeldung: Diese Einstellung schließt sie nicht.",
+  "Services de {0} enregistrés.": "Dienste von {0} gespeichert.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "Die Konsole öffnet sich nur zu Hause. Empfohlen vor dem Öffnen: Aktivieren Sie die Zwei-Faktor-Authentifizierung unter „Mein Konto“.",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Konsole im Internet öffnen? Jedes Konto kann sich dann aus dem Internet mit seinem Passwort anmelden. Empfohlen: die Zwei-Faktor-Authentifizierung, unter „Mein Konto“.",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Verwalten Sie Ihren Pi von überall unter seiner Internetadresse. Empfohlen: Aktivieren Sie die Zwei-Faktor-Authentifizierung unter „Mein Konto“, denn aus dem Internet kann jeder versuchen, ein Passwort zu erraten.",

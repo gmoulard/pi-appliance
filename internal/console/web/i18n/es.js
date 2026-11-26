@@ -14,6 +14,15 @@
 // Traduction de la console : espagnol. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("es", {
+  "Tous les services qui demandent une connexion.": "Todos los servicios que piden iniciar sesión.",
+  "Seulement : {0}.": "Solo: {0}.",
+  "Aucun service.": "Ningún servicio.",
+  "Services ouverts à ce compte": "Servicios abiertos a esta cuenta",
+  "Limiter ce compte à certains services": "Limitar esta cuenta a algunos servicios",
+  "Aucun service installé ne demande de connexion.": "Ningún servicio instalado pide iniciar sesión.",
+  "Enregistrer les services": "Guardar los servicios",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "Los servicios abiertos a todos o solo en casa no piden iniciar sesión: este ajuste no los cierra.",
+  "Services de {0} enregistrés.": "Servicios de {0} guardados.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "La consola solo se abre en casa. Recomendado antes de abrirla: active la autenticación en dos pasos en «Mi cuenta».",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "¿Abrir la consola en internet? Cada cuenta podrá conectarse desde internet con su contraseña. Recomendado: la autenticación en dos pasos, en «Mi cuenta».",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Administre su Pi desde cualquier lugar, en su dirección de internet. Recomendado: active la autenticación en dos pasos en «Mi cuenta», porque desde internet cualquiera puede intentar adivinar una contraseña.",

@@ -14,6 +14,15 @@
 // Traduction de la console : italien. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("it", {
+  "Tous les services qui demandent une connexion.": "Tutti i servizi che richiedono l'accesso.",
+  "Seulement : {0}.": "Solo: {0}.",
+  "Aucun service.": "Nessun servizio.",
+  "Services ouverts à ce compte": "Servizi aperti a questo account",
+  "Limiter ce compte à certains services": "Limitare questo account ad alcuni servizi",
+  "Aucun service installé ne demande de connexion.": "Nessun servizio installato richiede l'accesso.",
+  "Enregistrer les services": "Salva i servizi",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "I servizi aperti a tutti o solo a casa non richiedono l'accesso: questa impostazione non li chiude.",
+  "Services de {0} enregistrés.": "Servizi di {0} salvati.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "La console si apre solo a casa. Consigliato prima di aprirla: attiva l'autenticazione a due fattori in «Il mio account».",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Aprire la console su internet? Ogni account potrà accedere da internet con la propria password. Consigliato: l'autenticazione a due fattori, in «Il mio account».",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Gestisci il tuo Pi ovunque, al suo indirizzo internet. Consigliato: attiva l'autenticazione a due fattori in «Il mio account», perché da internet chiunque può provare a indovinare una password.",

@@ -14,6 +14,15 @@
 // Traduction de la console : persan. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("fa", {
+  "Tous les services qui demandent une connexion.": "همه سرویس‌هایی که ورود می‌خواهند.",
+  "Seulement : {0}.": "فقط: {0}.",
+  "Aucun service.": "هیچ سرویسی.",
+  "Services ouverts à ce compte": "سرویس‌های باز برای این حساب",
+  "Limiter ce compte à certains services": "محدود کردن این حساب به برخی سرویس‌ها",
+  "Aucun service installé ne demande de connexion.": "هیچ سرویس نصب‌شده‌ای ورود نمی‌خواهد.",
+  "Enregistrer les services": "ذخیره سرویس‌ها",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "سرویس‌های باز برای همه یا فقط در خانه ورود نمی‌خواهند: این تنظیم آن‌ها را نمی‌بندد.",
+  "Services de {0} enregistrés.": "سرویس‌های {0} ذخیره شد.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "کنسول فقط در خانه باز می‌شود. پیش از باز کردن پیشنهاد می‌شود: تأیید دومرحله‌ای را در «حساب من» فعال کنید.",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "کنسول روی اینترنت باز شود؟ هر حساب می‌تواند با گذرواژهٔ خود از اینترنت وارد شود. پیشنهاد: تأیید دومرحله‌ای، در «حساب من».",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Pi خود را از هر جا، در نشانی اینترنتی‌اش، مدیریت کنید. پیشنهاد: تأیید دومرحله‌ای را در «حساب من» فعال کنید، چون از اینترنت هر کسی می‌تواند حدس زدن گذرواژه را امتحان کند.",

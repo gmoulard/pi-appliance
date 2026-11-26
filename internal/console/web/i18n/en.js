@@ -14,6 +14,15 @@
 // Traduction de la console : anglais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("en", {
+  "Tous les services qui demandent une connexion.": "All services that require signing in.",
+  "Seulement : {0}.": "Only: {0}.",
+  "Aucun service.": "No service.",
+  "Services ouverts à ce compte": "Services open to this account",
+  "Limiter ce compte à certains services": "Limit this account to some services",
+  "Aucun service installé ne demande de connexion.": "No installed service requires signing in.",
+  "Enregistrer les services": "Save services",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "Services open to everyone or at home only do not require signing in: this setting does not close them.",
+  "Services de {0} enregistrés.": "Services of {0} saved.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "The console opens only at home. Recommended before opening it: turn on two-factor authentication in “My account”.",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Open the console on the internet? Every account will be able to sign in from the internet with its password. Recommended: two-factor authentication, in “My account”.",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Manage your Pi from anywhere, at its internet address. Recommended: turn on two-factor authentication in “My account”, because from the internet anyone can try to guess a password.",

@@ -5383,6 +5383,9 @@ function accountCard(account) {
       await loadAccounts();
     });
   }
+  if (account.role !== "admin") {
+    card.append(accountServices(account));
+  }
   if (account.name !== currentAccount.name) {
     add(t("Supprimer"), async () => {
       if (!window.confirm(t("Supprimer le compte {0} ? La personne ne pourra plus se connecter.", account.name))) return;
@@ -5394,8 +5397,82 @@ function accountCard(account) {
   return card;
 }
 
+// Services autorisés par compte (spécification 8.1, TODO-4.1) : ceux qui
+// demandent une connexion (accès « utilisateurs connectés ») ou qui sont reliés
+// par OpenID Connect. Jamais pour un administrateur, qui ouvre tout.
+let loginServices = [];
+
+async function loadLoginServices() {
+  const [installed, linked] = await Promise.all([
+    api("services").then((reply) => reply.services).catch(() => []),
+    api("oidc/clients").then((reply) => reply.clients || []).catch(() => []),
+  ]);
+  const names = new Set(installed.filter((service) => service.access === "users").map((service) => service.name));
+  for (const client of linked) {
+    if (installed.some((service) => service.name === client.service)) names.add(client.service);
+  }
+  loginServices = [...names].sort((a, b) => a.localeCompare(b, LOCALE));
+}
+
+function accountServices(account) {
+  const box = element("details", undefined, "account-services");
+  const allowed = account.services || [];
+  const state = !account.restrict_services
+    ? t("Tous les services qui demandent une connexion.")
+    : allowed.length > 0
+      ? t("Seulement : {0}.", allowed.join(", "))
+      : t("Aucun service.");
+  const summary = element("summary");
+  summary.append(element("span", t("Services ouverts à ce compte")), " ", element("span", state, "meta"));
+  box.append(summary);
+  const form = element("form");
+  const restrict = element("label", undefined, "check");
+  const restrictBox = element("input");
+  restrictBox.type = "checkbox";
+  restrictBox.checked = Boolean(account.restrict_services);
+  restrict.append(restrictBox, t("Limiter ce compte à certains services"));
+  const list = element("div", undefined, "account-services-list");
+  // Un service autorisé mais plus dans la liste (accès changé) reste coché.
+  const names = [...new Set([...loginServices, ...allowed])].sort((a, b) => a.localeCompare(b, LOCALE));
+  for (const name of names) {
+    const field = element("label", undefined, "check");
+    const check = element("input");
+    check.type = "checkbox";
+    check.value = name;
+    check.checked = allowed.includes(name);
+    field.append(check, name);
+    list.append(field);
+  }
+  if (names.length === 0) {
+    list.append(element("p", t("Aucun service installé ne demande de connexion."), "meta"));
+  }
+  const showList = () => {
+    list.hidden = !restrictBox.checked;
+  };
+  restrictBox.addEventListener("change", showList);
+  showList();
+  const save = element("button", t("Enregistrer les services"), "secondary");
+  form.append(restrict, list, element("p", t("Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas."), "meta"), save);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    save.disabled = true;
+    try {
+      const services = [...list.querySelectorAll("input:checked")].map((check) => check.value);
+      await api(`accounts/${encodeURIComponent(account.name)}/services`, jsonBody("PUT", { restrict: restrictBox.checked, services }));
+      showMessage([t("Services de {0} enregistrés.", account.name)], "success");
+      await loadAccounts();
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      save.disabled = false;
+    }
+  });
+  box.append(form);
+  return box;
+}
+
 async function loadAccounts() {
-  const { accounts } = await api("accounts");
+  const [{ accounts }] = await Promise.all([api("accounts"), loadLoginServices()]);
   accountsList.replaceChildren(...accounts.map(accountCard));
 }
 

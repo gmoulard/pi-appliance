@@ -14,6 +14,15 @@
 // Traduction de la console : turc. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("tr", {
+  "Tous les services qui demandent une connexion.": "Oturum açmayı gerektiren tüm hizmetler.",
+  "Seulement : {0}.": "Yalnızca: {0}.",
+  "Aucun service.": "Hiçbir hizmet.",
+  "Services ouverts à ce compte": "Bu hesaba açık hizmetler",
+  "Limiter ce compte à certains services": "Bu hesabı bazı hizmetlerle sınırla",
+  "Aucun service installé ne demande de connexion.": "Kurulu hiçbir hizmet oturum açmayı gerektirmiyor.",
+  "Enregistrer les services": "Hizmetleri kaydet",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "Herkese veya yalnızca evde açık hizmetler oturum açmayı gerektirmez: bu ayar onları kapatmaz.",
+  "Services de {0} enregistrés.": "{0} hizmetleri kaydedildi.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "Konsol yalnızca evde açılır. Açmadan önce önerilir: «Hesabım» bölümünden iki adımlı doğrulamayı etkinleştirin.",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "Konsol internete açılsın mı? Her hesap internetten kendi parolasıyla oturum açabilecek. Önerilen: «Hesabım» bölümünde iki adımlı doğrulama.",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "Pi'nizi her yerden, internet adresinden yönetin. Önerilen: «Hesabım» bölümünden iki adımlı doğrulamayı etkinleştirin, çünkü internetten herkes bir parolayı tahmin etmeyi deneyebilir.",

@@ -14,6 +14,15 @@
 // Traduction de la console : arabe. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ar", {
+  "Tous les services qui demandent une connexion.": "كل الخدمات التي تتطلب تسجيل الدخول.",
+  "Seulement : {0}.": "فقط: {0}.",
+  "Aucun service.": "لا توجد خدمة.",
+  "Services ouverts à ce compte": "الخدمات المفتوحة لهذا الحساب",
+  "Limiter ce compte à certains services": "حصر هذا الحساب في بعض الخدمات",
+  "Aucun service installé ne demande de connexion.": "لا توجد خدمة مثبتة تتطلب تسجيل الدخول.",
+  "Enregistrer les services": "حفظ الخدمات",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "الخدمات المفتوحة للجميع أو في المنزل فقط لا تتطلب تسجيل الدخول: هذا الإعداد لا يغلقها.",
+  "Services de {0} enregistrés.": "تم حفظ خدمات {0}.",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "لا تُفتح وحدة التحكم إلا في المنزل. يُنصح قبل فتحها: فعّل المصادقة الثنائية في «حسابي».",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "فتح وحدة التحكم على الإنترنت؟ سيتمكن كل حساب من تسجيل الدخول من الإنترنت بكلمة مروره. يُنصح: المصادقة الثنائية، في «حسابي».",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "أدِر جهاز Pi من أي مكان، على عنوانه على الإنترنت. يُنصح: فعّل المصادقة الثنائية في «حسابي»، لأن أي شخص على الإنترنت يمكنه محاولة تخمين كلمة مرور.",

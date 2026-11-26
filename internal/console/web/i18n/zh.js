@@ -14,6 +14,15 @@
 // Traduction de la console : chinois. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("zh", {
+  "Tous les services qui demandent une connexion.": "所有需要登录的服务。",
+  "Seulement : {0}.": "仅限：{0}。",
+  "Aucun service.": "没有服务。",
+  "Services ouverts à ce compte": "此账户可使用的服务",
+  "Limiter ce compte à certains services": "将此账户限制为部分服务",
+  "Aucun service installé ne demande de connexion.": "没有已安装的服务需要登录。",
+  "Enregistrer les services": "保存服务",
+  "Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas.": "对所有人开放或仅限家中的服务不需要登录：此设置不会关闭它们。",
+  "Services de {0} enregistrés.": "已保存 {0} 的服务。",
   "La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».": "控制台只在家中打开。打开之前建议：在“我的账户”中启用双重验证。",
   "Ouvrir la console sur internet ? Chaque compte pourra s'y connecter depuis internet avec son mot de passe. Conseillé : la double authentification, dans « Mon compte ».": "在互联网上打开控制台？每个账户都可以用其密码从互联网登录。建议：在“我的账户”中启用双重验证。",
   "Administrez votre Pi de n'importe où, à son adresse internet. Conseillé : activez la double authentification dans « Mon compte », car depuis internet n'importe qui peut essayer de deviner un mot de passe.": "通过 Pi 的互联网地址，随时随地管理您的 Pi。建议：在“我的账户”中启用双重验证，因为在互联网上任何人都可以尝试猜测密码。",
