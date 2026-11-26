@@ -914,5 +914,12 @@ piTranslations("ja", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "インターネットからの変更には、毎回コンソールのアカウントのパスワードと、有効にしている場合は 2 段階認証のコードが必要です。",
   "Changer l'adresse e-mail": "メールアドレスを変更",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "{0} の新しいメールアドレス：このアドレスに送られるコードで確認が必要です。それまでこのアカウントではメールによるログインコードは使えません。",
-  "Adresse e-mail de {0} changée : {1}.": "{0} のメールアドレスを変更しました：{1}。"
+  "Adresse e-mail de {0} changée : {1}.": "{0} のメールアドレスを変更しました：{1}。",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "{0} の Rebuild cleanup：すべてのデータ（コンテナー、ボリューム、データフォルダー、データベースの内容）が完全に消去され、イメージを再ダウンロードしてサービスを空の状態で再起動します。続けますか？",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "{0} の Rebuild：Pi にすでにあるものも含めてイメージを再ダウンロードし、サービスを作り直して再起動します。データは保持されます。続けますか？",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "{0} を Rebuild しています… ダウンロードには数分かかることがあります。",
+  "{0} est relancé avec de nouvelles images, sans données.": "{0} は新しいイメージで、データなしで再起動しました。",
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} は新しいイメージで再起動しました。データは保持されています。"
 });

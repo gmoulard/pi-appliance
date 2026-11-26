@@ -295,6 +295,13 @@ async function loadServices() {
         button.addEventListener("click", () => act(service, control, button));
         buttons.append(button);
       }
+      if (service.app === CUSTOM_APP) {
+        for (const cleanup of [false, true]) {
+          const rebuild = element("button", cleanup ? t("Rebuild cleanup") : t("Rebuild"), "secondary");
+          rebuild.addEventListener("click", () => rebuildService(service, cleanup, rebuild));
+          buttons.append(rebuild);
+        }
+      }
       const advanced = advancedButton(service, card);
       buttons.append(advanced.button);
       const remove = element("button", t("Désinstaller"), "secondary");
@@ -1952,6 +1959,30 @@ async function act(service, control, button) {
     showMessage([error.message], "error");
   } finally {
     await loadServices().catch(() => null);
+  }
+}
+
+// Rebuild d'un Docker Compose libre (TODO-2.81) : images retéléchargées, même
+// déjà sur le Pi, conteneurs recréés ; cleanup efface d'abord les données.
+async function rebuildService(service, cleanup, button) {
+  const question = cleanup
+    ? t("Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?", service.name)
+    : t("Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?", service.name);
+  if (!window.confirm(question)) return;
+  button.disabled = true;
+  showMessage([t("Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.", service.name)], "info");
+  const stop = watchInstall(service.name, button);
+  let succeeded = false;
+  try {
+    await api(`services/${encodeURIComponent(service.name)}/rebuild?data=${cleanup ? "delete" : "keep"}`, { method: "POST" });
+    succeeded = true;
+    showMessage([cleanup ? t("{0} est relancé avec de nouvelles images, sans données.", service.name) : t("{0} est relancé avec de nouvelles images, données gardées.", service.name)], "success");
+  } catch (error) {
+    showMessage([error.message], "error");
+  } finally {
+    await stop(succeeded);
+    button.disabled = false;
+    if (succeeded) await loadServices().catch(() => null);
   }
 }
 

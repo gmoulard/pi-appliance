@@ -88,3 +88,31 @@ func TestAdvancedSettings(t *testing.T) {
 		t.Fatalf("service inconnu : code %d", response.Code)
 	}
 }
+
+func TestRebuildCompose(t *testing.T) {
+	f := newFixture(t)
+	admin := f.admin(t)
+	if response := f.do(http.MethodPost, "/pi-appliance/api/compose", "application/json", composeBody(true), admin); response.Code != http.StatusCreated {
+		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
+	}
+	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
+	accept := f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil)
+	paul := sessionCookie(t, accept)
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data=delete", "", "", paul); response.Code != http.StatusForbidden {
+		t.Fatalf("par un utilisateur : code %d", response.Code)
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild", "", "", admin); response.Code != http.StatusBadRequest {
+		t.Fatalf("sans data : code %d", response.Code)
+	}
+	for _, data := range []string{"keep", "delete"} {
+		if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data="+data, "", "", admin); response.Code != http.StatusOK {
+			t.Fatalf("data=%s : code %d : %s", data, response.Code, response.Body.String())
+		}
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services", "application/json", `{"app": "dokuwiki", "name": "wiki"}`, admin); response.Code != http.StatusCreated {
+		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/wiki/rebuild?data=keep", "", "", admin); response.Code != http.StatusBadRequest {
+		t.Fatalf("service du catalogue : code %d : %s", response.Code, response.Body.String())
+	}
+}

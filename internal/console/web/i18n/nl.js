@@ -914,5 +914,12 @@ piTranslations("nl", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "Vanaf internet vereist elke wijziging het wachtwoord van uw consoleaccount en, als die aanstaat, uw code voor tweestapsverificatie.",
   "Changer l'adresse e-mail": "E-mailadres wijzigen",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "Nieuw e-mailadres van {0}: het moet worden bevestigd met een code die naar dat adres wordt gestuurd; tot dan geen inlogcode per e-mail voor dit account.",
-  "Adresse e-mail de {0} changée : {1}.": "E-mailadres van {0} gewijzigd: {1}."
+  "Adresse e-mail de {0} changée : {1}.": "E-mailadres van {0} gewijzigd: {1}.",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "Rebuild cleanup van {0}: AL zijn gegevens worden definitief gewist (containers, volumes, gegevensmap, inhoud van zijn database), daarna worden zijn images opnieuw gedownload en wordt de dienst leeg opnieuw gestart. Doorgaan?",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild van {0}: zijn images worden opnieuw gedownload, ook die al op de Pi staan, daarna wordt de dienst opnieuw aangemaakt en gestart. Zijn gegevens blijven bewaard. Doorgaan?",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild van {0}… Het downloaden kan enkele minuten duren.",
+  "{0} est relancé avec de nouvelles images, sans données.": "{0} draait weer met nieuwe images, zonder gegevens.",
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} draait weer met nieuwe images, gegevens bewaard."
 });

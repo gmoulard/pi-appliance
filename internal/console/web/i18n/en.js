@@ -914,5 +914,12 @@ piTranslations("en", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "From the internet, each change requires your console account password, and your two-factor code if it is turned on.",
   "Changer l'adresse e-mail": "Change email address",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "New email address for {0}: it will need to be checked with a code sent to it; until then, no sign-in code by email for this account.",
-  "Adresse e-mail de {0} changée : {1}.": "Email address of {0} changed: {1}."
+  "Adresse e-mail de {0} changée : {1}.": "Email address of {0} changed: {1}.",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "Rebuild cleanup of {0}: ALL its data will be permanently erased (containers, volumes, data folder, contents of its database), then its images downloaded again and the service restarted empty. Continue?",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild of {0}: its images will be downloaded again, even those already on the Pi, then the service recreated and restarted. Its data is kept. Continue?",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuilding {0}… The download may take several minutes.",
+  "{0} est relancé avec de nouvelles images, sans données.": "{0} has restarted with new images, without data.",
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} has restarted with new images, data kept."
 });

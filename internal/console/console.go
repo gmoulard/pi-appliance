@@ -801,8 +801,12 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 
 func (c *console) control(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
-	if r.PathValue("action") == "update" {
+	switch r.PathValue("action") {
+	case "update":
 		c.update(w, r, name)
+		return
+	case "rebuild":
+		c.rebuild(w, r, name)
 		return
 	}
 	action := services.Action(r.PathValue("action"))
@@ -937,6 +941,30 @@ func (c *console) update(w http.ResponseWriter, r *http.Request, name string) {
 		return
 	}
 	writeServiceError(w, fmt.Errorf("%w : %s", services.ErrNotFound, name))
+}
+
+// rebuild retélécharge les images d'un Docker Compose libre et le recrée,
+// données gardées (data=keep) ou effacées (data=delete, « Rebuild cleanup »).
+func (c *console) rebuild(w http.ResponseWriter, r *http.Request, name string) {
+	var cleanup bool
+	switch r.URL.Query().Get("data") {
+	case "keep":
+	case "delete":
+		cleanup = true
+	default:
+		writeError(w, http.StatusBadRequest, "Dites s'il faut garder (data=keep) ou supprimer (data=delete) les données du service.")
+		return
+	}
+	result, err := c.Services.Rebuild(r.Context(), name, cleanup)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	if c.Alerts != nil {
+		c.Alerts.SetStopped(name, false)
+	}
+	c.syncTraefikNow()
+	writeJSON(w, http.StatusOK, result)
 }
 
 // Réglages avancés et Docker Compose libre (spécification 6.4), réservés à l'administrateur.

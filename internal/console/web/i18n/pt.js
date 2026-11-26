@@ -914,5 +914,12 @@ piTranslations("pt", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "A partir da internet, cada alteração exige a palavra-passe da sua conta da consola e, se estiver ativa, o seu código de autenticação de dois fatores.",
   "Changer l'adresse e-mail": "Alterar o endereço de e-mail",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "Novo endereço de e-mail de {0}: terá de ser verificado com um código enviado para esse endereço; até lá, sem código de início de sessão por e-mail para esta conta.",
-  "Adresse e-mail de {0} changée : {1}.": "Endereço de e-mail de {0} alterado: {1}."
+  "Adresse e-mail de {0} changée : {1}.": "Endereço de e-mail de {0} alterado: {1}.",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "Rebuild cleanup de {0}: TODOS os seus dados serão apagados definitivamente (contentores, volumes, pasta de dados, conteúdo da sua base de dados); depois as suas imagens serão transferidas de novo e o serviço reiniciado vazio. Continuar?",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild de {0}: as suas imagens serão transferidas de novo, mesmo as que já estão no Pi; depois o serviço será recriado e reiniciado. Os seus dados são mantidos. Continuar?",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild de {0}… A transferência pode demorar vários minutos.",
+  "{0} est relancé avec de nouvelles images, sans données.": "{0} foi reiniciado com imagens novas, sem dados.",
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} foi reiniciado com imagens novas, dados mantidos."
 });

@@ -164,9 +164,9 @@ func (p *Progress) pulled(event PullEvent) {
 }
 
 // pullImages télécharge les images du service une à une avec l'avancement ;
-// une image déjà sur le Pi n'est pas retéléchargée. Sans ImagePuller, le
-// téléchargement se fait au moment de la création, sans chiffres.
-func (m *Manager) pullImages(ctx context.Context, name string) error {
+// une image déjà sur le Pi n'est retéléchargée que si force est vrai. Sans
+// ImagePuller, le téléchargement se fait au moment de la création, sans chiffres.
+func (m *Manager) pullImages(ctx context.Context, name string, force bool) error {
 	if m.Images == nil {
 		return nil
 	}
@@ -184,8 +184,10 @@ func (m *Manager) pullImages(ctx context.Context, name string) error {
 	m.updateProgress(name, func(p *Progress) { p.Images = len(images) })
 	for i, image := range images {
 		m.updateProgress(name, func(p *Progress) { p.Image = i + 1 })
-		if present, err := m.Images.Present(ctx, image); err == nil && present {
-			continue
+		if !force {
+			if present, err := m.Images.Present(ctx, image); err == nil && present {
+				continue
+			}
 		}
 		if err := m.Images.Pull(ctx, image, func(event PullEvent) {
 			m.updateProgress(name, func(p *Progress) { p.pulled(event) })

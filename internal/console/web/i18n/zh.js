@@ -914,5 +914,12 @@ piTranslations("zh", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "从互联网进行的每次更改都需要控制台账户密码；若已开启双重验证，还需验证码。",
   "Changer l'adresse e-mail": "更改邮箱地址",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "{0} 的新邮箱地址：需要通过发送到该地址的验证码进行验证；在此之前，此账户不能通过邮件接收登录验证码。",
-  "Adresse e-mail de {0} changée : {1}.": "{0} 的邮箱地址已更改：{1}。"
+  "Adresse e-mail de {0} changée : {1}.": "{0} 的邮箱地址已更改：{1}。",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "{0} 的 Rebuild cleanup：其所有数据（容器、卷、数据文件夹、数据库内容）都将被永久删除，然后重新下载其镜像，并以空白状态重新启动服务。是否继续？",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "{0} 的 Rebuild：将重新下载其镜像（包括 Pi 上已有的），然后重新创建并启动服务。数据会保留。是否继续？",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "正在 Rebuild {0}… 下载可能需要几分钟。",
+  "{0} est relancé avec de nouvelles images, sans données.": "{0} 已使用新镜像重新启动，无数据。",
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} 已使用新镜像重新启动，数据已保留。"
 });

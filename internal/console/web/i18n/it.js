@@ -914,5 +914,12 @@ piTranslations("it", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "Da internet, ogni modifica richiede la password del tuo account della console e, se attiva, il codice di autenticazione a due fattori.",
   "Changer l'adresse e-mail": "Cambia indirizzo e-mail",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "Nuovo indirizzo e-mail di {0}: andrà verificato con un codice inviato a questo indirizzo; nel frattempo, niente codice di accesso via e-mail per questo account.",
-  "Adresse e-mail de {0} changée : {1}.": "Indirizzo e-mail di {0} cambiato: {1}."
+  "Adresse e-mail de {0} changée : {1}.": "Indirizzo e-mail di {0} cambiato: {1}.",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "Rebuild cleanup di {0}: TUTTI i suoi dati saranno cancellati definitivamente (container, volumi, cartella dei dati, contenuto del suo database), poi le sue immagini saranno riscaricate e il servizio riavviato vuoto. Continuare?",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild di {0}: le sue immagini saranno riscaricate, anche quelle già sul Pi, poi il servizio sarà ricreato e riavviato. I suoi dati sono conservati. Continuare?",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild di {0}… Il download può richiedere diversi minuti.",
+  "{0} est relancé avec de nouvelles images, sans données.": "{0} è ripartito con immagini nuove, senza dati.",
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} è ripartito con immagini nuove, dati conservati."
 });

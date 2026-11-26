@@ -914,5 +914,12 @@ piTranslations("de", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "Aus dem Internet erfordert jede Änderung das Passwort Ihres Kontos der Konsole und, falls aktiviert, Ihren Code der Zwei-Faktor-Authentifizierung.",
   "Changer l'adresse e-mail": "E-Mail-Adresse ändern",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "Neue E-Mail-Adresse von {0}: Sie muss mit einem an diese Adresse gesendeten Code bestätigt werden; bis dahin kein Anmeldecode per E-Mail für dieses Konto.",
-  "Adresse e-mail de {0} changée : {1}.": "E-Mail-Adresse von {0} geändert: {1}."
+  "Adresse e-mail de {0} changée : {1}.": "E-Mail-Adresse von {0} geändert: {1}.",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "Rebuild cleanup von {0}: ALLE seine Daten werden endgültig gelöscht (Container, Volumes, Datenordner, Inhalt seiner Datenbank), dann werden seine Images neu heruntergeladen und der Dienst leer neu gestartet. Fortfahren?",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild von {0}: Seine Images werden neu heruntergeladen, auch die bereits auf dem Pi vorhandenen, dann wird der Dienst neu erstellt und neu gestartet. Seine Daten bleiben erhalten. Fortfahren?",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild von {0}… Der Download kann mehrere Minuten dauern.",
+  "{0} est relancé avec de nouvelles images, sans données.": "{0} läuft wieder mit neuen Images, ohne Daten.",
+  "{0} est relancé avec de nouvelles images, données gardées.": "{0} läuft wieder mit neuen Images, Daten erhalten."
 });

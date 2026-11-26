@@ -247,7 +247,7 @@ func (m *Manager) install(ctx context.Context, app marketplace.App, name string,
 		}
 	}
 	m.setStep(name, StepDownload)
-	pullErr := m.pullImages(ctx, name)
+	pullErr := m.pullImages(ctx, name, false)
 	for _, step := range []struct {
 		name string
 		args []string

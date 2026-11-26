@@ -914,5 +914,12 @@ piTranslations("ar", {
   "Depuis internet, chaque changement demande le mot de passe de votre compte de la console, et votre code de double authentification si elle est activée.": "من الإنترنت، يتطلب كل تغيير كلمة مرور حسابك في وحدة التحكم، ورمز المصادقة الثنائية إن كانت مفعّلة.",
   "Changer l'adresse e-mail": "تغيير عنوان البريد الإلكتروني",
   "Nouvelle adresse e-mail de {0} : elle sera à vérifier par un code envoyé à cette adresse ; d'ici là, plus de code de connexion par e-mail pour ce compte.": "عنوان البريد الجديد لـ {0}: يجب التحقق منه برمز يُرسل إليه؛ وحتى ذلك الحين لا رمز تسجيل دخول بالبريد لهذا الحساب.",
-  "Adresse e-mail de {0} changée : {1}.": "تم تغيير عنوان البريد الإلكتروني لـ {0}: {1}."
+  "Adresse e-mail de {0} changée : {1}.": "تم تغيير عنوان البريد الإلكتروني لـ {0}: {1}.",
+  "Rebuild": "Rebuild",
+  "Rebuild cleanup": "Rebuild cleanup",
+  "Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?": "Rebuild cleanup لـ {0}: ستُمحى كل بياناته نهائيًا (الحاويات، والمجلدات الدائمة، ومجلد البيانات، ومحتوى قاعدة بياناته)، ثم تُنزَّل صوره من جديد ويُعاد تشغيل الخدمة فارغة. هل تريد المتابعة؟",
+  "Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?": "Rebuild لـ {0}: ستُنزَّل صوره من جديد، حتى الموجودة على الـ Pi، ثم تُنشأ الخدمة من جديد وتُشغَّل. تُحفظ بياناته. هل تريد المتابعة؟",
+  "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild لـ {0}… قد يستغرق التنزيل عدة دقائق.",
+  "{0} est relancé avec de nouvelles images, sans données.": "أُعيد تشغيل {0} بصور جديدة، بلا بيانات.",
+  "{0} est relancé avec de nouvelles images, données gardées.": "أُعيد تشغيل {0} بصور جديدة، مع حفظ البيانات."
 });
