@@ -119,7 +119,6 @@ func main() {
 	traefikInternet := flag.String("traefik-internet", "/etc/pi-appliance/traefik/dynamic/console-internet.yml", "configuration dynamique de Traefik écrite quand la console est ouverte sur internet (vide : jamais ouverte)")
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
 	upnpEnabled := flag.Bool("upnp", true, "ouverture des ports de la box par UPnP, avec l'accord de l'administrateur (false : à la main seulement)")
-	mailURL := flag.String("mail-url", mail.DefaultServiceURL, "service d'envoi d'e-mails du projet, pour « mot de passe oublié » et les invitations (vide : pas d'e-mail)")
 	mailRelay := flag.Bool("mail-relay", true, "relais d'e-mails des services, sur l'adresse du Pi vue des conteneurs (false : aucun relais)")
 	showVersion := flag.Bool("version", false, "affiche la version et s'arrête")
 	flag.Parse()
@@ -188,20 +187,15 @@ func main() {
 		log.Printf("réglage DuckDNS : %v", err)
 	}
 	// Adresse <nom>.pi-appliance.com : clé propre au Pi, tirée au premier démarrage (spécification 7.1).
-	// La même clé signe les demandes au service d'envoi d'e-mails (spécification 10.2).
 	var key *addresses.Key
-	if *addressesURL != "" || *mailURL != "" {
+	if *addressesURL != "" {
 		key, err = addresses.LoadOrCreateKey(filepath.Join(*data, "address-key"))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
-	var mailer auth.Mailer
-	if *mailURL != "" {
-		mailer = &mail.Client{URL: *mailURL, Key: key}
-	}
 	// Envoi des e-mails par le serveur SMTP réglé dans la console (spécification
-	// 10.2) : préféré au service du projet dès qu'il est réglé.
+	// 10.2) ; sans réglage, aucun e-mail.
 	smtpSender, err := mail.OpenSMTP(filepath.Join(*data, "smtp.json"))
 	if err != nil {
 		log.Fatal(err)
@@ -332,7 +326,6 @@ func main() {
 		WizardFile:       filepath.Join(*data, "wizard-done"),
 		WizardUpdateFile: filepath.Join(*data, "wizard-update-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
-		Mailer:           mailer,
 		SMTP:             smtpSender,
 		Diagnostic:       diag,
 		DiagnosticWindow: window,

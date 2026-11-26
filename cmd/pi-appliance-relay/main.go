@@ -14,7 +14,7 @@
 // Commande pi-appliance-relay : relais du projet (spécification 7.3, 10.2),
 // sur le Pi du projet, devant son reverse proxy : il tient les ports 80 et
 // 443, fait passer les visiteurs des appliances relayées par leur tunnel et
-// renvoie les autres noms (adresses, envoi, stats…) au reverse proxy.
+// renvoie les autres noms (adresses, stats…) au reverse proxy.
 package main
 
 import (

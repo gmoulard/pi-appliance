@@ -62,7 +62,7 @@ type Server struct {
 	// visites en cours par appliance.
 	PoolLimit, MaxVisits int
 	// FallbackHTTPS, FallbackHTTP : où envoyer, tels quels, les autres noms
-	// (adresses, envoi, stats… du reverse proxy du Pi du projet) ; vide : refusé.
+	// (adresses, stats… du reverse proxy du Pi du projet) ; vide : refusé.
 	FallbackHTTPS, FallbackHTTP string
 	// AnswerTimeout : nil-valeur remplacée par tunnel.AnswerTimeout.
 	AnswerTimeout time.Duration

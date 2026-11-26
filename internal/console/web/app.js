@@ -5104,8 +5104,6 @@ function showMail(status) {
       new Date(status.verified_at).toLocaleString(LOCALE, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }));
   } else if (status.configured) {
     text = t("Le Pi envoie ses e-mails par {0}, au nom de {1}. Envoyez-vous un e-mail d'essai pour vérifier.", status.host, status.from);
-  } else if (status.project_service) {
-    text = t("Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.");
   } else {
     text = t("Pas encore réglé : le Pi n'envoie aucun e-mail. Les invitations sont à transmettre vous-même.");
   }

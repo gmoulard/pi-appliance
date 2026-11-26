@@ -121,7 +121,7 @@ func TestForgotPasswordByEmail(t *testing.T) {
 		t.Fatalf("lien %q", link)
 	}
 	if _, err := (mail.Request{Kind: mail.KindReset, To: "marie@example.org", Name: "marie", Link: link}).Check(); err != nil {
-		t.Fatalf("lien refusé par le service d'envoi : %v", err)
+		t.Fatalf("lien refusé avant l'envoi : %v", err)
 	}
 	token := link[strings.Index(link, "#reset=")+len("#reset="):]
 	response = f.do(http.MethodPost, "/pi-appliance/api/password/check", "application/json", `{"token": "`+token+`"}`, nil)
@@ -172,7 +172,7 @@ func TestForgotPasswordWithoutMailer(t *testing.T) {
 	f.admin(t)
 	state := decode[SessionState](t, f.do(http.MethodGet, "/pi-appliance/api/session", "", "", nil))
 	if state.RecoveryEmail {
-		t.Fatal("pas de récupération par e-mail sans service d'envoi")
+		t.Fatal("pas de récupération par e-mail sans envoi réglé")
 	}
 	response := f.do(http.MethodPost, "/pi-appliance/api/password/forgot", "application/json", `{"name": "marie"}`, nil)
 	if response.Code != http.StatusServiceUnavailable || !strings.Contains(response.Body.String(), "fichier reset") {

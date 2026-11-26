@@ -721,7 +721,6 @@ piTranslations("ja", {
   "Ne plus envoyer d'e-mails": "メールの送信をやめる",
   "OVH (adresse de votre domaine) : serveur ssl0.ovh.net, TLS, port 465, identifiant votre adresse e-mail complète et son mot de passe.": "OVH（独自ドメインのアドレス）：サーバー ssl0.ovh.net、TLS、ポート 465、ユーザー名は完全なメールアドレス、パスワードはそのパスワード。",
   "Orange : serveur smtp.orange.fr, TLS, port 465, identifiant votre adresse Orange complète et le mot de passe de la boîte.": "Orange：サーバー smtp.orange.fr、TLS、ポート 465、ユーザー名は完全な Orange のアドレス、パスワードはメールボックスのパスワード。",
-  "Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.": "まだ設定されていません：Pi は招待とパスワード再設定にプロジェクトの送信サービスを試しますが、サインインコードは送れません。",
   "Pas encore réglé : le Pi n'envoie aucun e-mail. Les invitations sont à transmettre vous-même.": "まだ設定されていません：Pi はメールを送りません。招待はご自身で伝えてください。",
   "Plus tard": "あとで",
   "Port": "ポート",

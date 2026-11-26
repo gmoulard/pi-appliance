@@ -61,8 +61,8 @@ const (
 	emailCodeWindow     = time.Hour
 )
 
-// CodeMailer envoie un code à 6 chiffres à l'adresse d'un compte. Seul l'envoi
-// par le SMTP du Pi en est un (le service du projet n'envoie que des liens).
+// CodeMailer envoie un code à 6 chiffres à l'adresse d'un compte : l'envoi par
+// le SMTP du Pi en est un.
 type CodeMailer interface {
 	SendCode(account Public, purpose CodePurpose, code, lang string) error
 }
