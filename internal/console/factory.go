@@ -105,7 +105,7 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 			result.Problems = append(result.Problems, "Le réglage de l'envoi des e-mails n'a pas pu être effacé.")
 		}
 	}
-	for _, file := range []string{c.WizardFile, c.ACMEEmailFile} {
+	for _, file := range []string{c.WizardFile, c.WizardUpdateFile, c.ACMEEmailFile} {
 		if file == "" {
 			continue
 		}

@@ -151,6 +151,9 @@ type SessionState struct {
 	Reset   bool         `json:"reset"`
 	Wizard  bool         `json:"wizard"`
 	Account *auth.Public `json:"account"`
+	// WizardUpdated : la mise à jour du premier démarrage a été faite (ou
+	// tentée) par l'assistant (spécification 5.1).
+	WizardUpdated bool `json:"wizard_updated"`
 	// Internet : la demande vient d'internet (connexion avec double authentification seulement).
 	Internet bool `json:"internet"`
 	// RecoveryEmail : « mot de passe oublié » par e-mail possible sur ce Pi.
@@ -208,8 +211,11 @@ type Config struct {
 	// DiagnosticWindow : page de diagnostic ouverte par le fichier diagnostic ; nil : pas de fichier.
 	DiagnosticWindow *diagnostic.Window
 	// WizardFile marque la fin de l'assistant de premier démarrage ; vide : pas d'assistant.
-	WizardFile    string
-	ACMEEmailFile string
+	WizardFile string
+	// WizardUpdateFile marque la mise à jour du premier démarrage faite (ou
+	// tentée) par l'assistant, une seule fois (spécification 5.1) ; vide : pas de marque.
+	WizardUpdateFile string
+	ACMEEmailFile    string
 	// Mailer envoie les invitations et les liens « mot de passe oublié » ;
 	// nil : le lien d'invitation est montré à l'administrateur, et pas de
 	// récupération par e-mail (fichier reset seulement). Remplacé par SMTP
@@ -321,6 +327,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/stats", c.adminOnly(c.statsStatus))
 	mux.HandleFunc("PUT "+BasePath+"/api/stats", c.adminOnly(c.statsSave))
 	mux.HandleFunc("POST "+BasePath+"/api/wizard", c.adminOnly(c.wizardDone))
+	mux.HandleFunc("POST "+BasePath+"/api/wizard/update", c.adminOnly(c.wizardUpdated))
 	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
@@ -483,6 +490,10 @@ func (c *console) session(w http.ResponseWriter, r *http.Request) {
 		public := account.Public()
 		state.Account = &public
 		state.Wizard = account.Role == auth.RoleAdmin && c.wizardPending()
+		if state.Wizard && c.WizardUpdateFile != "" {
+			_, err := os.Stat(c.WizardUpdateFile)
+			state.WizardUpdated = err == nil
+		}
 		if c.Address != nil {
 			// Chargement de la console : l'adresse IP de la box part au service
 			// d'adresses (décision du 2026-11-26, un envoi par minute au plus).
@@ -706,6 +717,20 @@ func (c *console) wizardDone(w http.ResponseWriter, _ *http.Request) {
 		if err := os.WriteFile(c.WizardFile, []byte(time.Now().UTC().Format(time.RFC3339)+"\n"), 0o600); err != nil {
 			log.Printf("assistant : %v", err)
 			writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer la fin de l'assistant.")
+			return
+		}
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// wizardUpdated note que l'assistant a fait (ou tenté) la mise à jour du
+// premier démarrage : elle ne se fait qu'une fois, et l'assistant reprend
+// après le redémarrage de la console avec sa nouvelle version (spécification 5.1).
+func (c *console) wizardUpdated(w http.ResponseWriter, _ *http.Request) {
+	if c.WizardUpdateFile != "" {
+		if err := os.WriteFile(c.WizardUpdateFile, []byte(time.Now().UTC().Format(time.RFC3339)+"\n"), 0o600); err != nil {
+			log.Printf("assistant, mise à jour : %v", err)
+			writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer la mise à jour du Pi.")
 			return
 		}
 	}
