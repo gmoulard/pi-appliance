@@ -826,6 +826,8 @@ piTranslations("it", {
   "La sauvegarde de la nuit a échoué": "Il backup della notte non è riuscito",
   "Correctifs de sécurité à installer": "Correzioni di sicurezza da installare",
   "Certificat d'une adresse internet du Pi bientôt expiré": "Certificato di un indirizzo internet del Pi in scadenza",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "Account creato o eliminato, inviato anche alla persona interessata",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "Password di un account cambiata, inviata anche alla persona interessata",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Gli avvisi partiranno appena sarà impostato l'invio delle e-mail, qui sopra.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Nessun amministratore ha ancora verificato il proprio indirizzo e-mail: verifichi il suo in «Il mio account» per ricevere gli avvisi.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Gli avvisi vanno a {0} amministratore/i. Verifichi il suo indirizzo in «Il mio account» per riceverli anche lei.",

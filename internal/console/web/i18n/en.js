@@ -826,6 +826,8 @@ piTranslations("en", {
   "La sauvegarde de la nuit a échoué": "Last night's backup failed",
   "Correctifs de sécurité à installer": "Security fixes to install",
   "Certificat d'une adresse internet du Pi bientôt expiré": "Certificate of one of the Pi's internet addresses expiring soon",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "Account created or deleted, also sent to the person concerned",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "Password of an account changed, also sent to the person concerned",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Alerts will be sent as soon as sending emails is set up, just above.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "No administrator has verified their email address yet: verify yours in \"My account\" to receive alerts.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Alerts go to {0} administrator(s). Verify your address in \"My account\" to receive them too.",

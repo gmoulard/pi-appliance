@@ -542,6 +542,7 @@ func (c *console) reset(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	c.notify(alerts.Event{Type: alerts.Password, Name: account.Name, Email: account.Email, Lang: account.Lang, Way: alerts.ByResetFile})
 	c.protectBackups(request.Password, false)
 	openSession(w, r, c.Accounts.StartSession(account.Name))
 	writeJSON(w, http.StatusOK, account.Public())

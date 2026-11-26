@@ -826,6 +826,8 @@ piTranslations("nl", {
   "La sauvegarde de la nuit a échoué": "De back-up van vannacht is mislukt",
   "Correctifs de sécurité à installer": "Beveiligingsupdates om te installeren",
   "Certificat d'une adresse internet du Pi bientôt expiré": "Certificaat van een internetadres van de Pi verloopt binnenkort",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "Account aangemaakt of verwijderd, ook gestuurd naar de betrokken persoon",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "Wachtwoord van een account gewijzigd, ook gestuurd naar de betrokken persoon",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Waarschuwingen worden verstuurd zodra het versturen van e-mails is ingesteld, hierboven.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Nog geen beheerder heeft zijn e-mailadres bevestigd: bevestig het uwe in ‘Mijn account’ om waarschuwingen te ontvangen.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Waarschuwingen gaan naar {0} beheerder(s). Bevestig uw adres in ‘Mijn account’ om ze ook te ontvangen.",

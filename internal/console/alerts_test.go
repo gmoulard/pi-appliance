@@ -16,7 +16,9 @@ package console
 import (
 	"net/http"
 	"path/filepath"
+	"slices"
 	"testing"
+	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/alerts"
 	"github.com/gmoulard/pi-appliance/internal/auth"
@@ -80,4 +82,67 @@ func TestAlertsSettings(t *testing.T) {
 	if code := f.do(http.MethodPost, "/pi-appliance/api/services/cloud/start", "", "", cookie).Code; code != http.StatusOK || monitor.Stopped("cloud") {
 		t.Fatalf("redémarrage : %d %v", code, monitor.Stopped("cloud"))
 	}
+}
+
+type alertSender struct{ sent chan string }
+
+func (s alertSender) Configured() bool { return true }
+
+func (s alertSender) SendAlert(to, name, lang, subject, body string) error {
+	s.sent <- to + " " + subject
+	return nil
+}
+
+func (s alertSender) expect(t *testing.T, want ...string) {
+	t.Helper()
+	var got []string
+	for range want {
+		select {
+		case mail := <-s.sent:
+			got = append(got, mail)
+		case <-time.After(5 * time.Second):
+			t.Fatalf("reçus %v, attendus %v", got, want)
+		}
+	}
+	slices.Sort(got)
+	slices.Sort(want)
+	if !slices.Equal(got, want) {
+		t.Fatalf("reçus %v, attendus %v", got, want)
+	}
+	select {
+	case mail := <-s.sent:
+		t.Fatalf("e-mail en trop : %s", mail)
+	case <-time.After(50 * time.Millisecond):
+	}
+}
+
+// Compte créé ou supprimé, mot de passe changé (spécification 8.6) : aux
+// autres administrateurs et à la personne concernée, pas à l'auteur.
+func TestAccountAlerts(t *testing.T) {
+	f := newFixture(t)
+	sender := alertSender{sent: make(chan string, 10)}
+	monitor := &alerts.Monitor{Path: filepath.Join(t.TempDir(), "alerts.json"), Sender: sender, Recipients: func() []alerts.Recipient {
+		return []alerts.Recipient{{Name: "marie", Email: "marie@example.org"}, {Name: "paul", Email: "paul@example.org"}}
+	}}
+	catalog, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	f.handler = Handler(Config{Version: "1.2.3", Catalog: catalog, Services: f.manager, Accounts: f.accounts, Alerts: monitor})
+	cookie := f.admin(t)
+	response := f.do(http.MethodPost, "/pi-appliance/api/accounts", "application/json", `{"name": "lea", "email": "lea@example.org", "role": "user"}`, cookie)
+	if response.Code != http.StatusCreated {
+		t.Fatalf("création : %d %s", response.Code, response.Body.String())
+	}
+	sender.expect(t, "paul@example.org pi-appliance: account created", "lea@example.org pi-appliance: account created")
+	if code := f.do(http.MethodDelete, "/pi-appliance/api/accounts/lea", "", "", cookie).Code; code != http.StatusNoContent {
+		t.Fatalf("suppression : %d", code)
+	}
+	sender.expect(t, "paul@example.org pi-appliance: account deleted", "lea@example.org pi-appliance: account deleted")
+	next := "un autre mot de passe assez long"
+	response = f.do(http.MethodPost, "/pi-appliance/api/account/password", "application/json", `{"current":"`+adminPassword+`","password":"`+next+`"}`, cookie)
+	if response.Code != http.StatusOK {
+		t.Fatalf("mot de passe : %d %s", response.Code, response.Body.String())
+	}
+	sender.expect(t, "paul@example.org pi-appliance: password changed")
 }

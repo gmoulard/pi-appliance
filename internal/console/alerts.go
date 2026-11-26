@@ -67,6 +67,14 @@ func AlertRecipients(accounts *auth.Store) []alerts.Recipient {
 	return recipients
 }
 
+// notify : alerte « compte créé ou supprimé » ou « mot de passe changé »,
+// envoyée à part pour ne pas retenir la réponse (serveur SMTP lent).
+func (c *console) notify(event alerts.Event) {
+	if c.Alerts != nil {
+		go c.Alerts.Notify(event)
+	}
+}
+
 // InternetHosts : adresses internet du Pi (certificats surveillés par les alertes).
 func InternetHosts(config Config) []string {
 	return (&console{Config: config}).internetHosts()

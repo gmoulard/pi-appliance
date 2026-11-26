@@ -826,6 +826,8 @@ piTranslations("fa", {
   "La sauvegarde de la nuit a échoué": "پشتیبان‌گیری شبانه ناموفق بود",
   "Correctifs de sécurité à installer": "وصله‌های امنیتی برای نصب",
   "Certificat d'une adresse internet du Pi bientôt expiré": "گواهی یکی از نشانی‌های اینترنتی Pi به‌زودی منقضی می‌شود",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "حساب ساخته یا حذف شد، برای شخص مربوط هم فرستاده می‌شود",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "رمز یک حساب تغییر کرد، برای شخص مربوط هم فرستاده می‌شود",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "هشدارها به‌محض تنظیم ارسال ایمیل، درست در بالا، فرستاده می‌شوند.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "هنوز هیچ مدیری نشانی ایمیل خود را تأیید نکرده است: برای دریافت هشدارها نشانی خود را در «حساب من» تأیید کنید.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "هشدارها برای {0} مدیر فرستاده می‌شوند. برای اینکه شما هم دریافت کنید، نشانی خود را در «حساب من» تأیید کنید.",

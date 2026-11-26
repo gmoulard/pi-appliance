@@ -45,10 +45,14 @@ const (
 	Backup      Type = "backup"
 	Updates     Type = "updates"
 	Certificate Type = "certificate"
+	// Account et Password : événements des comptes (events.go), envoyés tout
+	// de suite, à chaque fois, sans vérification périodique.
+	Account  Type = "account"
+	Password Type = "password"
 )
 
 // Types : tous les types, dans l'ordre de la console.
-var Types = []Type{Disk, Service, Power, Backup, Updates, Certificate}
+var Types = []Type{Disk, Service, Power, Backup, Updates, Certificate, Account, Password}
 
 const (
 	// Every : temps entre deux vérifications.
