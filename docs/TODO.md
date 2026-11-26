@@ -34,7 +34,7 @@ Groupes d'actions cohérents, réalisés chacun par le sous-agent `todo-lot` (un
 | LOT-15 | Sauvegardes et restauration | TODO-4.3, TODO-4.10, TODO-4.11, TODO-4.12, TODO-4.13, TODO-4.14 | LOT-2 | [~] |
 | LOT-16 | Alertes, mises à jour et applications de l'étape 3 | TODO-4.2, TODO-4.5, TODO-4.6, TODO-4.8, TODO-4.9 | LOT-2 | [~] |
 | LOT-17 | Cartes de la console : affichage, ordre, étiquettes | TODO-5.27, TODO-5.28, TODO-5.29, TODO-5.30 | LOT-6 | [~] |
-| LOT-19 | Branche principale `main` | TODO-0.9 | aucun | [ ] |
+| LOT-19 | Branche principale `main` | TODO-0.9 | aucun | [~] |
 | LOT-20 | Docker Compose libre : Rebuild et Source | TODO-2.81, TODO-2.82 | LOT-8 | [ ] |
 | LOT-21 | DNS chez OVH et DynDNS des Pi (sans DuckDNS) | TODO-3.19, TODO-3.20, TODO-3.21, TODO-3.2 | aucun (installation du service : LOT-1) | [ ] |
 
