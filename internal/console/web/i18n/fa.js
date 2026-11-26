@@ -720,7 +720,6 @@ piTranslations("fa", {
   "Ne plus envoyer d'e-mails": "توقف ارسال ایمیل",
   "OVH (adresse de votre domaine) : serveur ssl0.ovh.net, TLS, port 465, identifiant votre adresse e-mail complète et son mot de passe.": "OVH (نشانی روی دامنهٔ شما): سرور ssl0.ovh.net، TLS، درگاه 465، نام کاربری نشانی کامل ایمیل و گذرواژهٔ آن.",
   "Orange : serveur smtp.orange.fr, TLS, port 465, identifiant votre adresse Orange complète et le mot de passe de la boîte.": "Orange: سرور smtp.orange.fr، TLS، درگاه 465، نام کاربری نشانی کامل Orange و گذرواژهٔ صندوق.",
-  "Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.": "هنوز تنظیم نشده: Pi برای دعوت‌نامه‌ها و گذرواژه‌های فراموش‌شده سرویس ارسال پروژه را امتحان می‌کند، اما نمی‌تواند کد ورود بفرستد.",
   "Pas encore réglé : le Pi n'envoie aucun e-mail. Les invitations sont à transmettre vous-même.": "هنوز تنظیم نشده: Pi هیچ ایمیلی نمی‌فرستد. دعوت‌نامه‌ها را خودتان می‌رسانید.",
   "Plus tard": "بعداً",
   "Port": "درگاه",

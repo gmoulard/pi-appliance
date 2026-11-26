@@ -38,8 +38,7 @@ import (
 // Pi lui-même (choix de l'utilisateur du 2026-11-22, spécification 10.2) : la
 // boîte e-mail de l'administrateur (Gmail, OVH, Free, Orange…) envoie les
 // invitations, les liens « mot de passe oublié », les codes de connexion et de
-// vérification. Le service d'envoi du projet (Client) reste possible mais
-// n'est plus nécessaire : la console préfère ce réglage quand il est fait.
+// vérification. Sans ce réglage, le Pi n'envoie aucun e-mail.
 //
 // Réglage gardé dans <données>/smtp.json, droits 600. NE PAS renvoyer le mot
 // de passe par l'API ni l'écrire dans les journaux : Status ne dit que s'il

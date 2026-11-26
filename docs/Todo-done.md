@@ -102,6 +102,7 @@ Actions de la [feuille de route](TODO.md) réalisées et validées (`[x]`), reti
 ## 3. Étape 2 — Internet (7)
 
 - [x] **TODO-3.13**: Écran de la console pour DuckDNS : saisie de l'identifiant et du jeton, état de la dernière mise à jour (l'API `api/duckdns` existe).
+- [x] **TODO-3.6**: ~~Service d'envoi d'e-mails du projet : récupération, invitations, alertes (8.5, 8.6, 10.2), service `cmd/pi-appliance-mail` écrit, jamais installé.~~ Retiré le 2026-11-26 : abandonné par l'utilisateur, le SMTP de chaque Pi suffit (TODO-3.16) ; programme, paquet `internal/mail/service`, client et option `-mail-url` de la console retirés du dépôt et de la spécification (10.2). « Mot de passe oublié ? » par e-mail et invitations restent faits, par le SMTP du Pi.
 - [x] **TODO-3.3**: ~~FTP.~~ Abandonné le 2026-11-20 (FTP retiré).
 
 ## 5. Site www.pi-appliance.com (13)

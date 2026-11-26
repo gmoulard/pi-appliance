@@ -720,7 +720,6 @@ piTranslations("es", {
   "Ne plus envoyer d'e-mails": "Dejar de enviar correos",
   "OVH (adresse de votre domaine) : serveur ssl0.ovh.net, TLS, port 465, identifiant votre adresse e-mail complète et son mot de passe.": "OVH (dirección de su dominio): servidor ssl0.ovh.net, TLS, puerto 465, identificador su dirección de correo completa y su contraseña.",
   "Orange : serveur smtp.orange.fr, TLS, port 465, identifiant votre adresse Orange complète et le mot de passe de la boîte.": "Orange: servidor smtp.orange.fr, TLS, puerto 465, identificador su dirección Orange completa y la contraseña del buzón.",
-  "Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.": "Aún sin configurar: el Pi prueba el servicio de envío del proyecto para las invitaciones y las contraseñas olvidadas, pero no puede enviar códigos de conexión.",
   "Pas encore réglé : le Pi n'envoie aucun e-mail. Les invitations sont à transmettre vous-même.": "Aún sin configurar: el Pi no envía ningún correo. Las invitaciones las transmite usted.",
   "Plus tard": "Más tarde",
   "Port": "Puerto",

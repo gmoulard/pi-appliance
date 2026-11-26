@@ -105,7 +105,7 @@ printf '{"domain": "%s"}\n' "$INTERNET" >"$TMP/data/internet-console.json"
 	-cockpit-script "" -release-repo "" -catalog-url "" -cli-token-file "$TMP/token" \
 	-traefik-services "$TMP/traefik/dynamic/services-internet.yml" \
 	-traefik-internet "$TMP/traefik/dynamic/console-internet.yml" \
-	-addresses-url "" -upnp=false -mail-url "" -mail-relay=false >"$TMP/console.log" 2>&1 &
+	-addresses-url "" -upnp=false -mail-relay=false >"$TMP/console.log" 2>&1 &
 CONSOLE_PID=$!
 
 attempt=0

@@ -11,13 +11,10 @@
 //
 // See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
-// Package mail : envoi d'e-mails par le service du projet (spécification 10.2).
-// Le Pi n'envoie jamais d'e-mail lui-même (son adresse résidentielle serait
-// bloquée) : la console demande au service du projet, par une demande signée
-// avec la clé de l'appliance, d'envoyer un message dont le texte est fixé par
-// le service. Le Pi ne fournit que le type de message, l'adresse, le nom du
-// compte, le lien et la langue : le service ne peut pas servir à envoyer un
-// texte libre.
+// Package mail : envoi des e-mails du Pi par le serveur SMTP choisi par
+// l'administrateur (smtp.go, spécification 10.2). Le texte des messages est
+// fixé ici (message.go) : seuls le type de message, l'adresse, le nom du
+// compte, le lien ou le code et la langue changent.
 package mail
 
 import (
@@ -28,16 +25,7 @@ import (
 	"strings"
 )
 
-// Échanges entre la console et le service d'envoi :
-//
-//	POST /api/send  {kind, to, name, link, lang}, signé par la clé de l'appliance
-//
-// Réponse 202 sans corps ; en erreur, {"error": "…"} en langage courant.
-
-// DefaultServiceURL : service d'envoi d'e-mails du projet, sur le Pi du projet.
-const DefaultServiceURL = "https://envoi.pi-appliance.com"
-
-// Kind : type de message, dont le texte est écrit par le service.
+// Kind : type de message, dont le texte est écrit ici (message.go).
 type Kind string
 
 const (
@@ -45,9 +33,8 @@ const (
 	KindReset Kind = "reset"
 	// KindInvite : lien d'invitation d'un nouveau compte (spécification 8.1), valable 7 jours.
 	KindInvite Kind = "invite"
-	// Messages envoyés seulement par le SMTP du Pi (smtp.go), pas par le service
-	// du projet : code de connexion (double authentification par e-mail),
-	// code de vérification de l'adresse, e-mail d'essai.
+	// Code de connexion (double authentification par e-mail), code de
+	// vérification de l'adresse, e-mail d'essai.
 	KindLoginCode  Kind = "login-code"
 	KindVerifyCode Kind = "verify-code"
 	KindTest       Kind = "test"
@@ -59,18 +46,14 @@ const (
 	KindService Kind = "service"
 )
 
-// Request : corps de POST /api/send.
+// Request : e-mail d'un lien (invitation, mot de passe oublié) à vérifier
+// avant l'envoi.
 type Request struct {
-	Kind Kind   `json:"kind"`
-	To   string `json:"to"`
-	Name string `json:"name"`
-	Link string `json:"link"`
-	Lang string `json:"lang,omitempty"`
-}
-
-// ErrorBody : corps d'une réponse en erreur.
-type ErrorBody struct {
-	Error string `json:"error"`
+	Kind Kind
+	To   string
+	Name string
+	Link string
+	Lang string
 }
 
 // ErrInvalid : demande refusée avant tout envoi.
@@ -83,7 +66,7 @@ var (
 	linkPattern = regexp.MustCompile(`^https?://([a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?)*|\d{1,3}(\.\d{1,3}){3}|\[[0-9a-f:]+\])(:\d{1,5})?/pi-appliance/#(reset|invite)=[A-Za-z0-9_-]{43}$`)
 )
 
-// Check vérifie une demande, côté console comme côté service, et la renvoie
+// Check vérifie une demande et la renvoie
 // nettoyée. Le lien doit être celui du type de message (#reset= ou #invite=).
 func (r Request) Check() (Request, error) {
 	r.To = strings.TrimSpace(r.To)

@@ -15,7 +15,7 @@ Clés de l'API OVH à créer ou à refaire : [clefOVH.md](clefOVH.md).
 
 Étapes, à faire par l'utilisateur (les clés et la délégation ne sont pas dans le dépôt) :
 
-1. Recréer dans la zone OVH les enregistrements de Route 53 : ceux du site (ci-dessous), `app` (application mobile, dépôt pi-appliance-pwa), `adresses`, `envoi` et `stats` (Pi du projet, quand ces services seront installés), ceux d'Amazon SES (trois `CNAME` DKIM, SPF s'il y en a un, `_dmarc`), les sous-domaines de machines encore utiles et les adresses `<nom>` déjà réservées (en `A` vers l'adresse IP de leur box, TODO-3.20).
+1. Recréer dans la zone OVH les enregistrements de Route 53 : ceux du site (ci-dessous), `app` (application mobile, dépôt pi-appliance-pwa), `adresses` et `stats` (Pi du projet, quand ces services seront installés), ceux d'Amazon SES (trois `CNAME` DKIM, SPF s'il y en a un, `_dmarc`), les sous-domaines de machines encore utiles et les adresses `<nom>` déjà réservées (en `A` vers l'adresse IP de leur box, TODO-3.20).
 2. Vérifier les clés et la zone avec le workflow « OVH » (`.github/workflows/ovh.yml`, action « verifier ») ; il écrit aussi une entrée DynHost à la demande (action « dynhost »).
 3. Changer les serveurs de noms du domaine pour ceux d'OVH (donnés par le workflow), puis vérifier : `dig NS pi-appliance.com`, www.pi-appliance.com et app.pi-appliance.com en HTTPS, e-mails d'Amazon SES toujours signés DKIM.
 4. Supprimer la zone Route 53 et l'utilisateur IAM du service d'adresses s'il a été créé.
@@ -33,10 +33,6 @@ Clés de l'API OVH à créer ou à refaire : [clefOVH.md](clefOVH.md).
 - E-mail par **Amazon SES** : trois `CNAME` DKIM `*._domainkey` vers `*.dkim.amazonses.com`, et `_dmarc` en `TXT` (`v=DMARC1; p=none;`).
 - Sous-domaines de machines : `mac`, `ia4ccm`, `mbpdevrenaudin.home`.
 - Probablement à supprimer : `todrop`, `ip-10-0-0-85.eu-west-3.compute.internal`.
-
-### Service d'envoi d'e-mails
-
-Le service d'envoi (`cmd/pi-appliance-mail`, [spécification 10.2](specification.md)) envoie les liens « mot de passe oublié » et d'invitation des appliances par le relais SMTP d'Amazon SES (`email-smtp.eu-west-3.amazonaws.com:587`, expéditeur `ne-pas-repondre@pi-appliance.com`). Il n'est pas encore installé. Il lui faut : un enregistrement `envoi.pi-appliance.com` vers le Pi du projet, des identifiants SMTP SES (utilisateur IAM avec le seul droit `ses:SendRawEmail`) dans `/etc/pi-appliance-mail/smtp` (droits 600, jamais dans le dépôt), et un compte SES sorti du « bac à sable » pour écrire à n'importe quelle adresse.
 
 ### Service d'adresses
 

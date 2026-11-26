@@ -720,7 +720,6 @@ piTranslations("zh", {
   "Ne plus envoyer d'e-mails": "停止发送邮件",
   "OVH (adresse de votre domaine) : serveur ssl0.ovh.net, TLS, port 465, identifiant votre adresse e-mail complète et son mot de passe.": "OVH（您自己域名的地址）：服务器 ssl0.ovh.net，TLS，端口 465，用户名为完整的电子邮件地址，密码为该邮箱的密码。",
   "Orange : serveur smtp.orange.fr, TLS, port 465, identifiant votre adresse Orange complète et le mot de passe de la boîte.": "Orange：服务器 smtp.orange.fr，TLS，端口 465，用户名为完整的 Orange 地址，密码为邮箱密码。",
-  "Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.": "尚未设置：Pi 会尝试通过项目的发信服务发送邀请和忘记密码的邮件，但无法发送登录验证码。",
   "Pas encore réglé : le Pi n'envoie aucun e-mail. Les invitations sont à transmettre vous-même.": "尚未设置：Pi 不发送任何邮件。邀请需要您自己转交。",
   "Plus tard": "以后再说",
   "Port": "端口",
