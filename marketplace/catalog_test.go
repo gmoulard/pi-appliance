@@ -378,3 +378,29 @@ func TestWithoutTags(t *testing.T) {
 		}
 	}
 }
+
+// Un service sans page web « maison seulement » n'est pas publié au format 1 :
+// les consoles 0.2.7 et avant ouvriraient ses ports à tous.
+func TestHomeOnlyPortsNotPublished(t *testing.T) {
+	catalog, err := Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	wireguard, ok := catalog.Get("wireguard")
+	if !ok {
+		t.Fatal("wireguard absent")
+	}
+	compose := strings.Replace(string(wireguard.Compose), "access: public", "access: home", 1)
+	partage, err := Parse("partage", []byte(compose))
+	if err != nil {
+		t.Fatal(err)
+	}
+	document := Publish(NewCatalog(append(catalog.Apps(), partage)), nil)
+	published := map[string]bool{}
+	for _, app := range document.Apps {
+		published[app.ID] = true
+	}
+	if published["partage"] || !published["wireguard"] || !published["dokuwiki"] {
+		t.Fatalf("publiés : %v", published)
+	}
+}

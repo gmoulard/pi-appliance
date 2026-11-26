@@ -113,3 +113,13 @@ func TestInstallPortainer(t *testing.T) {
 		t.Fatalf("accès admins choisi pour un autre service : code %d", response.Code)
 	}
 }
+
+// Un service sans page web n'a pas de niveau d'accès à choisir : « home » y
+// ferme ses ports hors de la maison (pare-feu du Pi), rien ne le change.
+func TestInstallNoWebPageKeepsManifestAccess(t *testing.T) {
+	f := newFixture(t)
+	cookie := f.admin(t)
+	if response := f.install(`{"app": "wireguard", "access": "home"}`, cookie); response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "pas de page web") {
+		t.Fatalf("accès choisi pour un service sans page web : code %d : %s", response.Code, response.Body.String())
+	}
+}

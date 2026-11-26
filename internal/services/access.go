@@ -83,6 +83,11 @@ func accessMiddleware(app, access string) string {
 // sans page web, public quand rien n'est choisi (Docker Compose libre).
 func webAccess(app marketplace.App) string {
 	if app.Port == 0 {
+		// Sans page web, pas de Traefik : seul « home » compte, appliqué par
+		// le pare-feu des ports du Pi (homeports.go).
+		if app.Access == AccessHome {
+			return AccessHome
+		}
 		return ""
 	}
 	if app.Access == "" {

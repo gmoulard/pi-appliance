@@ -335,6 +335,10 @@ func accept(manifest marketplace.Manifest, builtin marketplace.App, known bool) 
 	if manifest.Err != nil {
 		return manifest.Err
 	}
+	// NE PAS ouvrir à tous les ports d'un service intégré « maison seulement ».
+	if known && builtin.Port == 0 && builtin.Access == services.AccessHome && (manifest.App.Port != 0 || manifest.App.Access != services.AccessHome) {
+		return fmt.Errorf("ses ports ne seraient plus réservés à la maison")
+	}
 	_, risks, err := services.AnalyzeCompose(manifest.App.Compose)
 	if err != nil {
 		return err

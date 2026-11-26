@@ -329,6 +329,9 @@ async function loadServices() {
       ? (service.host_ports || []).map((port) => t("Port {0} {1} du Pi", port.protocol.toUpperCase(), port.port)).join(", ")
       : service.address;
     detail.append(element("p", where, "address"), state);
+    if (service.no_web_page && service.access === "home") {
+      detail.append(element("p", `${t("Qui peut l'ouvrir")} : ${ACCESS_LABELS.home}`, "meta"));
+    }
     if (!service.no_web_page) {
       // Adresse <service>-<nom>.local, certificat propre à ce service (mdns.sh).
       if (service.address.endsWith(".local") && !outside) {
@@ -1153,6 +1156,9 @@ async function loadCatalog() {
     }
     if (app.web) {
       form.append(accessField(app.access));
+    } else if (app.access === "home") {
+      // Ports du Pi fermés hors de la maison par son pare-feu (spécification 6.4).
+      form.append(element("p", `${t("Qui peut l'ouvrir")} : ${ACCESS_LABELS.home}`, "meta"));
     }
     if (APP_WARNINGS[app.id]) {
       form.append(element("p", APP_WARNINGS[app.id], "note"));
@@ -5377,6 +5383,9 @@ function accountCard(account) {
       await loadAccounts();
     });
   }
+  if (account.role !== "admin") {
+    card.append(accountServices(account));
+  }
   if (account.name !== currentAccount.name) {
     add(t("Supprimer"), async () => {
       if (!window.confirm(t("Supprimer le compte {0} ? La personne ne pourra plus se connecter.", account.name))) return;
@@ -5388,8 +5397,195 @@ function accountCard(account) {
   return card;
 }
 
+// Services autorisés par compte (spécification 8.1, TODO-4.1) : ceux qui
+// demandent une connexion (accès « utilisateurs connectés ») ou qui sont reliés
+// par OpenID Connect. Jamais pour un administrateur, qui ouvre tout.
+let loginServices = [];
+
+async function loadLoginServices() {
+  const [installed, linked] = await Promise.all([
+    api("services").then((reply) => reply.services).catch(() => []),
+    api("oidc/clients").catch(() => null),
+  ]);
+  const clients = (linked && linked.clients) || [];
+  const names = new Set(installed.filter((service) => service.access === "users").map((service) => service.name));
+  for (const client of clients) {
+    if (installed.some((service) => service.name === client.service)) names.add(client.service);
+  }
+  loginServices = [...names].sort((a, b) => a.localeCompare(b, LOCALE));
+  showLinkedServices(linked, installed);
+}
+
+// « Services reliés » (spécification 8.1, TODO-4.1) : clients OpenID Connect
+// des services installés. Le secret n'est montré qu'une fois, juste après
+// l'enregistrement ; la liste ne le contient jamais. Carte cachée si la
+// console n'est pas fournisseur OpenID Connect (api/oidc/clients absent).
+const linkedCard = element("div", undefined, "card");
+linkedCard.id = "linkedServices";
+linkedCard.hidden = true;
+accountsSection.append(linkedCard);
+let linkedSecret = null;
+
+function readOnlyField(label, value) {
+  const field = element("label", label);
+  const input = element("input");
+  input.readOnly = true;
+  input.value = value;
+  field.append(input);
+  return field;
+}
+
+function showLinkedServices(linked, installed) {
+  // Pas pendant l'assistant de premier démarrage (étape des invitations).
+  linkedCard.hidden = !linked || wizardStep !== null;
+  if (linkedCard.hidden) return;
+  const clients = [...(linked.clients || [])].sort((a, b) => a.service.localeCompare(b.service, LOCALE));
+  linkedCard.replaceChildren(
+    element("h3", t("Services reliés")),
+    element("p", t("Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.")),
+  );
+  if (linkedSecret) {
+    const box = element("div", undefined, "note");
+    box.append(
+      element("p", t("{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.", linkedSecret.client.service)),
+      readOnlyField(t("Adresse du fournisseur (émetteur)"), linkedSecret.issuer),
+      readOnlyField(t("Identifiant du client"), linkedSecret.client.id),
+      readOnlyField(t("Secret du client"), linkedSecret.secret),
+    );
+    linkedCard.append(box);
+    linkedSecret = null;
+  }
+  const list = element("ul", undefined, "linked-list");
+  for (const client of clients) {
+    const item = element("li");
+    item.append(
+      element("strong", client.service),
+      element("p", t("Relié le {0}. Identifiant du client : {1}.", dayText(client.created_at), client.id), "meta"),
+      element("p", t("Adresse de retour : {0}", client.redirect_uris.join(", ")), "meta"),
+    );
+    const detach = element("button", t("Détacher"), "secondary");
+    detach.type = "button";
+    detach.addEventListener("click", async () => {
+      if (!window.confirm(t("Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.", client.service))) return;
+      detach.disabled = true;
+      try {
+        await api(`oidc/clients/${encodeURIComponent(client.service)}`, { method: "DELETE" });
+        await loadAccounts();
+      } catch (error) {
+        showMessage([error.message], "error");
+        detach.disabled = false;
+      }
+    });
+    item.append(detach);
+    list.append(item);
+  }
+  if (clients.length === 0) {
+    list.append(element("li", t("Aucun service relié."), "meta"));
+  }
+  linkedCard.append(list);
+  const choices = installed.filter((service) => !service.no_web_page).map((service) => service.name).sort((a, b) => a.localeCompare(b, LOCALE));
+  if (choices.length === 0) {
+    linkedCard.append(element("p", t("Installez d'abord un service pour le relier."), "meta"));
+    return;
+  }
+  const form = element("form");
+  const serviceField = element("label", t("Service"));
+  const select = element("select");
+  select.name = "service";
+  for (const name of choices) {
+    const option = element("option", name);
+    option.value = name;
+    select.append(option);
+  }
+  serviceField.append(select);
+  const urisField = element("label", t("Adresse de retour donnée par le service (une par ligne, en https)"));
+  const uris = element("textarea");
+  uris.name = "redirect_uris";
+  uris.rows = 2;
+  uris.required = true;
+  uris.autocapitalize = "none";
+  uris.spellcheck = false;
+  urisField.append(uris);
+  const submit = element("button", t("Relier le service"));
+  form.append(serviceField, urisField, submit);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const already = clients.some((client) => client.service === select.value);
+    if (already && !window.confirm(t("{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?", select.value))) return;
+    submit.disabled = true;
+    try {
+      const redirect = uris.value.split("\n").map((line) => line.trim()).filter(Boolean);
+      linkedSecret = await api("oidc/clients", jsonBody("POST", { service: select.value, redirect_uris: redirect }));
+      await loadAccounts();
+      document.getElementById("linkedServices").scrollIntoView({ block: "nearest" });
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      submit.disabled = false;
+    }
+  });
+  linkedCard.append(form);
+}
+
+function accountServices(account) {
+  const box = element("details", undefined, "account-services");
+  const allowed = account.services || [];
+  const state = !account.restrict_services
+    ? t("Tous les services qui demandent une connexion.")
+    : allowed.length > 0
+      ? t("Seulement : {0}.", allowed.join(", "))
+      : t("Aucun service.");
+  const summary = element("summary");
+  summary.append(element("span", t("Services ouverts à ce compte")), " ", element("span", state, "meta"));
+  box.append(summary);
+  const form = element("form");
+  const restrict = element("label", undefined, "check");
+  const restrictBox = element("input");
+  restrictBox.type = "checkbox";
+  restrictBox.checked = Boolean(account.restrict_services);
+  restrict.append(restrictBox, t("Limiter ce compte à certains services"));
+  const list = element("div", undefined, "account-services-list");
+  // Un service autorisé mais plus dans la liste (accès changé) reste coché.
+  const names = [...new Set([...loginServices, ...allowed])].sort((a, b) => a.localeCompare(b, LOCALE));
+  for (const name of names) {
+    const field = element("label", undefined, "check");
+    const check = element("input");
+    check.type = "checkbox";
+    check.value = name;
+    check.checked = allowed.includes(name);
+    field.append(check, name);
+    list.append(field);
+  }
+  if (names.length === 0) {
+    list.append(element("p", t("Aucun service installé ne demande de connexion."), "meta"));
+  }
+  const showList = () => {
+    list.hidden = !restrictBox.checked;
+  };
+  restrictBox.addEventListener("change", showList);
+  showList();
+  const save = element("button", t("Enregistrer les services"), "secondary");
+  form.append(restrict, list, element("p", t("Les services ouverts à tous ou à la maison seulement ne demandent pas de connexion : ce réglage ne les ferme pas."), "meta"), save);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    save.disabled = true;
+    try {
+      const services = [...list.querySelectorAll("input:checked")].map((check) => check.value);
+      await api(`accounts/${encodeURIComponent(account.name)}/services`, jsonBody("PUT", { restrict: restrictBox.checked, services }));
+      showMessage([t("Services de {0} enregistrés.", account.name)], "success");
+      await loadAccounts();
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      save.disabled = false;
+    }
+  });
+  box.append(form);
+  return box;
+}
+
 async function loadAccounts() {
-  const { accounts } = await api("accounts");
+  const [{ accounts }] = await Promise.all([api("accounts"), loadLoginServices()]);
   accountsList.replaceChildren(...accounts.map(accountCard));
 }
 

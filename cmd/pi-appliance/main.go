@@ -158,6 +158,11 @@ func main() {
 			manager.FollowName = false
 		}
 	})
+	// Pare-feu des ports « maison seulement » (spécification 6.4), déjà chargé au
+	// démarrage par pi-appliance-firewall.service : réécrit d'après les services.
+	if err := manager.ApplyHomePorts(context.Background()); err != nil {
+		log.Printf("%v", err)
+	}
 	var net *network.Client
 	if *networkScript != "" {
 		net = &network.Client{Runner: network.Script(*networkScript), JoinDelay: 3 * time.Second, Logf: log.Printf}

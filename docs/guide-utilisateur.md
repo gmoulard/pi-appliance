@@ -26,7 +26,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 8. [Remettre le Pi à zéro](#remise-a-zero)
 9. [Diagnostic du Pi sans écran](#diagnostic)
 10. [Faire dépanner son Pi par Claude](#depannage-par-claude)
-11. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh) (pas encore disponible)
+11. [Domaine personnel chez OVH](#domaine-personnel-chez-ovh)
 12. [Lancer la console depuis les sources](#depuis-les-sources)
 13. [Pour aller plus loin](#pour-aller-plus-loin)
 
@@ -359,22 +359,27 @@ Vous pouvez fermer la page du service : Claude reste en marche, et repart seul a
 
 ## Domaine personnel chez OVH {#domaine-personnel-chez-ovh}
 
-> Un nom de votre domaine peut servir d'adresse sur internet à la console et aux services : voir [Administrer le Pi depuis internet](#console-sur-internet) (une seule entrée, un alias CNAME vers la cible affichée par la console) et [Ouvrir ses services depuis internet](#services-sur-internet) (les services s'ouvrent sous cette adresse, `https://maison.exemple.fr/<service>/`, sans autre entrée). La suite de cette section décrit l'ancien projet d'une adresse par service, abandonné le 2026-11-22.
+Un nom de votre domaine peut servir d'adresse sur internet à la console et aux services, par exemple `maison.exemple.fr` : la console s'ouvre alors à `https://maison.exemple.fr/pi-appliance/` et chaque service à `https://maison.exemple.fr/<service>/`, avec un certificat de sécurité obtenu par le Pi. Une seule entrée est à créer chez OVH ; le Pi ne reçoit jamais de mot de passe ni de clé de votre compte OVH. Pas encore essayé sur un vrai Pi.
 
-Quand cette option sera disponible, la configuration se fera en deux endroits :
+**Pour l'instant :** les adresses `<nom>.pi-appliance.com` ne sont pas encore ouvertes (le service du projet qui les tient à jour n'est pas encore en ligne). D'ici là, seule l'entrée **A** ci-dessous (adresse IP de la box) est possible ; elle cesse de marcher si l'adresse IP de votre box change.
 
 ### Chez OVH
 
-1. Choisissez un sous-domaine de votre domaine, par exemple `ma-maison.exemple.fr`. C'est préférable au domaine seul (`exemple.fr`) : un alias DNS classique ne peut pas toujours être créé à la racine d'un domaine.
-2. Dans l'espace client OVH, ouvrez la zone DNS de votre domaine et ajoutez une entrée de type **CNAME** pour ce sous-domaine. La cible sera le nom complet fourni par la console, de la forme `<nom>.pi-appliance.com`.
-3. Ne remplacez pas les serveurs DNS du domaine et ne modifiez pas ses autres entrées, notamment celles utilisées pour le site web ou les e-mails. N'utilisez pas la fonction de redirection web d'OVH à la place de l'entrée DNS.
-4. Si la console demande d'autres entrées pour les adresses des services, suivez les valeurs qu'elle affiche ; ne les devinez pas.
+1. Choisissez un sous-domaine de votre domaine, par exemple `maison.exemple.fr`. C'est préférable au domaine seul (`exemple.fr`), où un alias ne peut pas être créé.
+2. Dans l'espace client OVH, ouvrez **Noms de domaine**, votre domaine, onglet **Zone DNS**, puis **Ajouter une entrée** :
+   - si vous avez une adresse pi-appliance.com (carte « Votre adresse pi-appliance.com » de la console) : une entrée **CNAME**, sous-domaine `maison`, cible `<nom>.pi-appliance.com.` (avec le point final), par exemple `maison.exemple.fr. CNAME monpi.pi-appliance.com.` ; elle suit l'adresse de votre box sans rien changer chez OVH ;
+   - sinon : une entrée **A**, sous-domaine `maison`, cible l'adresse IP publique de votre box (la console la montre dans « Accès depuis internet », **Tester l'accès depuis internet**).
+3. Ne remplacez pas les serveurs DNS du domaine et ne modifiez pas ses autres entrées, notamment celles du site web ou des e-mails. N'utilisez pas la redirection web d'OVH à la place de l'entrée DNS, et ne créez pas d'entrée par service : les services s'ouvrent sous la même adresse.
+4. La nouvelle entrée peut mettre jusqu'à quelques heures à être connue partout.
 
 ### Dans la console pi-appliance
 
-La console devra permettre de saisir le sous-domaine choisi, d'afficher la cible à recopier chez OVH, puis de vérifier la configuration avant d'activer le domaine. Ces réglages et cette vérification ne sont pas encore présents.
+1. Dans « Adresse sur internet », carte « Console sur internet », tapez le nom choisi dans **Votre adresse personnelle** (`maison.exemple.fr`) et touchez **Enregistrer l'adresse**. La carte rappelle l'entrée à créer chez OVH.
+2. Faites suivre les ports **80** et **443** de la box vers le Pi (voir [Ouvrir les ports de la box](#ouvrir-les-ports)) : c'est ce qui permet au Pi d'obtenir le certificat de l'adresse.
+3. Pour administrer le Pi depuis internet, touchez **Ouvrir la console sur internet** (voir [Administrer le Pi depuis internet](#console-sur-internet)). Les services marqués « Tout le monde, sur internet » s'ouvrent sous cette adresse même console fermée (voir [Ouvrir ses services depuis internet](#services-sur-internet)).
+4. Vérifiez depuis un téléphone en 4G, Wi-Fi coupé : `https://maison.exemple.fr/pi-appliance/` doit s'ouvrir avec un cadenas, sans alerte de sécurité.
 
-**Prérequis :** l'appliance doit d'abord pouvoir obtenir et tenir à jour son adresse pi-appliance (`TODO-3.2` et `TODO-3.5`). La prise en charge du domaine dans la console, notamment pour l'utiliser avec les services et leurs certificats, reste aussi à réaliser. L'accès depuis internet n'est pas encore disponible non plus.
+Pour retirer l'adresse : **Retirer l'adresse** dans la carte, puis supprimez l'entrée chez OVH.
 
 ## Lancer la console depuis les sources {#depuis-les-sources}
 
