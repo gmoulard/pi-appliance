@@ -1,10 +1,4 @@
 # Applications prévues, pas encore installables : affichées « À venir » sur
 # le site (page d'accueil, page marketplace), d'après le catalogue publié
 # (go run ./cmd/marketplace-json). todo : ligne de docs/TODO.md.
-- id: samba
-  name: Samba
-  description: Un lecteur réseau à la maison, avec un dossier commun et un dossier par personne.
-  icon: M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z
-  category: Fichiers
-  tags: [fichiers, reseau]
-  todo: TODO-4.8
+[]

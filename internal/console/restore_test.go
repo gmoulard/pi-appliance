@@ -26,6 +26,7 @@ import (
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/backup"
+	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -35,6 +36,7 @@ type restorePi struct {
 	dir       string
 	backups   *backup.Manager
 	restarted chan struct{}
+	network   *scriptCalls
 }
 
 func newRestorePi(t *testing.T, disk, host string) restorePi {
@@ -51,8 +53,10 @@ func newRestorePi(t *testing.T, disk, host string) restorePi {
 	manager := &services.Manager{Dir: dir, Domain: "maison.example.org", Runner: okRunner{}}
 	backups := &backup.Manager{Dir: dir, Services: manager, Host: host, Target: func() (string, error) { return filepath.Join(disk, host), nil }}
 	restarted := make(chan struct{}, 1)
-	handler := Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, Backups: backups, Restart: func() { restarted <- struct{}{} }})
-	return restorePi{fixture: fixture{handler: handler, accounts: accounts}, dir: dir, backups: backups, restarted: restarted}
+	script := &scriptCalls{out: map[string]string{"name": `{"ok": true}`}}
+	handler := Handler(Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, Backups: backups, Restart: func() { restarted <- struct{}{} },
+		Network: &network.Client{Runner: script}, Hostname: func() (string, error) { return host, nil }})
+	return restorePi{fixture: fixture{handler: handler, accounts: accounts}, dir: dir, backups: backups, restarted: restarted, network: script}
 }
 
 func TestWholeRestoreFromSetup(t *testing.T) {
@@ -97,13 +101,17 @@ func TestWholeRestoreFromSetup(t *testing.T) {
 		t.Fatalf("mauvais mot de passe : code %d : %s", response.Code, response.Body.String())
 	}
 	response = pi.do(http.MethodPost, "/pi-appliance/api/setup/restore", "application/json", body(adminPassword), nil)
-	if response.Code != http.StatusAccepted {
+	if response.Code != http.StatusAccepted || !strings.Contains(response.Body.String(), `"name":"ancien"`) {
 		t.Fatalf("restauration : code %d : %s", response.Code, response.Body.String())
 	}
 	select {
 	case <-pi.restarted:
 	case <-time.After(10 * time.Second):
 		t.Fatal("la console n'a pas redémarré")
+	}
+	// Le Pi reprend le nom du Pi sauvegardé, avant le redémarrage.
+	if got := pi.network.list(); got != "name ancien" {
+		t.Fatalf("nom après la restauration : %q", got)
 	}
 	data, err := os.ReadFile(filepath.Join(pi.dir, "accounts.json"))
 	if err != nil || !strings.Contains(string(data), `"marie"`) {

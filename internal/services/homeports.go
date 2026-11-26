@@ -14,7 +14,7 @@
 package services
 
 // Ports du Pi « maison seulement » (spécification 6.4, TODO-4.8) : un service
-// sans page web (Samba, base ouverte sur le réseau de la maison) n'a pas
+// sans page web (base ouverte sur le réseau de la maison, par exemple) n'a pas
 // Traefik devant lui ; Docker publie ses host_ports sur toutes les interfaces.
 // Quand son manifeste dit « access: home », la console écrit un pare-feu
 // nftables (homePortsFile) qui refuse ces ports à toute adresse hors des
