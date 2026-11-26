@@ -559,10 +559,10 @@ func TestRestoreAppliance(t *testing.T) {
 	os.RemoveAll(f.fake.volumes)
 	write(t, filepath.Join(f.fake.dir, "accounts.json"), "[]")
 	f.fake.log = nil
-	if err := f.RestoreAppliance(ctx, snapshot.ID, "autre"); !errors.Is(err, ErrPassword) {
+	if err := f.RestoreAppliance(ctx, "", snapshot.ID, "autre"); !errors.Is(err, ErrPassword) {
 		t.Fatalf("mauvais mot de passe : %v", err)
 	}
-	if err := f.RestoreAppliance(ctx, snapshot.ID, "mot de passe administrateur"); err != nil {
+	if err := f.RestoreAppliance(ctx, "", snapshot.ID, "mot de passe administrateur"); err != nil {
 		t.Fatal(err)
 	}
 	if got := read(t, filepath.Join(f.fake.dir, "accounts.json")); got != `[{"name":"marie"}]` {
@@ -583,5 +583,71 @@ func TestRestoreAppliance(t *testing.T) {
 	}
 	if _, err := f.Backup(ctx, Manual); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestRestoreApplianceOtherName(t *testing.T) {
+	f := newFixture(t)
+	ctx := context.Background()
+	write(t, filepath.Join(f.fake.dir, "accounts.json"), `[{"name":"marie"}]`)
+	snapshot, err := f.Backup(ctx, Manual)
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.RemoveAll(f.fake.dir)
+	os.RemoveAll(f.fake.volumes)
+	write(t, filepath.Join(f.fake.dir, "accounts.json"), "[]")
+	f.root = filepath.Join(filepath.Dir(f.root), "pi-appliance")
+	list, err := f.ApplianceBackups(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(list) != 1 || list[0].Host != "pi" || list[0].ID != snapshot.ID || !slices.Equal(list[0].Services, []string{"cloud"}) {
+		t.Fatalf("sauvegardes trouvées : %+v", list)
+	}
+	if err := f.CheckAppliance(ctx, "pi", snapshot.ID, "autre"); !errors.Is(err, ErrPassword) {
+		t.Fatalf("mauvais mot de passe : %v", err)
+	}
+	for _, host := range []string{"..", "a/b"} {
+		if err := f.CheckAppliance(ctx, host, snapshot.ID, "mot de passe administrateur"); !errors.Is(err, ErrInvalid) {
+			t.Fatalf("dossier %q : %v", host, err)
+		}
+	}
+	if err := f.CheckAppliance(ctx, "", snapshot.ID, "mot de passe administrateur"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("dossier du nouveau nom, vide : %v", err)
+	}
+	if err := f.RestoreAppliance(ctx, "pi", snapshot.ID, "mot de passe administrateur"); err != nil {
+		t.Fatal(err)
+	}
+	if got := read(t, filepath.Join(f.fake.dir, "accounts.json")); got != `[{"name":"marie"}]` {
+		t.Fatalf("comptes : %q", got)
+	}
+	if got := read(t, filepath.Join(f.volume("cloud"), "data", "photo.jpg")); got != "photo v1" {
+		t.Fatalf("données : %q", got)
+	}
+}
+
+func TestApplianceBackupsNoDisk(t *testing.T) {
+	f := newFixture(t)
+	f.Target = func() (string, error) { return "", ErrNoDisk }
+	if _, err := f.ApplianceBackups(context.Background()); !errors.Is(err, ErrNoDisk) {
+		t.Fatalf("sans disque : %v", err)
+	}
+}
+
+func TestHostingOpensPeerRoute(t *testing.T) {
+	p := newPeerFixture(t)
+	if p.host.Hosting() {
+		t.Fatal("accueil sans code ni proche")
+	}
+	if _, _, err := p.host.HostingCode("Paul", 1024); err != nil {
+		t.Fatal(err)
+	}
+	if !p.host.Hosting() {
+		t.Fatal("code de jumelage en cours : API des proches fermée")
+	}
+	p.host.now = p.host.now.Add(2 * time.Hour)
+	if p.host.Hosting() {
+		t.Fatal("code périmé : API des proches encore ouverte")
 	}
 }

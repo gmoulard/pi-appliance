@@ -945,5 +945,18 @@ piTranslations("de", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Der Pi wird jetzt aktualisiert: zuerst sein System, dann pi-appliance. Das dauert einige Minuten bis eine halbe Stunde. Trennen Sie den Pi nicht vom Strom und lassen Sie diese Seite geöffnet.",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Der Pi ist auf dem neuesten Stand. Fahren Sie fort: Er startet am Ende der Einrichtung neu, womit die Aktualisierung abgeschlossen wird.",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "Die Aktualisierung konnte nicht durchgeführt werden. Sie können sie später unter „Mein Pi“ wiederholen. Fahren Sie mit der Einrichtung fort.",
-  "La mise à jour prend trop de temps.": "Die Aktualisierung dauert zu lange."
+  "La mise à jour prend trop de temps.": "Die Aktualisierung dauert zu lange.",
+  "Remettre une sauvegarde": "Eine Sicherung zurückspielen",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "Neue SD-Karte? Schließen Sie den USB-Sicherungsdatenträger an: Konten, Einstellungen und Dienste kommen so zurück, wie sie am gewählten Datum waren.",
+  "Sauvegarde": "Sicherung",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "Administratorpasswort, das am Datum der Sicherung galt",
+  "Remettre cette sauvegarde": "Diese Sicherung zurückspielen",
+  "Créer plutôt un nouveau compte": "Stattdessen ein neues Konto anlegen",
+  "Choisissez le disque USB des sauvegardes :": "Wählen Sie den USB-Sicherungsdatenträger:",
+  "Branchez le disque USB des sauvegardes.": "Schließen Sie den USB-Sicherungsdatenträger an.",
+  "Aucune sauvegarde sur ce disque.": "Keine Sicherung auf diesem Datenträger.",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi „{1}“ ({2}, {3})",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "Die Appliance so zurückversetzen, wie sie am {0} war? Die Konten, Einstellungen und Dienste der Sicherung ersetzen die dieses Pi.",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Wiederherstellung läuft … Die Konsole startet am Ende neu: Das kann mehrere Minuten dauern.",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "Die Appliance ist wiederhergestellt: Melden Sie sich mit einem Konto aus der Sicherung an."
 });

@@ -259,6 +259,13 @@ func (m *Manager) RemoveGuest(id string) error {
 	return m.saveHosting(state)
 }
 
+func (m *Manager) Hosting() bool {
+	hostingMu.Lock()
+	state := m.hosting()
+	hostingMu.Unlock()
+	return len(state.Guests) > 0 || (state.Pairing != nil && m.now().Before(state.Pairing.Expires))
+}
+
 func (m *Manager) hostingStatus() HostingStatus {
 	status := HostingStatus{Guests: []GuestPublic{}}
 	var root string

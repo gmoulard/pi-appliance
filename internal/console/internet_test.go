@@ -201,6 +201,9 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/setup", `{}`, nil); response.Code != http.StatusForbidden {
 		t.Fatalf("mise en route depuis internet : code %d", response.Code)
 	}
+	if response := f.fromOutside(http.MethodGet, "/pi-appliance/api/setup/restore", "", nil); response.Code != http.StatusForbidden {
+		t.Fatalf("restauration de l'appliance depuis internet : code %d", response.Code)
+	}
 	// Le reste se fait aussi depuis internet, confirmé : remise à zéro avec un
 	// mauvais mot de passe refusée, ports de la box sans confirmation refusés.
 	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/factory-reset", `{"confirm": true, "password": "mauvais"}`, outside); response.Code != http.StatusUnauthorized {
@@ -283,13 +286,13 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 }
 
 func TestTraefikInternet(t *testing.T) {
-	if got := traefikInternet(false, []string{"maison.example.org"}, true); got != "" {
+	if got := traefikInternet(false, []string{"maison.example.org"}, true, false); got != "" {
 		t.Fatalf("console fermée : %q", got)
 	}
-	if got := traefikInternet(true, nil, true); got != "" {
+	if got := traefikInternet(true, nil, true, true); got != "" {
 		t.Fatalf("sans adresse : %q", got)
 	}
-	got := traefikInternet(true, []string{"controltower.pi-appliance.com", "maison.example.net"}, false)
+	got := traefikInternet(true, []string{"controltower.pi-appliance.com", "maison.example.net"}, false, true)
 	if !strings.Contains(got, "(Host(`controltower.pi-appliance.com`) || Host(`maison.example.net`)) && PathPrefix(`/pi-appliance`)") {
 		t.Fatalf("règle :\n%s", got)
 	}
@@ -297,11 +300,25 @@ func TestTraefikInternet(t *testing.T) {
 		t.Fatalf("Cockpit publié sans être ouvert :\n%s", got)
 	}
 	// Cockpit ouvert sur internet (TODO-3.4) : même authentification déléguée qu'à la maison.
-	got = traefikInternet(true, []string{"maison.example.net"}, true)
+	got = traefikInternet(true, []string{"maison.example.net"}, true, false)
 	if !strings.Contains(got, "rule: \"(Host(`maison.example.net`)) && PathPrefix(`/cockpit`)\"") ||
 		!strings.Contains(got, "middlewares: [pi-appliance-errors@file, pi-appliance-cockpit@file]") ||
 		!strings.Contains(got, "service: pi-appliance-cockpit@file") {
 		t.Fatalf("Cockpit :\n%s", got)
+	}
+}
+
+func TestTraefikInternetPeerOnly(t *testing.T) {
+	got := traefikInternet(false, []string{"maison.example.net"}, true, true)
+	if !strings.Contains(got, "rule: \"(Host(`maison.example.net`)) && PathPrefix(`/pi-appliance/api/peer/`)\"") ||
+		!strings.Contains(got, "service: pi-appliance-console@file") || !strings.Contains(got, "certResolver: letsencrypt") {
+		t.Fatalf("API des proches :\n%s", got)
+	}
+	if strings.Contains(got, "pi-appliance-console-internet") || strings.Contains(got, "cockpit") {
+		t.Fatalf("console ou Cockpit publiés, console fermée :\n%s", got)
+	}
+	if got := traefikInternet(false, nil, false, true); got != "" {
+		t.Fatalf("sans adresse : %q", got)
 	}
 }
 

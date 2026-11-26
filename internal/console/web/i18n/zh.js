@@ -945,5 +945,18 @@ piTranslations("zh", {
   "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi 正在更新：先是系统，然后是 pi-appliance。需要几分钟到半小时。请不要拔掉 Pi 的电源，并保持此页面打开。",
   "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Pi 已是最新。请继续：设置结束时它会重新启动，从而完成更新。",
   "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "无法完成更新。您可以稍后在“我的 Pi”中重新进行。请继续设置。",
-  "La mise à jour prend trop de temps.": "更新耗时过长。"
+  "La mise à jour prend trop de temps.": "更新耗时过长。",
+  "Remettre une sauvegarde": "恢复备份",
+  "Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.": "新的 SD 卡？请接上存放备份的 USB 磁盘：账户、设置和服务将恢复到所选日期时的状态。",
+  "Sauvegarde": "备份",
+  "Mot de passe administrateur en vigueur à la date de la sauvegarde": "备份当天使用的管理员密码",
+  "Remettre cette sauvegarde": "恢复此备份",
+  "Créer plutôt un nouveau compte": "改为创建新账户",
+  "Choisissez le disque USB des sauvegardes :": "请选择存放备份的 USB 磁盘：",
+  "Branchez le disque USB des sauvegardes.": "请接上存放备份的 USB 磁盘。",
+  "Aucune sauvegarde sur ce disque.": "此磁盘上没有备份。",
+  "{0}, Pi « {1} » ({2}, {3})": "{0}，Pi“{1}”（{2}，{3}）",
+  "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "将设备恢复到 {0} 时的状态？备份中的账户、设置和服务将取代此 Pi 上的。",
+  "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "正在恢复… 完成后控制台会重新启动：可能需要几分钟。",
+  "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "设备已恢复：请使用备份中的账户登录。"
 });

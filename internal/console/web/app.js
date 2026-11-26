@@ -5690,6 +5690,10 @@ function showAuth(mode) {
   authButton.textContent = config.button;
   forgotButton.hidden = !(mode === "login" && recoveryEmail);
   loginButton.hidden = mode !== "forgot";
+  restoreOpen.hidden = mode !== "setup";
+  restoreSection.hidden = true;
+  clearInterval(restoreTimer);
+  restoreTimer = null;
   for (const field of ["name", "who", "email", "password", "confirm", "code"]) {
     const shown = config.fields.includes(field);
     document.getElementById(`${field}Field`).hidden = !shown;
@@ -5932,6 +5936,132 @@ factoryForm.addEventListener("submit", async (event) => {
     button.disabled = false;
   }
 });
+
+const restoreOpen = document.getElementById("restoreOpen");
+const restoreSection = document.getElementById("restoreSection");
+const restoreState = document.getElementById("restoreState");
+const restoreDisks = document.getElementById("restoreDisks");
+const restoreForm = document.getElementById("restoreForm");
+const restoreBack = document.getElementById("restoreBack");
+let restoreTimer = null;
+let restoreBackups = [];
+
+async function loadWholeRestore() {
+  const status = await api("setup/restore");
+  restoreDisks.replaceChildren();
+  if (status.running) {
+    restoreState.textContent = t("Restauration en cours…");
+    restoreForm.hidden = true;
+    return status;
+  }
+  if (!status.disk_ready) {
+    const disks = (status.disk ? status.disk.disks : []).filter((disk) => disk.fstype === "ext4" && disk.partition);
+    restoreState.textContent = disks.length ? t("Choisissez le disque USB des sauvegardes :") : t("Branchez le disque USB des sauvegardes.");
+    restoreDisks.replaceChildren(...disks.map((disk) => {
+      const item = element("li");
+      const button = element("button");
+      button.type = "button";
+      button.append(element("span", diskName(disk)), element("span", t("prêt"), "meta"));
+      button.addEventListener("click", () => useRestoreDisk(disk));
+      item.append(button);
+      return item;
+    }));
+    restoreForm.hidden = true;
+    return status;
+  }
+  restoreBackups = status.backups;
+  restoreForm.hidden = restoreBackups.length === 0;
+  restoreState.textContent = restoreBackups.length ? "" : t("Aucune sauvegarde sur ce disque.");
+  const select = restoreForm.elements.backup;
+  const chosen = select.value;
+  select.replaceChildren(...restoreBackups.map((backup, index) => {
+    const when = new Date(backup.created).toLocaleString(LOCALE);
+    const option = element("option", t("{0}, Pi « {1} » ({2}, {3})", when, backup.host, BACKUP_KINDS[backup.kind] || backup.kind, sizeText(backup.size_mb)));
+    option.value = String(index);
+    return option;
+  }));
+  if (chosen && Number(chosen) < restoreBackups.length) select.value = chosen;
+  return status;
+}
+
+async function useRestoreDisk(disk) {
+  if (!window.confirm(t("Utiliser {0} pour les sauvegardes ? Il devra rester branché.", diskName(disk)))) return;
+  try {
+    await api("setup/restore/disk", jsonBody("POST", { partition: disk.partition }));
+  } catch (error) {
+    showMessage([error.message], "error");
+  }
+  await loadWholeRestore().catch((error) => showMessage([error.message], "error"));
+}
+
+restoreOpen.addEventListener("click", async () => {
+  try {
+    await loadWholeRestore();
+  } catch (error) {
+    showMessage([error.message], "error");
+    return;
+  }
+  hideMessages();
+  authSection.hidden = true;
+  restoreSection.hidden = false;
+  clearInterval(restoreTimer);
+  restoreTimer = setInterval(() => {
+    if (restoreForm.hidden) loadWholeRestore().catch(() => null);
+  }, 5000);
+});
+
+restoreBack.addEventListener("click", () => {
+  showAuth("setup");
+});
+
+restoreForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const backup = restoreBackups[Number(restoreForm.elements.backup.value)];
+  if (!backup) return;
+  const when = new Date(backup.created).toLocaleString(LOCALE);
+  if (!window.confirm(t("Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.", when))) return;
+  const button = document.getElementById("restoreSubmit");
+  button.disabled = true;
+  try {
+    await api("setup/restore", jsonBody("POST", { host: backup.host, id: backup.id, password: restoreForm.elements.password.value }));
+  } catch (error) {
+    showMessage([error.message], "error");
+    button.disabled = false;
+    return;
+  }
+  restoreForm.reset();
+  button.disabled = false;
+  restoreForm.hidden = true;
+  restoreBack.hidden = true;
+  restoreState.textContent = t("Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.");
+  hideMessages();
+  showMessage([restoreState.textContent], "info");
+  clearInterval(restoreTimer);
+  restoreTimer = setInterval(watchWholeRestore, 3000);
+});
+
+async function watchWholeRestore() {
+  let session;
+  try {
+    session = await api("session");
+  } catch {
+    return;
+  }
+  if (!session.setup) {
+    restoreBack.hidden = false;
+    showAuth("login");
+    showMessage([t("L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.")], "success");
+    return;
+  }
+  const status = await api("setup/restore").catch(() => null);
+  if (status && !status.running && status.last && !status.last.ok) {
+    clearInterval(restoreTimer);
+    restoreTimer = null;
+    restoreBack.hidden = false;
+    showMessage([status.last.message], "error");
+    await loadWholeRestore().catch(() => null);
+  }
+}
 
 // Diagnostic du Pi (spécification 8.5, TODO-2.55) : page /pi-appliance/diagnostic,
 // pour un administrateur, ou sans compte après le dépôt du fichier diagnostic

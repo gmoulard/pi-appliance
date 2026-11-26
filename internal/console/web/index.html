@@ -46,7 +46,20 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <button id="authButton"></button>
 <button id="forgotButton" class="secondary" type="button" hidden>Mot de passe oublié ?</button>
 <button id="loginButton" class="secondary" type="button" hidden>Retour à la connexion</button>
+<button id="restoreOpen" class="secondary" type="button" hidden>Remettre une sauvegarde</button>
 </form>
+</section>
+<section id="restoreSection" class="card" hidden>
+<h2>Remettre une sauvegarde</h2>
+<p>Nouvelle carte SD ? Branchez le disque USB des sauvegardes : les comptes, les réglages et les services reviennent tels qu'ils étaient à la date choisie.</p>
+<p id="restoreState"></p>
+<ul id="restoreDisks" class="wifi-list"></ul>
+<form id="restoreForm" hidden>
+<label>Sauvegarde<select name="backup" required></select></label>
+<label>Mot de passe administrateur en vigueur à la date de la sauvegarde<input name="password" type="password" autocomplete="current-password" maxlength="256" required></label>
+<button id="restoreSubmit">Remettre cette sauvegarde</button>
+</form>
+<button id="restoreBack" class="secondary" type="button">Créer plutôt un nouveau compte</button>
 </section>
 <section id="factorySection" class="card" hidden>
 <h2>Remettre le Pi à zéro</h2>

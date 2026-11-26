@@ -141,8 +141,8 @@ func (c *console) internetHosts() []string {
 // cockpit, Cockpit (/cockpit/) est publié aussi sur ces adresses (TODO-3.4) :
 // mêmes middlewares qu'à la maison (dynamic/cockpit.yml), donc toujours une
 // session de la console et un compte admis par api/auth/forward-cockpit.
-func traefikInternet(enabled bool, hosts []string, cockpit bool) string {
-	if !enabled || len(hosts) == 0 {
+func traefikInternet(enabled bool, hosts []string, cockpit, peer bool) string {
+	if (!enabled && !peer) || len(hosts) == 0 {
 		return ""
 	}
 	rules := make([]string, len(hosts))
@@ -150,6 +150,17 @@ func traefikInternet(enabled bool, hosts []string, cockpit bool) string {
 		rules[i] = "Host(`" + host + "`)"
 	}
 	var b strings.Builder
+	if !enabled {
+		b.WriteString("# Écrit par la console pi-appliance (sauvegardes reçues d'un proche, spécification 9.1).\n")
+		b.WriteString("# Ne pas modifier à la main : ne plus accueillir de proche dans « Sauvegardes » retire ce fichier.\n")
+		b.WriteString("http:\n  routers:\n    pi-appliance-peer-internet:\n")
+		b.WriteString("      entryPoints: [websecure]\n")
+		fmt.Fprintf(&b, "      rule: \"(%s) && PathPrefix(`%s/api/peer/`)\"\n", strings.Join(rules, " || "), BasePath)
+		b.WriteString("      priority: 2\n")
+		b.WriteString("      service: pi-appliance-console@file\n")
+		b.WriteString("      tls:\n        certResolver: letsencrypt\n")
+		return b.String()
+	}
 	b.WriteString("# Écrit par la console pi-appliance (console ouverte sur internet, spécification 8.3).\n")
 	b.WriteString("# Ne pas modifier à la main : refermer la console dans « Adresse sur internet » retire ce fichier.\n")
 	b.WriteString("http:\n  routers:\n    pi-appliance-console-internet:\n")
@@ -180,7 +191,7 @@ func (c *console) syncTraefik() error {
 	internetMu.Lock()
 	defer internetMu.Unlock()
 	hosts := c.internetHosts()
-	if err := writeDynamic(c.TraefikInternetFile, traefikInternet(c.internetEnabled(), hosts, c.cockpitOnInternet())); err != nil {
+	if err := writeDynamic(c.TraefikInternetFile, traefikInternet(c.internetEnabled(), hosts, c.cockpitOnInternet(), c.Backups != nil && c.Backups.Hosting())); err != nil {
 		return err
 	}
 	return writeDynamic(c.ServicesInternetFile, traefikServices(hosts, c.publications()))
@@ -244,12 +255,16 @@ func internetOpenPath(path string) bool {
 
 // homeOnlyPaths : à faire depuis la maison, même console ouverte. Tout ce
 // qu'un compte fait à la maison se fait aussi depuis internet (choix de
-// l'utilisateur du 2026-11-25) ; restent ici les deux actions faites sans
-// compte : créer le premier administrateur et la réinitialisation par le
-// fichier reset de la carte SD. NE PAS les ouvrir : depuis internet,
-// n'importe qui prendrait la main sur le Pi.
+// l'utilisateur du 2026-11-25) ; restent ici les actions faites sans
+// compte : créer le premier administrateur, restaurer l'appliance entière à
+// la mise en route et la réinitialisation par le fichier reset de la carte
+// SD. NE PAS les ouvrir : depuis internet, n'importe qui prendrait la main
+// sur le Pi.
 var homeOnlyPaths = []string{
 	"POST " + BasePath + "/api/setup",
+	"GET " + BasePath + "/api/setup/restore",
+	"POST " + BasePath + "/api/setup/restore",
+	"POST " + BasePath + "/api/setup/restore/disk",
 	"POST " + BasePath + "/api/reset",
 }
 

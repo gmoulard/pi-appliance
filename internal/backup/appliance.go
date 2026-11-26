@@ -23,24 +23,100 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/services"
 )
 
-// Restauration de l'appliance entière sur une nouvelle carte SD
-// (spécification 9.1), première étape : depuis le disque de sauvegarde, avec
-// le mot de passe administrateur en vigueur à la date de la sauvegarde. La
-// configuration (comptes, réglages, réglages des services) est remise, puis
-// chaque service, ses données recréées, puis il est démarré. La clé des
-// sauvegardes devient celle de la sauvegarde, avec son enveloppe : les
-// sauvegardes d'avant restent lisibles, les suivantes continuent la série.
-// L'assistant de premier démarrage qui l'appelle reste à faire (TODO-4.12).
+type Whole struct {
+	Host     string    `json:"host"`
+	ID       string    `json:"id"`
+	Created  time.Time `json:"created"`
+	Kind     Kind      `json:"kind"`
+	SizeMB   int64     `json:"size_mb"`
+	Services []string  `json:"services"`
+}
 
-// RestoreAppliance remet toute l'appliance telle qu'elle était dans la
-// sauvegarde id. À n'appeler que sur une appliance sans compte (assistant
-// de premier démarrage) : la configuration actuelle est remplacée.
-func (m *Manager) RestoreAppliance(ctx context.Context, id, password string) (err error) {
+func (m *Manager) ApplianceBackups(ctx context.Context) ([]Whole, error) {
+	root, err := m.Target()
+	if err != nil {
+		return nil, err
+	}
+	base := filepath.Dir(root)
+	entries, err := os.ReadDir(base)
+	if errors.Is(err, os.ErrNotExist) {
+		return []Whole{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	list := []Whole{}
+	for _, entry := range entries {
+		if !entry.IsDir() || !validName(entry.Name()) {
+			continue
+		}
+		st := &diskStore{root: filepath.Join(base, entry.Name()), free: m.freeMB}
+		snapshots, err := m.storeSnapshots(ctx, st)
+		if err != nil {
+			m.logf("sauvegardes de %s : %v", entry.Name(), err)
+			continue
+		}
+		for _, s := range snapshots {
+			whole := Whole{Host: entry.Name(), ID: s.ID, Created: s.Created, Kind: s.Kind, SizeMB: s.SizeMB, Services: []string{}}
+			for _, c := range s.Services {
+				if c.Error == "" {
+					whole.Services = append(whole.Services, c.Name)
+				}
+			}
+			list = append(list, whole)
+		}
+	}
+	sort.SliceStable(list, func(i, j int) bool { return list[i].Created.After(list[j].Created) })
+	return list, nil
+}
+
+func (m *Manager) applianceSnapshot(ctx context.Context, host, id, password string) (store, Snapshot, []byte, error) {
+	if !idPattern.MatchString(id) || (host != "" && !validName(host)) {
+		return nil, Snapshot{}, nil, ErrInvalid
+	}
+	root, err := m.Target()
+	if err != nil {
+		return nil, Snapshot{}, nil, err
+	}
+	if host != "" {
+		root = filepath.Join(filepath.Dir(root), host)
+	}
+	st := &diskStore{root: root, free: m.freeMB}
+	snapshot, err := m.readManifest(ctx, st, id)
+	if err != nil {
+		return nil, Snapshot{}, nil, ErrNotFound
+	}
+	if password == "" {
+		return nil, Snapshot{}, nil, ErrPassword
+	}
+	key, err := snapshot.Envelope.Open(password)
+	if err != nil {
+		return nil, Snapshot{}, nil, err
+	}
+	if snapshot.Locked {
+		if snapshot, err = unseal(snapshot, key); err != nil {
+			return nil, Snapshot{}, nil, err
+		}
+	}
+	return st, snapshot, key, nil
+}
+
+func (m *Manager) CheckAppliance(ctx context.Context, host, id, password string) error {
+	if m.Running() != "" {
+		return ErrBusy
+	}
+	_, _, _, err := m.applianceSnapshot(ctx, host, id, password)
+	return err
+}
+
+func (m *Manager) RestoreAppliance(ctx context.Context, host, id, password string) (err error) {
 	if !m.begin("restore") {
 		return ErrBusy
 	}
@@ -56,26 +132,9 @@ func (m *Manager) RestoreAppliance(ctx context.Context, id, password string) (er
 		}
 		m.record(outcome)
 	}()
-	root, err := m.Target()
+	st, snapshot, key, err := m.applianceSnapshot(ctx, host, id, password)
 	if err != nil {
 		return err
-	}
-	st := &diskStore{root: root, free: m.freeMB}
-	snapshot, err := m.readManifest(ctx, st, id)
-	if err != nil {
-		return ErrNotFound
-	}
-	if password == "" {
-		return ErrPassword
-	}
-	key, err := snapshot.Envelope.Open(password)
-	if err != nil {
-		return err
-	}
-	if snapshot.Locked {
-		if snapshot, err = unseal(snapshot, key); err != nil {
-			return err
-		}
 	}
 	if err := m.restoreConfig(ctx, st, id, key); err != nil {
 		return fmt.Errorf("configuration illisible : %w", err)

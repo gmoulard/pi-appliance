@@ -332,6 +332,8 @@ func (m *Manager) removeOnline(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func WriteFailure(w http.ResponseWriter, err error) { writeFailure(w, err) }
+
 func writeFailure(w http.ResponseWriter, err error) {
 	var failure storage.Failure
 	var online *ErrOnline
