@@ -8,7 +8,7 @@ pi-appliance transforme un Raspberry Pi en appliance de Fog Computing : image Ra
 
 Public visé : le grand public (spécification 1.1). Tout se fait depuis la console, sans ligne de commande ; les écrans parlent en langage courant, sans jargon technique.
 
-Services hors du dépôt (DNS `pi-appliance.com` chez AWS Route 53 et non OVH, GitHub Pages, AWS CLI dans Docker) : [docs/environnement.md](docs/environnement.md).
+Services hors du dépôt (DNS `pi-appliance.com` chez AWS Route 53, en passage chez OVH, tranché le 2026-11-26, TODO-3.19, GitHub Pages, AWS CLI dans Docker) : [docs/environnement.md](docs/environnement.md).
 
 Ne jamais versionner de secret (mot de passe Wi-Fi, clé SSH, jeton DNS, mot de passe de service).
 

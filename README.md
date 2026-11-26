@@ -87,6 +87,8 @@ Version : [`VERSION`](VERSION), historique : [`CHANGELOG.md`](CHANGELOG.md).
 
 Le code de pi-appliance est public, sous licence [CC BY-NC-ND 4.0 avec des permissions supplémentaires](LICENSE) : chacun peut l'utiliser, le diffuser tel quel et l'intégrer sans le modifier dans un projet non commercial, en citant le projet ; les versions modifiées et les projets dérivés ne sont pas permis, sauf pour proposer une contribution ([`CONTRIBUTING.md`](CONTRIBUTING.md)) ; un usage commercial demande l'accord de l'auteur (guillaume@moulard.org). Les versions jusqu'à 0.2.1 restent sous GNU AGPL-3.0.
 
+Contact du projet : [admin@pi-appliance.com](mailto:admin@pi-appliance.com).
+
 ## Site
 
 Le site du projet est publié par GitHub Pages sur [www.pi-appliance.com](https://www.pi-appliance.com) (source : dossier `docs/`, fichier `docs/CNAME`), avec la [charte graphique](docs/charte-graphique.md).
