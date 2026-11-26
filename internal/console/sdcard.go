@@ -52,7 +52,7 @@ func (c *console) sdcardStatus(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "Les disques du Pi ne répondent pas.")
 		return
 	}
-	writeJSON(w, http.StatusOK, SDCardStatus{Status: status, Internet: fromInternet(r)})
+	writeJSON(w, http.StatusOK, SDCardStatus{Status: status, Internet: c.fromInternet(r)})
 }
 
 func (c *console) sdcardWrite(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +61,7 @@ func (c *console) sdcardWrite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// NE PAS ouvrir depuis internet : une session volée effacerait le disque branché au Pi.
-	if fromInternet(r) {
+	if c.fromInternet(r) {
 		writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
 		return
 	}
