@@ -20,6 +20,7 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -262,7 +263,7 @@ func TestRebuildCleanupHostDirs(t *testing.T) {
 		t.Fatal(err)
 	}
 	installHostMounts(t, m, "libre", photos, link, filepath.Join(t.TempDir(), "absent"))
-	dirs, err := m.CleanupDirs("libre")
+	dirs, _, err := m.CleanupDirs("libre")
 	if err != nil || len(dirs) != 1 || dirs[0] != photos {
 		t.Fatalf("dossiers %v, %v", dirs, err)
 	}
@@ -278,6 +279,45 @@ func TestRebuildCleanupHostDirs(t *testing.T) {
 	entries, err := os.ReadDir(photos)
 	if err != nil || len(entries) != 0 {
 		t.Fatalf("dossier du Pi non vidé ou retiré : %v, %v", entries, err)
+	}
+}
+
+func unixSocket(t *testing.T) string {
+	t.Helper()
+	dir, err := os.MkdirTemp("", "s")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { os.RemoveAll(dir) })
+	listener, err := net.Listen("unix", filepath.Join(dir, "s.sock"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { listener.Close() })
+	return filepath.Join(dir, "s.sock")
+}
+
+// Une prise montée (comme /var/run/docker.sock pour Portainer) est laissée
+// telle quelle, et le reste du service est nettoyé (décision du 2026-11-26).
+func TestRebuildCleanupKeepsSockets(t *testing.T) {
+	runner := &fakeRunner{}
+	m := manager(t, runner)
+	photos := hostDir(t, "photos")
+	socket := unixSocket(t)
+	link := symlink(t, socket)
+	installHostMounts(t, m, "libre", photos, socket, link)
+	dirs, kept, err := m.CleanupDirs("libre")
+	if err != nil || len(dirs) != 1 || dirs[0] != photos || len(kept) != 2 || !slices.Contains(kept, socket) || !slices.Contains(kept, link) {
+		t.Fatalf("dossiers %v, prises %v, %v", dirs, kept, err)
+	}
+	if _, err := m.Rebuild(context.Background(), "libre", true); err != nil {
+		t.Fatal(err)
+	}
+	if info, err := os.Stat(socket); err != nil || info.Mode()&os.ModeSocket == 0 {
+		t.Fatalf("prise touchée : %v", err)
+	}
+	if entries, err := os.ReadDir(photos); err != nil || len(entries) != 0 {
+		t.Fatalf("dossier du Pi non vidé : %v, %v", entries, err)
 	}
 }
 
@@ -299,7 +339,6 @@ func TestRebuildCleanupRefused(t *testing.T) {
 		"var log":               func(*testing.T, *Manager) string { return "/var/log" },
 		"var lib":               func(*testing.T, *Manager) string { return "/var/lib" },
 		"var lib docker":        func(*testing.T, *Manager) string { return "/var/lib/docker/volumes" },
-		"socket docker":         func(*testing.T, *Manager) string { return "/var/run/docker.sock" },
 		"home":                  func(*testing.T, *Manager) string { return "/home" },
 		"home pi":               func(*testing.T, *Manager) string { return "/home/pi" },
 		"root":                  func(*testing.T, *Manager) string { return "/root/notes" },
@@ -315,19 +354,6 @@ func TestRebuildCleanupRefused(t *testing.T) {
 		"fichier":               func(t *testing.T, _ *Manager) string { return filepath.Join(hostDir(t), "album", "photo.jpg") },
 		"lien vers etc":         func(t *testing.T, _ *Manager) string { return symlink(t, "/etc") },
 		"lien vers les données": func(t *testing.T, m *Manager) string { return symlink(t, m.Dir) },
-		"prise": func(t *testing.T, _ *Manager) string {
-			dir, err := os.MkdirTemp("", "s")
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Cleanup(func() { os.RemoveAll(dir) })
-			listener, err := net.Listen("unix", filepath.Join(dir, "s.sock"))
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Cleanup(func() { listener.Close() })
-			return filepath.Join(dir, "s.sock")
-		},
 		"monté par un autre": func(t *testing.T, m *Manager) string {
 			shared := hostDir(t, "partage")
 			installHostMounts(t, m, "autre", shared)
@@ -357,7 +383,7 @@ func TestRebuildCleanupRefused(t *testing.T) {
 			good := hostDir(t, "photos")
 			installHostMounts(t, m, "libre", good, bad(t, m))
 			runner.calls = nil
-			if _, err := m.CleanupDirs("libre"); !errors.Is(err, ErrInvalid) {
+			if _, _, err := m.CleanupDirs("libre"); !errors.Is(err, ErrInvalid) {
 				t.Fatalf("liste acceptée : %v", err)
 			}
 			_, err := m.Rebuild(context.Background(), "libre", true)

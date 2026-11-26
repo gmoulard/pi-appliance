@@ -931,6 +931,7 @@ piTranslations("ja", {
   "{0} est relancé avec de nouvelles images, sans données.": "{0} は新しいイメージで、データなしで再起動しました。",
   "{0} est relancé avec de nouvelles images, données gardées.": "{0} は新しいイメージで再起動しました。データは保持されています。",
   "Le contenu de ces dossiers du Pi sera aussi effacé :": "Pi の次のフォルダーの中身も消去されます:",
+  "Ces prises du Pi sont laissées telles quelles, ni vidées ni supprimées :": "Pi の次のソケットはそのまま残され、空にも削除もされません：",
   "Le Rebuild de {0} a échoué : l'ancienne version tourne de nouveau.": "{0} の Rebuild に失敗しました: 以前のバージョンが再び動いています。",
   "Source": "ソース",
   "Fichier lu à l'adresse : ": "ファイルの読み込み元アドレス：",

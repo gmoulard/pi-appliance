@@ -36,29 +36,40 @@ var sharedRoots = []string{"/home", "/media", "/mnt", "/opt", "/srv", "/var", "/
 
 // CleanupDirs : dossiers du Pi montés par un chemin absolu dans le compose.yaml
 // d'un Docker Compose libre, dont « Rebuild cleanup » vide le contenu ; un
-// dossier qui n'existe pas encore n'y est pas. Un dossier protégé fait refuser
-// tout le Rebuild cleanup (ErrInvalid), avant que rien ne soit effacé.
-func (m *Manager) CleanupDirs(name string) ([]string, error) {
+// dossier qui n'existe pas encore n'y est pas. kept : prises montées (comme
+// /var/run/docker.sock pour Portainer), laissées telles quelles (décision du
+// 2026-11-26). Un dossier protégé fait refuser tout le Rebuild cleanup
+// (ErrInvalid), avant que rien ne soit effacé.
+func (m *Manager) CleanupDirs(name string) (dirs, kept []string, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	if _, err := m.customInstance(name); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	return m.cleanupDirs(name)
 }
 
-func (m *Manager) cleanupDirs(name string) ([]string, error) {
+func (m *Manager) cleanupDirs(name string) ([]string, []string, error) {
 	own, err := composeMounts(m.serviceDir(name))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	others, err := m.otherMounts(name)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	dirs, refused := []string{}, []string(nil)
+	dirs, kept, refused := []string{}, []string{}, []string(nil)
 	for _, source := range own {
-		resolved, reason := m.cleanupRefusal(name, source, others)
+		clean := filepath.Clean(source)
+		// NE PAS passer une prise par protected : /var/run/docker.sock est dans
+		// un dossier système et ferait tout refuser ; elle n'est jamais vidée.
+		if isSocket(clean) {
+			if !slices.Contains(kept, clean) {
+				kept = append(kept, clean)
+			}
+			continue
+		}
+		resolved, reason := m.cleanupRefusal(name, clean, others)
 		switch {
 		case reason != "":
 			refused = append(refused, reason)
@@ -67,10 +78,17 @@ func (m *Manager) cleanupDirs(name string) ([]string, error) {
 		}
 	}
 	if len(refused) > 0 {
-		return nil, fmt.Errorf("%w : Rebuild cleanup de %s refusé, rien n'a été effacé : %s", ErrInvalid, name, strings.Join(refused, " ; "))
+		return nil, nil, fmt.Errorf("%w : Rebuild cleanup de %s refusé, rien n'a été effacé : %s", ErrInvalid, name, strings.Join(refused, " ; "))
 	}
 	sort.Strings(dirs)
-	return dirs, nil
+	sort.Strings(kept)
+	return dirs, kept, nil
+}
+
+// isSocket : path est une prise (lien suivi).
+func isSocket(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && info.Mode()&os.ModeSocket != 0
 }
 
 // cleanupRefusal rend le dossier à vider (lien suivi), vide s'il n'existe pas,
@@ -97,7 +115,7 @@ func (m *Manager) cleanupRefusal(name, source string, others map[string]string) 
 		return "", fmt.Sprintf("le dossier %s du Pi est illisible (%v)", clean, err)
 	}
 	if !info.IsDir() {
-		return "", fmt.Sprintf("%s n'est pas un dossier (fichier ou prise) : il n'est jamais effacé", clean)
+		return "", fmt.Sprintf("%s n'est pas un dossier (c'est un fichier) : il n'est jamais effacé", clean)
 	}
 	return resolved, ""
 }

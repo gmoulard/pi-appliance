@@ -1022,15 +1022,16 @@ func (c *console) rebuild(w http.ResponseWriter, r *http.Request, name string) {
 	writeJSON(w, http.StatusOK, result)
 }
 
-// cleanupDirs : dossiers du Pi que « Rebuild cleanup » videra, à montrer dans
-// sa confirmation ; 400 si l'un d'eux est protégé.
+// cleanupDirs : dossiers du Pi que « Rebuild cleanup » videra et prises
+// laissées telles quelles, à montrer dans sa confirmation ; 400 si un dossier
+// est protégé.
 func (c *console) cleanupDirs(w http.ResponseWriter, r *http.Request) {
-	dirs, err := c.Services.CleanupDirs(r.PathValue("name"))
+	dirs, kept, err := c.Services.CleanupDirs(r.PathValue("name"))
 	if err != nil {
 		writeServiceError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"dirs": dirs})
+	writeJSON(w, http.StatusOK, map[string]any{"dirs": dirs, "kept": kept})
 }
 
 // Réglages avancés et Docker Compose libre (spécification 6.4), réservés à l'administrateur.

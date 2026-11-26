@@ -2041,14 +2041,16 @@ async function rebuildService(service, cleanup, button) {
   let question = t("Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?", service.name);
   if (cleanup) {
     let dirs;
+    let kept;
     try {
-      dirs = (await api(`services/${encodeURIComponent(service.name)}/cleanup`)).dirs;
+      ({ dirs, kept } = await api(`services/${encodeURIComponent(service.name)}/cleanup`));
     } catch (error) {
       showMessage([error.message], "error");
       return;
     }
     question = t("Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?", service.name);
     if (dirs.length) question += `\n\n${t("Le contenu de ces dossiers du Pi sera aussi effacé :")}\n${dirs.join("\n")}`;
+    if (kept && kept.length) question += `\n\n${t("Ces prises du Pi sont laissées telles quelles, ni vidées ni supprimées :")}\n${kept.join("\n")}`;
   }
   if (!window.confirm(question)) return;
   button.disabled = true;
