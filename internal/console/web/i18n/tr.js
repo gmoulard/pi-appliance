@@ -958,6 +958,7 @@ piTranslations("tr", {
   "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi “{1}” ({2}, {3})",
   "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "Cihaz {0} tarihindeki hâline geri getirilsin mi? Yedeğin hesapları, ayarları ve hizmetleri bu Pi'ninkilerin yerini alır.",
   "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Geri yükleniyor… Konsol sonunda yeniden başlar: bu birkaç dakika sürebilir.",
+  "À la fin, le Pi reprend le nom de la sauvegarde : la console s'ouvrira à l'adresse {0}.": "Sonunda Pi yedekteki adını geri alır: konsol {0} adresinde açılacak.",
   "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "Cihaz geri yüklendi: yedekteki bir hesapla oturum açın.",
   "Préparer une carte SD": "SD kart hazırla",
   "Copiez pi-appliance sur une carte SD pour installer un autre Pi : mettez la carte dans un lecteur de cartes branché sur un port USB de ce Pi.": "Başka bir Pi kurmak için pi-appliance'ı bir SD karta kopyalayın: kartı bu Pi'nin bir USB bağlantı noktasına takılı bir kart okuyucuya yerleştirin.",

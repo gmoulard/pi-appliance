@@ -958,6 +958,7 @@ piTranslations("nl", {
   "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi „{1}” ({2}, {3})",
   "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "De appliance terugzetten zoals hij was op {0}? De accounts, instellingen en diensten van de back-up vervangen die van deze Pi.",
   "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Bezig met terugzetten… De console start aan het eind opnieuw: dit kan enkele minuten duren.",
+  "À la fin, le Pi reprend le nom de la sauvegarde : la console s'ouvrira à l'adresse {0}.": "Aan het eind krijgt de Pi de naam uit de back-up terug: de console opent op het adres {0}.",
   "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "De appliance is teruggezet: meld u aan met een account uit de back-up.",
   "Préparer une carte SD": "Een SD-kaart voorbereiden",
   "Copiez pi-appliance sur une carte SD pour installer un autre Pi : mettez la carte dans un lecteur de cartes branché sur un port USB de ce Pi.": "Kopieer pi-appliance naar een SD-kaart om een andere Pi te installeren: steek de kaart in een kaartlezer die op een USB-poort van deze Pi is aangesloten.",

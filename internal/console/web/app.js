@@ -6071,6 +6071,8 @@ const restoreDisks = document.getElementById("restoreDisks");
 const restoreForm = document.getElementById("restoreForm");
 const restoreBack = document.getElementById("restoreBack");
 let restoreTimer = null;
+let restoreRename = "";
+let restoreFailures = 0;
 let restoreBackups = [];
 
 async function loadWholeRestore() {
@@ -6149,8 +6151,9 @@ restoreForm.addEventListener("submit", async (event) => {
   if (!window.confirm(t("Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.", when))) return;
   const button = document.getElementById("restoreSubmit");
   button.disabled = true;
+  let reply;
   try {
-    await api("setup/restore", jsonBody("POST", { host: backup.host, id: backup.id, password: restoreForm.elements.password.value }));
+    reply = await api("setup/restore", jsonBody("POST", { host: backup.host, id: backup.id, password: restoreForm.elements.password.value }));
   } catch (error) {
     showMessage([error.message], "error");
     button.disabled = false;
@@ -6162,7 +6165,14 @@ restoreForm.addEventListener("submit", async (event) => {
   restoreBack.hidden = true;
   restoreState.textContent = t("Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.");
   hideMessages();
-  showMessage([restoreState.textContent], "info");
+  // Le Pi reprend le nom du Pi sauvegardé : l'adresse <nom>.local change à la fin.
+  restoreRename = reply && reply.name && window.location.hostname.endsWith(".local") ? reply.name + ".local" : "";
+  restoreFailures = 0;
+  const lines = [restoreState.textContent];
+  if (reply && reply.name) {
+    lines.push(t("À la fin, le Pi reprend le nom de la sauvegarde : la console s'ouvrira à l'adresse {0}.", reply.name + ".local"));
+  }
+  showMessage(lines, "info");
   clearInterval(restoreTimer);
   restoreTimer = setInterval(watchWholeRestore, 3000);
 });
@@ -6172,8 +6182,16 @@ async function watchWholeRestore() {
   try {
     session = await api("session");
   } catch {
+    // NE PAS rediriger à la première erreur : la console redémarre aussi
+    // quelques secondes à la fin d'une restauration qui garde le nom.
+    restoreFailures += 1;
+    if (restoreRename && restoreFailures >= 5) {
+      clearInterval(restoreTimer);
+      window.location.assign("https://" + restoreRename + "/pi-appliance/");
+    }
     return;
   }
+  restoreFailures = 0;
   if (!session.setup) {
     restoreBack.hidden = false;
     showAuth("login");

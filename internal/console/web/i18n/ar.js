@@ -958,6 +958,7 @@ piTranslations("ar", {
   "{0}, Pi « {1} » ({2}, {3})": "{0}، Pi «{1}» ({2}، {3})",
   "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "هل تريد إعادة الجهاز كما كان في {0}؟ تحلّ حسابات النسخة الاحتياطية وإعداداتها وخدماتها محلّ ما في هذا الـPi.",
   "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "الاستعادة جارية… تُعيد وحدة التحكم تشغيل نفسها في النهاية: قد يستغرق ذلك عدة دقائق.",
+  "À la fin, le Pi reprend le nom de la sauvegarde : la console s'ouvrira à l'adresse {0}.": "في النهاية يستعيد الـ Pi اسم النسخة الاحتياطية: ستُفتح وحدة التحكم على العنوان {0}.",
   "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "تمت استعادة الجهاز: سجّل الدخول بحساب من النسخة الاحتياطية.",
   "Préparer une carte SD": "تحضير بطاقة SD",
   "Copiez pi-appliance sur une carte SD pour installer un autre Pi : mettez la carte dans un lecteur de cartes branché sur un port USB de ce Pi.": "انسخ pi-appliance على بطاقة SD لتثبيت جهاز Pi آخر: ضع البطاقة في قارئ بطاقات موصول بمنفذ USB في جهاز Pi هذا.",

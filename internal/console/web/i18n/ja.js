@@ -958,6 +958,7 @@ piTranslations("ja", {
   "{0}, Pi « {1} » ({2}, {3})": "{0}、Pi「{1}」（{2}、{3}）",
   "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "アプライアンスを {0} の状態に戻しますか？バックアップのアカウント、設定、サービスがこの Pi のものに置き換わります。",
   "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "復元中… 最後にコンソールが再起動します。数分かかることがあります。",
+  "À la fin, le Pi reprend le nom de la sauvegarde : la console s'ouvrira à l'adresse {0}.": "最後に、Pi はバックアップの名前に戻ります：コンソールは {0} で開きます。",
   "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "アプライアンスを復元しました。バックアップのアカウントでサインインしてください。",
   "Préparer une carte SD": "SDカードを準備",
   "Copiez pi-appliance sur une carte SD pour installer un autre Pi : mettez la carte dans un lecteur de cartes branché sur un port USB de ce Pi.": "別のPiをセットアップするために、pi-applianceをSDカードにコピーします。このPiのUSBポートにつないだカードリーダーにカードを入れてください。",

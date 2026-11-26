@@ -958,6 +958,7 @@ piTranslations("es", {
   "{0}, Pi « {1} » ({2}, {3})": "{0}, Pi «{1}» ({2}, {3})",
   "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "¿Devolver el appliance al estado del {0}? Las cuentas, los ajustes y los servicios de la copia de seguridad sustituyen a los de este Pi.",
   "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "Restauración en curso… La consola se reinicia al final: puede tardar varios minutos.",
+  "À la fin, le Pi reprend le nom de la sauvegarde : la console s'ouvrira à l'adresse {0}.": "Al final, la Pi recupera el nombre de la copia de seguridad: la consola se abrirá en la dirección {0}.",
   "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "El appliance está restaurado: inicie sesión con una cuenta de la copia de seguridad.",
   "Préparer une carte SD": "Preparar una tarjeta SD",
   "Copiez pi-appliance sur une carte SD pour installer un autre Pi : mettez la carte dans un lecteur de cartes branché sur un port USB de ce Pi.": "Copie pi-appliance en una tarjeta SD para instalar otro Pi: ponga la tarjeta en un lector de tarjetas conectado a un puerto USB de este Pi.",
