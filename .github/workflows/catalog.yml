@@ -16,7 +16,7 @@ name: Catalogue
 
 on:
   push:
-    branches: [master]
+    branches: [main]
     paths:
       - "marketplace/**"
       - "cmd/marketplace-json/**"
@@ -37,7 +37,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: master
+          ref: main
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
@@ -45,7 +45,7 @@ jobs:
         run: go test ./marketplace/...
       - name: Catalogue publié
         run: go run ./cmd/marketplace-json
-      - name: Envoi sur master
+      - name: Envoi sur main
         run: |
           set -eu
           git add -A docs/static
@@ -58,11 +58,11 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "Catalogue publié régénéré"
           for _ in 1 2 3; do
-            if git push origin HEAD:master; then
+            if git push origin HEAD:main; then
               exit 0
             fi
-            git fetch origin master
-            git reset --hard origin/master
+            git fetch origin main
+            git reset --hard origin/main
             go run ./cmd/marketplace-json
             git add -A docs/static
             if git diff --cached --quiet; then

@@ -40,7 +40,7 @@ import (
 )
 
 // DefaultURL : l'index du catalogue publié, lu directement dans le dépôt.
-const DefaultURL = "https://raw.githubusercontent.com/gmoulard/pi-appliance/master/docs/static/pi-appliance-catalog.json"
+const DefaultURL = "https://raw.githubusercontent.com/gmoulard/pi-appliance/main/docs/static/pi-appliance-catalog.json"
 
 const (
 	maxIndex    = 64 << 10

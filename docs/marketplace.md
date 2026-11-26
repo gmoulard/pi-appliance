@@ -21,7 +21,7 @@ Le **socle pi-appliance** (Docker, Traefik, les services et les outils du systè
 </table>
 </div>
 
-Cette liste est chargée depuis le catalogue JSON généré à partir des manifestes de [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). Les consoles lisent ce même fichier dans le dépôt GitHub : une application acceptée apparaît sur les Pi sans nouvelle version de pi-appliance. Après toute modification d'un manifeste ou de `marketplace/planned.yaml`, régénérez le fichier avec `go run ./cmd/marketplace-json` depuis la racine du dépôt ; les tests (`go test ./...`) échouent sinon. Si vous l'oubliez, une action GitHub le régénère sur `master` après l'acceptation. Le nom du fichier contient le MD5 de son contenu ; l'index `docs/static/pi-appliance-catalog.json` indique la version courante.
+Cette liste est chargée depuis le catalogue JSON généré à partir des manifestes de [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace). Les consoles lisent ce même fichier dans le dépôt GitHub : une application acceptée apparaît sur les Pi sans nouvelle version de pi-appliance. Après toute modification d'un manifeste ou de `marketplace/planned.yaml`, régénérez le fichier avec `go run ./cmd/marketplace-json` depuis la racine du dépôt ; les tests (`go test ./...`) échouent sinon. Si vous l'oubliez, une action GitHub le régénère sur `main` après l'acceptation. Le nom du fichier contient le MD5 de son contenu ; l'index `docs/static/pi-appliance-catalog.json` indique la version courante.
 
 La console gère plusieurs instances, leur démarrage et leur arrêt, les mises à jour avec retour arrière, ainsi que la conservation ou la suppression des données à la désinstallation.
 
@@ -107,11 +107,11 @@ go test ./...
 
 Les tests vérifient notamment que les manifestes sont valides, que les images ont une version fixée et que les variables Compose sont déclarées. Si possible, essayez aussi l'installation, l'arrêt, le redémarrage et la désinstallation de votre application avec Docker sur une machine de test.
 
-Ouvrez ensuite une pull request vers `master`, avec une description de l'application, les ressources nécessaires, les étapes de test et les éventuelles limites connues. Une fois la pull request acceptée sur `master`, les appliances lisent le nouveau catalogue en ligne dans les 6 heures, sans nouvelle version de pi-appliance.
+Ouvrez ensuite une pull request vers `main`, avec une description de l'application, les ressources nécessaires, les étapes de test et les éventuelles limites connues. Une fois la pull request acceptée sur `main`, les appliances lisent le nouveau catalogue en ligne dans les 6 heures, sans nouvelle version de pi-appliance.
 
 ## Liens utiles
 
-- [Code source de la marketplace](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [Code source de la marketplace](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [Spécification des manifestes](specification.html)
 - [Feuille de route](TODO.html)
 - [Dépôt pi-appliance](https://github.com/gmoulard/pi-appliance) : ouvrez une pull request depuis votre fork pour proposer votre contribution.

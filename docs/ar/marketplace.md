@@ -29,7 +29,7 @@ traduit_le: 2026-11-25
 
 أسماء التطبيقات وأوصافها مأخوذة من ملفات البيان الخاصة بها، وهي مكتوبة بالفرنسية فقط في الوقت الحالي.
 
-تُحمَّل هذه القائمة من كتالوج JSON المُولَّد من ملفات البيان في [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). تقرأ وحدات التحكم الملف نفسه في مستودع GitHub: يظهر التطبيق المقبول على أجهزة Pi دون إصدار جديد من pi-appliance. بعد أي تعديل على ملف بيان أو على `marketplace/planned.yaml`، أعد توليد الملف بالأمر `go run ./cmd/marketplace-json` من جذر المستودع؛ وإلا فستفشل الاختبارات (`go test ./...`). إن نسيت ذلك، يعيد إجراء آلي في GitHub توليده على `master` بعد القبول. يحتوي اسم الملف على بصمة MD5 لمحتواه؛ ويشير الفهرس `docs/static/pi-appliance-catalog.json` إلى الإصدار الحالي.
+تُحمَّل هذه القائمة من كتالوج JSON المُولَّد من ملفات البيان في [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace). تقرأ وحدات التحكم الملف نفسه في مستودع GitHub: يظهر التطبيق المقبول على أجهزة Pi دون إصدار جديد من pi-appliance. بعد أي تعديل على ملف بيان أو على `marketplace/planned.yaml`، أعد توليد الملف بالأمر `go run ./cmd/marketplace-json` من جذر المستودع؛ وإلا فستفشل الاختبارات (`go test ./...`). إن نسيت ذلك، يعيد إجراء آلي في GitHub توليده على `main` بعد القبول. يحتوي اسم الملف على بصمة MD5 لمحتواه؛ ويشير الفهرس `docs/static/pi-appliance-catalog.json` إلى الإصدار الحالي.
 
 تدير وحدة التحكم عدة نسخ من التطبيق، وتشغيلها وإيقافها، والتحديثات مع إمكانية الرجوع، والاحتفاظ بالبيانات أو حذفها عند الإزالة.
 
@@ -115,11 +115,11 @@ go test ./...
 
 تتحقق الاختبارات خصوصًا من صحة ملفات البيان، ومن أن للصور إصدارًا ثابتًا، ومن التصريح بمتغيرات Compose. إن أمكن، جرّب أيضًا تثبيت تطبيقك وإيقافه وإعادة تشغيله وإزالته باستخدام Docker على جهاز تجربة.
 
-ثم افتح pull request نحو `master`، مع وصف للتطبيق والموارد اللازمة وخطوات التجربة والقيود المعروفة إن وجدت. بعد قبول الـpull request على `master`، تقرأ الأجهزة الكتالوج الجديد على الإنترنت خلال 6 ساعات، دون إصدار جديد من pi-appliance.
+ثم افتح pull request نحو `main`، مع وصف للتطبيق والموارد اللازمة وخطوات التجربة والقيود المعروفة إن وجدت. بعد قبول الـpull request على `main`، تقرأ الأجهزة الكتالوج الجديد على الإنترنت خلال 6 ساعات، دون إصدار جديد من pi-appliance.
 
 ## روابط مفيدة
 
-- [الشيفرة المصدرية للـmarketplace](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [الشيفرة المصدرية للـmarketplace](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [مواصفات ملفات البيان]({{ '/specification.html' | relative_url }}) (بالفرنسية)
 - [خارطة الطريق]({{ '/TODO.html' | relative_url }}) (بالفرنسية)
 - [مستودع pi-appliance](https://github.com/gmoulard/pi-appliance): افتح pull request من الـfork الخاص بك لاقتراح مساهمتك.

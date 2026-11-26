@@ -38,12 +38,12 @@ Chaque Pi pi-appliance est indépendant (spécification, section 4) : il a sa pr
 
 ### 2.2 Construire une image récente
 
-**L'image du 19 novembre 2026 (`48c047d`) ne convient pas** : tous les Pi y portent le même nom (`pi-appliance`), et son Wi-Fi de configuration partage la connexion du Pi. C'est la cause probable de l'incident du 2026-11-19 (réseau saturé, alertes de Google). Il faut une image construite depuis `master` après le commit `bed9884`.
+**L'image du 19 novembre 2026 (`48c047d`) ne convient pas** : tous les Pi y portent le même nom (`pi-appliance`), et son Wi-Fi de configuration partage la connexion du Pi. C'est la cause probable de l'incident du 2026-11-19 (réseau saturé, alertes de Google). Il faut une image construite depuis `main` après le commit `bed9884`.
 
 Lancer le workflow « Image » depuis le poste de développement :
 
 ```powershell
-gh workflow run image.yml --ref master
+gh workflow run image.yml --ref main
 gh run list --workflow image.yml --limit 1
 ```
 

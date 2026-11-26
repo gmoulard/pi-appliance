@@ -1052,7 +1052,7 @@ new MutationObserver((records) => {
 // développement), commit et sa date, licence et code source ; les mêmes que
 // les pages servies par la console (pages.go, footerHTML).
 const REPO_URL = "https://github.com/gmoulard/pi-appliance";
-const LICENSE_URL = `${REPO_URL}/blob/master/LICENSE`;
+const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 
 function footerLink(href, content) {
   const link = element("a");

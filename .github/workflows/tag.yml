@@ -12,7 +12,7 @@
 # See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
 # Étiquette de version posée sans git : vX.Y.Z d'après le fichier VERSION,
-# sur le dernier commit de master, puis lancement du workflow « Image », qui
+# sur le dernier commit de main, puis lancement du workflow « Image », qui
 # construit l'image et crée lui-même la version GitHub. Une étiquette poussée
 # avec le jeton du workflow ne lance aucun workflow : « Image » est donc
 # lancé à la demande sur l'étiquette.
@@ -35,7 +35,7 @@ permissions:
 
 jobs:
   tag:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -29,7 +29,7 @@ Die **pi-appliance-Basis** (Docker, Traefik, die Systemdienste und -werkzeuge, d
 
 Die Namen und Beschreibungen der Anwendungen stammen aus ihren Manifesten und sind vorerst nur auf Französisch verfasst.
 
-Diese Liste wird aus dem JSON-Katalog geladen, der aus den Manifesten in [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace) erzeugt wird. Die Konsolen lesen dieselbe Datei im GitHub-Repository: Eine angenommene Anwendung erscheint auf den Pis ohne neue Version von pi-appliance. Erzeugen Sie die Datei nach jeder Änderung eines Manifests oder von `marketplace/planned.yaml` mit `go run ./cmd/marketplace-json` im Hauptverzeichnis des Repositorys neu; sonst schlagen die Tests (`go test ./...`) fehl. Wenn Sie es vergessen, erzeugt eine GitHub-Action sie nach der Annahme auf `master` neu. Der Dateiname enthält die MD5-Summe ihres Inhalts; der Index `docs/static/pi-appliance-catalog.json` nennt die aktuelle Version.
+Diese Liste wird aus dem JSON-Katalog geladen, der aus den Manifesten in [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace) erzeugt wird. Die Konsolen lesen dieselbe Datei im GitHub-Repository: Eine angenommene Anwendung erscheint auf den Pis ohne neue Version von pi-appliance. Erzeugen Sie die Datei nach jeder Änderung eines Manifests oder von `marketplace/planned.yaml` mit `go run ./cmd/marketplace-json` im Hauptverzeichnis des Repositorys neu; sonst schlagen die Tests (`go test ./...`) fehl. Wenn Sie es vergessen, erzeugt eine GitHub-Action sie nach der Annahme auf `main` neu. Der Dateiname enthält die MD5-Summe ihres Inhalts; der Index `docs/static/pi-appliance-catalog.json` nennt die aktuelle Version.
 
 Die Konsole verwaltet mehrere Instanzen, deren Start und Stopp, Aktualisierungen mit Rückkehr zur vorigen Version sowie das Behalten oder Löschen der Daten bei der Deinstallation.
 
@@ -115,11 +115,11 @@ go test ./...
 
 Die Tests prüfen vor allem, ob die Manifeste gültig sind, ob die Images eine feste Version haben und ob die Compose-Variablen angegeben sind. Testen Sie nach Möglichkeit auch Installation, Stopp, Neustart und Deinstallation Ihrer Anwendung mit Docker auf einem Testrechner.
 
-Öffnen Sie dann einen Pull-Request gegen `master`, mit einer Beschreibung der Anwendung, den benötigten Ressourcen, den Testschritten und eventuell bekannten Einschränkungen. Sobald der Pull-Request auf `master` angenommen ist, lesen die Appliances den neuen Online-Katalog innerhalb von 6 Stunden, ohne neue Version von pi-appliance.
+Öffnen Sie dann einen Pull-Request gegen `main`, mit einer Beschreibung der Anwendung, den benötigten Ressourcen, den Testschritten und eventuell bekannten Einschränkungen. Sobald der Pull-Request auf `main` angenommen ist, lesen die Appliances den neuen Online-Katalog innerhalb von 6 Stunden, ohne neue Version von pi-appliance.
 
 ## Nützliche Links
 
-- [Quellcode des Marketplace](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [Quellcode des Marketplace](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [Spezifikation der Manifeste]({{ '/specification.html' | relative_url }}) (auf Französisch)
 - [Fahrplan]({{ '/TODO.html' | relative_url }}) (auf Französisch)
 - [pi-appliance-Repository](https://github.com/gmoulard/pi-appliance): Öffnen Sie einen Pull-Request aus Ihrem Fork, um Ihren Beitrag vorzuschlagen.
