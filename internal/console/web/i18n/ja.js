@@ -827,6 +827,8 @@ piTranslations("ja", {
   "La sauvegarde de la nuit a échoué": "夜間のバックアップに失敗した",
   "Correctifs de sécurité à installer": "インストール待ちのセキュリティ修正がある",
   "Certificat d'une adresse internet du Pi bientôt expiré": "Pi のインターネットアドレスの証明書がまもなく期限切れになる",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "アカウントの作成または削除（本人にも送信）",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "アカウントのパスワード変更（本人にも送信）",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "すぐ上でメールの送信を設定すると、お知らせが送られるようになります。",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "メールアドレスを確認した管理者がまだいません：お知らせを受け取るには「マイアカウント」でご自分のアドレスを確認してください。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "お知らせは {0} 人の管理者に送られます。あなたも受け取るには「マイアカウント」でアドレスを確認してください。",

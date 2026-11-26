@@ -827,6 +827,8 @@ piTranslations("es", {
   "La sauvegarde de la nuit a échoué": "La copia de seguridad de la noche ha fallado",
   "Correctifs de sécurité à installer": "Parches de seguridad por instalar",
   "Certificat d'une adresse internet du Pi bientôt expiré": "Certificado de una dirección de internet de la Pi a punto de caducar",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "Cuenta creada o eliminada, enviada también a la persona afectada",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "Contraseña de una cuenta cambiada, enviada también a la persona afectada",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "Las alertas se enviarán en cuanto se configure el envío de correos, justo arriba.",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Ningún administrador ha verificado aún su dirección de correo: verifique la suya en «Mi cuenta» para recibir las alertas.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Las alertas se envían a {0} administrador(es). Verifique su dirección en «Mi cuenta» para recibirlas también.",

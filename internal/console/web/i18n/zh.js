@@ -827,6 +827,8 @@ piTranslations("zh", {
   "La sauvegarde de la nuit a échoué": "夜间备份失败",
   "Correctifs de sécurité à installer": "有待安装的安全补丁",
   "Certificat d'une adresse internet du Pi bientôt expiré": "Pi 的某个互联网地址的证书即将过期",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "账户已创建或删除，也发送给相关人员",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "账户密码已更改，也发送给相关人员",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "一旦在上方设置好电子邮件发送，提醒就会发出。",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "还没有管理员验证自己的电子邮件地址：请在“我的账户”中验证您的地址以接收提醒。",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "提醒会发给 {0} 位管理员。请在“我的账户”中验证您的地址，以便您也能收到。",

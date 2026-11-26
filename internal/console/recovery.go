@@ -21,6 +21,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/gmoulard/pi-appliance/internal/alerts"
 	"github.com/gmoulard/pi-appliance/internal/auth"
 )
 
@@ -107,6 +108,7 @@ func (c *console) useResetLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("mot de passe oublié : nouveau mot de passe choisi pour %s", account.Name)
+	c.notify(alerts.Event{Type: alerts.Password, Name: account.Name, Email: account.Email, Lang: account.Lang, Way: alerts.ByResetLink})
 	if account.Role == auth.RoleAdmin && c.Accounts.FirstAdmin(account.Name) {
 		c.protectBackups(request.Password, false)
 	}

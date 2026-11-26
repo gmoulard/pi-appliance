@@ -827,6 +827,8 @@ piTranslations("tr", {
   "La sauvegarde de la nuit a échoué": "Gece yedeklemesi başarısız oldu",
   "Correctifs de sécurité à installer": "Kurulacak güvenlik düzeltmeleri",
   "Certificat d'une adresse internet du Pi bientôt expiré": "Pi'nin bir internet adresinin sertifikasının süresi yakında doluyor",
+  "Compte créé ou supprimé, envoyé aussi à la personne concernée": "Hesap oluşturuldu veya silindi, ilgili kişiye de gönderilir",
+  "Mot de passe d'un compte changé, envoyé aussi à la personne concernée": "Bir hesabın parolası değişti, ilgili kişiye de gönderilir",
   "Les alertes partiront dès que l'envoi des e-mails sera réglé, juste au-dessus.": "E-posta gönderimi ayarlanır ayarlanmaz uyarılar gönderilecek (hemen yukarıda).",
   "Aucun administrateur n'a encore vérifié son adresse e-mail : vérifiez la vôtre dans « Mon compte » pour recevoir les alertes.": "Henüz hiçbir yönetici e-posta adresini doğrulamadı: uyarıları almak için kendi adresinizi «Hesabım» bölümünde doğrulayın.",
   "Les alertes partent à {0} administrateur(s). Vérifiez votre adresse dans « Mon compte » pour les recevoir aussi.": "Uyarılar {0} yöneticiye gidiyor. Sizin de almanız için adresinizi «Hesabım» bölümünde doğrulayın.",
