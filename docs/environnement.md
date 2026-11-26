@@ -4,6 +4,8 @@ Les services hors du dépôt dont dépend pi-appliance, et comment y accéder. C
 
 ## Domaine `pi-appliance.com`
 
+Clés de l'API OVH à créer ou à refaire : [clefOVH.md](clefOVH.md).
+
 - **DNS** : zone hébergée publique dans **AWS Route 53**, profil AWS `default`, région `eu-west-3`. Tranché le 2026-11-26 : la zone passe chez **OVH** (TODO-3.19) ; clés de l'API OVH dans les secrets GitHub Actions `OVH_Application_name`, `OVH_Application_key`, `OVH_Application_secret`, `OVH_Consumer_Key`, et sur le Pi du projet pour le service d'adresses (TODO-3.20), jamais sur les Pi des utilisateurs.
   - Identifiant de la zone : `Z01037363SBTB2LIT0ZB4`.
   - Serveurs de noms (délégation vérifiée le 2026-11-19) : `ns-508.awsdns-63.com`, `ns-961.awsdns-56.net`, `ns-1861.awsdns-40.co.uk`, `ns-1453.awsdns-53.org`.
