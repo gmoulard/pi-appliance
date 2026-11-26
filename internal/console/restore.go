@@ -36,6 +36,13 @@ type WholeRestoreRequest struct {
 	Password string `json:"password"`
 }
 
+// WholeRestoreReply : Name, nom du Pi sauvegardé que le Pi reprend à la fin
+// (vide : le nom ne change pas).
+type WholeRestoreReply struct {
+	Started bool   `json:"started"`
+	Name    string `json:"name,omitempty"`
+}
+
 func (c *console) restoreRoutes(mux *http.ServeMux) {
 	base := BasePath + "/api/setup/restore"
 	mux.HandleFunc("GET "+base, c.beforeSetup(c.wholeRestoreStatus))
@@ -122,10 +129,22 @@ func (c *console) wholeRestoreStart(w http.ResponseWriter, r *http.Request) {
 		backup.WriteFailure(w, backup.ErrBusy)
 		return
 	}
+	// Le Pi reprend le nom du Pi sauvegardé (décision du 2026-11-26) : même
+	// dossier de sauvegardes, même adresse <nom>.local. Le dossier d'une
+	// appliance sur le disque porte son nom (backup.DiskTarget).
+	rename := ""
+	if request.Host != "" && request.Host != c.piName() && c.Network != nil {
+		rename = request.Host
+	}
 	go func() {
 		err := c.Backups.RestoreAppliance(context.Background(), request.Host, request.ID, request.Password)
 		if err != nil {
 			log.Printf("restauration de l'appliance : %v", err)
+		}
+		if err == nil && rename != "" {
+			if _, err := c.Network.SetName(context.Background(), rename); err != nil {
+				log.Printf("restauration de l'appliance, nom « %s » : %v", rename, err)
+			}
 		}
 		if c.Restart != nil && !errors.Is(err, backup.ErrBusy) {
 			c.Restart()
@@ -133,5 +152,5 @@ func (c *console) wholeRestoreStart(w http.ResponseWriter, r *http.Request) {
 		}
 		c.restoring.Store(false)
 	}()
-	writeJSON(w, http.StatusAccepted, map[string]bool{"started": true})
+	writeJSON(w, http.StatusAccepted, WholeRestoreReply{Started: true, Name: rename})
 }

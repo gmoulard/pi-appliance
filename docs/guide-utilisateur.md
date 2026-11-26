@@ -43,6 +43,7 @@ pi-appliance, ce sont trois parties qui portent le même nom :
 - Dans le même écran, pas encore essayés sur un vrai Pi : « Parcourir » une sauvegarde pour télécharger un fichier (un dossier arrive en .zip) ou le « Remettre en place » ; la « Sauvegarde en ligne » vers un stockage compatible S3 (OVH, Scaleway, Backblaze, AWS…), chiffrée, sans même le nom de vos services lisible ; la « Sauvegarde chez un proche » qui a aussi un pi-appliance (son Pi affiche un code, vous le saisissez avec son adresse internet ; chacun réserve à l'autre un espace limité et ne peut pas lire ce qu'il garde).
 - Un code à scanner avec l'[application mobile](#application-mobile), dans « Mon Pi », pour retrouver le Pi et ses services sur le téléphone.
 - L'[envoi des e-mails](#envoi-des-e-mails) par votre propre boîte e-mail (Gmail, OVH, Free, Orange…), et la [double authentification](#double-authentification) par un code reçu par e-mail ou par une application du téléphone, proposée à chaque nouveau compte, et les [alertes par e-mail](#alertes-par-e-mail) aux administrateurs ; pas encore essayés sur un vrai Pi.
+- La restauration de l'appliance entière sur une nouvelle carte SD depuis la mise en route (« Remettre une sauvegarde », depuis le disque USB de sauvegarde seulement) : le Pi reprend le nom du Pi sauvegardé, donc la même adresse `<nom>.local`.
 
 Ces fonctions sont présentes dans le code, mais restent à valider sur du matériel réel. La liste des essais restants est dans la page [Avancement](TODO.html).
 
@@ -50,7 +51,6 @@ Ces fonctions sont présentes dans le code, mais restent à valider sur du maté
 
 - Une version stable de l'image, et des essais sur Pi 5 et Pi Zero 2 W.
 - La réservation d'une adresse `*.pi-appliance.com`. Les services s'ouvrent déjà depuis internet sous l'adresse du Pi (voir [Ouvrir ses services depuis internet](#services-sur-internet)), pas encore essayé sur un vrai Pi.
-- La restauration de l'appliance entière sur une nouvelle carte SD depuis la mise en route (le code est prêt, l'écran pas encore).
 
 ## Télécharger et installer l'image {#telecharger-limage-experimentale}
 

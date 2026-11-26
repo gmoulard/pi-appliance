@@ -958,5 +958,6 @@ piTranslations("fa", {
   "{0}, Pi « {1} » ({2}, {3})": "{0}، Pi «{1}» ({2}، {3})",
   "Remettre l'appliance telle qu'elle était le {0} ? Les comptes, les réglages et les services de la sauvegarde remplacent ceux de ce Pi.": "دستگاه به همان حالتی که در {0} بود برگردد؟ حساب‌ها، تنظیمات و سرویس‌های پشتیبان جای موارد این Pi را می‌گیرند.",
   "Restauration en cours… La console redémarre à la fin : cela peut prendre plusieurs minutes.": "بازگردانی در جریان است… کنسول در پایان دوباره راه‌اندازی می‌شود: ممکن است چند دقیقه طول بکشد.",
+  "À la fin, le Pi reprend le nom de la sauvegarde : la console s'ouvrira à l'adresse {0}.": "در پایان، Pi نام پشتیبان را دوباره می‌گیرد: کنسول در نشانی {0} باز می‌شود.",
   "L'appliance est restaurée : connectez-vous avec un compte de la sauvegarde.": "دستگاه بازگردانده شد: با یکی از حساب‌های پشتیبان وارد شوید."
 });
