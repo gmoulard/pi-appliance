@@ -462,6 +462,7 @@ async function loadResources() {
   if (!piSection.hidden) {
     await loadUpdates();
     await loadStorage();
+    await loadSDCard();
     await loadBackups();
     if (!(await loadCockpit())) watchCockpit();
     await loadMobile();
@@ -2040,14 +2041,16 @@ async function rebuildService(service, cleanup, button) {
   let question = t("Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?", service.name);
   if (cleanup) {
     let dirs;
+    let kept;
     try {
-      dirs = (await api(`services/${encodeURIComponent(service.name)}/cleanup`)).dirs;
+      ({ dirs, kept } = await api(`services/${encodeURIComponent(service.name)}/cleanup`));
     } catch (error) {
       showMessage([error.message], "error");
       return;
     }
     question = t("Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?", service.name);
     if (dirs.length) question += `\n\n${t("Le contenu de ces dossiers du Pi sera aussi effacé :")}\n${dirs.join("\n")}`;
+    if (kept && kept.length) question += `\n\n${t("Ces prises du Pi sont laissées telles quelles, ni vidées ni supprimées :")}\n${kept.join("\n")}`;
   }
   if (!window.confirm(question)) return;
   button.disabled = true;
@@ -2203,6 +2206,131 @@ async function loadStorage() {
   }));
   return false;
 }
+
+const sdcardBox = document.getElementById("sdcardBox");
+const sdcardState = document.getElementById("sdcardState");
+const sdcardCards = document.getElementById("sdcardCards");
+const sdcardProgressBox = document.getElementById("sdcardProgressBox");
+const sdcardProgress = document.getElementById("sdcardProgress");
+const sdcardRefresh = document.getElementById("sdcardRefresh");
+const sdcardCancel = document.getElementById("sdcardCancel");
+let sdcardTimer = null;
+
+const SDCARD_REFUSED = {
+  system: t("c'est le disque du système de ce Pi"),
+  data: t("c'est le disque des données des services"),
+  backup: t("c'est le disque des sauvegardes"),
+  mounted: t("utilisée par le Pi en ce moment"),
+  fixed: t("ce n'est pas une carte amovible"),
+  empty: t("lecteur sans carte"),
+  "too-small": t("trop petite pour l'image"),
+};
+
+const SDCARD_ERRORS = {
+  "no-image": t("Aucune version de pi-appliance avec une image n'a été trouvée : vérifiez que le Pi est relié à internet, puis cherchez à nouveau."),
+  "download-failed": t("Le téléchargement de l'image a échoué : vérifiez que le Pi est relié à internet, puis recommencez."),
+  checksum: t("L'image téléchargée est abîmée : son empreinte ne correspond pas à celle publiée. Recommencez."),
+  "too-small": t("La carte est trop petite pour l'image."),
+  "write-failed": t("L'écriture sur la carte a échoué : essayez une autre carte ou un autre lecteur."),
+  "verify-failed": t("La relecture de la carte ne correspond pas à l'image : la carte est peut-être abîmée, essayez-en une autre."),
+  busy: t("La carte est utilisée par le Pi : débranchez-la, rebranchez-la, puis recommencez."),
+  cancelled: t("Copie annulée."),
+  running: t("Une copie est déjà en cours."),
+  "card-changed": t("La carte a changé depuis l'affichage de la liste : cherchez à nouveau."),
+};
+
+function cardName(card) {
+  return `${card.model || t("Carte SD")} (${sizeText(card.size / 1048576)})`;
+}
+
+function watchSDCard() {
+  if (sdcardTimer) return;
+  sdcardTimer = setInterval(async () => {
+    const running = await loadSDCard().catch(() => true);
+    if (!running) {
+      clearInterval(sdcardTimer);
+      sdcardTimer = null;
+    }
+  }, 2000);
+}
+
+async function writeSDCard(card, version) {
+  if (!window.confirm(t("Tout le contenu de la carte {0} va être effacé et remplacé par pi-appliance {1}. Effacer la carte et continuer ?", cardName(card), version))) {
+    return;
+  }
+  try {
+    await api("sdcard/write", jsonBody("POST", { device: card.device, model: card.model, size: card.size, erase: true }));
+    watchSDCard();
+  } catch (error) {
+    const code = error.body && error.body.code;
+    const refused = error.body && error.body.refused;
+    showMessage([(refused && SDCARD_REFUSED[refused]) ? `${cardName(card)} : ${SDCARD_REFUSED[refused]}` : SDCARD_ERRORS[code] || error.message], "error");
+  }
+  await loadSDCard().catch(() => null);
+}
+
+async function loadSDCard() {
+  let status;
+  try {
+    status = await api("sdcard");
+  } catch {
+    sdcardBox.hidden = true;
+    return false;
+  }
+  sdcardBox.hidden = false;
+  sdcardCards.replaceChildren();
+  const job = status.job;
+  const running = job && (job.state === "writing" || job.state === "verifying");
+  sdcardProgressBox.hidden = !running;
+  sdcardCancel.hidden = !running;
+  sdcardRefresh.hidden = running;
+  if (running) {
+    sdcardProgress.value = job.percent;
+    sdcardState.textContent = job.state === "writing"
+      ? t("Copie de pi-appliance {0} sur {1}… {2} %", job.version, cardName(job), job.percent)
+      : t("Vérification de la carte {0}… {1} %", cardName(job), job.percent);
+    watchSDCard();
+    return true;
+  }
+  if (job && sdcardTimer) {
+    if (job.state === "done") {
+      showMessage([t("La carte {0} est prête avec pi-appliance {1}. Vous pouvez retirer la carte.", cardName(job), job.version)], "success");
+    } else {
+      showMessage([SDCARD_ERRORS[job.error] || t("La copie a échoué."), t("La carte n'est pas utilisable en l'état : recommencez la copie.")], "error");
+    }
+  }
+  if (!status.image) {
+    sdcardState.textContent = SDCARD_ERRORS["no-image"];
+    return false;
+  }
+  if (status.internet) {
+    sdcardState.textContent = t("Depuis internet, ce n'est pas possible : faites-le depuis la maison.");
+    return false;
+  }
+  if (status.cards.length === 0) {
+    sdcardState.textContent = t("Aucune carte SD n'est branchée. Mettez la carte dans un lecteur de cartes branché sur un port USB du Pi, puis cherchez à nouveau.");
+    return false;
+  }
+  sdcardState.textContent = t("Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :", status.image.version);
+  sdcardCards.replaceChildren(...status.cards.map((card) => {
+    const item = element("li");
+    const button = element("button");
+    button.type = "button";
+    button.disabled = Boolean(card.refused);
+    button.append(element("span", cardName(card)), element("span", card.refused ? SDCARD_REFUSED[card.refused] || t("ne peut pas être préparée") : t("tout son contenu sera effacé"), "meta"));
+    button.addEventListener("click", () => writeSDCard(card, status.image.version));
+    item.append(button);
+    return item;
+  }));
+  return false;
+}
+
+sdcardRefresh.addEventListener("click", () => loadSDCard().catch(() => null));
+sdcardCancel.addEventListener("click", async () => {
+  if (!window.confirm(t("Annuler la copie ? La carte ne sera pas utilisable en l'état."))) return;
+  await api("sdcard/cancel", { method: "POST" }).catch((error) => showMessage([error.message], "error"));
+  await loadSDCard().catch(() => null);
+});
 
 // Sauvegardes (spécification 9.1) : chaque nuit sur un disque USB autre que
 // celui des données ; restauration d'un service à une date choisie.
@@ -5729,6 +5857,8 @@ function showAuth(mode) {
   clearInterval(rebootTimer);
   clearInterval(dashboardTimer);
   clearInterval(storageTimer);
+  clearInterval(sdcardTimer);
+  sdcardTimer = null;
   clearInterval(backupTimer);
   backupTimer = null;
   clearInterval(updatesTimer);

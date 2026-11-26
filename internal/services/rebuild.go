@@ -69,7 +69,7 @@ func (m *Manager) rebuild(ctx context.Context, instance Instance, cleanup bool) 
 	name := instance.Name
 	dir := m.serviceDir(name)
 	if cleanup {
-		if _, err := m.cleanupDirs(name); err != nil {
+		if _, _, err := m.cleanupDirs(name); err != nil {
 			return err
 		}
 	}
@@ -134,7 +134,7 @@ func (m *Manager) restart(ctx context.Context, instance Instance, cleanup bool) 
 			return fmt.Sprintf("les données n'ont pas pu être effacées : %v", err)
 		}
 		// NE PAS réutiliser la liste vérifiée avant le téléchargement : un lien a pu changer depuis.
-		dirs, err := m.cleanupDirs(name)
+		dirs, _, err := m.cleanupDirs(name)
 		if err != nil {
 			return err.Error()
 		}

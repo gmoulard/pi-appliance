@@ -43,6 +43,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/oidc"
+	"github.com/gmoulard/pi-appliance/internal/sdcard"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
@@ -186,6 +187,7 @@ type Config struct {
 	Network *network.Client
 	// Storage peut être nil (poste de développement) : pas de disque USB.
 	Storage *storage.Client
+	SDCard  *sdcard.Manager
 	// Resources lit l'état du Pi ; nil : jauges absentes.
 	Resources func() system.Resources
 	// History : historique des graphiques sur 30 jours ; nil : pas de graphiques.
@@ -333,6 +335,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/storage", c.adminOnly(c.storageStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/use", c.adminOnly(c.storageUse))
 	mux.HandleFunc("POST "+BasePath+"/api/storage/format", c.adminOnly(c.storageFormat))
+	mux.HandleFunc("GET "+BasePath+"/api/sdcard", c.adminOnly(c.sdcardStatus))
+	mux.HandleFunc("POST "+BasePath+"/api/sdcard/write", c.adminOnly(c.sdcardWrite))
+	mux.HandleFunc("POST "+BasePath+"/api/sdcard/cancel", c.adminOnly(c.sdcardCancel))
 	c.accountRoutes(mux)
 	c.restoreRoutes(mux)
 	c.mailRoutes(mux)
@@ -1017,15 +1022,16 @@ func (c *console) rebuild(w http.ResponseWriter, r *http.Request, name string) {
 	writeJSON(w, http.StatusOK, result)
 }
 
-// cleanupDirs : dossiers du Pi que « Rebuild cleanup » videra, à montrer dans
-// sa confirmation ; 400 si l'un d'eux est protégé.
+// cleanupDirs : dossiers du Pi que « Rebuild cleanup » videra et prises
+// laissées telles quelles, à montrer dans sa confirmation ; 400 si un dossier
+// est protégé.
 func (c *console) cleanupDirs(w http.ResponseWriter, r *http.Request) {
-	dirs, err := c.Services.CleanupDirs(r.PathValue("name"))
+	dirs, kept, err := c.Services.CleanupDirs(r.PathValue("name"))
 	if err != nil {
 		writeServiceError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"dirs": dirs})
+	writeJSON(w, http.StatusOK, map[string]any{"dirs": dirs, "kept": kept})
 }
 
 // Réglages avancés et Docker Compose libre (spécification 6.4), réservés à l'administrateur.

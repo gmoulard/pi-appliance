@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"runtime"
 	"runtime/debug"
 	"strings"
 	"syscall"
@@ -43,6 +44,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/internal/oidc"
 	"github.com/gmoulard/pi-appliance/internal/relay"
+	"github.com/gmoulard/pi-appliance/internal/sdcard"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/stats"
 	"github.com/gmoulard/pi-appliance/internal/storage"
@@ -234,6 +236,18 @@ func main() {
 	if *releaseRepo != "" {
 		checker.Releases = updates.GitHub{Repo: *releaseRepo}
 	}
+	var cards *sdcard.Manager
+	if *releaseRepo != "" && runtime.GOOS == "linux" {
+		cards = &sdcard.Manager{
+			Releases:   updates.GitHub{Repo: *releaseRepo},
+			Lsblk:      sdcard.Lsblk,
+			Fstab:      "/etc/fstab",
+			Roles:      map[string]string{storage.DataMount: sdcard.RefusedData, backup.DiskMount: sdcard.RefusedBackup},
+			Decompress: sdcard.XZ,
+			Open:       sdcard.OpenDevice,
+			Logf:       log.Printf,
+		}
+	}
 	// Cockpit, installé à la demande, avec connexion unique (spécification 6.4).
 	var admin *cockpit.Client
 	var cockpitLogins *cockpit.Logins
@@ -317,6 +331,7 @@ func main() {
 		Accounts:         accounts,
 		Network:          net,
 		Storage:          disks,
+		SDCard:           cards,
 		Resources:        resources,
 		History:          history,
 		Address:          address,
