@@ -7,7 +7,16 @@ Les services hors du dépôt dont dépend pi-appliance, et comment y accéder. C
 - **DNS** : zone hébergée publique dans **AWS Route 53**, profil AWS `default`, région `eu-west-3`. Tranché le 2026-11-26 : la zone passe chez **OVH** (TODO-3.19) ; clés de l'API OVH dans les secrets GitHub Actions `OVH_Application_name`, `OVH_Application_key`, `OVH_Application_secret`, `OVH_Consumer_Key`, et sur le Pi du projet pour le service d'adresses (TODO-3.20), jamais sur les Pi des utilisateurs.
   - Identifiant de la zone : `Z01037363SBTB2LIT0ZB4`.
   - Serveurs de noms (délégation vérifiée le 2026-11-19) : `ns-508.awsdns-63.com`, `ns-961.awsdns-56.net`, `ns-1861.awsdns-40.co.uk`, `ns-1453.awsdns-53.org`.
-- **Ce n'est pas OVH** : une modification de zone faite chez OVH n'a aucun effet.
+- **Ce n'est pas encore OVH** : tant que les serveurs de noms annoncés sont ceux d'AWS ci-dessus, une modification de zone faite chez OVH n'a aucun effet.
+
+### Passage chez OVH (TODO-3.19)
+
+Étapes, à faire par l'utilisateur (les clés et la délégation ne sont pas dans le dépôt) :
+
+1. Recréer dans la zone OVH les enregistrements de Route 53 : ceux du site (ci-dessous), `app` (application mobile, dépôt pi-appliance-pwa), `adresses`, `envoi` et `stats` (Pi du projet, quand ces services seront installés), ceux d'Amazon SES (trois `CNAME` DKIM, SPF s'il y en a un, `_dmarc`), les sous-domaines de machines encore utiles et les adresses `<nom>` déjà réservées (en `A` vers l'adresse IP de leur box, TODO-3.20).
+2. Vérifier les clés et la zone avec le workflow « OVH » (`.github/workflows/ovh.yml`, action « verifier ») ; il écrit aussi une entrée DynHost à la demande (action « dynhost »).
+3. Changer les serveurs de noms du domaine pour ceux d'OVH (donnés par le workflow), puis vérifier : `dig NS pi-appliance.com`, www.pi-appliance.com et app.pi-appliance.com en HTTPS, e-mails d'Amazon SES toujours signés DKIM.
+4. Supprimer la zone Route 53 et l'utilisateur IAM du service d'adresses s'il a été créé.
 
 ### Enregistrements du site
 
