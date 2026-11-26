@@ -761,7 +761,7 @@ piTranslations("zh", {
   "Pour que vos services s'ouvrent depuis internet, votre box doit faire suivre certains ports vers le Pi. Le Pi peut le lui demander si vous l'acceptez ; sinon, le guide explique comment faire à la main. Testez ensuite l'accès. Vous pourrez le faire plus tard dans « Accès depuis internet ».": "要让您的服务能从互联网打开，路由器必须把某些端口转发到 Pi。如果您同意，Pi 可以向路由器请求；否则，指南会说明如何手动设置。然后测试访问。您也可以稍后在“从互联网访问”中设置。",
   "Invitez les personnes qui utiliseront vos services : chacune reçoit un lien et choisit elle-même son mot de passe. Vous pourrez en inviter d'autres plus tard dans « Comptes ».": "邀请将使用您服务的人：每人会收到一个链接，并自行设置密码。您可以稍后在“账户”中邀请更多人。",
   "Le réseau n'a pas été vérifié : terminez la mise en route sans redémarrer. Vous pourrez redémarrer le Pi plus tard.": "网络尚未检查：请在不重启的情况下完成初始设置。您可以稍后重启 Pi。",
-  "Bienvenue ! Cet assistant prépare votre Pi : votre compte (c'est fait), la langue, le réseau de la maison et sa vérification, l'adresse du Pi sur internet, l'accès depuis internet, les autres comptes, puis un redémarrage. Comptez une dizaine de minutes. Chaque étape peut être passée et refaite plus tard dans la console. L'assistant revient à chaque connexion tant que vous ne l'avez pas terminé. Vous choisirez ensuite vos services dans la marketplace.": "欢迎！此向导将为您准备 Pi：您的账户（已完成）、语言、家庭网络及其检查、Pi 的互联网地址、从互联网访问、其他账户，最后重新启动。大约需要十分钟。每一步都可以跳过，并可稍后在控制台中重新进行。在您完成之前，每次登录时向导都会出现。之后您将在应用市场中选择服务。",
+  "Bienvenue ! Cet assistant prépare votre Pi : votre compte (c'est fait), la langue, le réseau de la maison et sa vérification, la mise à jour du Pi, l'adresse du Pi sur internet, l'accès depuis internet, les autres comptes, puis un redémarrage. Comptez de dix à quarante minutes, surtout pour la mise à jour. Chaque étape, sauf la mise à jour, peut être passée et refaite plus tard dans la console. L'assistant revient à chaque connexion tant que vous ne l'avez pas terminé. Vous choisirez ensuite vos services dans la marketplace.": "欢迎！此向导将为您准备 Pi：您的账户（已完成）、语言、家庭网络及其检查、Pi 的更新、Pi 的互联网地址、从互联网访问、其他账户，最后重新启动。大约需要十到四十分钟，主要用于更新。除更新外，每一步都可以跳过，并可稍后在控制台中重新进行。在您完成之前，每次登录时向导都会出现。之后您将在应用市场中选择服务。",
   "La langue": "语言",
   "Vérification du réseau": "网络检查",
   "L'adresse sur internet": "互联网地址",
@@ -915,5 +915,10 @@ piTranslations("zh", {
   "Fichier copié.": "文件已复制。",
   "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "在服务地址打开的容器：{0}，端口 {1}。",
   "Conteneur ouvert à l'adresse du service : inconnu.": "在服务地址打开的容器：未知。",
-  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "此文件可能包含密码：只给您信任的人看。"
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "此文件可能包含密码：只给您信任的人看。",
+  "La mise à jour du Pi": "Pi 的更新",
+  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi 正在更新：先是系统，然后是 pi-appliance。需要几分钟到半小时。请不要拔掉 Pi 的电源，并保持此页面打开。",
+  "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Pi 已是最新。请继续：设置结束时它会重新启动，从而完成更新。",
+  "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "无法完成更新。您可以稍后在“我的 Pi”中重新进行。请继续设置。",
+  "La mise à jour prend trop de temps.": "更新耗时过长。"
 });

@@ -325,6 +325,7 @@ func main() {
 		CockpitAccess:    cockpitAccess,
 		Stats:            statsConsole(reporter),
 		WizardFile:       filepath.Join(*data, "wizard-done"),
+		WizardUpdateFile: filepath.Join(*data, "wizard-update-done"),
 		ACMEEmailFile:    filepath.Join(*data, "system", "traefik", "acme-email"),
 		Mailer:           mailer,
 		SMTP:             smtpSender,

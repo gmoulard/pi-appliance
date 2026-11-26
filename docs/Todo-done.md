@@ -33,7 +33,7 @@ Actions de la [feuille de route](TODO.md) réalisées et validées (`[x]`), reti
 - [x] **TODO-1.14**: Console sur internet seulement avec double authentification (8.3). Obligation retirée le 2026-11-22 à la demande de l'utilisateur : la double authentification reste facultative et conseillée.
 - [x] **TODO-1.15**: Statistiques anonymes sur accord explicite (8.4).
 - [x] **TODO-1.16**: Sauvegardes : disque USB, cloud, autre pi-appliance (9.1).
-- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2).
+- [x] **TODO-1.17**: Mises à jour proposées, jamais automatiques (9.2), sauf une fois au premier démarrage, dans l'assistant (5.1, choix de l'utilisateur du 2026-11-21, TODO-2.63).
 - [x] **TODO-1.18**: Interface et site dans les 12 langues de Wikipedia2Book (5.3, 13).
 - [x] **TODO-1.19**: Point d'accès Wi-Fi au premier démarrage même avec un câble Ethernet (4).
 - [x] **TODO-1.20**: E-mail de l'administrateur obligatoire et vérifié (5.1).

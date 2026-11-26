@@ -4102,7 +4102,7 @@ const wizardRebootButton = document.getElementById("wizardRebootButton");
 const wizardRebootCancel = document.getElementById("wizardRebootCancel");
 const addressBox = document.getElementById("addressBox");
 const internetStateLine = document.getElementById("internetState");
-const WIZARD_STEPS = ["language", "network", "check", "address", "access", "users", "reboot"];
+const WIZARD_STEPS = ["language", "network", "check", "update", "address", "access", "users", "reboot"];
 const stepItems = Object.fromEntries(WIZARD_STEPS.map((step) => [step, document.getElementById(`step${step[0].toUpperCase()}${step.slice(1)}`)]));
 // Étape de la langue déjà vue sur cette adresse de la console (la langue
 // choisie est gardée par adresse : après le passage au Wi-Fi de la maison,
@@ -4114,6 +4114,9 @@ let wizardTimer = null;
 let wizardNetwork = "";
 let wizardAddress = "";
 let wizardPassed = false;
+// Mise à jour du premier démarrage déjà faite (ou tentée) : marque du Pi,
+// rendue par la session (spécification 5.1).
+let wizardUpdated = false;
 let rebootTimer = null;
 
 for (const language of LANGUAGES) {
@@ -4170,6 +4173,8 @@ async function startWizard() {
   piSection.hidden = true;
   accountSection.hidden = true;
   wizardPassed = false;
+  const session = await api("session").catch(() => null);
+  wizardUpdated = Boolean(session && session.wizard_updated);
   if (!sessionFlag(WIZARD_LANGUAGE_KEY)) {
     setStep("language");
     wizardHelp.textContent = t("Choisissez la langue de la console. Vous pourrez la changer à tout moment en bas de la page.");
@@ -4218,6 +4223,11 @@ async function wizardCheck(state) {
   wizardTestButton.textContent = wizardNetwork === "wifi" ? t("Tester le Wi-Fi") : t("Tester le câble réseau");
   wizardTestButton.className = "";
   wizardTestButton.hidden = false;
+  // Retour après la mise à jour (la console a redémarré avec sa nouvelle
+  // version) : le test se refait seul.
+  if (wizardUpdated) {
+    await wizardTest();
+  }
 }
 
 function checkLine(color, text) {
@@ -4256,7 +4266,9 @@ function showTestResult(result) {
   wizardChecks.hidden = false;
 }
 
-wizardTestButton.addEventListener("click", async () => {
+wizardTestButton.addEventListener("click", () => wizardTest());
+
+async function wizardTest() {
   wizardTestButton.disabled = true;
   wizardHelp.textContent = t("Test en cours…");
   try {
@@ -4267,7 +4279,12 @@ wizardTestButton.addEventListener("click", async () => {
     wizardTestButton.textContent = t("Tester à nouveau");
     wizardTestButton.className = result.passed ? "secondary" : "";
     wizardPassed = result.passed;
-    if (result.passed) {
+    if (result.passed && result.checks.internet) {
+      // Internet joignable : mise à jour du premier démarrage, d'office.
+      networkSection.hidden = true;
+      await updateStep();
+    } else if (result.passed) {
+      // Sans internet, pas de mise à jour : elle se fera plus tard dans « Mon Pi ».
       wizardHelp.textContent = t("Le réseau marche. Continuez : le Pi redémarrera à la fin de la mise en route.");
       wizardContinue.hidden = false;
       wizardSkip.hidden = true;
@@ -4283,7 +4300,146 @@ wizardTestButton.addEventListener("click", async () => {
   } finally {
     wizardTestButton.disabled = false;
   }
-});
+}
+
+// Mise à jour du premier démarrage (spécification 5.1), une seule fois et
+// sans bouton à cliquer : l'image n'est reconstruite que de loin en loin, le
+// Pi prend donc ici les mises à jour du système, puis la dernière version de
+// pi-appliance (la console redémarre, la page se recharge et l'assistant
+// reprend). Ensuite, plus rien d'automatique (section 9.2).
+function wizardNote(text) {
+  wizardReboot.replaceChildren(element("p", text));
+  wizardReboot.hidden = false;
+}
+
+function updateFailed(status) {
+  const apply = status && status.system && status.system.apply;
+  const upgrade = status && status.system && status.system.upgrade;
+  const download = status && status.appliance.download;
+  return Boolean((apply && apply.state === "failed") || (upgrade && upgrade.state === "failed") || (download && download.state === "failed"));
+}
+
+// waitUpdates relit l'état des mises à jour jusqu'à done(état), au plus limit ms.
+async function waitUpdates(done, limit) {
+  const started = Date.now();
+  for (;;) {
+    if (wizardStep !== "update") {
+      throw new Error("");
+    }
+    const status = await api("updates").catch(() => null);
+    if (status && done(status)) {
+      return status;
+    }
+    if (Date.now() - started > limit) {
+      throw new Error(t("La mise à jour prend trop de temps."));
+    }
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+  }
+}
+
+async function updateStep() {
+  setStep("update");
+  if (wizardUpdated) {
+    // Reprise : la mise à jour a déjà été faite (ou tentée) ; elle n'est pas refaite.
+    const status = await api("updates").catch(() => null);
+    wizardHelp.textContent = updateFailed(status)
+      ? t("La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.")
+      : t("Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.");
+    wizardContinue.hidden = false;
+    return;
+  }
+  wizardHelp.textContent = t("Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.");
+  try {
+    wizardNote(t("Recherche des mises à jour…"));
+    await api("updates/check", { method: "POST" });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    let status = await waitUpdates((s) => !s.checking, 15 * 60000);
+    if (status.system && status.system.packages.length > 0) {
+      await api("updates/system", { method: "POST" });
+      status = await waitUpdates((s) => {
+        const apply = s.system && s.system.apply;
+        wizardNote(apply && apply.state === "running"
+          ? t("Installation des mises à jour du système : {0} %. Vos services peuvent s'arrêter quelques instants.", apply.percent)
+          : t("Préparation de l'installation des mises à jour du système…"));
+        return Boolean(apply) && !applyBusy(s.system);
+      }, 60 * 60000);
+      if (status.system.apply.state === "failed") {
+        throw new Error(t("La dernière installation des mises à jour a échoué. Réessayez plus tard."));
+      }
+    }
+    if (status.appliance.installable) {
+      const version = status.appliance.latest;
+      // Noté avant : la console va redémarrer avec la nouvelle version.
+      await api("wizard/update", { method: "POST" });
+      wizardUpdated = true;
+      await api("updates/appliance", { method: "POST" });
+      await wizardAppliance(version);
+      return;
+    }
+    await api("wizard/update", { method: "POST" });
+    wizardUpdated = true;
+    wizardReboot.hidden = true;
+    wizardHelp.textContent = t("Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.");
+  } catch (error) {
+    if (wizardStep !== "update") {
+      return;
+    }
+    // Tentée une fois : pas de nouvel essai d'office à la connexion suivante.
+    if (!wizardUpdated) {
+      await api("wizard/update", { method: "POST" }).catch(() => null);
+      wizardUpdated = true;
+    }
+    wizardHelp.textContent = t("La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.");
+    if (error.message) {
+      wizardNote(error.message);
+    } else {
+      wizardReboot.hidden = true;
+    }
+  }
+  wizardContinue.hidden = false;
+}
+
+// wizardAppliance suit l'installation de pi-appliance : quand la console
+// répond avec la nouvelle version, la page se recharge et l'assistant
+// reprend ; un échec (ancienne version remise) devient une erreur.
+async function wizardAppliance(version) {
+  const started = Date.now();
+  for (;;) {
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    if (wizardStep !== "update") {
+      throw new Error("");
+    }
+    const health = await api("health").catch(() => null);
+    if (health && health.version === version) {
+      window.location.reload();
+      await new Promise(() => {});
+    }
+    if (!health) {
+      wizardNote(t("La console redémarre avec la nouvelle version… Cette page se rechargera toute seule."));
+      continue;
+    }
+    const status = await api("updates").catch(() => null);
+    if (status && upgradeBusy(status)) {
+      const download = status.appliance.download;
+      wizardNote(download && download.state === "downloading"
+        ? t("Téléchargement de pi-appliance {0}…", version)
+        : t("Installation de pi-appliance {0}… La console va redémarrer : cette page se rechargera toute seule.", version));
+    } else if (status && Date.now() - started > 30000) {
+      const upgrade = status.system && status.system.upgrade;
+      if (status.appliance.download && status.appliance.download.state === "failed") {
+        throw new Error(status.appliance.download.message);
+      }
+      if (upgrade && upgrade.state === "failed") {
+        throw new Error(upgrade.rolled_back
+          ? t("L'installation de pi-appliance {0} a échoué : l'ancienne version a été remise, vos services n'ont pas changé.", version)
+          : t("L'installation de pi-appliance {0} a échoué. Rien n'a été changé ; réessayez plus tard.", version));
+      }
+    }
+    if (Date.now() - started > 20 * 60000) {
+      throw new Error(t("La mise à jour prend trop de temps."));
+    }
+  }
+}
 
 // Adresse sur internet : domaine personnel ; <nom>.pi-appliance.com
 // seulement si le service d'adresses du projet répond (TODO-3.5).
@@ -4348,6 +4504,7 @@ async function nextStep() {
       sessionFlag(WIZARD_LANGUAGE_KEY, true);
       return networkStep();
     case "check":
+    case "update":
       return wizardNetwork ? addressStep() : usersStep();
     case "address":
       return accessStep();

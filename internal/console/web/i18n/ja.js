@@ -761,7 +761,7 @@ piTranslations("ja", {
   "Pour que vos services s'ouvrent depuis internet, votre box doit faire suivre certains ports vers le Pi. Le Pi peut le lui demander si vous l'acceptez ; sinon, le guide explique comment faire à la main. Testez ensuite l'accès. Vous pourrez le faire plus tard dans « Accès depuis internet ».": "サービスをインターネットから開くには、ルーターがいくつかのポートを Pi に転送する必要があります。同意すれば Pi がルーターに依頼できます。そうでなければ、ガイドで手動の方法を説明しています。その後アクセスをテストしてください。「インターネットからのアクセス」で後から設定することもできます。",
   "Invitez les personnes qui utiliseront vos services : chacune reçoit un lien et choisit elle-même son mot de passe. Vous pourrez en inviter d'autres plus tard dans « Comptes ».": "サービスを使う人を招待しましょう。各自にリンクが届き、自分でパスワードを決めます。「アカウント」で後から招待することもできます。",
   "Le réseau n'a pas été vérifié : terminez la mise en route sans redémarrer. Vous pourrez redémarrer le Pi plus tard.": "ネットワークは確認されていません。再起動せずにセットアップを終えてください。Pi は後で再起動できます。",
-  "Bienvenue ! Cet assistant prépare votre Pi : votre compte (c'est fait), la langue, le réseau de la maison et sa vérification, l'adresse du Pi sur internet, l'accès depuis internet, les autres comptes, puis un redémarrage. Comptez une dizaine de minutes. Chaque étape peut être passée et refaite plus tard dans la console. L'assistant revient à chaque connexion tant que vous ne l'avez pas terminé. Vous choisirez ensuite vos services dans la marketplace.": "ようこそ！このアシスタントが Pi を準備します：アカウント（完了）、言語、家のネットワークとその確認、Pi のインターネットアドレス、インターネットからのアクセス、ほかのアカウント、最後に再起動です。所要時間は約 10 分です。どの手順も飛ばして、後でコンソールでやり直せます。終えるまで、サインインのたびにアシスタントが表示されます。その後、マーケットプレイスでサービスを選びます。",
+  "Bienvenue ! Cet assistant prépare votre Pi : votre compte (c'est fait), la langue, le réseau de la maison et sa vérification, la mise à jour du Pi, l'adresse du Pi sur internet, l'accès depuis internet, les autres comptes, puis un redémarrage. Comptez de dix à quarante minutes, surtout pour la mise à jour. Chaque étape, sauf la mise à jour, peut être passée et refaite plus tard dans la console. L'assistant revient à chaque connexion tant que vous ne l'avez pas terminé. Vous choisirez ensuite vos services dans la marketplace.": "ようこそ！このアシスタントが Pi を準備します：アカウント（完了）、言語、家のネットワークとその確認、Pi の更新、Pi のインターネットアドレス、インターネットからのアクセス、ほかのアカウント、最後に再起動です。所要時間は、主に更新のために 10 分から 40 分です。更新以外のどの手順も飛ばして、後でコンソールでやり直せます。終えるまで、サインインのたびにアシスタントが表示されます。その後、マーケットプレイスでサービスを選びます。",
   "La langue": "言語",
   "Vérification du réseau": "ネットワークの確認",
   "L'adresse sur internet": "インターネットアドレス",
@@ -915,5 +915,10 @@ piTranslations("ja", {
   "Fichier copié.": "ファイルをコピーしました。",
   "Conteneur ouvert à l'adresse du service : {0}, port {1}.": "サービスのアドレスで開くコンテナー：{0}、ポート {1}。",
   "Conteneur ouvert à l'adresse du service : inconnu.": "サービスのアドレスで開くコンテナー：不明。",
-  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "このファイルにはパスワードが含まれている場合があります。信頼できる人にだけ見せてください。"
+  "Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance.": "このファイルにはパスワードが含まれている場合があります。信頼できる人にだけ見せてください。",
+  "La mise à jour du Pi": "Pi の更新",
+  "Le Pi se met maintenant à jour : son système, puis pi-appliance. Cela prend de quelques minutes à une demi-heure. Ne débranchez pas le Pi et gardez cette page ouverte.": "Pi を更新しています：まずシステム、次に pi-appliance です。数分から 30 分ほどかかります。Pi の電源を抜かず、このページを開いたままにしてください。",
+  "Le Pi est à jour. Continuez : il redémarrera à la fin de la mise en route, ce qui termine la mise à jour.": "Pi は最新です。続けてください：設定の最後に再起動し、それで更新が完了します。",
+  "La mise à jour n'a pas pu se faire. Vous pourrez la refaire plus tard dans « Mon Pi ». Continuez la mise en route.": "更新できませんでした。後で「マイ Pi」でやり直せます。設定を続けてください。",
+  "La mise à jour prend trop de temps.": "更新に時間がかかりすぎています。"
 });
