@@ -11,7 +11,8 @@
 #
 # See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
-# Zone pi-appliance.com chez OVH, par l'API OVH et les secrets OVH_* :
+# Zone pi-appliance.com chez OVH, par l'API OVH et les secrets OVH_* de
+# l'environnement GitHub « OVH » :
 # « verifier » lit les droits des clés, la zone et ses enregistrements sans rien
 # changer ; « dynhost » crée ou met à jour l'entrée DynHost <nom>.pi-appliance.com
 # (adresse donnée, sinon celle du nom « depuis »), puis recharge la zone.
@@ -48,6 +49,7 @@ concurrency:
 jobs:
   ovh:
     runs-on: ubuntu-latest
+    environment: OVH
     steps:
       - name: API OVH
         env:
