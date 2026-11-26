@@ -227,6 +227,16 @@ func (m *Monitor) SetEnabled(t Type, enabled bool) error {
 	return nil
 }
 
+// Reset : tous les types actifs, rien de vu ni de signalé (remise à zéro).
+func (m *Monitor) Reset() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.load()
+	before := m.snapshot()
+	m.state = state{}
+	m.save(before)
+}
+
 // SetStopped note qu'un service a été arrêté exprès (pas d'alerte) ou
 // redémarré, mis à jour ou désinstallé.
 func (m *Monitor) SetStopped(name string, stopped bool) {

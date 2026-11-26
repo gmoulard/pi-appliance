@@ -440,6 +440,30 @@ func (m *Manager) forget() {
 	m.cacheMu.Unlock()
 }
 
+// Forget efface les réglages et la clé des sauvegardes, puis oublie le disque
+// USB de sauvegarde (remise à zéro, spécification 8.5).
+// NE PAS effacer ni formater le disque : ses sauvegardes appartiennent à
+// l'utilisateur et se remettent avec le mot de passe en vigueur à leur date.
+func (m *Manager) Forget(ctx context.Context) error {
+	if !m.mu.TryLock() {
+		return ErrBusy
+	}
+	defer m.mu.Unlock()
+	m.stateMu.Lock()
+	err := os.RemoveAll(filepath.Join(m.Dir, stateDir))
+	m.stateMu.Unlock()
+	m.cacheMu.Lock()
+	m.lists, m.unlocked, m.index = nil, nil, nil
+	m.cacheMu.Unlock()
+	if err != nil {
+		return err
+	}
+	if m.Disks != nil {
+		return m.Disks.Forget(ctx)
+	}
+	return nil
+}
+
 // sealedPart : ce que le manifest chiffre hors de la maison.
 type sealedPart struct {
 	Host     string        `json:"host"`

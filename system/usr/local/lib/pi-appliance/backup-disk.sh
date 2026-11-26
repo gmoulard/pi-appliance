@@ -21,11 +21,13 @@
 #   backup-disk.sh status              disques USB proposés, disque de sauvegarde
 #   backup-disk.sh use /dev/sdb1       sauvegarder sur cette partition ext4
 #   backup-disk.sh format /dev/sdb     effacer le disque, une partition ext4, puis « use »
+#   backup-disk.sh forget              ne plus sauvegarder sur ce disque (remise à zéro), sans rien y effacer
 
 # shellcheck source-path=SCRIPTDIR
 set -eu
 
 BACKUP_MOUNT=${BACKUP_MOUNT:-/mnt/pi-appliance-backup}
+FSTAB=${FSTAB:-/etc/fstab}
 
 # Fonctions du disque des données : usb_disks, data_device, fail.
 STORAGE_LIB_ONLY=1
@@ -83,8 +85,22 @@ use_partition() {
 	mkdir -p "$BACKUP_MOUNT/pi-appliance-backups"
 	chmod 0700 "$BACKUP_MOUNT/pi-appliance-backups"
 	# nofail : le Pi démarre sans le disque ; les sauvegardes attendent qu'on le rebranche.
-	sed -i "\\# $BACKUP_MOUNT #d" /etc/fstab
-	echo "UUID=$uuid $BACKUP_MOUNT ext4 defaults,noatime,nofail 0 2" >>/etc/fstab
+	sed -i "\\# $BACKUP_MOUNT #d" "$FSTAB"
+	echo "UUID=$uuid $BACKUP_MOUNT ext4 defaults,noatime,nofail 0 2" >>"$FSTAB"
+	systemctl daemon-reload || true
+	jq -n '{ok: true}'
+}
+
+# NE PAS appeler wipefs, mkfs ni rm ici : les sauvegardes du disque
+# appartiennent à l'utilisateur (remise à zéro, spécification 8.5).
+forget_disk() {
+	sed -i "\\# $BACKUP_MOUNT #d" "$FSTAB"
+	if [ -n "$(backup_device)" ]; then
+		sync
+		if ! umount "$BACKUP_MOUNT" 2>/dev/null && ! umount -l "$BACKUP_MOUNT"; then
+			fail umount-failed "Le disque de sauvegarde n'a pas pu être libéré : débranchez-le."
+		fi
+	fi
 	systemctl daemon-reload || true
 	jq -n '{ok: true}'
 }
@@ -122,7 +138,10 @@ format)
 	check_device "${2:-}" device
 	format_disk "$2"
 	;;
+forget)
+	forget_disk
+	;;
 *)
-	fail invalid "usage : backup-disk.sh status | use <partition> | format <disque>"
+	fail invalid "usage : backup-disk.sh status | use <partition> | format <disque> | forget"
 	;;
 esac
