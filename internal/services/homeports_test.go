@@ -64,11 +64,11 @@ func (f *firewallRecorder) load(_ context.Context, path string) error {
 }
 
 func TestHomePortsRules(t *testing.T) {
-	empty := homePortsRules(nil)
+	empty := homePortsRules(nil, nil)
 	if !strings.Contains(empty, "destroy table inet pi_appliance_ports") || strings.Contains(empty, "chain") {
 		t.Fatalf("sans port :\n%s", empty)
 	}
-	rules := homePortsRules([]marketplace.HostPort{{Port: 445, Protocol: "tcp"}, {Port: 139, Protocol: "tcp"}, {Port: 137, Protocol: "udp"}, {Port: 445, Protocol: "tcp"}})
+	rules := homePortsRules([]marketplace.HostPort{{Port: 445, Protocol: "tcp"}, {Port: 139, Protocol: "tcp"}, {Port: 137, Protocol: "udp"}, {Port: 445, Protocol: "tcp"}}, nil)
 	for _, want := range []string{
 		"type filter hook prerouting priority -150; policy accept;",
 		"ct state new fib daddr type local ip saddr != { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8 } tcp dport { 139, 445 } counter drop",
@@ -81,15 +81,23 @@ func TestHomePortsRules(t *testing.T) {
 	}
 }
 
-// Les plages de la maison sont celles du middleware pi-appliance-home@file.
+// Les plages de la maison sont celles du middleware pi-appliance-home@file,
+// livré dans home.yml tel que la console l'écrit sans préfixe IPv6 global.
 func TestHomeRangesMatchTraefik(t *testing.T) {
-	data, err := os.ReadFile(filepath.Join("..", "..", "system", "etc", "pi-appliance", "traefik", "dynamic", "console.yml"))
+	data, err := os.ReadFile(filepath.Join("..", "..", "system", "etc", "pi-appliance", "traefik", "dynamic", "home.yml"))
 	if err != nil {
 		t.Fatal(err)
 	}
+	if string(data) != traefikHome(nil) {
+		t.Fatalf("home.yml livré différent de celui écrit par la console :\n%s", traefikHome(nil))
+	}
+	console, _ := os.ReadFile(filepath.Join("..", "..", "system", "etc", "pi-appliance", "traefik", "dynamic", "console.yml"))
+	if regexp.MustCompile(`(?m)^    pi-appliance-home:`).Match(console) {
+		t.Fatal("pi-appliance-home défini deux fois (console.yml et home.yml)")
+	}
 	block := regexp.MustCompile(`(?s)pi-appliance-home:\s*ipAllowList:\s*sourceRange:\s*((?:\s*- \S+)+)`).FindSubmatch(data)
 	if block == nil {
-		t.Fatal("pi-appliance-home absent de console.yml")
+		t.Fatal("pi-appliance-home absent de home.yml")
 	}
 	var traefik []string
 	for _, line := range strings.Split(string(block[1]), "\n") {
@@ -161,7 +169,7 @@ func TestHomePortsRulesNft(t *testing.T) {
 		t.Skip("unshare ou root absent")
 	}
 	path := filepath.Join(t.TempDir(), homePortsFile)
-	if err := os.WriteFile(path, []byte(homePortsRules([]marketplace.HostPort{{Port: 445, Protocol: "tcp"}, {Port: 137, Protocol: "udp"}})), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte(homePortsRules([]marketplace.HostPort{{Port: 445, Protocol: "tcp"}, {Port: 137, Protocol: "udp"}}, nil)), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if output, err := exec.Command("unshare", "--net", "nft", "-c", "-f", path).CombinedOutput(); err != nil {

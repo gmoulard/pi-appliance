@@ -79,7 +79,7 @@ func (c *console) cockpitAccessRoutes(mux *http.ServeMux) {
 func (c *console) cockpitAccessState(r *http.Request, account auth.Account) CockpitAccess {
 	state := CockpitAccess{Access: c.CockpitAccess.Get(), ConsoleInternet: c.internetEnabled()}
 	state.ChangedBy, state.ChangedAt = "", time.Time{}
-	state.Allowed = c.cockpitAccountAllowed(account) && (!fromInternet(r) || c.cockpitOnInternet())
+	state.Allowed = c.cockpitAccountAllowed(account) && (!c.fromInternet(r) || c.cockpitOnInternet())
 	if state.Allowed {
 		if status, err := c.Cockpit.Status(r.Context()); err == nil {
 			state.Installed, state.Active, state.Path = status.Installed, status.Active, status.Path

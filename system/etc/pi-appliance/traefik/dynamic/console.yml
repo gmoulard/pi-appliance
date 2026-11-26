@@ -22,6 +22,8 @@ http:
     # routeurs des services gardent la priorité, même pour ce chemin.
     # Avant de brancher un relais, exclure l'adresse du pair : le trafic relayé
     # apparaît ici avec l'adresse source du tunnel.
+    # Le préfixe IPv6 global de la maison, qui change avec la box, a son
+    # routeur dans dynamic/home.yml (pi-appliance-console-home6).
     pi-appliance-console:
       entryPoints: [websecure]
       rule: >-
@@ -128,19 +130,9 @@ http:
       forwardAuth:
         address: "http://127.0.0.1:8080/pi-appliance/api/auth/forward-pad"
         authResponseHeaders: [Remote-User, Remote-Email, Remote-Groups, Authorization]
-    # Service « maison seulement » (spécification 8.2) : mêmes plages que la
-    # console ci-dessus, adresse TCP vue par Traefik (pas d'en-tête). Ailleurs :
-    # 403. Label traefik.http.routers.<routeur>.middlewares=pi-appliance-home@file.
-    pi-appliance-home:
-      ipAllowList:
-        sourceRange:
-          - 10.0.0.0/8
-          - 172.16.0.0/12
-          - 192.168.0.0/16
-          - 127.0.0.0/8
-          - ::1/128
-          - fc00::/7
-          - fe80::/10
+    # Service « maison seulement » (spécification 8.2) : middleware
+    # pi-appliance-home, dans dynamic/home.yml, réécrit par la console avec le
+    # préfixe IPv6 global de la maison (mêmes plages que la console ci-dessus).
 
   services:
     pi-appliance-console:

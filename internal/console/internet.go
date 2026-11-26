@@ -34,6 +34,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -79,15 +80,20 @@ var hostPattern = regexp.MustCompile(`^[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?(\.[a-z
 var internetMu sync.Mutex
 
 // fromInternet : la demande vient d'une adresse qui n'est pas de la maison
-// (ni réseau privé, ni boucle locale, ni lien local). Derrière Traefik, c'est
+// (ni réseau privé, ni boucle locale, ni lien local, ni préfixe IPv6 global
+// de la maison, lu sur le Pi). Derrière Traefik, c'est
 // l'adresse qu'il a vue (clientIP) ; Traefik retire les X-Forwarded-For posés
 // par le visiteur.
-func fromInternet(r *http.Request) bool {
+func (c *console) fromInternet(r *http.Request) bool {
 	ip := net.ParseIP(clientIP(r))
 	if ip == nil {
 		return true
 	}
-	return !(ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsUnspecified())
+	if ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsUnspecified() {
+		return false
+	}
+	addr, ok := netip.AddrFromSlice(ip)
+	return !(ok && c.Services != nil && c.Services.InHomeIPv6(addr))
 }
 
 func (c *console) internetSettings() InternetSettings {
@@ -282,7 +288,7 @@ var confirmPaths = []string{
 // NE PAS relâcher : console fermée sur internet par défaut (spécification 8.3).
 func (c *console) internetGuard(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !fromInternet(r) || internetOpenPath(r.URL.Path) {
+		if !c.fromInternet(r) || internetOpenPath(r.URL.Path) {
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -315,7 +321,7 @@ func (c *console) internetStatus(w http.ResponseWriter, r *http.Request) {
 func (c *console) internetState(r *http.Request, totp bool) InternetStatus {
 	hosts := c.internetHosts()
 	settings := c.internetSettings()
-	status := InternetStatus{Enabled: settings.Enabled, Domain: settings.Domain, DomainTarget: c.domainTarget(), Hosts: hosts, TOTP: totp, Internet: fromInternet(r)}
+	status := InternetStatus{Enabled: settings.Enabled, Domain: settings.Domain, DomainTarget: c.domainTarget(), Hosts: hosts, TOTP: totp, Internet: c.fromInternet(r)}
 	if status.Hosts == nil {
 		status.Hosts = []string{}
 	}

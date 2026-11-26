@@ -59,6 +59,8 @@ awk -v backend="http://$BACKEND:80" '
 	{ print }' \
 	"$ROOT/system/etc/pi-appliance/traefik/dynamic/console.yml" >"$TMP/dynamic/console.yml"
 grep -q "$BACKEND" "$TMP/dynamic/console.yml"
+# Middleware pi-appliance-home : home.yml tel que livré (console sans préfixe IPv6 global).
+cp "$ROOT/system/etc/pi-appliance/traefik/dynamic/home.yml" "$TMP/dynamic/home.yml"
 
 cat >"$TMP/traefik.yml" <<'EOF'
 entryPoints:

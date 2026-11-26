@@ -20,6 +20,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
 	"path/filepath"
 	"strings"
@@ -338,7 +339,7 @@ func TestFromInternet(t *testing.T) {
 		request := httptest.NewRequest(http.MethodGet, "/", nil)
 		request.Header.Set("X-Pi-Appliance", "1")
 		request.RemoteAddr = addr
-		if got := fromInternet(request); got != want {
+		if got := (&console{}).fromInternet(request); got != want {
 			t.Errorf("%s : %v", addr, got)
 		}
 	}
@@ -347,9 +348,33 @@ func TestFromInternet(t *testing.T) {
 	request.Header.Set("X-Pi-Appliance", "1")
 	request.RemoteAddr = "203.0.113.9:1"
 	request.Header.Set("X-Forwarded-For", "192.168.1.20")
-	if !fromInternet(request) {
+	if !(&console{}).fromInternet(request) {
 		t.Fatal("X-Forwarded-For d'un visiteur direct pris en compte")
 	}
+}
+
+// Préfixe IPv6 global de la maison (TODO-3.11) : accepté comme la maison ;
+// une autre adresse IPv6 d'internet reste refusée.
+func TestFromInternetHomeIPv6(t *testing.T) {
+	m := &services.Manager{Dir: t.TempDir(), ReadHomeIPv6: func() []netip.Prefix { return []netip.Prefix{netip.MustParsePrefix("2a01:cb00:1234:5600::/64")} }}
+	c := &console{Config: Config{Services: m}}
+	check := func(addr string, want bool) {
+		t.Helper()
+		request := httptest.NewRequest(http.MethodGet, "/", nil)
+		request.RemoteAddr = addr
+		if got := c.fromInternet(request); got != want {
+			t.Errorf("%s : %v", addr, got)
+		}
+	}
+	check("[2a01:cb00:1234:5600::42]:1", true)
+	if _, err := m.RefreshHomeIPv6(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	check("[2a01:cb00:1234:5600::42]:1", false)
+	check("[2a01:cb00:1234:5601::42]:1", true)
+	check("[2001:db8::1]:1", true)
+	check("203.0.113.9:1", true)
+	check("192.168.1.20:1", false)
 }
 
 func TestCLIToken(t *testing.T) {

@@ -116,6 +116,7 @@ func main() {
 	catalogURL := flag.String("catalog-url", catalog.DefaultURL, "index du catalogue de la marketplace publié en ligne, en HTTPS (vide : catalogue intégré seulement)")
 	cliTokenFile := flag.String("cli-token-file", cli.DefaultTokenFile, "jeton de la ligne de commande du Pi, lisible par root seul (vide : pas de ligne de commande)")
 	traefikServices := flag.String("traefik-services", "/etc/pi-appliance/traefik/dynamic/services-internet.yml", "configuration dynamique de Traefik des services ouverts sur internet, sous un chemin de l'adresse internet du Pi (vide : aucun)")
+	traefikHome := flag.String("traefik-home", "/etc/pi-appliance/traefik/dynamic/home.yml", "configuration dynamique de Traefik des plages de la maison (pi-appliance-home), réécrite avec le préfixe IPv6 global de la maison (vide : aucune)")
 	traefikInternet := flag.String("traefik-internet", "/etc/pi-appliance/traefik/dynamic/console-internet.yml", "configuration dynamique de Traefik écrite quand la console est ouverte sur internet (vide : jamais ouverte)")
 	addressesURL := flag.String("addresses-url", addresses.DefaultServiceURL, "service d'adresses du projet, pour <nom>.pi-appliance.com (vide : pas de réservation)")
 	upnpEnabled := flag.Bool("upnp", true, "ouverture des ports de la box par UPnP, avec l'accord de l'administrateur (false : à la main seulement)")
@@ -151,7 +152,7 @@ func main() {
 	if *diagnosticScript != "" {
 		diag = &diagnostic.Client{Runner: network.Script(*diagnosticScript)}
 	}
-	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Images: services.DockerAPI{}, Measure: services.Measure, FollowName: true, LocalCertificate: filepath.Join(*tlsDir, "local.crt")}
+	manager := &services.Manager{Dir: *data, Domain: *domain, Runner: services.Docker{}, Images: services.DockerAPI{}, Measure: services.Measure, FollowName: true, LocalCertificate: filepath.Join(*tlsDir, "local.crt"), TraefikHomeFile: *traefikHome}
 	flag.Visit(func(f *flag.Flag) {
 		if f.Name == "domain" {
 			manager.FollowName = false
@@ -159,7 +160,8 @@ func main() {
 	})
 	// Pare-feu des ports « maison seulement » (spécification 6.4), déjà chargé au
 	// démarrage par pi-appliance-firewall.service : réécrit d'après les services.
-	if err := manager.ApplyHomePorts(context.Background()); err != nil {
+	// Avec le préfixe IPv6 global de la maison, lu d'abord (home.yml de Traefik aussi).
+	if _, err := manager.RefreshHomeIPv6(context.Background()); err != nil {
 		log.Printf("%v", err)
 	}
 	var net *network.Client
@@ -300,6 +302,7 @@ func main() {
 	}
 	go manager.Relocate(ctx, log.Printf)
 	go manager.RunNextcloud(ctx, 5*time.Minute, log.Printf)
+	go manager.RunHomeIPv6(ctx, time.Minute, log.Printf)
 	go checker.Run(ctx, 5*time.Minute)
 	if stats.Available {
 		go reporter.Run(ctx)

@@ -423,7 +423,7 @@ func (c *console) cockpitLogin(w http.ResponseWriter, r *http.Request, account a
 		writeError(w, http.StatusForbidden, "Réservé aux administrateurs.")
 		return false
 	}
-	if fromInternet(r) && !c.cockpitOnInternet() {
+	if c.fromInternet(r) && !c.cockpitOnInternet() {
 		writeError(w, http.StatusForbidden, "Cockpit n'est pas ouvert depuis internet.")
 		return false
 	}

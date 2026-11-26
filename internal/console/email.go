@@ -92,7 +92,7 @@ func (c *console) confirmMailFromInternet(w http.ResponseWriter, r *http.Request
 }
 
 func (c *console) confirmInternet(w http.ResponseWriter, r *http.Request, confirm MailConfirm, needTwoFactor bool) bool {
-	if !fromInternet(r) {
+	if !c.fromInternet(r) {
 		return true
 	}
 	if confirm.AccountPassword == "" {

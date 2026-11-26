@@ -57,7 +57,7 @@ func (c *console) beforeSetup(next http.HandlerFunc) http.HandlerFunc {
 			writeError(w, http.StatusNotFound, "Les sauvegardes ne se restaurent pas sur cette console.")
 			return
 		}
-		if fromInternet(r) {
+		if c.fromInternet(r) {
 			writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
 			return
 		}

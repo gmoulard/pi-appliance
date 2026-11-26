@@ -25,6 +25,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -40,9 +41,9 @@ import (
 const homePortsFile = "home-ports.nft"
 
 // homeRanges4 et homeRanges6 : plages de la maison (et du VPN, dont le
-// conteneur WireGuard masque les appareils derrière son adresse privée).
-// NE PAS les élargir sans changer aussi pi-appliance-home@file
-// (traefik/dynamic/console.yml) et la console (spécification 8.3).
+// conteneur WireGuard masque les appareils derrière son adresse privée), plus
+// le préfixe IPv6 global de la maison lu sur le Pi (homeipv6.go).
+// NE PAS les élargir sans changer aussi les routeurs de traefik/dynamic/console.yml et cockpit.yml (pi-appliance-home@file est écrit d'après elles, home.yml).
 var (
 	homeRanges4 = []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.0/8"}
 	homeRanges6 = []string{"::1/128", "fc00::/7", "fe80::/10"}
@@ -59,7 +60,7 @@ func homeOnly(app marketplace.App) bool {
 // conteneur comme pour ceux servis par docker-proxy (IPv6). Seules les
 // nouvelles connexions vers une adresse du Pi sont regardées : les réponses
 // aux connexions sortantes des conteneurs passent.
-func homePortsRules(ports []marketplace.HostPort) string {
+func homePortsRules(ports []marketplace.HostPort, prefixes6 []netip.Prefix) string {
 	var b strings.Builder
 	b.WriteString("#!/usr/sbin/nft -f\n")
 	b.WriteString("# Écrit par la console pi-appliance (internal/services/homeports.go) : ne pas modifier.\n")
@@ -92,7 +93,7 @@ func homePortsRules(ports []marketplace.HostPort) string {
 		}
 		dport := fmt.Sprintf("%s dport { %s }", protocol, strings.Join(list, ", "))
 		fmt.Fprintf(&b, "\t\tct state new fib daddr type local ip saddr != { %s } %s counter drop\n", strings.Join(homeRanges4, ", "), dport)
-		fmt.Fprintf(&b, "\t\tct state new fib daddr type local ip6 saddr != { %s } %s counter drop\n", strings.Join(homeRanges6, ", "), dport)
+		fmt.Fprintf(&b, "\t\tct state new fib daddr type local ip6 saddr != { %s } %s counter drop\n", strings.Join(homeRanges6With(prefixes6), ", "), dport)
 	}
 	b.WriteString("\t}\n}\n")
 	return b.String()
@@ -128,7 +129,7 @@ func (m *Manager) ApplyHomePorts(ctx context.Context, extra ...marketplace.HostP
 	if err := os.MkdirAll(m.Dir, 0o700); err != nil {
 		return err
 	}
-	if err := os.WriteFile(path, []byte(homePortsRules(ports)), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte(homePortsRules(ports, m.HomeIPv6())), 0o600); err != nil {
 		return err
 	}
 	load := m.Firewall

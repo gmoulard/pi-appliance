@@ -60,7 +60,7 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 	}
 	// NE PAS relâcher : le fichier reset efface sans compte ; depuis internet,
 	// n'importe qui le ferait.
-	if c.Accounts.ResetPending() && fromInternet(r) {
+	if c.Accounts.ResetPending() && c.fromInternet(r) {
 		writeError(w, http.StatusForbidden, "Depuis internet, ce n'est pas possible : faites-le depuis la maison.")
 		return
 	}
@@ -79,7 +79,7 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		// Depuis internet : compte avec double authentification (confirmFromInternet).
-		if fromInternet(r) && !account.HasTwoFactor() {
+		if c.fromInternet(r) && !account.HasTwoFactor() {
 			writeError(w, http.StatusForbidden, "Depuis internet, cette action demande la double authentification : activez-la d'abord dans « Mon compte » (application d'authentification), ou faites-le depuis la maison.")
 			return
 		}

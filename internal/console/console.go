@@ -488,7 +488,7 @@ func (c *console) adminOnly(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func (c *console) session(w http.ResponseWriter, r *http.Request) {
-	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending(), Internet: fromInternet(r), RecoveryEmail: c.mailer() != nil, EmailCodes: c.codeMailer() != nil}
+	state := SessionState{Setup: c.Accounts.SetupNeeded(), Reset: c.Accounts.ResetPending(), Internet: c.fromInternet(r), RecoveryEmail: c.mailer() != nil, EmailCodes: c.codeMailer() != nil}
 	if account, ok := c.account(r); ok {
 		public := account.Public()
 		state.Account = &public
@@ -835,7 +835,7 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 		views = append(views, view)
 	}
 	// internet : la demande vient d'internet (« Ouvrir » mène à internet_address).
-	writeJSON(w, http.StatusOK, map[string]any{"services": views, "internet": fromInternet(r)})
+	writeJSON(w, http.StatusOK, map[string]any{"services": views, "internet": c.fromInternet(r)})
 }
 
 func (c *console) control(w http.ResponseWriter, r *http.Request) {

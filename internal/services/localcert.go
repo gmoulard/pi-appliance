@@ -93,8 +93,6 @@ func (m *Manager) localCertificateOverride(app marketplace.App, name string, ser
 	}
 }
 
-// trustLocalCertificate : Nextcloud a son propre magasin de certificats (occ
-// security:certificates:import), relu à chaque changement du certificat du Pi.
 func (m *Manager) trustLocalCertificate(ctx context.Context, instance Instance) error {
 	if instance.LocalCertificate == "" || m.LocalCertificate == "" {
 		return nil

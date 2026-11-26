@@ -237,12 +237,12 @@ func (c *console) errorPage(w http.ResponseWriter, r *http.Request) {
 		// Cockpit demandé depuis internet sans y être ouvert (TODO-3.4) :
 		// replacePath (dynamic/console.yml) garde le chemin d'origine dans
 		// X-Replaced-Path. Rien d'autre du Pi n'est dit.
-		if original := r.Header.Get("X-Replaced-Path"); fromInternet(r) && (original == "/cockpit" || strings.HasPrefix(original, "/cockpit/")) {
+		if original := r.Header.Get("X-Replaced-Path"); c.fromInternet(r) && (original == "/cockpit" || strings.HasPrefix(original, "/cockpit/")) {
 			title, text = "Cockpit", pageT(lang, "Cockpit ne s'ouvre que depuis la maison. Un administrateur peut l'ouvrir aussi depuis internet, dans la carte Cockpit de la console.")
 		}
 	}
 	// Adresse complète : sur l'adresse d'un service, /pi-appliance/ mène au service.
-	if !fromInternet(r) && c.Services != nil && c.Services.CurrentDomain() != "" {
+	if !c.fromInternet(r) && c.Services != nil && c.Services.CurrentDomain() != "" {
 		links = append(links, pageLink{"https://" + c.Services.CurrentDomain() + BasePath + "/", pageT(lang, "Ouvrir la console")})
 	}
 	c.messagePage(w, r, code, title, text, links...)

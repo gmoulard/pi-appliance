@@ -135,13 +135,20 @@ type Manager struct {
 	// LocalCertificate : certificat local du Pi (local.crt), copié dans les
 	// services qui le demandent (clé local_certificate) ; vide : aucun.
 	LocalCertificate string
-	mu               sync.Mutex
-	progressMu       sync.Mutex
-	progress         map[string]*Progress
-	renamed          atomic.Pointer[string]
-	linkMu           sync.Mutex
-	wakeOnce         sync.Once
-	wake             chan struct{}
+	// ReadHomeIPv6 lit les préfixes IPv6 globaux de la maison ; nil : sur les
+	// interfaces du Pi (homeipv6.go).
+	ReadHomeIPv6 func() []netip.Prefix
+	// TraefikHomeFile : configuration dynamique de Traefik des plages de la
+	// maison (pi-appliance-home@file) ; vide : aucune.
+	TraefikHomeFile string
+	homeIPv6        atomic.Pointer[[]netip.Prefix]
+	mu              sync.Mutex
+	progressMu      sync.Mutex
+	progress        map[string]*Progress
+	renamed         atomic.Pointer[string]
+	linkMu          sync.Mutex
+	wakeOnce        sync.Once
+	wake            chan struct{}
 }
 
 // CurrentDomain : adresse de l'appliance, d'où vient l'adresse de chaque service (ServiceAddress).
