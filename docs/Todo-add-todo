@@ -1,0 +1,3 @@
+- renomer le fichier /Todo-add-todo.md en Todo-ithem-for-todo.md
+- renome la banche master en main 
+- dans les "Docker Compose libre" ajouter un bouton Rebuild ou l'on force le telechargment des doclers et on relance. et un "Rebuild cleanup" ou l'on fait un rebuild complets avec supressions de toutes les données. 
