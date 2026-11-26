@@ -12,6 +12,9 @@ x-pi-appliance:
   disk_mb: 2048
   login: application
   access: public
+  local_certificate:
+    service: app
+    path: /usr/local/share/pi-appliance
   parameters:
     - name: NEXTCLOUD_ADMIN_PASSWORD
       label: Mot de passe de l'administrateur de Nextcloud

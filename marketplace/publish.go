@@ -29,7 +29,8 @@ import (
 // NE PAS ajouter de clé au fichier Compose publié (compose) sans changer de
 // format : les consoles déjà installées le relisent strictement et refusent
 // une clé inconnue de x-pi-appliance. Une nouvelle information va à côté,
-// dans les champs de l'application, que ces consoles ignorent.
+// dans les champs de l'application, que ces consoles ignorent (tags,
+// local_certificate : withoutPublishedKeys).
 const DocumentFormat = 1
 
 //go:embed planned.yaml
@@ -134,6 +135,8 @@ func ReadDocument(data []byte) ([]Manifest, error) {
 			ID      string   `json:"id"`
 			Compose string   `json:"compose"`
 			Tags    []string `json:"tags"`
+
+			LocalCertificate *LocalCertificate `json:"local_certificate"`
 		} `json:"apps"`
 	}
 	if err := json.Unmarshal(data, &document); err != nil {
@@ -158,6 +161,14 @@ func ReadDocument(data []byte) ([]Manifest, error) {
 			if problems := checkTags(app.Tags); len(problems) > 0 {
 				err = fmt.Errorf("manifeste %s : %s", entry.ID, strings.Join(problems, " ; "))
 			}
+		}
+		if err == nil && app.LocalCertificate == nil && entry.LocalCertificate != nil {
+			var file composeFile
+			yaml.Unmarshal([]byte(entry.Compose), &file)
+			if problems := checkLocalCertificate(entry.LocalCertificate, file); len(problems) > 0 {
+				err = fmt.Errorf("manifeste %s : %s", entry.ID, strings.Join(problems, " ; "))
+			}
+			app.LocalCertificate = entry.LocalCertificate
 		}
 		manifests = append(manifests, Manifest{ID: entry.ID, App: app, Err: err})
 	}
