@@ -39,7 +39,7 @@ const (
 	// RepoURL : dépôt git de pi-appliance.
 	RepoURL = "https://github.com/gmoulard/pi-appliance"
 	// LicenseURL : texte de la licence (CC BY-NC-ND 4.0 et permissions supplémentaires).
-	LicenseURL = RepoURL + "/blob/master/LICENSE"
+	LicenseURL = RepoURL + "/blob/main/LICENSE"
 )
 
 // pageKeys : phrases françaises des pages servies par Go, traduites dans les

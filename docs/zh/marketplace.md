@@ -29,7 +29,7 @@ marketplace 汇集了可以在 pi-appliance 控制台中安装和管理的应用
 
 应用的名称和说明来自各自的清单文件，目前只有法文。
 
-此列表从目录 JSON 文件加载，该文件由 [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace) 中的清单生成。控制台读取 GitHub 仓库中的同一个文件：被接受的应用无需发布 pi-appliance 新版本即可出现在 Pi 上。每次修改清单或 `marketplace/planned.yaml` 后，请在仓库根目录运行 `go run ./cmd/marketplace-json` 重新生成该文件；否则测试（`go test ./...`）会失败。如果忘了，GitHub 的一个自动操作会在合并后于 `master` 上重新生成。文件名包含其内容的 MD5；索引 `docs/static/pi-appliance-catalog.json` 指明当前版本。
+此列表从目录 JSON 文件加载，该文件由 [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace) 中的清单生成。控制台读取 GitHub 仓库中的同一个文件：被接受的应用无需发布 pi-appliance 新版本即可出现在 Pi 上。每次修改清单或 `marketplace/planned.yaml` 后，请在仓库根目录运行 `go run ./cmd/marketplace-json` 重新生成该文件；否则测试（`go test ./...`）会失败。如果忘了，GitHub 的一个自动操作会在合并后于 `main` 上重新生成。文件名包含其内容的 MD5；索引 `docs/static/pi-appliance-catalog.json` 指明当前版本。
 
 控制台可以管理多个实例、它们的启动和停止、可回退的更新，以及卸载时保留或删除数据。
 
@@ -115,11 +115,11 @@ go test ./...
 
 测试主要检查清单是否有效、镜像是否有固定版本以及 Compose 变量是否已声明。如有可能，也请在测试机器上用 Docker 试一试应用的安装、停止、重启和卸载。
 
-然后向 `master` 提交 pull request，附上应用说明、所需资源、测试步骤以及已知的限制。pull request 在 `master` 上被接受后，各台设备会在 6 小时内读取新的在线目录，无需 pi-appliance 新版本。
+然后向 `main` 提交 pull request，附上应用说明、所需资源、测试步骤以及已知的限制。pull request 在 `main` 上被接受后，各台设备会在 6 小时内读取新的在线目录，无需 pi-appliance 新版本。
 
 ## 实用链接
 
-- [marketplace 的源代码](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [marketplace 的源代码](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [清单的规格说明]({{ '/specification.html' | relative_url }})（法文）
 - [路线图]({{ '/TODO.html' | relative_url }})（法文）
 - [pi-appliance 仓库](https://github.com/gmoulard/pi-appliance)：从您的 fork 提交 pull request 来提出您的贡献。

@@ -29,7 +29,7 @@ Marketplace, pi-appliance konsolundan kurup yönetebileceğiniz uygulamaları bi
 
 Uygulamaların adları ve açıklamaları manifestlerinden gelir ve şimdilik yalnızca Fransızca yazılmıştır.
 
-Bu liste, [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace) içindeki manifestlerden üretilen JSON kataloğundan yüklenir. Konsollar aynı dosyayı GitHub deposunda okur: kabul edilen bir uygulama, pi-appliance'ın yeni bir sürümü olmadan Pi'lerde görünür. Bir manifesti veya `marketplace/planned.yaml` dosyasını her değiştirdiğinizde, dosyayı deponun kökünden `go run ./cmd/marketplace-json` ile yeniden üretin; aksi hâlde testler (`go test ./...`) başarısız olur. Unutursanız, bir GitHub eylemi kabulden sonra `master` üzerinde onu yeniden üretir. Dosya adı içeriğinin MD5 değerini içerir; `docs/static/pi-appliance-catalog.json` dizini güncel sürümü belirtir.
+Bu liste, [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace) içindeki manifestlerden üretilen JSON kataloğundan yüklenir. Konsollar aynı dosyayı GitHub deposunda okur: kabul edilen bir uygulama, pi-appliance'ın yeni bir sürümü olmadan Pi'lerde görünür. Bir manifesti veya `marketplace/planned.yaml` dosyasını her değiştirdiğinizde, dosyayı deponun kökünden `go run ./cmd/marketplace-json` ile yeniden üretin; aksi hâlde testler (`go test ./...`) başarısız olur. Unutursanız, bir GitHub eylemi kabulden sonra `main` üzerinde onu yeniden üretir. Dosya adı içeriğinin MD5 değerini içerir; `docs/static/pi-appliance-catalog.json` dizini güncel sürümü belirtir.
 
 Konsol birden çok örneği, bunların başlatılmasını ve durdurulmasını, geri dönüşlü güncellemeleri ve kaldırma sırasında verilerin saklanmasını ya da silinmesini yönetir.
 
@@ -115,11 +115,11 @@ go test ./...
 
 Testler özellikle manifestlerin geçerli olduğunu, imajların sabit bir sürümü olduğunu ve Compose değişkenlerinin tanımlandığını kontrol eder. Mümkünse uygulamanızın kurulumunu, durdurulmasını, yeniden başlatılmasını ve kaldırılmasını bir test makinesinde Docker ile de deneyin.
 
-Ardından uygulamanın açıklaması, gereken kaynaklar, test adımları ve bilinen sınırlamalarla birlikte `master` dalına bir pull request açın. Pull request `master` üzerinde kabul edildikten sonra cihazlar yeni çevrimiçi kataloğu, pi-appliance'ın yeni bir sürümü olmadan 6 saat içinde okur.
+Ardından uygulamanın açıklaması, gereken kaynaklar, test adımları ve bilinen sınırlamalarla birlikte `main` dalına bir pull request açın. Pull request `main` üzerinde kabul edildikten sonra cihazlar yeni çevrimiçi kataloğu, pi-appliance'ın yeni bir sürümü olmadan 6 saat içinde okur.
 
 ## Yararlı bağlantılar
 
-- [Marketplace'in kaynak kodu](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [Marketplace'in kaynak kodu](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [Manifestlerin şartnamesi]({{ '/specification.html' | relative_url }}) (Fransızca)
 - [Yol haritası]({{ '/TODO.html' | relative_url }}) (Fransızca)
 - [pi-appliance deposu](https://github.com/gmoulard/pi-appliance): katkınızı önermek için fork'unuzdan bir pull request açın.

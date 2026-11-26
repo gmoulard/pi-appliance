@@ -29,7 +29,7 @@ The **pi-appliance base** (Docker, Traefik, the system services and tools, the c
 
 The names and descriptions of the applications come from their manifests and are, for now, written in French only.
 
-This list is loaded from the JSON catalogue generated from the manifests in [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). The consoles read this same file in the GitHub repository: an accepted application appears on the Pis without a new version of pi-appliance. After any change to a manifest or to `marketplace/planned.yaml`, regenerate the file with `go run ./cmd/marketplace-json` from the root of the repository; otherwise the tests (`go test ./...`) fail. If you forget, a GitHub action regenerates it on `master` after acceptance. The file name contains the MD5 of its content; the index `docs/static/pi-appliance-catalog.json` gives the current version.
+This list is loaded from the JSON catalogue generated from the manifests in [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace). The consoles read this same file in the GitHub repository: an accepted application appears on the Pis without a new version of pi-appliance. After any change to a manifest or to `marketplace/planned.yaml`, regenerate the file with `go run ./cmd/marketplace-json` from the root of the repository; otherwise the tests (`go test ./...`) fail. If you forget, a GitHub action regenerates it on `main` after acceptance. The file name contains the MD5 of its content; the index `docs/static/pi-appliance-catalog.json` gives the current version.
 
 The console manages several instances, starting and stopping them, updates with rollback, and keeping or deleting data on uninstallation.
 
@@ -115,11 +115,11 @@ go test ./...
 
 The tests check in particular that the manifests are valid, that the images have a fixed version and that the Compose variables are declared. If possible, also try installing, stopping, restarting and uninstalling your application with Docker on a test machine.
 
-Then open a pull request to `master`, with a description of the application, the resources it needs, the test steps and any known limitations. Once the pull request is accepted on `master`, the appliances read the new online catalogue within 6 hours, without a new version of pi-appliance.
+Then open a pull request to `main`, with a description of the application, the resources it needs, the test steps and any known limitations. Once the pull request is accepted on `main`, the appliances read the new online catalogue within 6 hours, without a new version of pi-appliance.
 
 ## Useful links
 
-- [Source code of the marketplace](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [Source code of the marketplace](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [Specification of the manifests]({{ '/specification.html' | relative_url }}) (in French)
 - [Roadmap]({{ '/TODO.html' | relative_url }}) (in French)
 - [pi-appliance repository](https://github.com/gmoulard/pi-appliance): open a pull request from your fork to propose your contribution.

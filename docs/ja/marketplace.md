@@ -29,7 +29,7 @@ marketplace には、pi-appliance のコンソールからインストールし�
 
 アプリケーションの名前と説明はそれぞれのマニフェストから取得しており、今のところフランス語のみです。
 
-この一覧は、[`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace) のマニフェストから生成された JSON カタログから読み込まれます。コンソールも GitHub リポジトリにある同じファイルを読みます。承認されたアプリケーションは、pi-appliance の新しいバージョンなしで Pi に表示されます。マニフェストや `marketplace/planned.yaml` を変更したら、リポジトリのルートで `go run ./cmd/marketplace-json` を実行してファイルを再生成してください。そうしないとテスト（`go test ./...`）が失敗します。忘れた場合は、承認後に GitHub のアクションが `master` 上で再生成します。ファイル名には内容の MD5 が含まれ、インデックス `docs/static/pi-appliance-catalog.json` が現在のバージョンを示します。
+この一覧は、[`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace) のマニフェストから生成された JSON カタログから読み込まれます。コンソールも GitHub リポジトリにある同じファイルを読みます。承認されたアプリケーションは、pi-appliance の新しいバージョンなしで Pi に表示されます。マニフェストや `marketplace/planned.yaml` を変更したら、リポジトリのルートで `go run ./cmd/marketplace-json` を実行してファイルを再生成してください。そうしないとテスト（`go test ./...`）が失敗します。忘れた場合は、承認後に GitHub のアクションが `main` 上で再生成します。ファイル名には内容の MD5 が含まれ、インデックス `docs/static/pi-appliance-catalog.json` が現在のバージョンを示します。
 
 コンソールは複数のインスタンス、その起動と停止、元に戻せる更新、そしてアンインストール時のデータの保持または削除を管理します。
 
@@ -115,11 +115,11 @@ go test ./...
 
 テストでは主に、マニフェストが有効か、イメージのバージョンが固定されているか、Compose の変数が宣言されているかを確認します。可能なら、テスト用のマシンで Docker を使い、アプリケーションのインストール、停止、再起動、アンインストールも試してください。
 
-その後、アプリケーションの説明、必要なリソース、テスト手順、既知の制限を添えて `master` への pull request を作成してください。pull request が `master` で承認されると、各アプライアンスは pi-appliance の新しいバージョンなしで、6 時間以内に新しいオンラインのカタログを読み込みます。
+その後、アプリケーションの説明、必要なリソース、テスト手順、既知の制限を添えて `main` への pull request を作成してください。pull request が `main` で承認されると、各アプライアンスは pi-appliance の新しいバージョンなしで、6 時間以内に新しいオンラインのカタログを読み込みます。
 
 ## 便利なリンク
 
-- [marketplace のソースコード](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [marketplace のソースコード](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [マニフェストの仕様]({{ '/specification.html' | relative_url }})（フランス語）
 - [ロードマップ]({{ '/TODO.html' | relative_url }})（フランス語）
 - [pi-appliance リポジトリ](https://github.com/gmoulard/pi-appliance)：fork から pull request を作成して、貢献を提案してください。

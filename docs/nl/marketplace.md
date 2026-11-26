@@ -29,7 +29,7 @@ De **pi-appliance-basis** (Docker, Traefik, de diensten en hulpmiddelen van het 
 
 De namen en beschrijvingen van de toepassingen komen uit hun manifesten en zijn voorlopig alleen in het Frans geschreven.
 
-Deze lijst wordt geladen uit de JSON-catalogus die wordt gegenereerd uit de manifesten in [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/master/marketplace). De consoles lezen hetzelfde bestand in de GitHub-repository: een geaccepteerde toepassing verschijnt op de Pi's zonder nieuwe versie van pi-appliance. Genereer het bestand na elke wijziging van een manifest of van `marketplace/planned.yaml` opnieuw met `go run ./cmd/marketplace-json` vanuit de hoofdmap van de repository; anders mislukken de tests (`go test ./...`). Vergeet u het, dan genereert een GitHub-actie het opnieuw op `master` na de acceptatie. De bestandsnaam bevat de MD5 van de inhoud; de index `docs/static/pi-appliance-catalog.json` geeft de huidige versie.
+Deze lijst wordt geladen uit de JSON-catalogus die wordt gegenereerd uit de manifesten in [`marketplace/`](https://github.com/gmoulard/pi-appliance/tree/main/marketplace). De consoles lezen hetzelfde bestand in de GitHub-repository: een geaccepteerde toepassing verschijnt op de Pi's zonder nieuwe versie van pi-appliance. Genereer het bestand na elke wijziging van een manifest of van `marketplace/planned.yaml` opnieuw met `go run ./cmd/marketplace-json` vanuit de hoofdmap van de repository; anders mislukken de tests (`go test ./...`). Vergeet u het, dan genereert een GitHub-actie het opnieuw op `main` na de acceptatie. De bestandsnaam bevat de MD5 van de inhoud; de index `docs/static/pi-appliance-catalog.json` geeft de huidige versie.
 
 De console beheert meerdere instanties, het starten en stoppen ervan, updates met terugdraaien, en het bewaren of verwijderen van de gegevens bij het verwijderen.
 
@@ -115,11 +115,11 @@ go test ./...
 
 De tests controleren met name of de manifesten geldig zijn, of de images een vaste versie hebben en of de Compose-variabelen zijn opgegeven. Probeer zo mogelijk ook het installeren, stoppen, herstarten en verwijderen van uw toepassing met Docker op een testmachine.
 
-Open daarna een pull request naar `master`, met een beschrijving van de toepassing, de benodigde middelen, de teststappen en eventuele bekende beperkingen. Zodra de pull request op `master` is geaccepteerd, lezen de appliances de nieuwe online catalogus binnen 6 uur, zonder nieuwe versie van pi-appliance.
+Open daarna een pull request naar `main`, met een beschrijving van de toepassing, de benodigde middelen, de teststappen en eventuele bekende beperkingen. Zodra de pull request op `main` is geaccepteerd, lezen de appliances de nieuwe online catalogus binnen 6 uur, zonder nieuwe versie van pi-appliance.
 
 ## Nuttige links
 
-- [Broncode van de marketplace](https://github.com/gmoulard/pi-appliance/tree/master/marketplace)
+- [Broncode van de marketplace](https://github.com/gmoulard/pi-appliance/tree/main/marketplace)
 - [Specificatie van de manifesten]({{ '/specification.html' | relative_url }}) (in het Frans)
 - [Routekaart]({{ '/TODO.html' | relative_url }}) (in het Frans)
 - [pi-appliance-repository](https://github.com/gmoulard/pi-appliance): open een pull request vanuit uw fork om uw bijdrage voor te stellen.

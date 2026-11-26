@@ -54,7 +54,7 @@ Le service d'adresses (`cmd/pi-appliance-addresses`, [spécification 7.1](specif
 
 ## Site web
 
-- **GitHub Pages** du dépôt `gmoulard/pi-appliance` : branche `master`, dossier `/docs`, domaine `www.pi-appliance.com` (fichier `docs/CNAME`), HTTPS actif.
+- **GitHub Pages** du dépôt `gmoulard/pi-appliance` : branche `main` (à régler dans Settings → Pages tant que la source y est encore `master`, TODO-0.9), dossier `/docs`, domaine `www.pi-appliance.com` (fichier `docs/CNAME`), HTTPS actif.
 - Jekyll : `docs/_config.yml`, gabarit `docs/_layouts/default.html`.
 
 ## AWS CLI

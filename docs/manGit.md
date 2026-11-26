@@ -152,7 +152,7 @@ git diff HEAD
 git diff A B
 
 # Diff entre un dossier présent sur deux branches
-git diff master..MA_BRANCH chemin/vers/mon_dossier
+git diff main..MA_BRANCH chemin/vers/mon_dossier
 ```
 
 ## Log
@@ -228,7 +228,7 @@ git reset HEAD -- nom_du_fichier_a_supprimer
 
 Une version se publie en poussant une étiquette `v…` : le workflow « Image » construit alors l'image et l'archive de mise à jour, puis crée lui-même la version GitHub avec ces fichiers et leurs sommes de contrôle (spécification, section 9.2). Ne pas créer la version depuis l'interface de GitHub : le workflow échouerait au moment de publier. Les sessions Claude Code dans le cloud ne peuvent pas pousser d'étiquette : le faire depuis son poste.
 
-Première version, `v0.1.0`, sur le commit `ce785b2` de `master` :
+Première version, `v0.1.0`, sur le commit `ce785b2` de `master` (aujourd'hui `main`) :
 
 ```shell
 git fetch origin
@@ -238,4 +238,4 @@ git push origin v0.1.0
 
 Une préversion, proposée seulement aux Pi réglés sur le canal bêta (spécification 5.4), porte un suffixe : `1.3.0-beta.1` dans `VERSION`, étiquette `v1.3.0-beta.1` ; le workflow la publie marquée « préversion ».
 
-Pour les suivantes (skill `release`) : mettre le nouveau numéro dans le fichier `VERSION` et ajouter une ligne en bas de `CHANGELOG.md`, dans le même commit, puis étiqueter ce commit avec le même numéro précédé de `v` (`origin/master` à la place de l'empreinte). Le workflow « Image » s'arrête si l'étiquette diffère de `VERSION` : ne jamais déplacer l'étiquette, publier une nouvelle version. Les Pi installés avec une image `v0.1.0` ou plus récente proposent ensuite la nouvelle version dans « Mon Pi ».
+Pour les suivantes (skill `release`) : mettre le nouveau numéro dans le fichier `VERSION` et ajouter une ligne en bas de `CHANGELOG.md`, dans le même commit, puis étiqueter ce commit avec le même numéro précédé de `v` (`origin/main` à la place de l'empreinte). Le workflow « Image » s'arrête si l'étiquette diffère de `VERSION` : ne jamais déplacer l'étiquette, publier une nouvelle version. Les Pi installés avec une image `v0.1.0` ou plus récente proposent ensuite la nouvelle version dans « Mon Pi ».
