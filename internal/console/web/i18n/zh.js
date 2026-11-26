@@ -905,6 +905,8 @@ piTranslations("zh", {
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "正在 Rebuild {0}… 下载可能需要几分钟。",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} 已使用新镜像重新启动，无数据。",
   "{0} est relancé avec de nouvelles images, données gardées.": "{0} 已使用新镜像重新启动，数据已保留。",
+  "Le contenu de ces dossiers du Pi sera aussi effacé :": "Pi 上这些文件夹中的内容也将被删除：",
+  "Le Rebuild de {0} a échoué : l'ancienne version tourne de nouveau.": "{0} 的 Rebuild 失败：旧版本已重新运行。",
   "Source": "源文件",
   "Fichier lu à l'adresse : ": "文件读取自地址：",
   ", puis modifié avant l'installation.": "，然后在安装前做了修改。",

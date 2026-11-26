@@ -284,6 +284,7 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/services/{name}/{action}", c.adminOnly(c.control))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.advancedSettings))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/progress", c.adminOnly(c.installProgress))
+	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/cleanup", c.adminOnly(c.cleanupDirs))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/source", c.adminOnly(c.composeSource))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/access", c.adminOnly(c.setAccess))
@@ -960,6 +961,11 @@ func (c *console) rebuild(w http.ResponseWriter, r *http.Request, name string) {
 		return
 	}
 	result, err := c.Services.Rebuild(r.Context(), name, cleanup)
+	if errors.Is(err, services.ErrRebuildRolledBack) {
+		c.syncTraefikNow()
+		writeJSON(w, http.StatusConflict, map[string]any{"error": "Le Rebuild n'a pas marché : le service tourne de nouveau avec ses images d'avant. " + strings.TrimPrefix(err.Error(), services.ErrRebuildRolledBack.Error()+" : "), "rolled_back": true})
+		return
+	}
 	if err != nil {
 		writeServiceError(w, err)
 		return
@@ -969,6 +975,17 @@ func (c *console) rebuild(w http.ResponseWriter, r *http.Request, name string) {
 	}
 	c.syncTraefikNow()
 	writeJSON(w, http.StatusOK, result)
+}
+
+// cleanupDirs : dossiers du Pi que « Rebuild cleanup » videra, à montrer dans
+// sa confirmation ; 400 si l'un d'eux est protégé.
+func (c *console) cleanupDirs(w http.ResponseWriter, r *http.Request) {
+	dirs, err := c.Services.CleanupDirs(r.PathValue("name"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"dirs": dirs})
 }
 
 // Réglages avancés et Docker Compose libre (spécification 6.4), réservés à l'administrateur.

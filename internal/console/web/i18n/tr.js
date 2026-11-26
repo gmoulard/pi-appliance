@@ -905,6 +905,8 @@ piTranslations("tr", {
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "{0} için Rebuild… İndirme birkaç dakika sürebilir.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} yeni imajlarla, verisiz olarak yeniden başlatıldı.",
   "{0} est relancé avec de nouvelles images, données gardées.": "{0} yeni imajlarla yeniden başlatıldı, veriler korundu.",
+  "Le contenu de ces dossiers du Pi sera aussi effacé :": "Pi'deki bu klasörlerin içeriği de silinecek:",
+  "Le Rebuild de {0} a échoué : l'ancienne version tourne de nouveau.": "{0} için Rebuild başarısız oldu: önceki sürüm yeniden çalışıyor.",
   "Source": "Kaynak",
   "Fichier lu à l'adresse : ": "Dosyanın okunduğu adres: ",
   ", puis modifié avant l'installation.": ", ardından kurulumdan önce değiştirildi.",

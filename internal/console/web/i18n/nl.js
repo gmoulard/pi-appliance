@@ -905,6 +905,8 @@ piTranslations("nl", {
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild van {0}… Het downloaden kan enkele minuten duren.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} draait weer met nieuwe images, zonder gegevens.",
   "{0} est relancé avec de nouvelles images, données gardées.": "{0} draait weer met nieuwe images, gegevens bewaard.",
+  "Le contenu de ces dossiers du Pi sera aussi effacé :": "De inhoud van deze mappen op de Pi wordt ook gewist:",
+  "Le Rebuild de {0} a échoué : l'ancienne version tourne de nouveau.": "Rebuild van {0} is mislukt: de vorige versie draait weer.",
   "Source": "Bron",
   "Fichier lu à l'adresse : ": "Bestand gelezen op het adres: ",
   ", puis modifié avant l'installation.": ", daarna gewijzigd vóór de installatie.",

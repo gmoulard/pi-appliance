@@ -16,6 +16,8 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -152,4 +154,231 @@ func TestRebuildCatalogRefused(t *testing.T) {
 	if _, err := m.Rebuild(context.Background(), "absent", false); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("service absent : %v", err)
 	}
+}
+
+type rollbackRunner struct {
+	fakeRunner
+	failRestart  bool
+	failRollback bool
+}
+
+func (r *rollbackRunner) Run(ctx context.Context, dir string, args ...string) ([]byte, error) {
+	output, err := r.fakeRunner.Run(ctx, dir, args...)
+	call := strings.Join(args, " ")
+	switch {
+	case strings.HasSuffix(call, "images --format json"):
+		return []byte(`[{"ID":"sha256:ancienne","Repository":"nginx","Tag":"latest"}]`), nil
+	case strings.HasSuffix(call, "up --detach --wait") && r.failRestart:
+		return []byte("le conteneur web s'arrête"), errors.New("exit status 1")
+	case strings.HasSuffix(call, "up --detach --wait --force-recreate") && r.failRollback:
+		return []byte("toujours pas"), errors.New("exit status 1")
+	}
+	return output, err
+}
+
+func TestRebuildRollback(t *testing.T) {
+	runner := &rollbackRunner{}
+	m := &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, MemoryMB: func() int { return 4096 }}
+	installSimple(t, m)
+	runner.calls = nil
+	runner.failRestart = true
+	_, err := m.Rebuild(context.Background(), "libre", false)
+	if !errors.Is(err, ErrRebuildRolledBack) || !strings.Contains(err.Error(), "le conteneur web s'arrête") {
+		t.Fatalf("erreur %v", err)
+	}
+	keep := "nginx:pi-rollback-libre-latest"
+	order := []string{"image tag sha256:ancienne " + keep, " pull", " down", "image tag " + keep + " nginx:latest", "up --detach --wait --force-recreate", "image rm " + keep}
+	next := 0
+	for _, call := range runner.calls {
+		if next < len(order) && strings.Contains(call, order[next]) {
+			next++
+		}
+	}
+	if next != len(order) {
+		t.Fatalf("retour arrière incomplet (attendu %q) : %v", order[next], runner.calls)
+	}
+	if progress, _ := m.InstallProgress("libre"); progress.Error == "" || !progress.Finished {
+		t.Fatalf("avancement %+v", progress)
+	}
+}
+
+func TestRebuildRollbackFails(t *testing.T) {
+	runner := &rollbackRunner{}
+	m := &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, MemoryMB: func() int { return 4096 }}
+	installSimple(t, m)
+	runner.calls = nil
+	runner.failRestart, runner.failRollback = true, true
+	_, err := m.Rebuild(context.Background(), "libre", false)
+	if err == nil || errors.Is(err, ErrRebuildRolledBack) || !strings.Contains(err.Error(), "non plus") {
+		t.Fatalf("erreur %v", err)
+	}
+	if runner.called("image rm nginx:pi-rollback-libre-latest") {
+		t.Fatalf("images d'avant retirées alors que le retour a raté : %v", runner.calls)
+	}
+}
+
+func TestRebuildKeepsNoRollbackTag(t *testing.T) {
+	runner := &rollbackRunner{}
+	m := &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, MemoryMB: func() int { return 4096 }}
+	installSimple(t, m)
+	runner.calls = nil
+	if _, err := m.Rebuild(context.Background(), "libre", false); err != nil {
+		t.Fatal(err)
+	}
+	if !runner.called("image tag sha256:ancienne nginx:pi-rollback-libre-latest") || !runner.called("image rm nginx:pi-rollback-libre-latest") || runner.called("--force-recreate") {
+		t.Fatalf("appels %v", runner.calls)
+	}
+}
+
+func installHostMounts(t *testing.T, m *Manager, name string, sources ...string) {
+	t.Helper()
+	compose := "services:\n  web:\n    image: nginx:latest\n    volumes:\n"
+	for i, source := range sources {
+		compose += fmt.Sprintf("      - %s:/mnt/%d\n", source, i)
+	}
+	if _, err := m.InstallCustom(context.Background(), CustomRequest{Name: name, Compose: []byte(compose), Service: "web", Port: 80, ConfirmRisks: true}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func hostDir(t *testing.T, parts ...string) string {
+	t.Helper()
+	dir := filepath.Join(append([]string{t.TempDir()}, parts...)...)
+	if err := os.MkdirAll(filepath.Join(dir, "album"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "album", "photo.jpg"), []byte("photo"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+func TestRebuildCleanupHostDirs(t *testing.T) {
+	runner := &fakeRunner{}
+	m := manager(t, runner)
+	photos := hostDir(t, "photos")
+	link := filepath.Join(t.TempDir(), "lien")
+	if err := os.Symlink(photos, link); err != nil {
+		t.Fatal(err)
+	}
+	installHostMounts(t, m, "libre", photos, link, filepath.Join(t.TempDir(), "absent"))
+	dirs, err := m.CleanupDirs("libre")
+	if err != nil || len(dirs) != 1 || dirs[0] != photos {
+		t.Fatalf("dossiers %v, %v", dirs, err)
+	}
+	if _, err := m.Rebuild(context.Background(), "libre", false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(photos, "album", "photo.jpg")); err != nil {
+		t.Fatalf("Rebuild sans cleanup a effacé : %v", err)
+	}
+	if _, err := m.Rebuild(context.Background(), "libre", true); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(photos)
+	if err != nil || len(entries) != 0 {
+		t.Fatalf("dossier du Pi non vidé ou retiré : %v, %v", entries, err)
+	}
+}
+
+func TestRebuildCleanupRefused(t *testing.T) {
+	cases := map[string]func(t *testing.T, m *Manager) string{
+		"racine":                func(*testing.T, *Manager) string { return "/" },
+		"etc":                   func(*testing.T, *Manager) string { return "/etc" },
+		"sous etc":              func(*testing.T, *Manager) string { return "/etc/ssh" },
+		"usr local":             func(*testing.T, *Manager) string { return "/usr/local" },
+		"bin":                   func(*testing.T, *Manager) string { return "/bin" },
+		"sbin":                  func(*testing.T, *Manager) string { return "/sbin" },
+		"lib64":                 func(*testing.T, *Manager) string { return "/lib64" },
+		"boot":                  func(*testing.T, *Manager) string { return "/boot/firmware" },
+		"proc":                  func(*testing.T, *Manager) string { return "/proc" },
+		"sys":                   func(*testing.T, *Manager) string { return "/sys" },
+		"dev":                   func(*testing.T, *Manager) string { return "/dev" },
+		"run":                   func(*testing.T, *Manager) string { return "/run" },
+		"var":                   func(*testing.T, *Manager) string { return "/var" },
+		"var log":               func(*testing.T, *Manager) string { return "/var/log" },
+		"var lib":               func(*testing.T, *Manager) string { return "/var/lib" },
+		"var lib docker":        func(*testing.T, *Manager) string { return "/var/lib/docker/volumes" },
+		"socket docker":         func(*testing.T, *Manager) string { return "/var/run/docker.sock" },
+		"home":                  func(*testing.T, *Manager) string { return "/home" },
+		"home pi":               func(*testing.T, *Manager) string { return "/home/pi" },
+		"root":                  func(*testing.T, *Manager) string { return "/root/notes" },
+		"opt":                   func(*testing.T, *Manager) string { return "/opt" },
+		"srv":                   func(*testing.T, *Manager) string { return "/srv/partage" },
+		"mnt usb":               func(*testing.T, *Manager) string { return "/mnt/usb" },
+		"media":                 func(*testing.T, *Manager) string { return "/media" },
+		"données de pi":         func(_ *testing.T, m *Manager) string { return m.Dir },
+		"parent des données":    func(_ *testing.T, m *Manager) string { return filepath.Dir(m.Dir) },
+		"autre service":         func(_ *testing.T, m *Manager) string { return filepath.Join(m.Dir, "services", "autre") },
+		"dossier du service":    func(_ *testing.T, m *Manager) string { return m.serviceDir("libre") },
+		"réglages du service":   func(_ *testing.T, m *Manager) string { return filepath.Join(m.serviceDir("libre"), composeName) },
+		"fichier":               func(t *testing.T, _ *Manager) string { return filepath.Join(hostDir(t), "album", "photo.jpg") },
+		"lien vers etc":         func(t *testing.T, _ *Manager) string { return symlink(t, "/etc") },
+		"lien vers les données": func(t *testing.T, m *Manager) string { return symlink(t, m.Dir) },
+		"prise": func(t *testing.T, _ *Manager) string {
+			dir, err := os.MkdirTemp("", "s")
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { os.RemoveAll(dir) })
+			listener, err := net.Listen("unix", filepath.Join(dir, "s.sock"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { listener.Close() })
+			return filepath.Join(dir, "s.sock")
+		},
+		"monté par un autre": func(t *testing.T, m *Manager) string {
+			shared := hostDir(t, "partage")
+			installHostMounts(t, m, "autre", shared)
+			return shared
+		},
+		"dans le dossier d'un autre": func(t *testing.T, m *Manager) string {
+			shared := hostDir(t, "partage")
+			installHostMounts(t, m, "autre", shared)
+			return filepath.Join(shared, "album")
+		},
+		"réglage avancé d'un autre": func(t *testing.T, m *Manager) string {
+			shared := hostDir(t, "partage")
+			installHostMounts(t, m, "autre")
+			if err := writeJSON(filepath.Join(m.serviceDir("autre"), advancedSettings), Advanced{Service: "web", Volumes: []Mount{{Source: filepath.Dir(shared), Target: "/import"}}}, 0o600); err != nil {
+				t.Fatal(err)
+			}
+			return shared
+		},
+	}
+	for label, bad := range cases {
+		t.Run(label, func(t *testing.T) {
+			runner := &fakeRunner{}
+			m := manager(t, runner)
+			if err := os.MkdirAll(filepath.Join(m.Dir, "services", "autre"), 0o700); err != nil {
+				t.Fatal(err)
+			}
+			good := hostDir(t, "photos")
+			installHostMounts(t, m, "libre", good, bad(t, m))
+			runner.calls = nil
+			if _, err := m.CleanupDirs("libre"); !errors.Is(err, ErrInvalid) {
+				t.Fatalf("liste acceptée : %v", err)
+			}
+			_, err := m.Rebuild(context.Background(), "libre", true)
+			if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "rien n'a été effacé") {
+				t.Fatalf("erreur %v", err)
+			}
+			if runner.called("pull") || runner.called("down") {
+				t.Fatalf("service touché : %v", runner.calls)
+			}
+			if _, err := os.Stat(filepath.Join(good, "album", "photo.jpg")); err != nil {
+				t.Fatalf("effacé malgré le refus : %v", err)
+			}
+		})
+	}
+}
+
+func symlink(t *testing.T, target string) string {
+	t.Helper()
+	link := filepath.Join(t.TempDir(), "lien")
+	if err := os.Symlink(target, link); err != nil {
+		t.Fatal(err)
+	}
+	return link
 }

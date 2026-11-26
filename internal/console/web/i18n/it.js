@@ -905,6 +905,8 @@ piTranslations("it", {
   "Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.": "Rebuild di {0}… Il download può richiedere diversi minuti.",
   "{0} est relancé avec de nouvelles images, sans données.": "{0} è ripartito con immagini nuove, senza dati.",
   "{0} est relancé avec de nouvelles images, données gardées.": "{0} è ripartito con immagini nuove, dati conservati.",
+  "Le contenu de ces dossiers du Pi sera aussi effacé :": "Anche il contenuto di queste cartelle del Pi sarà cancellato:",
+  "Le Rebuild de {0} a échoué : l'ancienne version tourne de nouveau.": "Il Rebuild di {0} non è riuscito: la versione precedente è di nuovo in funzione.",
   "Source": "Sorgente",
   "Fichier lu à l'adresse : ": "File letto all'indirizzo: ",
   ", puis modifié avant l'installation.": ", poi modificato prima dell'installazione.",

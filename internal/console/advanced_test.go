@@ -101,13 +101,30 @@ func TestRebuildCompose(t *testing.T) {
 	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data=delete", "", "", paul); response.Code != http.StatusForbidden {
 		t.Fatalf("par un utilisateur : code %d", response.Code)
 	}
+	if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/cleanup", "", "", paul); response.Code != http.StatusForbidden {
+		t.Fatalf("dossiers à vider, par un utilisateur : code %d", response.Code)
+	}
+	if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/cleanup", "", "", admin); response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "docker.sock") {
+		t.Fatalf("prise Docker montée : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data=delete", "", "", admin); response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "rien n'a été effacé") {
+		t.Fatalf("Rebuild cleanup avec la prise Docker : code %d : %s", response.Code, response.Body.String())
+	}
 	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild", "", "", admin); response.Code != http.StatusBadRequest {
 		t.Fatalf("sans data : code %d", response.Code)
 	}
-	for _, data := range []string{"keep", "delete"} {
-		if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data="+data, "", "", admin); response.Code != http.StatusOK {
-			t.Fatalf("data=%s : code %d : %s", data, response.Code, response.Body.String())
-		}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data=keep", "", "", admin); response.Code != http.StatusOK {
+		t.Fatalf("data=keep : code %d : %s", response.Code, response.Body.String())
+	}
+	simple := `{"name": "simple", "compose": "services:\n  web:\n    image: nginx:1.27\n", "service": "web", "port": 80}`
+	if response := f.do(http.MethodPost, "/pi-appliance/api/compose", "application/json", simple, admin); response.Code != http.StatusCreated {
+		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodGet, "/pi-appliance/api/services/simple/cleanup", "", "", admin); response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"dirs":[]`) {
+		t.Fatalf("dossiers à vider : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/simple/rebuild?data=delete", "", "", admin); response.Code != http.StatusOK {
+		t.Fatalf("data=delete : code %d : %s", response.Code, response.Body.String())
 	}
 	if response := f.do(http.MethodPost, "/pi-appliance/api/services", "application/json", `{"app": "dokuwiki", "name": "wiki"}`, admin); response.Code != http.StatusCreated {
 		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
