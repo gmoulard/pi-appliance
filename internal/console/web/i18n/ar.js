@@ -931,6 +931,7 @@ piTranslations("ar", {
   "{0} est relancé avec de nouvelles images, sans données.": "أُعيد تشغيل {0} بصور جديدة، بلا بيانات.",
   "{0} est relancé avec de nouvelles images, données gardées.": "أُعيد تشغيل {0} بصور جديدة، مع حفظ البيانات.",
   "Le contenu de ces dossiers du Pi sera aussi effacé :": "سيُمحى أيضًا محتوى هذه المجلدات على الـ Pi:",
+  "Ces prises du Pi sont laissées telles quelles, ni vidées ni supprimées :": "تبقى مقابس الـ Pi هذه كما هي، فلا تُفرَّغ ولا تُحذف:",
   "Le Rebuild de {0} a échoué : l'ancienne version tourne de nouveau.": "فشل Rebuild لـ {0}: النسخة السابقة تعمل من جديد.",
   "Source": "المصدر",
   "Fichier lu à l'adresse : ": "قُرئ الملف من العنوان: ",

@@ -16,6 +16,7 @@ package console
 import (
 	"encoding/json"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 )
@@ -104,11 +105,19 @@ func TestRebuildCompose(t *testing.T) {
 	if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/cleanup", "", "", paul); response.Code != http.StatusForbidden {
 		t.Fatalf("dossiers à vider, par un utilisateur : code %d", response.Code)
 	}
-	if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/cleanup", "", "", admin); response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "docker.sock") {
-		t.Fatalf("prise Docker montée : code %d : %s", response.Code, response.Body.String())
-	}
-	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data=delete", "", "", admin); response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "rien n'a été effacé") {
-		t.Fatalf("Rebuild cleanup avec la prise Docker : code %d : %s", response.Code, response.Body.String())
+	// Prise Docker présente : laissée telle quelle (2026-11-26) ; absente de
+	// cette machine, /var/run/docker.sock n'est qu'un chemin d'un dossier système.
+	if info, err := os.Stat("/var/run/docker.sock"); err == nil && info.Mode()&os.ModeSocket != 0 {
+		if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/cleanup", "", "", admin); response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"kept":["/var/run/docker.sock"]`) {
+			t.Fatalf("prise Docker montée : code %d : %s", response.Code, response.Body.String())
+		}
+	} else {
+		if response := f.do(http.MethodGet, "/pi-appliance/api/services/outils/cleanup", "", "", admin); response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "docker.sock") {
+			t.Fatalf("chemin système monté : code %d : %s", response.Code, response.Body.String())
+		}
+		if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild?data=delete", "", "", admin); response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "rien n'a été effacé") {
+			t.Fatalf("Rebuild cleanup avec un chemin système : code %d : %s", response.Code, response.Body.String())
+		}
 	}
 	if response := f.do(http.MethodPost, "/pi-appliance/api/services/outils/rebuild", "", "", admin); response.Code != http.StatusBadRequest {
 		t.Fatalf("sans data : code %d", response.Code)
