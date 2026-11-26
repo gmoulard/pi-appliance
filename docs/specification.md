@@ -506,6 +506,15 @@ Offre :
 - **nombre d'appliances relayées limité** : le relais tourne sur le Pi du projet (section 10.2), dont le débit montant est partagé ; au-delà du maximum, les nouvelles appliances attendent une place sur une liste d'attente, la console le leur dit ; le maximum est fixé à l'étape Internet ;
 - dans les deux cas **sans garantie** (*best effort*) : le relais peut être lent ou indisponible, la console le dit clairement.
 
+**Réalisé côté relais** (TODO-3.9, 2026-11-26 ; paquets `internal/tunnel` et `internal/tunnel/server`, service `cmd/pi-appliance-relay` ; écrit et essayé en tests Go, **pas encore installé** sur le Pi du projet, pas encore relié à la console) :
+
+- *Tunnel* : l'appliance ouvre des connexions TLS sortantes vers `relais.pi-appliance.com:443` (certificat du relais vérifié) et y envoie `POST /api/tunnel`, signée par la clé de son adresse pi-appliance.com (même signature que le service d'adresses, 7.1) ; le relais ne reconnaît que les appliances qui ont une adresse réservée (il lit, sans l'écrire, le registre du service d'adresses, sur le même Pi). Réponses : 200, place obtenue, la connexion reste ouverte en attente d'un visiteur (refaite toutes les 4 minutes) ; 409, liste d'attente, avec la position ; 429, quota du mois atteint ; 403, pas d'adresse ou demande non reconnue. L'appliance garde plusieurs connexions prêtes. `DELETE /api/tunnel` rend la place.
+- *Visiteurs* : le relais tient les ports 80 et 443. Il lit seulement le nom demandé (SNI en HTTPS, en-tête `Host` en HTTP) et fait passer la connexion telle quelle par une connexion de l'appliance de ce nom (`<nom>.pi-appliance.com` ou `*.<nom>.pi-appliance.com`) : **le chiffrement va du visiteur au Pi**, le relais ne voit pas le contenu, et le certificat reste celui du Pi. Il annonce le visiteur par une ligne `VISIT <port> <adresse>` ; l'appliance répond `OK` une fois sa connexion locale ouverte. Les autres noms (adresses, envoi, stats…) passent, tels quels, au reverse proxy du Pi du projet (options `-fallback-https`, `-fallback-http`) ; un nom d'appliance sans place est refusé (HTTP : « Ce Pi n'est pas joignable par le relais pour l'instant. »).
+- *Offre* : 5 Mbit/s par appliance et par sens, 20 Go par mois (10⁹ octets, les deux sens comptés, mois en UTC) ; une fois les 20 Go atteints, les visites en cours sont coupées et les nouvelles refusées jusqu'au mois suivant. Nombre de places : option `-max`, **obligatoire, sans valeur par défaut** tant que le maximum n'est pas choisi (TODO-1.45) ; au-delà, liste d'attente dans l'ordre d'arrivée, et la première appliance de la liste prend la place qui se libère. Limites techniques : 8 connexions prêtes et 64 visites en cours par appliance (options `-pool`, `-visits`). Une place se libère quand l'appliance la rend ; après un temps sans connexion seulement si l'option `-idle-release` est donnée (délai à décider, section 15).
+- *Données* : `places.json` (droits 600, écrit toutes les 5 minutes au plus) : clé publique, nom, dates, octets du mois ; ni adresse IP, ni e-mail. Le relais ne journalise ni l'adresse des visiteurs ni les erreurs réseau des visites.
+- Côté appliance, le paquet `internal/tunnel` donne le client (connexions prêtes, état `ready`, `waiting`, `quota`, `refused`, `offline`, place rendue) et l'en-tête PROXY protocol v1 qui doit porter l'adresse du visiteur jusqu'à Traefik.
+- **Reste** : relier le client à la console (entrée Traefik dédiée, qui n'accepte que l'en-tête PROXY du tunnel, pour qu'un visiteur relayé ne passe jamais pour la maison, 8.3 ; carte et état dans « Accès depuis internet ») ; la bascule automatique (quand passer par le relais, et l'adresse `<nom>.pi-appliance.com` à faire pointer vers le relais par le service d'adresses) ; les domaines personnels (8.3) par le relais ; l'installation sur le Pi du projet (certificat de `relais.pi-appliance.com`, reverse proxy déplacé derrière le relais, TODO-4.4) et l'essai avec un vrai Pi sans port ouvert.
+
 ## 8. Utilisateurs, accès et sécurité
 
 ### 8.1 Connexion unique
@@ -781,7 +790,7 @@ Quatre services centraux, hébergés par le projet **sur un Raspberry Pi du prop
 | Service | Rôle | Sans lui |
 |---------|------|----------|
 | Adresses | Réservation des noms `<nom>.pi-appliance.com`, enregistrement `A` chez OVH vers l'adresse IP envoyée par le Pi (TODO-3.20 ; tranché le 2026-11-26 : IPv4 publique seulement, sans exiger qu'elle soit celle de la connexion), signes de vie, libération après 90 jours ; écrit (`cmd/pi-appliance-addresses`, section 7.1), pas encore installé | Pas de nouvelle adresse ; les adresses existantes continuent de marcher |
-| Relais | Tunnel pour les appliances sans accès direct (section 7.3) | Ces appliances sont injoignables depuis internet ; l'accès direct n'est pas touché |
+| Relais | Tunnel pour les appliances sans accès direct (section 7.3) ; écrit (`cmd/pi-appliance-relay`), pas encore installé ni relié à la console | Ces appliances sont injoignables depuis internet ; l'accès direct n'est pas touché |
 | Envoi d'e-mails | Codes de vérification, récupération, alertes (sections 8.5, 8.6) | Ni récupération par e-mail ni alertes ; le fichier `reset` reste possible |
 | Statistiques | Réception des statistiques anonymes acceptées | Rien de visible pour l'utilisateur |
 
@@ -832,6 +841,8 @@ Une appliance continue de fonctionner, à la maison comme en accès direct, quan
 | `internal/mail/` | Envoi d'e-mails : par le SMTP réglé sur le Pi (`smtp.go`), textes des messages (`message.go`), ou par le service du projet (demande signée côté console) ; `service/` : service d'envoi, textes des messages, relais SMTP (8.5, 10.2) |
 | `cmd/pi-appliance-mail/` | Programme du service d'envoi d'e-mails, sur le Pi du projet (10.2) |
 | `cmd/pi-appliance-addresses/` | Programme du service d'adresses, sur le Pi du projet (7.1, 10.2) |
+| `internal/tunnel/` | Relais du projet : protocole et client côté appliance (7.3) ; `server/` : le relais, places, liste d'attente, débit et quota (10.2) |
+| `cmd/pi-appliance-relay/` | Programme du relais, sur le Pi du projet (7.3, 10.2) |
 | `internal/network/` | Réseau du Pi pour la console, par `network.sh` : état, Wi-Fi, connexion, câble, pays du Wi-Fi (4) |
 | `internal/system/` | État du Pi : mémoire, disque, charge du processeur, température, trafic réseau (5.2, 6.2) |
 | `internal/storage/` | Disque USB des données des services, par `storage.sh` : disques branchés, déplacement des données, formatage (4) |
@@ -879,7 +890,7 @@ Site et console suivent la même [charte graphique](charte-graphique.md) : framb
 
 ## 15. Questions ouvertes
 
-- Relais : nombre maximal d'appliances relayées (7.3).
+- Relais : nombre maximal d'appliances relayées (7.3) ; option `-max` du relais, obligatoire tant qu'il n'est pas choisi. Aussi : rendre la place d'une appliance muette (sans connexion au relais) après un délai, et lequel (option `-idle-release`, jamais par défaut) ; quand basculer sur le relais (test de l'accès direct échoué, sur accord de l'administrateur ou sans lui) (7.3, TODO-3.9).
 - Adresses (7.1) : exiger un e-mail vérifié avant une réservation (vérification possible depuis TODO-2.19, par l'envoi des e-mails du Pi) ; l'adresse de l'administrateur serait alors la seule donnée personnelle gardée avec le nom (10.2).
 - Claude Code (6.3, TODO-2.62) : répondre d'avance aux deux questions de la première fois (confiance dans le dossier, activation de Remote Control) pour que la connexion au compte suffise ; garder `tmux` et `curl` hors du téléchargement au démarrage (image à soi, refusée tant que la console n'accepte pas `build`) ; un mode de permissions plus souple (accepter les lectures sans demander) ; Remote Control sans abonnement (clé d'API) si Anthropic le permet un jour ; arrêt automatique après un temps sans session.
 - Marketplace : un champ du manifeste pour les modèles de Pi pris en charge (MongoDB 5 et suivants ne tournent que sur un Pi 5), et, pour l'accès « maison seulement » d'un service sans page web (fait par le pare-feu du Pi, 6.4, TODO-4.8), comment le publier aux consoles qui l'appliquent sans que les consoles 0.2.7 et avant ne l'installent ports ouverts (nouveau `format` à une autre adresse, ou version minimale de la console dans le manifeste) (6.3, 6.5).
