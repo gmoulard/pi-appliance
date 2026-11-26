@@ -13,6 +13,9 @@
 
 # Pare-feu du Wi-Fi de configuration : ses clients ne passent pas par le Pi
 # vers la maison ni vers internet (/etc/pi-appliance/ap-firewall.nft).
+# Puis, s'il existe, celui des ports « maison seulement » des services sans
+# page web, écrit par la console (home-ports.nft, spécification 6.4), avant
+# que Docker ne redémarre ces services.
 # Chargé avant le réseau ; pi-appliance-ap.service en dépend.
 
 [Unit]
@@ -28,6 +31,7 @@ Conflicts=shutdown.target
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/sbin/nft -f /etc/pi-appliance/ap-firewall.nft
+ExecStart=/bin/sh -c 'if [ -f /var/lib/pi-appliance/home-ports.nft ]; then /usr/sbin/nft -f /var/lib/pi-appliance/home-ports.nft; fi'
 
 [Install]
 WantedBy=multi-user.target

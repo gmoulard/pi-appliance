@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"math/big"
 	"net"
 	"net/netip"
@@ -125,7 +126,10 @@ type Manager struct {
 	HomeNetworks func() []netip.Prefix
 	// Images télécharge les images avec l'avancement (Progress) ; nil :
 	// Compose les télécharge à la création, sans chiffres.
-	Images     ImagePuller
+	Images ImagePuller
+	// Firewall charge le pare-feu des ports « maison seulement »
+	// (homeports.go) ; nil : « nft -f ».
+	Firewall   func(ctx context.Context, path string) error
 	mu         sync.Mutex
 	progressMu sync.Mutex
 	progress   map[string]*Progress
@@ -236,6 +240,13 @@ func (m *Manager) install(ctx context.Context, app marketplace.App, name string,
 			return Result{}, err
 		}
 	}
+	if homeOnly(app) {
+		// NE PAS démarrer le service sans son pare-feu : ses ports seraient
+		// ouverts à tous ceux qui joignent le Pi, internet compris.
+		if err := m.ApplyHomePorts(ctx, app.HostPorts...); err != nil {
+			return Result{}, fmt.Errorf("%s n'a pas été installé : %v", app.Name, err)
+		}
+	}
 	if _, err := m.Runner.Run(ctx, dir, "network", "inspect", Network); err != nil {
 		if output, err := m.Runner.Run(ctx, dir, "network", "create", Network); err != nil {
 			return Result{}, fmt.Errorf("préparation du réseau impossible : %s", trimOutput(output, err))
@@ -263,6 +274,10 @@ func (m *Manager) install(ctx context.Context, app marketplace.App, name string,
 		}
 		if _, downErr := m.compose(context.WithoutCancel(ctx), name, "down"); downErr != nil {
 			warnings = append(warnings, "Le service n'a pas pu être arrêté proprement.")
+		}
+		if homeOnly(app) {
+			// Le service n'est pas installé : son port ne reste pas fermé pour rien.
+			_ = m.ApplyHomePorts(context.WithoutCancel(ctx))
 		}
 		if step.name == StepCreate && pullErr != nil {
 			return Result{Warnings: warnings}, fmt.Errorf("%s n'a pas pu être téléchargé : vérifiez que le Pi est bien relié à internet, puis réessayez (%v)", app.Name, pullErr)
@@ -295,6 +310,10 @@ func (m *Manager) hostPortsFree(app marketplace.App, name string) ([]string, err
 			if other.Name != name && slices.Contains(other.HostPorts, port) {
 				return nil, fmt.Errorf("%w : le port %s %d du Pi sert déjà au service « %s » ; une seule installation de %s est possible", ErrExists, strings.ToUpper(port.Protocol), port.Port, other.Name, app.Name)
 			}
+		}
+		if homeOnly(app) {
+			// Fermé hors de la maison : rien à ouvrir sur la box.
+			continue
 		}
 		warnings = append(warnings, fmt.Sprintf("Pour vous en servir hors de la maison, ouvrez sur votre box internet le port %s %d vers ce Raspberry Pi (redirection de port).", strings.ToUpper(port.Protocol), port.Port))
 	}
@@ -515,10 +534,19 @@ func (m *Manager) Remove(ctx context.Context, name string, keepData bool) error 
 		return fmt.Errorf("le service %s n'a pas pu être arrêté : %s", name, trimOutput(output, err))
 	}
 	defer m.WakeNextcloud()
+	var err error
 	if keepData {
-		return os.Remove(filepath.Join(dir, stateName))
+		err = os.Remove(filepath.Join(dir, stateName))
+	} else {
+		err = os.RemoveAll(dir)
 	}
-	return os.RemoveAll(dir)
+	if err == nil {
+		// Le port d'un service « maison seulement » retiré n'est plus filtré.
+		if applyErr := m.ApplyHomePorts(context.WithoutCancel(ctx)); applyErr != nil {
+			log.Printf("%v", applyErr)
+		}
+	}
+	return err
 }
 
 func readEnv(path string) (map[string]string, error) {

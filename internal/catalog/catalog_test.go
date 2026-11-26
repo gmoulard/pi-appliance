@@ -311,3 +311,39 @@ func TestRefreshNowOffline(t *testing.T) {
 		t.Fatalf("changed=%v err=%v", changed, err)
 	}
 }
+
+// Un service intégré dont les ports ne s'ouvrent qu'à la maison ne les ouvre
+// pas à tous par le catalogue en ligne.
+func TestHomeOnlyPortsKeptByOnlineCatalog(t *testing.T) {
+	catalog := builtin(t)
+	wireguard, _ := catalog.Get("wireguard")
+	home := strings.Replace(string(wireguard.Compose), "access: public", "access: home", 1)
+	partage, err := marketplace.Parse("partage", []byte(home))
+	if err != nil {
+		t.Fatal(err)
+	}
+	online := func(compose string) []byte {
+		data, err := json.Marshal(marketplace.Document{Format: marketplace.DocumentFormat, Apps: []marketplace.PublishedApp{{App: marketplace.App{ID: "partage", Tags: wireguard.Tags}, Compose: compose}}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return data
+	}
+	for label, c := range map[string]struct {
+		compose string
+		refused string
+	}{
+		"ouvert à tous": {string(wireguard.Compose), "partage"},
+		"maison":        {home, ""},
+	} {
+		s := source(t, &github{document: online(c.compose)})
+		s.Builtin = marketplace.NewCatalog(append(catalog.Apps(), partage))
+		s.Logf = t.Logf
+		if err := s.Refresh(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		if got, ok := s.Get("partage"); !ok || got.Access != "home" || strings.Join(s.Status().Refused, ",") != c.refused {
+			t.Fatalf("%s : accès %q, refusés %v", label, got.Access, s.Status().Refused)
+		}
+	}
+}

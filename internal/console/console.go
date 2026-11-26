@@ -848,6 +848,12 @@ func (c *console) install(w http.ResponseWriter, r *http.Request) {
 	// nom sans lettre ni chiffre reste vide et est refusé par Install.
 	request.Name = marketplace.NormalizeLabel(request.Name)
 	if request.Access != "" && request.Access != app.Access {
+		// NE PAS laisser changer l'accès d'un service sans page web : « home »
+		// y ferme ses ports hors de la maison (pare-feu du Pi, 6.4).
+		if !app.Web {
+			writeError(w, http.StatusBadRequest, app.Name+" n'a pas de page web : qui peut le joindre est fixé par l'application.")
+			return
+		}
 		if app.Access == services.AccessAdmins {
 			writeError(w, http.StatusBadRequest, app.Name+" a la main sur tout le Pi : il reste réservé aux administrateurs, à la maison.")
 			return

@@ -329,6 +329,9 @@ async function loadServices() {
       ? (service.host_ports || []).map((port) => t("Port {0} {1} du Pi", port.protocol.toUpperCase(), port.port)).join(", ")
       : service.address;
     detail.append(element("p", where, "address"), state);
+    if (service.no_web_page && service.access === "home") {
+      detail.append(element("p", `${t("Qui peut l'ouvrir")} : ${ACCESS_LABELS.home}`, "meta"));
+    }
     if (!service.no_web_page) {
       // Adresse <service>-<nom>.local, certificat propre à ce service (mdns.sh).
       if (service.address.endsWith(".local") && !outside) {
@@ -1153,6 +1156,9 @@ async function loadCatalog() {
     }
     if (app.web) {
       form.append(accessField(app.access));
+    } else if (app.access === "home") {
+      // Ports du Pi fermés hors de la maison par son pare-feu (spécification 6.4).
+      form.append(element("p", `${t("Qui peut l'ouvrir")} : ${ACCESS_LABELS.home}`, "meta"));
     }
     if (APP_WARNINGS[app.id]) {
       form.append(element("p", APP_WARNINGS[app.id], "note"));

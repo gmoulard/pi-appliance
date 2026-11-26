@@ -93,11 +93,24 @@ func BuiltinPlanned(catalog Catalog) ([]Planned, error) {
 	return planned, nil
 }
 
+// PublishableInFormat1 : faux pour un service sans page web dont l'accès n'est
+// pas « public » (ports « maison seulement », TODO-4.8). Les consoles 0.2.7 et
+// avant ignorent access sans page web et ouvriraient ses ports à tous : il
+// n'est pas publié, les consoles qui le connaissent gardent leur version
+// intégrée (spécification 6.4).
+// NE PAS le publier tant qu'une console publiée l'installerait ports ouverts.
+func PublishableInFormat1(app App) bool {
+	return app.Port != 0 || app.Access == "" || app.Access == "public"
+}
+
 // Publish : le document publié pour un catalogue.
 func Publish(catalog Catalog, planned []Planned) Document {
 	apps := catalog.Apps()
 	document := Document{Format: DocumentFormat, Apps: make([]PublishedApp, 0, len(apps)), Planned: planned, Tags: Tags}
 	for _, app := range apps {
+		if !PublishableInFormat1(app) {
+			continue
+		}
 		document.Apps = append(document.Apps, PublishedApp{App: app, Compose: string(app.Compose)})
 	}
 	return document
