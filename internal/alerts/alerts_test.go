@@ -295,14 +295,14 @@ func TestCertificateCheck(t *testing.T) {
 		"Account": map[string]any{"Email": "a@example.org"},
 		"Certificates": []map[string]any{
 			{"domain": map[string]any{"main": "maison.example.org"}, "certificate": certificate(5), "key": "secret"},
-			{"domain": map[string]any{"main": "pi.duckdns.org"}, "certificate": certificate(60), "key": "secret"},
+			{"domain": map[string]any{"main": "pi.example.net"}, "certificate": certificate(60), "key": "secret"},
 			{"domain": map[string]any{"main": "ancienne.example.org"}, "certificate": certificate(1), "key": "secret"},
 		},
 	}}
 	data, _ := json.Marshal(file)
 	path := filepath.Join(t.TempDir(), "acme.json")
 	os.WriteFile(path, data, 0o600)
-	hosts := func() []string { return []string{"maison.example.org", "pi.duckdns.org"} }
+	hosts := func() []string { return []string{"maison.example.org", "pi.example.net"} }
 	problems, ok := CertificateCheck(path, hosts)(context.Background(), now)
 	if !ok || len(problems) != 1 || problems[0].Key != "maison.example.org" {
 		t.Fatalf("certificats : %v %v", problems, ok)

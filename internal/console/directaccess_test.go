@@ -20,14 +20,15 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"slices"
 	"strings"
 	"sync"
 	"testing"
 
+	"github.com/gmoulard/pi-appliance/internal/addresses"
 	"github.com/gmoulard/pi-appliance/internal/auth"
-	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/internal/upnp"
 	"github.com/gmoulard/pi-appliance/marketplace"
@@ -65,11 +66,14 @@ func newAccessFixture(t *testing.T, external string, found bool) (fixture, *soap
 	if err != nil {
 		t.Fatal(err)
 	}
-	updater, err := ddns.Open(filepath.Join(dir, "duckdns.json"))
+	// Adresse monpi.pi-appliance.com déjà réservée.
+	os.WriteFile(filepath.Join(dir, "address.json"), []byte(`{"name":"monpi","hostname":"monpi.pi-appliance.com","ip":"90.12.34.56"}`), 0o600)
+	key, err := addresses.LoadOrCreateKey(filepath.Join(dir, "address-key"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := updater.Save(ddns.Settings{Domain: "monpi", Token: duckdnsToken}); err != nil {
+	address, err := addresses.OpenClient(filepath.Join(dir, "address.json"), key)
+	if err != nil {
 		t.Fatal(err)
 	}
 	box := &soapBox{external: external}
@@ -87,10 +91,10 @@ func newAccessFixture(t *testing.T, external string, found bool) (fixture, *soap
 		}
 		return &upnp.Gateway{Name: "Livebox", ControlURL: server.URL, ServiceType: "urn:schemas-upnp-org:service:WANIPConnection:1", LocalIP: "192.168.1.10"}, nil
 	}
-	config := Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, DuckDNS: updater, PortMapper: mapper,
+	config := Config{Version: "1.2.3", Catalog: catalog, Services: manager, Accounts: accounts, Address: address, PortMapper: mapper,
 		PublicIP: func(context.Context) (string, error) { return "203.0.113.7", nil },
 		LookupHost: func(_ context.Context, host string) ([]string, error) {
-			if host == "monpi.duckdns.org" {
+			if host == "monpi.pi-appliance.com" {
 				return []string{"203.0.113.7"}, nil
 			}
 			return nil, errors.New("introuvable")
@@ -138,7 +142,7 @@ func TestInternetAccessEnable(t *testing.T) {
 	if !test.Box || test.BoxName != "Livebox" || test.Shared || test.DoubleBox || !test.Automatic || len(test.Ports) != 2 {
 		t.Fatalf("test : %+v", test)
 	}
-	if len(test.DNS) != 2 || test.DNS[1].Matches || test.DNS[1].Error == "" || test.DNS[0].Host != "monpi.duckdns.org" || !test.DNS[0].Matches || test.URL != "https://monpi.duckdns.org/pi-appliance/" {
+	if len(test.DNS) != 2 || test.DNS[1].Matches || test.DNS[1].Error == "" || test.DNS[0].Host != "monpi.pi-appliance.com" || !test.DNS[0].Matches || test.URL != "https://monpi.pi-appliance.com/pi-appliance/" {
 		t.Fatalf("adresse : %+v", test)
 	}
 	response = f.do(http.MethodPut, "/pi-appliance/api/internet-access", "application/json", `{"enabled": false}`, cookie)

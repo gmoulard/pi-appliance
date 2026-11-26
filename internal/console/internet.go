@@ -59,8 +59,8 @@ type InternetStatus struct {
 	// Domain : adresse personnelle choisie, vide sinon.
 	Domain string `json:"domain"`
 	// DomainTarget : cible conseillée de l'alias (CNAME) de l'adresse
-	// personnelle : <nom>.pi-appliance.com réservée, sinon le nom DuckDNS ;
-	// vide sans l'un ni l'autre (entrée A vers l'adresse publique de la box).
+	// personnelle : <nom>.pi-appliance.com réservée ; vide sinon (entrée A
+	// vers l'adresse publique de la box).
 	DomainTarget string `json:"domain_target"`
 	// Hosts : adresses internet du Pi ; vide tant qu'il n'en a pas.
 	Hosts []string `json:"hosts"`
@@ -115,7 +115,7 @@ func (c *console) internetEnabled() bool {
 
 // internetHosts : adresses internet du Pi, sans doublon : adresse personnelle
 // de la console (choisie exprès, donc la première), <nom>.pi-appliance.com
-// réservée, nom DuckDNS, domaine personnel des services.
+// réservée, domaine personnel des services.
 func (c *console) internetHosts() []string {
 	var hosts []string
 	add := func(host string) {
@@ -127,9 +127,6 @@ func (c *console) internetHosts() []string {
 	add(c.internetSettings().Domain)
 	if c.Address != nil {
 		add(c.Address.Status().Hostname)
-	}
-	if c.DuckDNS != nil {
-		add(c.DuckDNS.Status().Hostname)
 	}
 	if c.Services != nil {
 		add(c.Services.CurrentDomain())
@@ -220,7 +217,7 @@ func writeDynamic(path, content string) error {
 }
 
 // RunInternet tient console-internet.yml et services-internet.yml à jour
-// (adresse DuckDNS ou pi-appliance.com réglée après l'ouverture, réglage
+// (adresse pi-appliance.com réservée après l'ouverture, réglage
 // changé, service mis à jour) jusqu'à la fin de ctx.
 func RunInternet(ctx context.Context, config Config, every time.Duration) {
 	c := &console{Config: config}
@@ -322,9 +319,6 @@ func (c *console) domainTarget() string {
 			return host
 		}
 	}
-	if c.DuckDNS != nil {
-		return c.DuckDNS.Status().Hostname
-	}
 	return ""
 }
 
@@ -405,8 +399,8 @@ func (c *console) internetDomainSave(w http.ResponseWriter, r *http.Request) {
 			writeError(w, http.StatusBadRequest, "Cette adresse n'est pas valable : tapez un nom comme maison.exemple.fr, sans espace.")
 			return
 		}
-		if domain == "pi-appliance.com" || strings.HasSuffix(domain, ".pi-appliance.com") || strings.HasSuffix(domain, ".duckdns.org") {
-			writeError(w, http.StatusBadRequest, "Cette adresse se règle plus haut, avec DuckDNS ou votre adresse pi-appliance.com.")
+		if domain == "pi-appliance.com" || strings.HasSuffix(domain, ".pi-appliance.com") {
+			writeError(w, http.StatusBadRequest, "Cette adresse se règle plus haut, avec votre adresse pi-appliance.com.")
 			return
 		}
 		ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)

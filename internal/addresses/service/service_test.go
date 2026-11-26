@@ -324,7 +324,7 @@ func TestIPMustBePublic(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, ip := range []string{"192.168.1.20", "127.0.0.1", "2001:db8::1", "pirate.duckdns.org", ""} {
+	for _, ip := range []string{"192.168.1.20", "127.0.0.1", "2001:db8::1", "pirate.example.org", ""} {
 		body := []byte(`{"name":"maison","ip":"` + ip + `"}`)
 		request, _ := http.NewRequest(http.MethodPost, f.server.URL+"/api/names", strings.NewReader(string(body)))
 		key.Sign(request, body, f.clock.Now())

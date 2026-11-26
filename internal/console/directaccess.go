@@ -132,7 +132,7 @@ func (c *console) wakePorts() {
 type AccessTest struct {
 	Hosts []string `json:"hosts"`
 	URL   string   `json:"url,omitempty"`
-	// PublicIP : adresse publique vue d'internet (service d'adresse IP de DuckDNS).
+	// PublicIP : adresse publique vue d'internet (https://api.ipify.org).
 	PublicIP      string `json:"public_ip,omitempty"`
 	PublicIPError string `json:"public_ip_error,omitempty"`
 	// Box : la box répond en UPnP, avec son nom et son adresse publique selon elle.

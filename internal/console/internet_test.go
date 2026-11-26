@@ -26,8 +26,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gmoulard/pi-appliance/internal/addresses"
 	"github.com/gmoulard/pi-appliance/internal/auth"
-	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/services"
 	"github.com/gmoulard/pi-appliance/marketplace"
 	"github.com/pquerna/otp/totp"
@@ -289,16 +289,16 @@ func TestTraefikInternet(t *testing.T) {
 	if got := traefikInternet(true, nil, true); got != "" {
 		t.Fatalf("sans adresse : %q", got)
 	}
-	got := traefikInternet(true, []string{"controltower.pi-appliance.com", "maison.duckdns.org"}, false)
-	if !strings.Contains(got, "(Host(`controltower.pi-appliance.com`) || Host(`maison.duckdns.org`)) && PathPrefix(`/pi-appliance`)") {
+	got := traefikInternet(true, []string{"controltower.pi-appliance.com", "maison.example.net"}, false)
+	if !strings.Contains(got, "(Host(`controltower.pi-appliance.com`) || Host(`maison.example.net`)) && PathPrefix(`/pi-appliance`)") {
 		t.Fatalf("règle :\n%s", got)
 	}
 	if strings.Contains(got, "cockpit") {
 		t.Fatalf("Cockpit publié sans être ouvert :\n%s", got)
 	}
 	// Cockpit ouvert sur internet (TODO-3.4) : même authentification déléguée qu'à la maison.
-	got = traefikInternet(true, []string{"maison.duckdns.org"}, true)
-	if !strings.Contains(got, "rule: \"(Host(`maison.duckdns.org`)) && PathPrefix(`/cockpit`)\"") ||
+	got = traefikInternet(true, []string{"maison.example.net"}, true)
+	if !strings.Contains(got, "rule: \"(Host(`maison.example.net`)) && PathPrefix(`/cockpit`)\"") ||
 		!strings.Contains(got, "middlewares: [pi-appliance-errors@file, pi-appliance-cockpit@file]") ||
 		!strings.Contains(got, "service: pi-appliance-cockpit@file") {
 		t.Fatalf("Cockpit :\n%s", got)
@@ -307,7 +307,7 @@ func TestTraefikInternet(t *testing.T) {
 
 func TestInternetHostsFiltered(t *testing.T) {
 	for host, ok := range map[string]bool{
-		"maison.example.org": true, "a.duckdns.org": true, "pi.local": false, "localhost": false,
+		"maison.example.org": true, "a.example.net": true, "pi.local": false, "localhost": false,
 		"x`) || PathPrefix(`/": false, "bad host.org": false, "-a.org": false,
 	} {
 		if got := hostPattern.MatchString(host) && !strings.HasSuffix(host, ".local"); got != ok {
@@ -438,20 +438,26 @@ func TestConsolePersonalDomain(t *testing.T) {
 func TestDomainTarget(t *testing.T) {
 	c := &console{}
 	if got := c.domainTarget(); got != "" {
-		t.Fatalf("sans DuckDNS : %q", got)
+		t.Fatalf("sans service d'adresses : %q", got)
 	}
-	updater, err := ddns.Open(filepath.Join(t.TempDir(), "duckdns.json"))
+	dir := t.TempDir()
+	key, err := addresses.LoadOrCreateKey(filepath.Join(dir, "address-key"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	c.DuckDNS = updater
-	if got := c.domainTarget(); got != "" {
-		t.Fatalf("DuckDNS pas réglé : %q", got)
-	}
-	if err := updater.Save(ddns.Settings{Domain: "monpi", Token: "12345678-1234-1234-1234-123456789abc"}); err != nil {
+	c.Address, err = addresses.OpenClient(filepath.Join(dir, "address.json"), key)
+	if err != nil {
 		t.Fatal(err)
 	}
-	if got := c.domainTarget(); got != "monpi.duckdns.org" {
+	if got := c.domainTarget(); got != "" {
+		t.Fatalf("pas d'adresse réservée : %q", got)
+	}
+	// Le domaine personnel devient un alias vers <nom>.pi-appliance.com.
+	os.WriteFile(filepath.Join(dir, "address.json"), []byte(`{"name":"monpi","hostname":"monpi.pi-appliance.com","ip":"90.12.34.56"}`), 0o600)
+	if c.Address, err = addresses.OpenClient(filepath.Join(dir, "address.json"), key); err != nil {
+		t.Fatal(err)
+	}
+	if got := c.domainTarget(); got != "monpi.pi-appliance.com" {
 		t.Fatalf("cible : %q", got)
 	}
 }

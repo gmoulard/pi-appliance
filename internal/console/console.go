@@ -37,7 +37,6 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/catalog"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
-	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/diagnostic"
 	"github.com/gmoulard/pi-appliance/internal/mail"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
@@ -187,8 +186,6 @@ type Config struct {
 	Resources func() system.Resources
 	// History : historique des graphiques sur 30 jours ; nil : pas de graphiques.
 	History *metrics.History
-	// DuckDNS tient à jour l'adresse sur internet (spécification 7.1) ; nil : non réglable ici.
-	DuckDNS *ddns.Updater
 	// Address : adresse <nom>.pi-appliance.com auprès du service d'adresses (spécification 7.1) ;
 	// nil : seules les règles des noms sont vérifiées.
 	Address *addresses.Client
@@ -312,9 +309,6 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("POST "+BasePath+"/api/system/reboot", c.adminOnly(c.reboot))
 	mux.HandleFunc("GET "+BasePath+"/api/system", c.adminOnly(c.resources))
 	mux.HandleFunc("GET "+BasePath+"/api/system/history", c.adminOnly(c.history))
-	mux.HandleFunc("GET "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsStatus))
-	mux.HandleFunc("PUT "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsSave))
-	mux.HandleFunc("DELETE "+BasePath+"/api/duckdns", c.adminOnly(c.duckdnsForget))
 	mux.HandleFunc("GET "+BasePath+"/api/address", c.adminOnly(c.addressStatus))
 	mux.HandleFunc("POST "+BasePath+"/api/address", c.adminOnly(c.addressReserve))
 	mux.HandleFunc("DELETE "+BasePath+"/api/address", c.adminOnly(c.addressRelease))
@@ -1222,55 +1216,6 @@ func addressError(w http.ResponseWriter, err error) {
 		log.Printf("adresse : %v", err)
 		writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer l'adresse sur le Pi.")
 	}
-}
-
-// Adresse sur internet par DuckDNS (spécification 7.1), réservée à l'administrateur.
-// NE PAS renvoyer le jeton : la réponse ne contient que ddns.Status.
-
-func (c *console) duckdnsReady(w http.ResponseWriter) bool {
-	if c.DuckDNS == nil {
-		writeError(w, http.StatusServiceUnavailable, "L'adresse sur internet ne se règle pas depuis cette console.")
-		return false
-	}
-	return true
-}
-
-func (c *console) duckdnsStatus(w http.ResponseWriter, _ *http.Request) {
-	if c.duckdnsReady(w) {
-		writeJSON(w, http.StatusOK, c.DuckDNS.Status())
-	}
-}
-
-func (c *console) duckdnsSave(w http.ResponseWriter, r *http.Request) {
-	if !c.duckdnsReady(w) {
-		return
-	}
-	var request ddns.Settings
-	if !decodeJSON(w, r, &request) {
-		return
-	}
-	if err := c.DuckDNS.Save(request); err != nil {
-		if errors.Is(err, ddns.ErrInvalid) {
-			writeError(w, http.StatusBadRequest, strings.TrimPrefix(err.Error(), ddns.ErrInvalid.Error()+" : ")+".")
-			return
-		}
-		log.Printf("DuckDNS : %v", err)
-		writeError(w, http.StatusInternalServerError, "Impossible d'enregistrer les réglages DuckDNS.")
-		return
-	}
-	writeJSON(w, http.StatusOK, c.DuckDNS.Status())
-}
-
-func (c *console) duckdnsForget(w http.ResponseWriter, _ *http.Request) {
-	if !c.duckdnsReady(w) {
-		return
-	}
-	if err := c.DuckDNS.Forget(); err != nil {
-		log.Printf("DuckDNS : %v", err)
-		writeError(w, http.StatusInternalServerError, "Impossible d'effacer les réglages DuckDNS.")
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
 }
 
 // Réseau du Pi (spécification, section 4), réservé à l'administrateur : le

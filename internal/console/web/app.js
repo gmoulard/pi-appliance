@@ -3638,109 +3638,15 @@ wiredButton.addEventListener("click", async () => {
   }
 });
 
-// Adresse sur internet (spécification 7.1) : le jeton n'est jamais relu ni
-// affiché par l'API ; seul le formulaire le reçoit lors de son envoi.
-const duckDNSSection = document.getElementById("duckdnsSection");
-const duckDNSState = document.getElementById("duckdnsState");
-const duckDNSDetails = document.getElementById("duckdnsDetails");
-const duckDNSForm = document.getElementById("duckdnsForm");
-const duckDNSSave = document.getElementById("duckdnsSave");
-const duckDNSForget = document.getElementById("duckdnsForget");
-let duckDNSTimer = null;
-let duckDNSLoaded = false;
+// Adresse sur internet (spécification 7.1) : <nom>.pi-appliance.com et domaine personnel.
+const internetAddressSection = document.getElementById("internetAddressSection");
+let internetAddressTimer = null;
 
-function duckDNSDate(value) {
+function shortDate(value) {
   if (!value) return "";
   const date = new Date(value);
   return Number.isNaN(date.getTime()) || date.getUTCFullYear() < 2 ? "" : date.toLocaleString(LOCALE);
 }
-
-function showDuckDNS(status) {
-  duckDNSForget.hidden = !status.configured;
-  duckDNSDetails.replaceChildren();
-  if (!status.configured) {
-    duckDNSState.replaceChildren(element("span", undefined, "dot orange"), element("span", t("DuckDNS n'est pas encore configuré.")));
-    if (!duckDNSLoaded) {
-      duckDNSForm.elements.domain.value = "";
-      duckDNSLoaded = true;
-    }
-    return;
-  }
-  if (!duckDNSLoaded) duckDNSForm.elements.domain.value = status.domain || "";
-  const lastAttempt = duckDNSDate(status.last_attempt);
-  const lastSuccess = duckDNSDate(status.last_success);
-  let state;
-  let color;
-  if (status.error) {
-    state = lastAttempt
-      ? t("La dernière mise à jour a échoué le {0} : {1}.", lastAttempt, status.error)
-      : t("La dernière mise à jour a échoué : {0}.", status.error);
-    color = "red";
-  } else if (lastSuccess) {
-    state = t("Dernière mise à jour réussie le {0}.", lastSuccess);
-    color = "green";
-  } else {
-    state = t("La première mise à jour est en cours.");
-    color = "orange";
-  }
-  duckDNSState.replaceChildren(element("span", undefined, `dot ${color}`), element("span", state));
-  duckDNSDetails.append(element("p", t("Nom DuckDNS : {0}.", status.hostname || `${status.domain}.duckdns.org`), "meta"));
-  if (status.ip) {
-    duckDNSDetails.append(element("p", t("Adresse envoyée à DuckDNS : {0}.", status.ip), "meta"));
-  }
-  if (status.error && status.next_attempt) {
-    const nextAttempt = duckDNSDate(status.next_attempt);
-    if (nextAttempt) duckDNSDetails.append(element("p", t("Nouvel essai prévu le {0}.", nextAttempt), "meta"));
-  }
-  duckDNSLoaded = true;
-}
-
-async function loadDuckDNS() {
-  try {
-    showDuckDNS(await api("duckdns"));
-  } catch (error) {
-    duckDNSState.replaceChildren(element("span", undefined, "dot red"), element("span", error.message));
-    duckDNSLoaded = true;
-  }
-}
-
-duckDNSForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  duckDNSSave.disabled = true;
-  try {
-    const data = new FormData(duckDNSForm);
-    const result = await api("duckdns", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ domain: data.get("domain"), token: data.get("token") }),
-    });
-    duckDNSForm.elements.token.value = "";
-    duckDNSLoaded = true;
-    showDuckDNS(result);
-    loadAddress();
-    showMessage([t("Les réglages DuckDNS sont enregistrés. La mise à jour démarre.")], "success");
-  } catch (error) {
-    showMessage([error.message], "error");
-  } finally {
-    duckDNSSave.disabled = false;
-  }
-});
-
-duckDNSForget.addEventListener("click", async () => {
-  if (!window.confirm(t("Effacer les réglages DuckDNS ?"))) return;
-  duckDNSForget.disabled = true;
-  try {
-    await api("duckdns", { method: "DELETE" });
-    duckDNSForm.reset();
-    duckDNSLoaded = true;
-    await loadDuckDNS();
-    showMessage([t("Les réglages DuckDNS sont effacés.")], "success");
-  } catch (error) {
-    showMessage([error.message], "error");
-  } finally {
-    duckDNSForget.disabled = false;
-  }
-});
 
 // Adresse <nom>.pi-appliance.com (spécification 7.1) : le Pi vérifie les règles
 // du nom, le service d'adresses du projet dit s'il est libre et le réserve.
@@ -3779,7 +3685,7 @@ function showAddress(status) {
   linkLine.append(link);
   addressDetails.append(linkLine);
   if (status.ip) addressDetails.append(element("p", t("Elle mène à l'adresse IP de votre box, {0}.", status.ip), "meta"));
-  const lastSync = duckDNSDate(status.last_sync);
+  const lastSync = shortDate(status.last_sync);
   if (lastSync) addressDetails.append(element("p", t("Dernier contact avec le service d'adresses le {0}.", lastSync), "meta"));
 }
 
@@ -3805,7 +3711,7 @@ function showInternet(status) {
     help.append(element("p", t("Le plus simple : un alias (entrée CNAME) vers {0}. Il suit l'adresse de votre box, sans mot de passe de votre fournisseur sur le Pi.", status.domain_target), "meta"));
     help.append(element("pre", `${status.domain || "maison.exemple.fr"}. CNAME ${status.domain_target}.`, "stats-preview"));
   } else {
-    help.append(element("p", t("Sans DuckDNS, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réglez plutôt DuckDNS, plus haut."), "meta"));
+    help.append(element("p", t("Sans adresse pi-appliance.com, faites pointer le nom vers l'adresse IP publique de votre box (entrée A) ; elle peut changer : réservez plutôt une adresse pi-appliance.com, plus haut."), "meta"));
   }
   internetDomainRemove.hidden = !status.domain;
   internetOpen.hidden = status.enabled || status.internet;
@@ -3815,7 +3721,7 @@ function showInternet(status) {
   if (status.enabled && status.url) {
     text = t("La console est ouverte sur internet : {0}", status.url);
   } else if (status.enabled) {
-    text = t("La console s'ouvrira sur internet dès que le Pi aura une adresse internet (DuckDNS ou pi-appliance.com, ci-dessus).");
+    text = t("La console s'ouvrira sur internet dès que le Pi aura une adresse internet (pi-appliance.com ou la vôtre, ci-dessus).");
   } else if (!status.totp) {
     text = t("La console ne s'ouvre qu'à la maison. Conseillé avant de l'ouvrir : activez la double authentification dans « Mon compte ».");
   } else {
@@ -3978,7 +3884,7 @@ function showStats(status) {
     state = t("Le dernier envoi a échoué : {0}. Nouvel essai dans l'heure.", status.error);
     color = "red";
   } else if (status.last_sent) {
-    state = t("Statistiques acceptées. Dernier envoi le {0}.", duckDNSDate(status.last_sent));
+    state = t("Statistiques acceptées. Dernier envoi le {0}.", shortDate(status.last_sent));
     color = "green";
   } else {
     state = t("Statistiques acceptées. Le premier envoi part dans l'heure.");
@@ -4100,7 +4006,7 @@ accessDisable.addEventListener("click", () => setAccess(false));
 function accessResultLines(result) {
   const lines = [];
   if (result.hosts.length === 0) {
-    lines.push(checkLine("red", t("Le Pi n'a pas encore d'adresse sur internet : réglez DuckDNS ou votre adresse dans « Adresse sur internet ».")));
+    lines.push(checkLine("red", t("Le Pi n'a pas encore d'adresse sur internet : réservez une adresse pi-appliance.com ou réglez la vôtre dans « Adresse sur internet ».")));
   }
   if (result.public_ip) {
     lines.push(checkLine("green", t("Votre adresse publique est {0}.", result.public_ip)));
@@ -4241,7 +4147,7 @@ function setStep(step) {
   });
   clearInterval(wizardTimer);
   clearInterval(rebootTimer);
-  for (const node of [wizardChecks, wizardReboot, wizardTestButton, wizardRebootButton, wizardRebootCancel, wizardContinue, wizardSkip, wizardNext, wizardLanguageField, networkSection, duckDNSSection, accessSection, accountsSection]) {
+  for (const node of [wizardChecks, wizardReboot, wizardTestButton, wizardRebootButton, wizardRebootCancel, wizardContinue, wizardSkip, wizardNext, wizardLanguageField, networkSection, internetAddressSection, accessSection, accountsSection]) {
     node.hidden = true;
   }
   resetWizardViews();
@@ -4369,17 +4275,16 @@ wizardTestButton.addEventListener("click", async () => {
   }
 });
 
-// Adresse sur internet : DuckDNS et domaine personnel ; <nom>.pi-appliance.com
+// Adresse sur internet : domaine personnel ; <nom>.pi-appliance.com
 // seulement si le service d'adresses du projet répond (TODO-3.5).
 async function addressStep() {
   setStep("address");
-  wizardHelp.textContent = t("Donnez au Pi une adresse sur internet, pour ouvrir vos services hors de la maison : un nom DuckDNS (gratuit, sur duckdns.org) et, si vous en avez un, votre propre nom de domaine. Vous pourrez le faire plus tard dans « Adresse sur internet ».");
-  duckDNSSection.hidden = false;
+  wizardHelp.textContent = t("Donnez au Pi une adresse sur internet, pour ouvrir vos services hors de la maison : une adresse en pi-appliance.com (gratuite) et, si vous en avez un, votre propre nom de domaine. Vous pourrez le faire plus tard dans « Adresse sur internet ».");
+  internetAddressSection.hidden = false;
   addressBox.hidden = true;
   internetStateLine.hidden = true;
   wizardSkip.hidden = false;
   wizardContinue.hidden = false;
-  await loadDuckDNS();
   await loadInternet();
   if (wizardStep !== "address") return;
   internetOpen.hidden = true;
@@ -5431,8 +5336,6 @@ function showAuth(mode) {
   password.autocomplete = mode === "login" ? "current-password" : "new-password";
   password.minLength = mode === "login" ? 0 : ADMIN_PASSWORD_MIN;
   authForm.reset();
-  duckDNSForm.reset();
-  duckDNSLoaded = false;
   authSection.hidden = false;
   servicesSection.hidden = true;
   catalogSection.hidden = true;
@@ -5440,7 +5343,7 @@ function showAuth(mode) {
   logoutButton.hidden = true;
   emailReminder.hidden = true;
   networkSection.hidden = true;
-  duckDNSSection.hidden = true;
+  internetAddressSection.hidden = true;
   accessSection.hidden = true;
   piSection.hidden = true;
   accountSection.hidden = true;
@@ -5455,8 +5358,8 @@ function showAuth(mode) {
   wizardSection.hidden = true;
   wizardStep = null;
   clearInterval(networkTimer);
-  clearInterval(duckDNSTimer);
-  duckDNSTimer = null;
+  clearInterval(internetAddressTimer);
+  internetAddressTimer = null;
   clearInterval(wizardTimer);
   clearInterval(rebootTimer);
   clearInterval(dashboardTimer);
@@ -5863,12 +5766,12 @@ async function showConsole(account, wizard) {
   logoutButton.hidden = false;
   servicesSection.hidden = false;
   catalogSection.hidden = account.role !== "admin";
-  duckDNSSection.hidden = true;
+  internetAddressSection.hidden = true;
   accessSection.hidden = true;
   resetWizardViews();
   statsSection.hidden = true;
-  clearInterval(duckDNSTimer);
-  duckDNSTimer = null;
+  clearInterval(internetAddressTimer);
+  internetAddressTimer = null;
   emailReminder.hidden = account.email_verified;
   emailReminder.textContent = emailCodes
     ? t("Votre adresse {0} n'est pas encore vérifiée : vérifiez-la dans « Mon compte », un code vous sera envoyé.", account.email)
@@ -5905,13 +5808,12 @@ async function showConsole(account, wizard) {
   if (account.role === "admin") {
     resourcesReady = loadResources().catch(() => null);
     startDashboard();
-    duckDNSSection.hidden = false;
-    await loadDuckDNS();
+    internetAddressSection.hidden = false;
     await loadAddress();
     await loadInternet();
     accessSection.hidden = false;
     await loadAccess();
-    duckDNSTimer = setInterval(loadDuckDNS, 15000);
+    internetAddressTimer = setInterval(loadAddress, 15000);
     await loadStats();
     await loadNetwork();
     accountsSection.hidden = false;

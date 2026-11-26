@@ -18,6 +18,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -36,7 +37,6 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/cli"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
 	"github.com/gmoulard/pi-appliance/internal/console"
-	"github.com/gmoulard/pi-appliance/internal/ddns"
 	"github.com/gmoulard/pi-appliance/internal/diagnostic"
 	"github.com/gmoulard/pi-appliance/internal/mail"
 	"github.com/gmoulard/pi-appliance/internal/metrics"
@@ -175,12 +175,13 @@ func main() {
 	if err := history.Load(); err != nil {
 		log.Printf("historique illisible, il repart de zéro : %v", err)
 	}
-	// Réglages DuckDNS (identifiant et jeton) : fichier en droits 600, jamais journalisés.
-	duckdns, err := ddns.Open(filepath.Join(*data, "duckdns.json"))
-	if err != nil {
-		log.Fatal(err)
+	// DuckDNS est retiré (TODO-3.21) : son réglage, avec le jeton, est effacé à
+	// la mise à jour ; l'adresse <nom>.pi-appliance.com réservée est gardée.
+	if err := os.Remove(filepath.Join(*data, "duckdns.json")); err == nil {
+		log.Printf("réglage DuckDNS effacé : l'adresse sur internet est tenue par le service d'adresses")
+	} else if !errors.Is(err, fs.ErrNotExist) {
+		log.Printf("réglage DuckDNS : %v", err)
 	}
-	duckdns.Logf = log.Printf
 	// Adresse <nom>.pi-appliance.com : clé propre au Pi, tirée au premier démarrage (spécification 7.1).
 	// La même clé signe les demandes au service d'envoi d'e-mails (spécification 10.2).
 	var key *addresses.Key
@@ -278,7 +279,6 @@ func main() {
 		history.Run(ctx, time.Minute, func() metrics.Sample { return metrics.Measure(resources()) }, log.Printf)
 		close(measured)
 	}()
-	go duckdns.Run(ctx)
 	if address != nil {
 		go address.Run(ctx, addresses.IPCheck)
 	}
@@ -317,7 +317,6 @@ func main() {
 		Storage:          disks,
 		Resources:        resources,
 		History:          history,
-		DuckDNS:          duckdns,
 		Address:          address,
 		Backups:          backups,
 		Updates:          checker,
@@ -333,7 +332,7 @@ func main() {
 		DiagnosticWindow: window,
 		DevicePublicKey:  filepath.Join(*data, "system", "device.pub"),
 		PortMapper:       portMapper,
-		PublicIP:         duckdns.PublicIP,
+		PublicIP:         func(ctx context.Context) (string, error) { return addresses.LookupPublicIP(ctx, nil, "") },
 	}
 	if *cliTokenFile != "" {
 		token, err := cli.WriteToken(*cliTokenFile)

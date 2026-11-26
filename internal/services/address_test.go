@@ -30,7 +30,7 @@ func TestServiceAddress(t *testing.T) {
 		{"www", "maison.local", "www-maison.local"},
 		{"www", "pi-appliance-1a2b.local", "www-pi-appliance-1a2b.local"},
 		{"www", "maison.pi-appliance.com", "www.maison.pi-appliance.com"},
-		{"www", "maison.duckdns.org", "www.maison.duckdns.org"},
+		{"www", "maison.example.net", "www.maison.example.net"},
 	} {
 		if got := ServiceAddress(test.name, test.domain); got != test.want {
 			t.Errorf("ServiceAddress(%q, %q) = %q", test.name, test.domain, got)

@@ -100,11 +100,6 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 			result.Problems = append(result.Problems, "Le réglage des statistiques anonymes n'a pas pu être effacé.")
 		}
 	}
-	if c.DuckDNS != nil {
-		if err := c.DuckDNS.Forget(); err != nil {
-			result.Problems = append(result.Problems, "Le réglage DuckDNS n'a pas pu être effacé.")
-		}
-	}
 	if c.SMTP != nil {
 		if err := c.SMTP.Forget(); err != nil {
 			result.Problems = append(result.Problems, "Le réglage de l'envoi des e-mails n'a pas pu être effacé.")

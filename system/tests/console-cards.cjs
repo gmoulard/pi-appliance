@@ -29,7 +29,7 @@ function check(label, ok, detail = "") {
 
 const PI_CARDS = [
   "#updatesBox", "#versionsBox", "#piNow", "#nameForm", "#mobileBox", "#backupBox",
-  "a[href='diagnostic']", "#piHistory", "#twoFactorOffer", "#duckdnsSection", "#accessSection",
+  "a[href='diagnostic']", "#piHistory", "#twoFactorOffer", "#internetAddressSection", "#accessSection",
   "#mailSection", "#alertsSection", "#accountsSection", "#accountSection",
 ];
 

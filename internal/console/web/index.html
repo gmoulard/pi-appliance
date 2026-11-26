@@ -51,7 +51,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <section id="factorySection" class="card" hidden>
 <h2>Remettre le Pi à zéro</h2>
 <p>Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.</p>
-<p><strong>Sera effacé :</strong> tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes, le réglage DuckDNS et celui de l'envoi des e-mails.</p>
+<p><strong>Sera effacé :</strong> tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage de l'envoi des e-mails.</p>
 <p><strong>Sera gardé :</strong> le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.</p>
 <form id="factoryForm">
 <label class="check"><input name="delete_services" type="checkbox">Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré</label>
@@ -285,7 +285,7 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 </form>
 </div>
 </section>
-<section id="duckdnsSection" data-kind="pi" data-theme="reseau-internet" hidden>
+<section id="internetAddressSection" data-kind="pi" data-theme="reseau-internet" hidden>
 <h2>Adresse sur internet</h2>
 <div id="addressBox" class="card">
 <h3>Votre adresse pi-appliance.com</h3>
@@ -303,20 +303,6 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <div class="controls">
 <button id="addressRelease" class="secondary" type="button" hidden>Libérer cette adresse</button>
 </div>
-</div>
-<div class="card">
-<h3>DuckDNS</h3>
-<p>Saisissez le nom DuckDNS choisi sur duckdns.org et le jeton affiché sur votre compte. Le jeton reste sur le Pi.</p>
-<p id="duckdnsState" class="state" aria-live="polite"></p>
-<div id="duckdnsDetails"></div>
-<form id="duckdnsForm">
-<label>Identifiant DuckDNS<input name="domain" maxlength="253" required autocapitalize="none" autocomplete="off"></label>
-<label>Jeton DuckDNS<input name="token" type="password" required autocomplete="off"></label>
-<div class="controls">
-<button id="duckdnsSave">Enregistrer les réglages</button>
-<button id="duckdnsForget" class="secondary" type="button" hidden>Effacer les réglages</button>
-</div>
-</form>
 </div>
 <div id="internetBox" class="card" hidden>
 <h3>Console sur internet</h3>

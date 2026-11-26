@@ -16,10 +16,9 @@ Il s'adresse à la personne qui fait les essais, pas au grand public : il utilis
 | Wi-Fi de configuration sans accès à internet ni à la maison | Écrit (pare-feu `ap-firewall.nft`) | Oui |
 | Plusieurs Pi allumés en même temps dans la maison | Écrit | Oui |
 | Console fermée depuis internet (réseaux privés seulement) | Écrit (`console.yml`) | Oui |
-| DuckDNS tenu à jour par le Pi | Écrit | Oui, avec un compte DuckDNS |
 | Services sur internet avec un certificat Let's Encrypt | Écrit, mais adresse des services à régler à la main (section 6.3) | Oui, avec une redirection de ports sur la box |
 | VPN WireGuard | Écrit | Oui, avec une redirection du port UDP 51820 |
-| Adresse `<nom>.pi-appliance.com` (service d'adresses) | Pas écrit (TODO-3.5) | Non |
+| Adresse `<nom>.pi-appliance.com` tenue à jour (service d'adresses, zone chez OVH) | Écrit (TODO-3.20), service pas encore installé (TODO-3.5) | Non, tant que le service n'est pas en ligne ; à défaut, une adresse personnelle (section 6.3) |
 | Relais pour les box sans accès direct (CGNAT, 4G) | Pas écrit (TODO-3.9) | Non |
 | UPnP, guide de la box, test d'accès dans la console | Écrit (TODO-3.8), pas encore essayé sur une vraie box | Oui : UPnP avec l'accord de l'administrateur, ou redirection à la main suivant le guide |
 | Services du projet (e-mails, statistiques) | Pas installés (TODO-4.4) | Non |
@@ -231,15 +230,15 @@ Cet essai se fait dans la maison du concepteur, avant de mettre un Pi sur intern
 Depuis le téléphone en 4G (Wi-Fi coupé), ou depuis une machine hors de la maison :
 
 ```shell
-curl -sk -o /dev/null -w '%{http_code}\n' https://<identifiant>.duckdns.org/pi-appliance/
-curl -sk -o /dev/null -w '%{http_code}\n' https://<identifiant>.duckdns.org/pi-appliance/api/health
+curl -sk -o /dev/null -w '%{http_code}\n' https://<adresse du Pi sur internet>/pi-appliance/
+curl -sk -o /dev/null -w '%{http_code}\n' https://<adresse du Pi sur internet>/pi-appliance/api/health
 ```
 
 **Attendu** : `404` pour les deux. La console ne répond qu'aux adresses des réseaux privés (`console.yml`). Depuis la maison, la même adresse donne bien la console (si la box fait le « NAT loopback »).
 
 ## 6. Essai D : un Pi dans une autre maison, joint depuis internet
 
-But : DuckDNS, accès direct par la box, certificat Let's Encrypt, VPN (TODO-3.2, TODO-3.8, TODO-4.6). Il n'y a pas encore d'adresse `<nom>.pi-appliance.com` ni de relais : l'essai passe par un nom DuckDNS.
+But : adresse sur internet tenue à jour, accès direct par la box, certificat Let's Encrypt, VPN (TODO-3.20, TODO-3.8, TODO-4.6). Il n'y a pas encore de relais. L'adresse `<nom>.pi-appliance.com` demande le service d'adresses en ligne (TODO-3.5) ; en attendant, l'essai passe par une adresse personnelle (section 6.3). Les exemples prennent `essai-maison2.pi-appliance.com`.
 
 ### 6.1 Vérifier que la box permet l'accès direct
 
@@ -252,7 +251,7 @@ curl -s https://api.ipify.org; echo
 Comparer avec l'adresse « WAN » ou « internet » affichée dans l'interface de la box :
 
 - **identiques** : accès direct possible, continuer ;
-- **différentes**, ou adresse de la box en `100.64.x.x` à `100.127.x.x` : la box est derrière un CGNAT. L'accès direct est impossible et le relais n'existe pas encore : noter « CGNAT » dans les résultats, et faire seulement les sections 6.4 (DuckDNS) et 4.3 dans cette maison.
+- **différentes**, ou adresse de la box en `100.64.x.x` à `100.127.x.x` : la box est derrière un CGNAT. L'accès direct est impossible et le relais n'existe pas encore : noter « CGNAT » dans les résultats, et faire seulement les sections 6.4 (adresse tenue à jour) et 4.3 dans cette maison.
 
 ### 6.2 Réserver l'adresse du Pi et ouvrir les ports
 
@@ -264,9 +263,8 @@ Comparer avec l'adresse « WAN » ou « internet » affichée dans l'interface d
 
 ### 6.3 Donner au Pi son adresse sur internet
 
-1. Créer un compte sur [duckdns.org](https://www.duckdns.org), un sous-domaine (par exemple `essai-maison2`) et relever le jeton. Le jeton est un secret : ne jamais l'écrire dans le dépôt, un ticket ou un message.
-2. Dans la console du Pi, écran « Adresse sur internet » : saisir l'identifiant et le jeton, enregistrer.
-3. Les services prennent comme adresse le nom du Pi en `.local`. Pour qu'ils prennent l'adresse DuckDNS, le temps de l'essai, régler la console à la main (pas encore d'écran pour cela, TODO-3.5) :
+1. Dans la console du Pi, écran « Adresse sur internet », carte « Votre adresse pi-appliance.com » : choisir un nom (par exemple `essai-maison2`) et le réserver. Sans service d'adresses en ligne, taper à la place une adresse personnelle dans la carte « Console sur internet » (un nom de votre domaine qui pointe vers la box) et remplacer `essai-maison2.pi-appliance.com` par ce nom dans la suite.
+2. Les services prennent comme adresse le nom du Pi en `.local`. Pour qu'ils prennent l'adresse sur internet, le temps de l'essai, régler la console à la main (pas encore d'écran pour cela, TODO-3.5) :
 
    ```shell
    sudo systemctl edit pi-appliance.service
@@ -277,31 +275,32 @@ Comparer avec l'adresse « WAN » ou « internet » affichée dans l'interface d
    ```ini
    [Service]
    ExecStart=
-   ExecStart=/usr/local/bin/pi-appliance -addr 127.0.0.1:8080 -data /var/lib/pi-appliance -reset-file /boot/firmware/reset -domain essai-maison2.duckdns.org
+   ExecStart=/usr/local/bin/pi-appliance -addr 127.0.0.1:8080 -data /var/lib/pi-appliance -reset-file /boot/firmware/reset -domain essai-maison2.pi-appliance.com
    ```
 
    puis `sudo systemctl restart pi-appliance`. À la fin de l'essai : `sudo systemctl revert pi-appliance.service && sudo systemctl restart pi-appliance`.
 
-### 6.4 DuckDNS tenu à jour
+### 6.4 Adresse tenue à jour
 
 Sur le Pi :
 
 ```shell
-journalctl -u pi-appliance -b | grep -i duckdns
-getent hosts essai-maison2.duckdns.org
+journalctl -u pi-appliance -b | grep -i adresse
+getent hosts essai-maison2.pi-appliance.com
 curl -s https://api.ipify.org; echo
+sudo grep -rl OVH_ /etc/pi-appliance /var/lib/pi-appliance
 ```
 
-**Attendu** : le journal dit `DuckDNS : essai-maison2.duckdns.org pointe vers <adresse>`, sans ligne d'erreur `DuckDNS : … (nouvel essai dans …)` ; le nom pointe vers l'adresse publique de la box. Le jeton n'apparaît **jamais** dans le journal : `journalctl -u pi-appliance | grep -c <début du jeton>` doit donner `0`. L'écran « Adresse sur internet » affiche la date de la dernière mise à jour. Si la box change d'adresse (redémarrage de la box chez certains fournisseurs), le nom suit en moins de 10 minutes.
+**Attendu** : pas de ligne d'erreur `adresse : …` dans le journal ; le nom pointe vers l'adresse publique de la box ; la dernière commande ne trouve rien (aucune clé OVH sur le Pi). L'écran « Adresse sur internet » affiche l'adresse IP de la box et le dernier contact avec le service d'adresses. Si la box change d'adresse (redémarrage de la box chez certains fournisseurs), le nom suit en moins de 10 minutes (adresse regardée toutes les 5 minutes, enregistrement gardé 5 minutes par les DNS) ; le lendemain, un envoi part entre 5 h et 8 h sans ouvrir la console.
 
 ### 6.5 Un service sur internet avec un vrai certificat
 
-1. Installer un « Site web » nommé `www`. Son adresse est `www.essai-maison2.duckdns.org` (DuckDNS fait pointer les sous-noms vers la même adresse).
-2. Depuis le téléphone en 4G, ouvrir `https://www.essai-maison2.duckdns.org/` : pas d'alerte de certificat. Le premier accès peut prendre une minute, le temps que Traefik obtienne le certificat Let's Encrypt (défi par le port 80).
+1. Installer un « Site web » nommé `www`. Son adresse est `www.essai-maison2.pi-appliance.com` (`*.essai-maison2.pi-appliance.com` mène à la même adresse).
+2. Depuis le téléphone en 4G, ouvrir `https://www.essai-maison2.pi-appliance.com/` : pas d'alerte de certificat. Le premier accès peut prendre une minute, le temps que Traefik obtienne le certificat Let's Encrypt (défi par le port 80).
 3. Vérifier le certificat depuis une machine extérieure :
 
    ```shell
-   echo | openssl s_client -connect www.essai-maison2.duckdns.org:443 -servername www.essai-maison2.duckdns.org 2>/dev/null | openssl x509 -noout -issuer -dates
+   echo | openssl s_client -connect www.essai-maison2.pi-appliance.com:443 -servername www.essai-maison2.pi-appliance.com 2>/dev/null | openssl x509 -noout -issuer -dates
    ```
 
    **Attendu** : émetteur Let's Encrypt.
@@ -320,17 +319,17 @@ curl -s https://api.ipify.org; echo
 1. Désinstaller les services de test.
 2. Refermer les redirections de ports dans la box (80, 443, 51820).
 3. Retirer le réglage de la section 6.3 (`systemctl revert`).
-4. Effacer les réglages DuckDNS dans la console si le Pi ne reste pas en essai, et supprimer le sous-domaine sur duckdns.org.
+4. Libérer l'adresse `essai-maison2.pi-appliance.com` dans la console si le Pi ne reste pas en essai.
 5. Refermer SSH (`sudo systemctl disable --now ssh`).
 
 ## 7. Plusieurs maisons en même temps
 
 Avec un Pi chez le concepteur (`salon`) et un Pi dans chaque autre maison :
 
-- Les noms en `.local` ne valent que dans leur maison : deux Pi de deux maisons peuvent porter le même nom sans gêne. **À vérifier** : un Pi d'une autre maison nommé lui aussi `salon`, joint par son adresse DuckDNS, n'a aucun effet sur celui du concepteur.
-- Chaque Pi a son propre nom DuckDNS : jamais deux Pi sur le même sous-domaine.
-- Depuis la maison du concepteur, ouvrir `https://www.<sous-domaine de chaque autre maison>.duckdns.org/` : chaque site affiche son propre contenu.
-- Le Pi du concepteur n'a aucun accès aux autres Pi : aucune console d'une autre maison n'est joignable depuis la maison du concepteur (essai C sur chaque nom DuckDNS).
+- Les noms en `.local` ne valent que dans leur maison : deux Pi de deux maisons peuvent porter le même nom sans gêne. **À vérifier** : un Pi d'une autre maison nommé lui aussi `salon`, joint par son adresse sur internet, n'a aucun effet sur celui du concepteur.
+- Chaque Pi a sa propre adresse `<nom>.pi-appliance.com` : le service d'adresses refuse un nom déjà pris.
+- Depuis la maison du concepteur, ouvrir `https://www.<nom de chaque autre maison>.pi-appliance.com/` : chaque site affiche son propre contenu.
+- Le Pi du concepteur n'a aucun accès aux autres Pi : aucune console d'une autre maison n'est joignable depuis la maison du concepteur (essai C sur chaque adresse).
 
 ## 8. Résultats à reporter
 
@@ -341,7 +340,7 @@ Pour chaque essai : date, commit de l'image, modèle de Pi, maison, résultat (r
 | A : Wi-Fi de configuration, portail, secrets différents | TODO-2.7 |
 | B : noms uniques, Pi renommé, plusieurs Pi allumés, consoles et services séparés | TODO-2.48 |
 | C : console fermée depuis internet | TODO-3.11 |
-| D 6.1 à 6.5 : DuckDNS, accès direct, Let's Encrypt | TODO-3.2, TODO-3.8 |
+| D 6.1 à 6.5 : adresse tenue à jour, accès direct, Let's Encrypt | TODO-3.20, TODO-3.8 |
 | D 6.6 : VPN | TODO-4.6 |
 | Box en CGNAT | TODO-3.9 (relais) |
 
