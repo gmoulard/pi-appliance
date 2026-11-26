@@ -45,10 +45,14 @@ const (
 	Backup      Type = "backup"
 	Updates     Type = "updates"
 	Certificate Type = "certificate"
+	// Account et Password : événements des comptes (events.go), envoyés tout
+	// de suite, à chaque fois, sans vérification périodique.
+	Account  Type = "account"
+	Password Type = "password"
 )
 
 // Types : tous les types, dans l'ordre de la console.
-var Types = []Type{Disk, Service, Power, Backup, Updates, Certificate}
+var Types = []Type{Disk, Service, Power, Backup, Updates, Certificate, Account, Password}
 
 const (
 	// Every : temps entre deux vérifications.
@@ -225,6 +229,16 @@ func (m *Monitor) SetEnabled(t Type, enabled bool) error {
 	}
 	m.save(before)
 	return nil
+}
+
+// Reset : tous les types actifs, rien de vu ni de signalé (remise à zéro).
+func (m *Monitor) Reset() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.load()
+	before := m.snapshot()
+	m.state = state{}
+	m.save(before)
 }
 
 // SetStopped note qu'un service a été arrêté exprès (pas d'alerte) ou

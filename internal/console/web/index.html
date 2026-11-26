@@ -64,10 +64,9 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <section id="factorySection" class="card" hidden>
 <h2>Remettre le Pi à zéro</h2>
 <p>Le Pi revient à sa mise en route, comme au premier démarrage : il faudra recréer le compte administrateur.</p>
-<p><strong>Sera effacé :</strong> tous les comptes (administrateurs, utilisateurs, invités et invitations), la mise en route, le choix des statistiques anonymes et le réglage de l'envoi des e-mails.</p>
-<p><strong>Sera gardé :</strong> le réseau de la maison (Wi-Fi ou câble), le nom du Pi, les sauvegardes déjà faites et l'adresse pi-appliance.com réservée. Les services installés et leurs données sont gardés aussi, sauf si vous cochez la case ci-dessous.</p>
+<p><strong>Sera effacé :</strong> tout ce qui est sur le Pi : les comptes (administrateurs, utilisateurs, invités et invitations), les services installés et toutes leurs données (fichiers, sites, bases de données), le nom du Pi (il reprend son nom de départ), l'adresse sur internet (adresse pi-appliance.com réservée, accès depuis internet), tous les réglages (mise en route, e-mails, alertes, sauvegardes, mises à jour, statistiques anonymes) et la clé des sauvegardes. Rien ne pourra être récupéré.</p>
+<p><strong>Sera gardé :</strong> seulement le réseau Wi-Fi de la maison (ou le câble). Un disque USB de sauvegarde branché n'est ni effacé ni formaté : le Pi l'oublie, et les sauvegardes restent dessus, à remettre avec le mot de passe administrateur en vigueur à leur date.</p>
 <form id="factoryForm">
-<label class="check"><input name="delete_services" type="checkbox">Effacer aussi les services installés et toutes leurs données (fichiers, sites, bases de données) : rien ne pourra être récupéré</label>
 <label id="factoryPassword">Votre mot de passe<input name="password" type="password" autocomplete="current-password" maxlength="256"></label>
 <label id="factoryCode">Code de vérification, si la double authentification est activée<input name="code" inputmode="numeric" autocomplete="one-time-code" autocapitalize="none" maxlength="16"></label>
 <button id="factoryEmailCode" class="secondary" type="button" hidden>Recevoir un code par e-mail</button>
@@ -418,6 +417,8 @@ See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 <label class="check"><input name="backup" type="checkbox">La sauvegarde de la nuit a échoué</label>
 <label class="check"><input name="updates" type="checkbox">Correctifs de sécurité à installer</label>
 <label class="check"><input name="certificate" type="checkbox">Certificat d'une adresse internet du Pi bientôt expiré</label>
+<label class="check"><input name="account" type="checkbox">Compte créé ou supprimé, envoyé aussi à la personne concernée</label>
+<label class="check"><input name="password" type="checkbox">Mot de passe d'un compte changé, envoyé aussi à la personne concernée</label>
 </form>
 </div>
 </section>

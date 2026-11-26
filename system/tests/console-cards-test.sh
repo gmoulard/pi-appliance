@@ -59,7 +59,7 @@ printf '{"name":"camera","app":"camera","app_name":"Caméra et timelapse","addre
 	-reset-file "" -network-script "" -stats-url "" -storage-script "" -backup-script "" \
 	-updates-script "$TMP/updates.sh" -diagnostic-script "" -diagnostic-file "" -rescue-addr "" -tls-dir "$TMP/tls" \
 	-cockpit-script "" -release-repo "" -catalog-url "" -cli-token-file "$TMP/token" \
-	-addresses-url "" -upnp=false -mail-url "" -mail-relay=false >"$TMP/console.log" 2>&1 &
+	-addresses-url "" -upnp=false -mail-relay=false >"$TMP/console.log" 2>&1 &
 CONSOLE_PID=$!
 
 API="http://127.0.0.1:$PORT/pi-appliance/api"

@@ -219,10 +219,9 @@ type Config struct {
 	// tentée) par l'assistant, une seule fois (spécification 5.1) ; vide : pas de marque.
 	WizardUpdateFile string
 	ACMEEmailFile    string
-	// Mailer envoie les invitations et les liens « mot de passe oublié » ;
-	// nil : le lien d'invitation est montré à l'administrateur, et pas de
-	// récupération par e-mail (fichier reset seulement). Remplacé par SMTP
-	// quand l'envoi des e-mails est réglé sur le Pi.
+	// Mailer : expéditeur à la place du SMTP du Pi, pour les essais seulement
+	// (nil en service). Sans e-mail, le lien d'invitation est montré à
+	// l'administrateur, et pas de récupération par e-mail (fichier reset seulement).
 	Mailer auth.Mailer
 	// SMTP : envoi des e-mails par le serveur SMTP réglé dans la console
 	// (spécification 10.2) ; nil : réglage absent de la console.
@@ -548,6 +547,7 @@ func (c *console) reset(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	c.notify(alerts.Event{Type: alerts.Password, Name: account.Name, Email: account.Email, Lang: account.Lang, Way: alerts.ByResetFile})
 	c.protectBackups(request.Password, false)
 	openSession(w, r, c.Accounts.StartSession(account.Name))
 	writeJSON(w, http.StatusOK, account.Public())

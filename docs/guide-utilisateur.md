@@ -302,7 +302,7 @@ Le Pi efface le fichier `reset` dès qu'il l'a lu, mais garde la demande jusqu'a
 
 ## Remettre le Pi à zéro {#remise-a-zero}
 
-Pour repartir de la mise en route, comme au premier démarrage (par exemple avant de donner le Pi à quelqu'un d'autre), ouvrez `https://<adresse du Pi>/pi-appliance/reset-to-factory`, connecté avec un compte administrateur. La page dit ce qui sera effacé (tous les comptes, la mise en route, le choix des statistiques anonymes (fonction désactivée pour l'instant)) et ce qui est gardé (le réseau de la maison, le nom du Pi, les sauvegardes, l'adresse pi-appliance.com). Les services installés et leurs données sont gardés, sauf si vous cochez « Effacer aussi les services installés et toutes leurs données ». Il faut redonner votre mot de passe (et le code de vérification si la double authentification est activée), puis cocher « J'ai compris ce qui sera effacé ».
+Pour repartir de la mise en route, comme au premier démarrage (par exemple avant de donner le Pi à quelqu'un d'autre), ouvrez `https://<adresse du Pi>/pi-appliance/reset-to-factory`, connecté avec un compte administrateur. **Tout est effacé, sauf le Wi-Fi de la maison** : les comptes, les services installés et toutes leurs données, le nom du Pi (il reprend son nom de départ, `pi-appliance-XXXX` : la page ouvre ensuite sa nouvelle adresse `<nom>.local`), l'adresse sur internet, et tous les réglages (e-mails, alertes, sauvegardes, mises à jour). Rien ne pourra être récupéré. Un disque USB de sauvegarde branché n'est ni effacé ni formaté : le Pi l'oublie, et vos sauvegardes restent dessus ; pour les remettre, choisissez « Remettre une sauvegarde » à la mise en route, avec le mot de passe administrateur en vigueur à leur date. Il faut redonner votre mot de passe (et le code de vérification si la double authentification est activée), puis cocher « J'ai compris ce qui sera effacé ».
 
 Mot de passe perdu : déposez d'abord le fichier `reset` (ci-dessus) ; tant que le nouveau mot de passe n'est pas choisi, la page de remise à zéro s'ouvre aussi sans mot de passe.
 
@@ -383,7 +383,7 @@ Pour retirer l'adresse : **Retirer l'adresse** dans la carte, puis supprimez l'e
 
 ## Lancer la console depuis les sources {#depuis-les-sources}
 
-Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.24 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.
+Cette procédure est destinée aux contributeurs, pas à l'installation d'une appliance. Elle nécessite Go 1.26 ou plus. Docker et Docker Compose sont nécessaires pour installer des services depuis la console.
 
 À la racine du dépôt :
 

@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gmoulard/pi-appliance/internal/alerts"
 	"github.com/gmoulard/pi-appliance/internal/auth"
 	"github.com/gmoulard/pi-appliance/internal/services"
 )
@@ -175,6 +176,8 @@ func (c *console) createAccount(w http.ResponseWriter, r *http.Request) {
 		writeAuthError(w, err)
 		return
 	}
+	me, _ := c.account(r)
+	c.notify(alerts.Event{Type: alerts.Account, Created: true, Name: account.Name, Email: account.Email, Lang: requestLanguage(r, ""), By: me.Name})
 	writeJSON(w, http.StatusCreated, c.invitationReply(r, account, token))
 }
 
@@ -238,10 +241,13 @@ func (c *console) deleteAccount(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusConflict, "Vous ne pouvez pas supprimer votre propre compte.")
 		return
 	}
+	deleted, _ := c.Accounts.Get(r.PathValue("name"))
 	if err := c.Accounts.Delete(r.PathValue("name")); err != nil {
 		writeAuthError(w, err)
 		return
 	}
+	me, _ := c.account(r)
+	c.notify(alerts.Event{Type: alerts.Account, Name: deleted.Name, Email: deleted.Email, Lang: deleted.Lang, By: me.Name})
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -330,6 +336,7 @@ func (c *console) changePassword(w http.ResponseWriter, r *http.Request, account
 		writeAuthError(w, err)
 		return
 	}
+	c.notify(alerts.Event{Type: alerts.Password, Name: account.Name, Email: account.Email, Lang: account.Lang, By: account.Name})
 	backups := c.Backups != nil && account.Role == auth.RoleAdmin && c.Accounts.FirstAdmin(account.Name)
 	if backups {
 		c.protectBackups(request.Password, false)

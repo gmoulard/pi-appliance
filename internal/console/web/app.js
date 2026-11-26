@@ -5230,8 +5230,6 @@ function showMail(status) {
       new Date(status.verified_at).toLocaleString(LOCALE, { day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }));
   } else if (status.configured) {
     text = t("Le Pi envoie ses e-mails par {0}, au nom de {1}. Envoyez-vous un e-mail d'essai pour vérifier.", status.host, status.from);
-  } else if (status.project_service) {
-    text = t("Pas encore réglé : le Pi essaie le service d'envoi du projet pour les invitations et les mots de passe oubliés, mais ne peut pas envoyer de code de connexion.");
   } else {
     text = t("Pas encore réglé : le Pi n'envoie aucun e-mail. Les invitations sont à transmettre vous-même.");
   }
@@ -6039,11 +6037,7 @@ function showFactory(byResetFile) {
 factoryForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const data = new FormData(factoryForm);
-  const deleteServices = data.get("delete_services") === "on";
-  const question = deleteServices
-    ? t("Effacer les comptes, les réglages, les services et toutes leurs données ? Rien ne pourra être récupéré.")
-    : t("Effacer les comptes et les réglages ? Les services et leurs données sont gardés.");
-  if (!window.confirm(question)) {
+  if (!window.confirm(t("Tout effacer sauf le Wi-Fi : comptes, services et leurs données, nom du Pi, adresse sur internet et réglages ? Rien ne pourra être récupéré."))) {
     return;
   }
   const button = factoryForm.querySelector("button");
@@ -6051,13 +6045,18 @@ factoryForm.addEventListener("submit", async (event) => {
   try {
     const result = await api("factory-reset", jsonBody("POST", {
       confirm: data.get("confirm") === "on",
-      delete_services: deleteServices,
       password: data.get("password") || "",
       code: data.get("code") || "",
     }));
     factorySection.hidden = true;
-    showMessage([t("Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur."), ...(result.problems || [])], "success");
-    window.setTimeout(() => window.location.assign("./"), 4000);
+    const renamed = result.name ? result.name + ".local" : "";
+    const done = renamed
+      ? t("Le Pi est remis à zéro et reprend son nom de départ, {0}. La mise en route va s'ouvrir : créez le compte administrateur.", renamed)
+      : t("Le Pi est remis à zéro. La mise en route va s'ouvrir : créez le compte administrateur.");
+    showMessage([done, ...(result.problems || [])], "success");
+    // La console redémarre ; une adresse <nom>.local change avec le nom.
+    const next = renamed && window.location.hostname.endsWith(".local") ? "https://" + renamed + "/pi-appliance/" : "./";
+    window.setTimeout(() => window.location.assign(next), 8000);
   } catch (error) {
     showMessage([error.message], "error");
   } finally {

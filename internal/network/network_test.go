@@ -157,3 +157,15 @@ func TestJoin(t *testing.T) {
 		t.Fatalf("SSID vide : %v", err)
 	}
 }
+
+func TestResetName(t *testing.T) {
+	fake := &Fake{Out: map[string]string{"name-default": `{"ok": true, "name": "pi-appliance-3f2a"}`}}
+	client := &Client{Runner: fake}
+	out, err := client.ResetName(context.Background())
+	if err != nil || !strings.Contains(string(out), "pi-appliance-3f2a") {
+		t.Fatalf("%s %v", out, err)
+	}
+	if got := strings.Join(fake.Calls, ","); got != "name-default" {
+		t.Fatalf("commandes %s", got)
+	}
+}

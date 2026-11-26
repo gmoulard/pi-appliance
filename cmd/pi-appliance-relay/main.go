@@ -14,7 +14,7 @@
 // Commande pi-appliance-relay : relais du projet (spécification 7.3, 10.2),
 // sur le Pi du projet, devant son reverse proxy : il tient les ports 80 et
 // 443, fait passer les visiteurs des appliances relayées par leur tunnel et
-// renvoie les autres noms (adresses, envoi, stats…) au reverse proxy.
+// renvoie les autres noms (adresses, stats…) au reverse proxy.
 package main
 
 import (
@@ -43,8 +43,7 @@ func main() {
 	keyFile := flag.String("key", "", "clé du certificat (PEM, droits 600)")
 	registry := flag.String("registry", "/var/lib/pi-appliance-addresses/registry.json", "registre du service d'adresses, lu seulement")
 	data := flag.String("data", "/var/lib/pi-appliance-relay", "dossier des places du relais")
-	maxAppliances := flag.Int("max", 0, "nombre maximal d'appliances relayées (obligatoire, à choisir : TODO-1.45)")
-	idleRelease := flag.Duration("idle-release", 0, "place rendue après ce délai sans connexion de l'appliance (0 : jamais)")
+	maxAppliances := flag.Int("max", 20, "nombre maximal d'appliances relayées, liste d'attente au-delà")
 	monthly := flag.Int64("monthly-bytes", tunnel.MonthlyBytes, "octets par mois et par appliance, les deux sens")
 	rate := flag.Int64("rate", tunnel.RateBits, "débit par appliance et par sens, en bits par seconde")
 	pool := flag.Int("pool", 8, "connexions en attente gardées par appliance")
@@ -69,7 +68,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	places.IdleRelease, places.MonthlyBytes = *idleRelease, *monthly
+	places.MonthlyBytes = *monthly
 	relay := &server.Server{
 		Zone: *zone, RelayName: *name,
 		TLS:    &tls.Config{GetCertificate: certificate.get, MinVersion: tls.VersionTLS12},

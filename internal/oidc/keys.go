@@ -12,12 +12,16 @@
 // See <https://creativecommons.org/licenses/by-nc-nd/4.0/> and the LICENSE file.
 
 // Package oidc : la console fournisseur OpenID Connect pour les services
-// (spécification 8.1, TODO-4.1). Strict minimum, bibliothèque standard de Go
-// seulement : flux « authorization code » avec PKCE (S256) obligatoire,
-// découverte, clés publiques (JWKS), jeton d'identité signé ES256, userinfo.
-// Pas de flux implicite, pas de jeton de rafraîchissement, pas
-// d'enregistrement dynamique : chaque client est enregistré par la console
-// pour un service (clients.go).
+// (spécification 8.1, TODO-4.1), sur la bibliothèque github.com/zitadel/oidc
+// (paquet op, choix de l'utilisateur du 2026-11-26). Ce paquet lui fournit le
+// stockage (demandes, codes et jetons en mémoire, clients enregistrés), la clé
+// de signature et la reprise de la demande par la console ; il ne garde de la
+// bibliothèque que le strict minimum : flux « authorization code » avec PKCE
+// (S256) obligatoire, découverte, clés publiques (JWKS), jeton d'identité
+// signé ES256, userinfo. Pas de flux implicite, pas de jeton de
+// rafraîchissement, pas d'enregistrement dynamique, ni introspection,
+// révocation ou déconnexion propagée (« plus tard », 2026-11-26) : chaque
+// client est enregistré par la console pour un service (clients.go).
 package oidc
 
 import (
@@ -27,7 +31,6 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -35,6 +38,8 @@ import (
 	"math/big"
 	"os"
 	"path/filepath"
+
+	jose "github.com/go-jose/go-jose/v4"
 )
 
 // Signer : clé ECDSA P-256 qui signe les jetons d'identité, tirée au premier
@@ -116,31 +121,20 @@ func (s *Signer) publicJWK() map[string]string {
 	return map[string]string{"kty": "EC", "crv": "P-256", "x": b64(fixed(x)), "y": b64(fixed(y))}
 }
 
-// JWKS : clés publiques, au format JSON Web Key Set.
-func (s *Signer) JWKS() map[string]any {
-	jwk := s.publicJWK()
-	key := map[string]string{"kty": jwk["kty"], "crv": jwk["crv"], "x": jwk["x"], "y": jwk["y"], "use": "sig", "alg": "ES256", "kid": s.KeyID}
-	return map[string]any{"keys": []map[string]string{key}}
-}
-
-// Sign : jeton JWT signé ES256 (signature r‖s sur 64 octets, RFC 7518).
-func (s *Signer) Sign(claims map[string]any) (string, error) {
-	header, err := json.Marshal(map[string]string{"alg": "ES256", "typ": "JWT", "kid": s.KeyID})
-	if err != nil {
-		return "", err
-	}
-	payload, err := json.Marshal(claims)
-	if err != nil {
-		return "", err
-	}
-	input := b64(header) + "." + b64(payload)
-	digest := sha256.Sum256([]byte(input))
-	r, sig, err := ecdsa.Sign(rand.Reader, s.key, digest[:])
-	if err != nil {
-		return "", err
-	}
-	return input + "." + b64(append(fixed(r), fixed(sig)...)), nil
-}
-
 // Public : clé publique (tests, vérification).
 func (s *Signer) Public() *ecdsa.PublicKey { return &s.key.PublicKey }
+
+// signingKey : la clé privée, pour la bibliothèque (op.SigningKey).
+type signingKey struct{ s *Signer }
+
+func (k signingKey) SignatureAlgorithm() jose.SignatureAlgorithm { return jose.ES256 }
+func (k signingKey) Key() any                                    { return k.s.key }
+func (k signingKey) ID() string                                  { return k.s.KeyID }
+
+// publicKey : la clé publique, publiée dans le JWKS (op.Key).
+type publicKey struct{ s *Signer }
+
+func (k publicKey) ID() string                         { return k.s.KeyID }
+func (k publicKey) Algorithm() jose.SignatureAlgorithm { return jose.ES256 }
+func (k publicKey) Use() string                        { return "sig" }
+func (k publicKey) Key() any                           { return &k.s.key.PublicKey }

@@ -24,6 +24,7 @@
 #   network.sh wired        garder le câble comme réseau du Pi
 #   network.sh country FR   pays du Wi-Fi (code ISO 3166 à deux lettres)
 #   network.sh name salon   nom du Pi : <nom>.local et nom du Wi-Fi de configuration (name.sh)
+#   network.sh name-default nom de départ du Pi (remise à zéro de la console)
 #   network.sh test         vérification du réseau choisi, sans couper le point d'accès
 #   network.sh reboot       redémarrage du Pi dans quelques secondes
 #
@@ -366,7 +367,8 @@ wifi-wps) with_wifi_lock wifi_wps ;;
 wired) wired ;;
 country) set_country "${2:-}" ;;
 name) set_name "${2:-}" ;;
+name-default) set_name "$("$PI_LIB/name.sh" default)" ;;
 test) network_test ;;
 reboot) reboot_pi ;;
-*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wifi-wps | wired | country <code> | name <nom> | test | reboot" ;;
+*) fail usage "usage : network.sh status | wifi-list | wifi-scan | wifi-join | wifi-wps | wired | country <code> | name <nom> | name-default | test | reboot" ;;
 esac

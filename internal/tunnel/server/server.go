@@ -62,7 +62,7 @@ type Server struct {
 	// visites en cours par appliance.
 	PoolLimit, MaxVisits int
 	// FallbackHTTPS, FallbackHTTP : où envoyer, tels quels, les autres noms
-	// (adresses, envoi, stats… du reverse proxy du Pi du projet) ; vide : refusé.
+	// (adresses, stats… du reverse proxy du Pi du projet) ; vide : refusé.
 	FallbackHTTPS, FallbackHTTP string
 	// AnswerTimeout : nil-valeur remplacée par tunnel.AnswerTimeout.
 	AnswerTimeout time.Duration
@@ -88,8 +88,7 @@ type idle struct {
 	added  time.Time
 }
 
-// Run : vérifications périodiques (places muettes, écriture des compteurs)
-// jusqu'à la fin de ctx, puis écriture finale.
+// Run : écriture périodique des places et des compteurs jusqu'à la fin de ctx, puis écriture finale.
 func (s *Server) Run(ctx context.Context) {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
@@ -105,9 +104,6 @@ func (s *Server) Run(ctx context.Context) {
 		case <-ticker.C:
 		}
 		s.mu.Lock()
-		for _, key := range s.Places.Expire(s.now()) {
-			s.dropLocked(key)
-		}
 		if err := s.Places.Save(); err != nil {
 			s.logf("places : %v", err)
 		}
