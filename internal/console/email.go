@@ -51,8 +51,6 @@ type MailStatus struct {
 	// EmailCodeAccounts : comptes qui reçoivent leur code de connexion par
 	// e-mail : sans envoi réglé, ils passeront par l'application ou un code de secours.
 	EmailCodeAccounts int `json:"email_code_accounts"`
-	// ProjectService : sans réglage, les liens partent par le service du projet.
-	ProjectService bool `json:"project_service"`
 }
 
 // MailTestRequest : POST api/mail/test ; Settings absent : le réglage enregistré.
@@ -168,7 +166,7 @@ func (c *console) mailRoutes(mux *http.ServeMux) {
 }
 
 // mailer : l'envoi des liens (invitations, mot de passe oublié) : le serveur
-// SMTP réglé sur le Pi, sinon le service du projet ; nil : pas d'e-mail.
+// SMTP réglé sur le Pi, sinon Mailer (essais) ; nil : pas d'e-mail.
 func (c *console) mailer() auth.Mailer {
 	if c.SMTP.Configured() {
 		return c.SMTP
@@ -193,7 +191,7 @@ func (c *console) mailStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *console) mailState() MailStatus {
-	status := MailStatus{ProjectService: c.Mailer != nil}
+	var status MailStatus
 	if c.SMTP != nil {
 		status.SMTPStatus = c.SMTP.Status()
 	}

@@ -61,6 +61,7 @@ Actions de la [feuille de route](TODO.md) réalisées et validées (`[x]`), reti
 - [x] **TODO-1.42**: Point d'accès Wi-Fi ouvert, limité à 24 heures (4).
 - [x] **TODO-1.43**: E-mail de l'administrateur vérifié dès que le service d'e-mails est joignable (5.1).
 - [x] **TODO-1.44**: Certificat auto-signé avant Let's Encrypt, alerte expliquée (8.4).
+- [x] **TODO-1.45**: Questions ouvertes de la section 15 : prix et paiement du relais, nombre maximal d'appliances relayées. Tranché le 2026-11-21 : relais gratuit, nombre d'appliances limité, pas d'offre payante ; tranché le 2026-11-26 : 20 appliances au plus, valeur provisoire à revoir après la mesure du débit du Pi du projet, liste d'attente au-delà, place jamais rendue d'office (spécification 7.3, 10.2, 15).
 - [x] **TODO-1.46**: Accès par défaut de Nextcloud : la spécification 8.2 dit « utilisateurs connectés », le manifeste dit `public`. Derrière l'authentification de la console, ses applications de synchronisation (ordinateur, téléphone) ne passent plus ; Nextcloud a déjà ses propres comptes. Trancher, puis aligner la spécification ou le manifeste. Tranché le 2026-11-20 : public, comme le manifeste ; spécification 8.2 alignée.
 
 ## 2. Étape 1 — Local
@@ -101,6 +102,7 @@ Actions de la [feuille de route](TODO.md) réalisées et validées (`[x]`), reti
 ## 3. Étape 2 — Internet (7)
 
 - [x] **TODO-3.13**: Écran de la console pour DuckDNS : saisie de l'identifiant et du jeton, état de la dernière mise à jour (l'API `api/duckdns` existe).
+- [x] **TODO-3.6**: ~~Service d'envoi d'e-mails du projet : récupération, invitations, alertes (8.5, 8.6, 10.2), service `cmd/pi-appliance-mail` écrit, jamais installé.~~ Retiré le 2026-11-26 : abandonné par l'utilisateur, le SMTP de chaque Pi suffit (TODO-3.16) ; programme, paquet `internal/mail/service`, client et option `-mail-url` de la console retirés du dépôt et de la spécification (10.2). « Mot de passe oublié ? » par e-mail et invitations restent faits, par le SMTP du Pi.
 - [x] **TODO-3.3**: ~~FTP.~~ Abandonné le 2026-11-20 (FTP retiré).
 
 ## 5. Site www.pi-appliance.com (13)

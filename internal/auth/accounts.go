@@ -32,8 +32,7 @@ import (
 const InvitationLifetime = 7 * 24 * time.Hour
 
 // Mailer envoie par e-mail le lien d'invitation et le lien « mot de passe
-// oublié » : par le serveur SMTP réglé sur le Pi (mail.SMTP), sinon par le
-// service d'envoi du projet (mail.Client, spécification 10.2).
+// oublié » : par le serveur SMTP réglé sur le Pi (mail.SMTP, spécification 10.2).
 // Si l'invitation ne part pas, la console montre le lien à l'administrateur,
 // qui le transmet lui-même. lang : langue de la console de qui fait la demande.
 type Mailer interface {

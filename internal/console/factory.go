@@ -14,27 +14,35 @@
 package console
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"sort"
+	"time"
 
 	"github.com/gmoulard/pi-appliance/internal/auth"
+	"github.com/gmoulard/pi-appliance/internal/cockpit"
+	"github.com/gmoulard/pi-appliance/internal/services"
+	"github.com/gmoulard/pi-appliance/internal/updates"
 )
 
 // FactoryResetRequest : remise à zéro de l'installation (spécification 8.5,
 // TODO-2.52). Password et Code : ceux de l'administrateur connecté, redemandés ;
 // inutiles pendant une réinitialisation par le fichier reset.
 type FactoryResetRequest struct {
-	Password       string `json:"password"`
-	Code           string `json:"code"`
-	Confirm        bool   `json:"confirm"`
-	DeleteServices bool   `json:"delete_services"`
+	Password string `json:"password"`
+	Code     string `json:"code"`
+	Confirm  bool   `json:"confirm"`
 }
 
+// FactoryResetResult : Name, nom de départ repris par le Pi (<nom>.local).
 type FactoryResetResult struct {
+	Name     string   `json:"name,omitempty"`
 	Problems []string `json:"problems,omitempty"`
 }
 
@@ -82,36 +90,60 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 		}
 		c.Accounts.Logout(token)
 	}
+	if c.Backups != nil && c.Backups.Running() != "" {
+		writeError(w, http.StatusConflict, "Une sauvegarde ou une restauration est en cours : attendez la fin, puis recommencez.")
+		return
+	}
 	var result FactoryResetResult
-	if request.DeleteServices {
-		instances, err := c.Services.List()
-		if err != nil {
-			result.Problems = append(result.Problems, "La liste des services n'a pas pu être lue : ils sont gardés.")
+	problem := func(text string, err error) {
+		log.Printf("remise à zéro : %s : %v", text, err)
+		result.Problems = append(result.Problems, text)
+	}
+	c.factoryRemoveServices(r.Context(), &result)
+	if c.Address != nil && c.Address.Status().Name != "" {
+		if err := c.Address.Release(r.Context()); err != nil {
+			problem("L'adresse pi-appliance.com réservée n'a pas pu être libérée : le service des adresses ne répond pas.", err)
 		}
-		for _, instance := range instances {
-			if err := c.Services.Remove(r.Context(), instance.Name, false); err != nil {
-				log.Printf("remise à zéro, service %s : %v", instance.Name, err)
-				result.Problems = append(result.Problems, fmt.Sprintf("Le service « %s » n'a pas pu être effacé : %v", instance.Name, err))
-			}
+	}
+	if c.PortMapper != nil {
+		if _, err := c.PortMapper.Disable(r.Context(), ""); err != nil {
+			problem("L'accès direct depuis internet n'a pas pu être coupé.", err)
 		}
+	}
+	if c.CockpitAccess != nil && c.CockpitAccess.Path != "" {
+		if err := c.CockpitAccess.Set(cockpit.Access{}); err != nil {
+			problem("Le réglage de l'accès à Cockpit n'a pas pu être effacé.", err)
+		}
+	}
+	if c.Updates != nil && c.Updates.SettingsFile != "" {
+		if err := c.Updates.SetChannel(updates.Stable); err != nil {
+			problem("Le canal des mises à jour n'a pas pu être remis à « stable ».", err)
+		}
+	}
+	if c.Alerts != nil {
+		c.Alerts.Reset()
 	}
 	if c.Stats != nil {
 		if err := c.Stats.SetEnabled(false); err != nil {
-			result.Problems = append(result.Problems, "Le réglage des statistiques anonymes n'a pas pu être effacé.")
+			problem("Le réglage des statistiques anonymes n'a pas pu être effacé.", err)
 		}
 	}
 	if c.SMTP != nil {
 		if err := c.SMTP.Forget(); err != nil {
-			result.Problems = append(result.Problems, "Le réglage de l'envoi des e-mails n'a pas pu être effacé.")
+			problem("Le réglage de l'envoi des e-mails n'a pas pu être effacé.", err)
 		}
 	}
-	for _, file := range []string{c.WizardFile, c.WizardUpdateFile, c.ACMEEmailFile} {
+	for _, file := range []string{c.WizardFile, c.WizardUpdateFile, c.ACMEEmailFile, c.InternetFile} {
 		if file == "" {
 			continue
 		}
 		if err := os.Remove(file); err != nil && !errors.Is(err, fs.ErrNotExist) {
-			log.Printf("remise à zéro, %s : %v", file, err)
-			result.Problems = append(result.Problems, "Un réglage de la mise en route n'a pas pu être effacé.")
+			problem("Un réglage de la mise en route n'a pas pu être effacé.", err)
+		}
+	}
+	if c.Backups != nil {
+		if err := c.Backups.Forget(r.Context()); err != nil {
+			problem("Les réglages des sauvegardes n'ont pas pu être effacés, ou le disque de sauvegarde n'a pas pu être libéré : débranchez-le.", err)
 		}
 	}
 	if err := c.Accounts.FactoryReset(); err != nil {
@@ -119,7 +151,48 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "Les comptes n'ont pas pu être effacés : le Pi n'est pas remis à zéro.")
 		return
 	}
+	c.syncTraefikNow()
+	if c.Network != nil {
+		out, err := c.Network.ResetName(r.Context())
+		var renamed struct {
+			Name string `json:"name"`
+		}
+		if err == nil && json.Unmarshal(out, &renamed) == nil {
+			result.Name = renamed.Name
+		} else {
+			problem("Le nom du Pi n'a pas pu être remis à celui du départ.", err)
+		}
+	}
 	clearForwardCookie(w, r)
 	http.SetCookie(w, &http.Cookie{Name: cookieName, Value: "", Path: BasePath, MaxAge: -1, HttpOnly: true, Secure: secure(r), SameSite: http.SameSiteStrictMode})
 	writeJSON(w, http.StatusOK, result)
+	// Nom, adresses et réglages relus par une console neuve.
+	if c.Restart != nil {
+		time.AfterFunc(3*time.Second, c.Restart)
+	}
+}
+
+// factoryRemoveServices désinstalle chaque service avec ses données ;
+// PostgreSQL partagé en dernier, une fois ses clients partis.
+func (c *console) factoryRemoveServices(ctx context.Context, result *FactoryResetResult) {
+	instances, err := c.Services.List()
+	if err != nil {
+		log.Printf("remise à zéro, services : %v", err)
+		result.Problems = append(result.Problems, "La liste des services n'a pas pu être lue : ils n'ont pas été effacés.")
+		return
+	}
+	sort.SliceStable(instances, func(i, j int) bool {
+		return instances[i].App != services.PostgresApp && instances[j].App == services.PostgresApp
+	})
+	for _, instance := range instances {
+		if err := c.Services.Remove(ctx, instance.Name, false); err != nil {
+			log.Printf("remise à zéro, service %s : %v", instance.Name, err)
+			result.Problems = append(result.Problems, fmt.Sprintf("Le service « %s » n'a pas pu être effacé : %v", instance.Name, err))
+			continue
+		}
+		if c.Alerts != nil {
+			c.Alerts.SetStopped(instance.Name, false)
+		}
+		c.forgetServiceIdentity(instance.Name)
+	}
 }
