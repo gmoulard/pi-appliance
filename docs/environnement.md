@@ -30,7 +30,7 @@ Clés de l'API OVH à créer ou à refaire : [clefOVH.md](clefOVH.md).
 
 ### Autres enregistrements présents
 
-- E-mail par **Amazon SES** : trois `CNAME` DKIM `*._domainkey` vers `*.dkim.amazonses.com`, et `_dmarc` en `TXT` (`v=DMARC1; p=none;`).
+- E-mail par **Amazon SES** : trois `CNAME` DKIM `*._domainkey` vers `*.dkim.amazonses.com`, et `_dmarc` en `TXT` (`v=DMARC1; p=none;`). Tranché le 2026-11-26 : ces entrées et le compte AWS sont à revoir plus tard, après le passage de la zone chez OVH ; d'ici là, rien n'est supprimé (entrées recréées telles quelles chez OVH, compte AWS gardé).
 - Sous-domaines de machines : `mac`, `ia4ccm`, `mbpdevrenaudin.home`.
 - Probablement à supprimer : `todrop`, `ip-10-0-0-85.eu-west-3.compute.internal`.
 
