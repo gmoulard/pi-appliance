@@ -34,7 +34,6 @@ Groupes d'actions cohérents, réalisés chacun par le sous-agent `todo-lot` (un
 | LOT-15 | Sauvegardes et restauration | TODO-4.3, TODO-4.10, TODO-4.11, TODO-4.12, TODO-4.13, TODO-4.14 | LOT-2 | [~] |
 | LOT-16 | Alertes, mises à jour et applications de l'étape 3 | TODO-4.2, TODO-4.5, TODO-4.6, TODO-4.8, TODO-4.9 | LOT-2 | [~] |
 | LOT-17 | Cartes de la console : affichage, ordre, étiquettes | TODO-5.27, TODO-5.28, TODO-5.29, TODO-5.30 | LOT-6 | [~] |
-| LOT-18 | Installation guidée par l'application | TODO-2.80, TODO-2.79, TODO-2.78 | LOT-3 | [ ] |
 
 ## 0. Ménage du dépôt
 
@@ -219,13 +218,6 @@ Code écrit dans `image/` et `system/` pour les cinq points ci-dessus (spécific
   - Critères d'acceptation : test Go ; sur un vrai Pi, deux services avec chacun leur base dans le même PostgreSQL, l'un ne lit pas la base de l'autre, désinstallation d'un service qui propose d'effacer sa base, restauration de sauvegarde.
 - [~] **TODO-2.74**: Relais d'envoi d'e-mails pour les services : serveur SMTP interne, joignable seulement par les conteneurs, sans mot de passe dans les services, qui renvoie par le SMTP réglé dans la console (section 10.2) ; adresse de l'expéditeur choisie par service ; limite d'envoi pour éviter qu'un service envoie du spam. Demande une version de la console. Dépend de : TODO-4.2. Réalisé le 2026-11-25 (spécification 6.4, `internal/relay`) : relais sur l'adresse du Pi vue des conteneurs, port 2525, service reconnu par l'adresse de son conteneur, case « Envoi d'e-mails » ; essayé sous Docker avec le serveur NautiLink ; à vérifier sur un vrai Pi avec une vraie boîte.
   - Critères d'acceptation : test Go ou essai sous Docker ; sur un vrai Pi, e-mail envoyé par un service reçu dans une vraie boîte, refusé depuis le réseau de la maison.
-
-- [ ] **TODO-2.78**: Installation guidée par l'application (spécification 5.1, demande de l'utilisateur du 2026-11-25 : « une fois le Pi démarré, il faut se connecter au Wi-Fi, puis ne pas ouvrir le portail mais l'appli ; c'est l'application qui trouve le 10.42.0.1, demande la création du compte, puis note le Pi pour le retrouver après qu'il a changé de réseau ; l'appli met tous les messages d'aide »). Côté Pi : sur le point d'accès seulement, Traefik sert en HTTP sur `http://10.42.0.1/` la copie de l'application d'installation et les demandes de la console qu'elle utilise ; portail captif renvoyé vers `http://10.42.0.1/` ; copie de `pi-appliance-pwa` embarquée dans le socle. Dépend de : TODO-2.79, TODO-2.80, décision sur le risque du mot de passe en clair (spécification 15).
-  - Critères d'acceptation : sur un vrai Pi et un téléphone Android, Wi-Fi du Pi rejoint, la page s'ouvre toute seule sans avertissement de certificat, compte créé, Wi-Fi de la maison choisi (WPS ou liste), puis « Ajouter ce Pi à mon application » ouvre l'application, qui retrouve le Pi à la maison et l'appaire ; parcours par ordinateur toujours possible.
-- [ ] **TODO-2.79**: Écran « Installer mon Pi » dans l'application (dépôt `pi-appliance-pwa`) : bienvenue, création du compte, Wi-Fi de la maison (WPS, liste, câble) avec messages d'aide, puis lien d'ajout gardé et ouvert une fois internet retrouvé ; bouton « Installer un nouveau Pi » dans l'application installée. Dépend de : TODO-2.80.
-  - Critères d'acceptation : essai dans Chromium contre une console de test, puis sur un vrai Pi (TODO-2.78).
-- [ ] **TODO-2.80**: Console : demandes de l'installation en HTTP sur le point d'accès seulement, et lien d'ajout avec un code d'appairage d'installation (plus long que celui du code QR, une seule fois), donné après la création du compte. Dépend de : aucune.
-  - Critères d'acceptation : tests Go (refusé hors point d'accès et sans HTTPS ailleurs, code à usage unique, durée) ; essai Traefik (`system/tests`).
 
 ## 3. Étape 2 — Internet (7)
 
