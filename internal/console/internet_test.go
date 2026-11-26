@@ -201,6 +201,9 @@ func TestConsoleOpenOnInternet(t *testing.T) {
 	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/setup", `{}`, nil); response.Code != http.StatusForbidden {
 		t.Fatalf("mise en route depuis internet : code %d", response.Code)
 	}
+	if response := f.fromOutside(http.MethodGet, "/pi-appliance/api/setup/restore", "", nil); response.Code != http.StatusForbidden {
+		t.Fatalf("restauration de l'appliance depuis internet : code %d", response.Code)
+	}
 	// Le reste se fait aussi depuis internet, confirmé : remise à zéro avec un
 	// mauvais mot de passe refusée, ports de la box sans confirmation refusés.
 	if response := f.fromOutside(http.MethodPost, "/pi-appliance/api/factory-reset", `{"confirm": true, "password": "mauvais"}`, outside); response.Code != http.StatusUnauthorized {
