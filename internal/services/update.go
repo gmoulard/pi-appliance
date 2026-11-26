@@ -151,6 +151,10 @@ func (m *Manager) Update(ctx context.Context, app marketplace.App, name string) 
 		m.dropBackups(context.WithoutCancel(ctx), name, copied)
 		os.Remove(filepath.Join(dir, previousName))
 		instance.AppName = app.Name
+		instance.LocalCertificate = ""
+		if m.wantsLocalCertificate(app) {
+			instance.LocalCertificate = localCertificateTarget(app)
+		}
 		if err := writeJSON(filepath.Join(dir, stateName), instance, 0o600); err != nil {
 			return Result{}, err
 		}

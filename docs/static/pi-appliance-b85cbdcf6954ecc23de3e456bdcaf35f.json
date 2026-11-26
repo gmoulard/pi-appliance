@@ -232,6 +232,10 @@
           "generate": true
         }
       ],
+      "local_certificate": {
+        "service": "app",
+        "path": "/usr/local/share/pi-appliance"
+      },
       "site_files": false,
       "web": true,
       "compose": "x-pi-appliance:\n  name: Nextcloud\n  description: Vos fichiers, photos, agenda et contacts, chez vous, sur tous vos appareils.\n  icon: M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.1 4.5 4.5 0 0 0 7 18z\n  category: Fichiers\n  license: AGPL-3.0\n  subdomain: cloud\n  service: app\n  port: 80\n  memory_mb: 1024\n  disk_mb: 2048\n  login: application\n  access: public\n  parameters:\n    - name: NEXTCLOUD_ADMIN_PASSWORD\n      label: Mot de passe de l'administrateur de Nextcloud\n      generate: true\n    - name: DB_PASSWORD\n      generate: true\n    - name: DB_ROOT_PASSWORD\n      generate: true\n\nservices:\n  db:\n    image: mariadb:11.4\n    restart: unless-stopped\n    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW\n    environment:\n      MARIADB_DATABASE: nextcloud\n      MARIADB_USER: nextcloud\n      MARIADB_PASSWORD: ${DB_PASSWORD}\n      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}\n    volumes:\n      - db:/var/lib/mysql\n\n  app:\n    image: nextcloud:30-apache\n    restart: unless-stopped\n    depends_on:\n      - db\n    environment:\n      MYSQL_HOST: db\n      MYSQL_DATABASE: nextcloud\n      MYSQL_USER: nextcloud\n      MYSQL_PASSWORD: ${DB_PASSWORD}\n      NEXTCLOUD_ADMIN_USER: admin\n      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}\n      NEXTCLOUD_TRUSTED_DOMAINS: ${PI_HOST}\n      OVERWRITEPROTOCOL: https\n      OVERWRITEHOST: ${PI_HOST}\n      TRUSTED_PROXIES: 172.16.0.0/12\n    volumes:\n      - html:/var/www/html\n\nvolumes:\n  db:\n  html:\n"
