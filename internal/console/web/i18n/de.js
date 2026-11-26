@@ -14,6 +14,22 @@
 // Traduction de la console : allemand. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("de", {
+  "Services reliés": "Verbundene Dienste",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "Ein Dienst, der die Anmeldung über OpenID Connect akzeptiert, kann die Konten des Pi verwenden: Jeder meldet sich dort mit dem Benutzernamen und Passwort der Konsole an. Verbinden Sie den Dienst hier und übertragen Sie dann, was die Konsole anzeigt, in seine Einstellungen.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} ist verbunden. Übertragen Sie diese Einstellungen in den Dienst. Das Geheimnis wird nur einmal angezeigt: Für ein neues verbinden Sie den Dienst erneut.",
+  "Adresse du fournisseur (émetteur)": "Adresse des Anbieters (Aussteller)",
+  "Identifiant du client": "Client-Kennung",
+  "Secret du client": "Client-Geheimnis",
+  "Relié le {0}. Identifiant du client : {1}.": "Verbunden am {0}. Client-Kennung: {1}.",
+  "Adresse de retour : {0}": "Rücksprungadresse: {0}",
+  "Détacher": "Trennen",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "{0} trennen? Der Dienst kann die Konten des Pi dann nicht mehr zur Anmeldung verwenden.",
+  "Aucun service relié.": "Kein verbundener Dienst.",
+  "Installez d'abord un service pour le relier.": "Installieren Sie zuerst einen Dienst, um ihn zu verbinden.",
+  "Service": "Dienst",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "Vom Dienst angegebene Rücksprungadresse (eine pro Zeile, mit https)",
+  "Relier le service": "Dienst verbinden",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} ist bereits verbunden: Eine erneute Verbindung ersetzt Kennung und Geheimnis, und der Dienst meldet niemanden mehr an, bis seine Einstellungen geändert sind. Fortfahren?",
   "Tous les services qui demandent une connexion.": "Alle Dienste, die eine Anmeldung verlangen.",
   "Seulement : {0}.": "Nur: {0}.",
   "Aucun service.": "Kein Dienst.",

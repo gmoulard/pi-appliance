@@ -14,6 +14,22 @@
 // Traduction de la console : espagnol. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("es", {
+  "Services reliés": "Servicios vinculados",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "Un servicio que acepta el inicio de sesión OpenID Connect puede usar las cuentas del Pi: cada persona entra con el identificador y la contraseña de la consola. Vincule el servicio aquí y copie en sus ajustes lo que muestra la consola.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} está vinculado. Copie estos ajustes en el servicio. El secreto solo se muestra una vez: para obtener otro, vuelva a vincular el servicio.",
+  "Adresse du fournisseur (émetteur)": "Dirección del proveedor (emisor)",
+  "Identifiant du client": "Identificador del cliente",
+  "Secret du client": "Secreto del cliente",
+  "Relié le {0}. Identifiant du client : {1}.": "Vinculado el {0}. Identificador del cliente: {1}.",
+  "Adresse de retour : {0}": "Dirección de retorno: {0}",
+  "Détacher": "Desvincular",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "¿Desvincular {0}? Ya no podrá usar las cuentas del Pi para que las personas inicien sesión.",
+  "Aucun service relié.": "Ningún servicio vinculado.",
+  "Installez d'abord un service pour le relier.": "Instale primero un servicio para vincularlo.",
+  "Service": "Servicio",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "Dirección de retorno indicada por el servicio (una por línea, en https)",
+  "Relier le service": "Vincular el servicio",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} ya está vinculado: vincularlo de nuevo sustituye su identificador y su secreto, y el servicio no dejará entrar a nadie hasta que se cambien sus ajustes. ¿Continuar?",
   "Tous les services qui demandent une connexion.": "Todos los servicios que piden iniciar sesión.",
   "Seulement : {0}.": "Solo: {0}.",
   "Aucun service.": "Ningún servicio.",

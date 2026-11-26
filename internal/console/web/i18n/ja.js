@@ -14,6 +14,22 @@
 // Traduction de la console : japonais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ja", {
+  "Services reliés": "連携したサービス",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "OpenID Connect によるログインに対応したサービスは、Pi のアカウントを使えます。各自がコンソールのユーザー名とパスワードでログインします。ここでサービスを連携し、コンソールに表示された内容をサービスの設定に写してください。",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} を連携しました。これらの設定をサービスに写してください。シークレットは一度しか表示されません。別のものが必要なら、もう一度連携してください。",
+  "Adresse du fournisseur (émetteur)": "プロバイダーのアドレス（発行者）",
+  "Identifiant du client": "クライアント ID",
+  "Secret du client": "クライアントシークレット",
+  "Relié le {0}. Identifiant du client : {1}.": "{0} に連携。クライアント ID：{1}。",
+  "Adresse de retour : {0}": "戻り先アドレス：{0}",
+  "Détacher": "連携を解除",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "{0} の連携を解除しますか？ Pi のアカウントでのログインに使えなくなります。",
+  "Aucun service relié.": "連携したサービスはありません。",
+  "Installez d'abord un service pour le relier.": "連携するには、まずサービスをインストールしてください。",
+  "Service": "サービス",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "サービスが示す戻り先アドレス（1 行に 1 つ、https）",
+  "Relier le service": "サービスを連携",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} はすでに連携しています。もう一度連携すると ID とシークレットが置き換わり、サービスの設定を変えるまで誰もログインできなくなります。続けますか？",
   "Tous les services qui demandent une connexion.": "ログインが必要なすべてのサービス。",
   "Seulement : {0}.": "次のみ：{0}。",
   "Aucun service.": "サービスなし。",

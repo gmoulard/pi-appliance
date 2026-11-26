@@ -14,6 +14,22 @@
 // Traduction de la console : persan. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("fa", {
+  "Services reliés": "سرویس‌های پیوندخورده",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "سرویسی که ورود با OpenID Connect را می‌پذیرد می‌تواند از حساب‌های Pi استفاده کند: هر کس با نام کاربری و گذرواژهٔ کنسول وارد آن می‌شود. سرویس را اینجا پیوند دهید، سپس آنچه کنسول نشان می‌دهد را در تنظیمات آن رونویسی کنید.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} پیوند خورد. این تنظیمات را در سرویس رونویسی کنید. رمز فقط یک بار نشان داده می‌شود: برای رمز دیگر، سرویس را دوباره پیوند دهید.",
+  "Adresse du fournisseur (émetteur)": "نشانی فراهم‌کننده (صادرکننده)",
+  "Identifiant du client": "شناسهٔ کلاینت",
+  "Secret du client": "رمز کلاینت",
+  "Relié le {0}. Identifiant du client : {1}.": "پیوند در {0}. شناسهٔ کلاینت: {1}.",
+  "Adresse de retour : {0}": "نشانی بازگشت: {0}",
+  "Détacher": "حذف پیوند",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "پیوند {0} حذف شود؟ دیگر نمی‌تواند برای ورود افراد از حساب‌های Pi استفاده کند.",
+  "Aucun service relié.": "هیچ سرویس پیوندخورده‌ای نیست.",
+  "Installez d'abord un service pour le relier.": "برای پیوند، ابتدا یک سرویس نصب کنید.",
+  "Service": "سرویس",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "نشانی بازگشتی که سرویس می‌دهد (هر خط یکی، با https)",
+  "Relier le service": "پیوند سرویس",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} از قبل پیوند خورده است: پیوند دوباره شناسه و رمز آن را جایگزین می‌کند و تا تنظیماتش عوض نشود، سرویس کسی را وارد نمی‌کند. ادامه می‌دهید؟",
   "Tous les services qui demandent une connexion.": "همه سرویس‌هایی که ورود می‌خواهند.",
   "Seulement : {0}.": "فقط: {0}.",
   "Aucun service.": "هیچ سرویسی.",

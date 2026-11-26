@@ -14,6 +14,22 @@
 // Traduction de la console : anglais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("en", {
+  "Services reliés": "Linked services",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "A service that accepts OpenID Connect sign-in can use the Pi's accounts: everyone signs in to it with the console's username and password. Link the service here, then copy what the console shows into its settings.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} is linked. Copy these settings into the service. The secret is shown only once: to get another one, link the service again.",
+  "Adresse du fournisseur (émetteur)": "Provider address (issuer)",
+  "Identifiant du client": "Client ID",
+  "Secret du client": "Client secret",
+  "Relié le {0}. Identifiant du client : {1}.": "Linked on {0}. Client ID: {1}.",
+  "Adresse de retour : {0}": "Return address: {0}",
+  "Détacher": "Unlink",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "Unlink {0}? It will no longer be able to use the Pi's accounts to sign people in.",
+  "Aucun service relié.": "No linked service.",
+  "Installez d'abord un service pour le relier.": "Install a service first to link it.",
+  "Service": "Service",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "Return address given by the service (one per line, in https)",
+  "Relier le service": "Link the service",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} is already linked: linking it again replaces its ID and secret, and the service will sign no one in until its settings are changed. Continue?",
   "Tous les services qui demandent une connexion.": "All services that require signing in.",
   "Seulement : {0}.": "Only: {0}.",
   "Aucun service.": "No service.",

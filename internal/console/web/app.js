@@ -5405,13 +5405,126 @@ let loginServices = [];
 async function loadLoginServices() {
   const [installed, linked] = await Promise.all([
     api("services").then((reply) => reply.services).catch(() => []),
-    api("oidc/clients").then((reply) => reply.clients || []).catch(() => []),
+    api("oidc/clients").catch(() => null),
   ]);
+  const clients = (linked && linked.clients) || [];
   const names = new Set(installed.filter((service) => service.access === "users").map((service) => service.name));
-  for (const client of linked) {
+  for (const client of clients) {
     if (installed.some((service) => service.name === client.service)) names.add(client.service);
   }
   loginServices = [...names].sort((a, b) => a.localeCompare(b, LOCALE));
+  showLinkedServices(linked, installed);
+}
+
+// « Services reliés » (spécification 8.1, TODO-4.1) : clients OpenID Connect
+// des services installés. Le secret n'est montré qu'une fois, juste après
+// l'enregistrement ; la liste ne le contient jamais. Carte cachée si la
+// console n'est pas fournisseur OpenID Connect (api/oidc/clients absent).
+const linkedCard = element("div", undefined, "card");
+linkedCard.id = "linkedServices";
+linkedCard.hidden = true;
+accountsSection.append(linkedCard);
+let linkedSecret = null;
+
+function readOnlyField(label, value) {
+  const field = element("label", label);
+  const input = element("input");
+  input.readOnly = true;
+  input.value = value;
+  field.append(input);
+  return field;
+}
+
+function showLinkedServices(linked, installed) {
+  // Pas pendant l'assistant de premier démarrage (étape des invitations).
+  linkedCard.hidden = !linked || wizardStep !== null;
+  if (linkedCard.hidden) return;
+  const clients = [...(linked.clients || [])].sort((a, b) => a.service.localeCompare(b.service, LOCALE));
+  linkedCard.replaceChildren(
+    element("h3", t("Services reliés")),
+    element("p", t("Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.")),
+  );
+  if (linkedSecret) {
+    const box = element("div", undefined, "note");
+    box.append(
+      element("p", t("{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.", linkedSecret.client.service)),
+      readOnlyField(t("Adresse du fournisseur (émetteur)"), linkedSecret.issuer),
+      readOnlyField(t("Identifiant du client"), linkedSecret.client.id),
+      readOnlyField(t("Secret du client"), linkedSecret.secret),
+    );
+    linkedCard.append(box);
+    linkedSecret = null;
+  }
+  const list = element("ul", undefined, "linked-list");
+  for (const client of clients) {
+    const item = element("li");
+    item.append(
+      element("strong", client.service),
+      element("p", t("Relié le {0}. Identifiant du client : {1}.", dayText(client.created_at), client.id), "meta"),
+      element("p", t("Adresse de retour : {0}", client.redirect_uris.join(", ")), "meta"),
+    );
+    const detach = element("button", t("Détacher"), "secondary");
+    detach.type = "button";
+    detach.addEventListener("click", async () => {
+      if (!window.confirm(t("Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.", client.service))) return;
+      detach.disabled = true;
+      try {
+        await api(`oidc/clients/${encodeURIComponent(client.service)}`, { method: "DELETE" });
+        await loadAccounts();
+      } catch (error) {
+        showMessage([error.message], "error");
+        detach.disabled = false;
+      }
+    });
+    item.append(detach);
+    list.append(item);
+  }
+  if (clients.length === 0) {
+    list.append(element("li", t("Aucun service relié."), "meta"));
+  }
+  linkedCard.append(list);
+  const choices = installed.filter((service) => !service.no_web_page).map((service) => service.name).sort((a, b) => a.localeCompare(b, LOCALE));
+  if (choices.length === 0) {
+    linkedCard.append(element("p", t("Installez d'abord un service pour le relier."), "meta"));
+    return;
+  }
+  const form = element("form");
+  const serviceField = element("label", t("Service"));
+  const select = element("select");
+  select.name = "service";
+  for (const name of choices) {
+    const option = element("option", name);
+    option.value = name;
+    select.append(option);
+  }
+  serviceField.append(select);
+  const urisField = element("label", t("Adresse de retour donnée par le service (une par ligne, en https)"));
+  const uris = element("textarea");
+  uris.name = "redirect_uris";
+  uris.rows = 2;
+  uris.required = true;
+  uris.autocapitalize = "none";
+  uris.spellcheck = false;
+  urisField.append(uris);
+  const submit = element("button", t("Relier le service"));
+  form.append(serviceField, urisField, submit);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const already = clients.some((client) => client.service === select.value);
+    if (already && !window.confirm(t("{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?", select.value))) return;
+    submit.disabled = true;
+    try {
+      const redirect = uris.value.split("\n").map((line) => line.trim()).filter(Boolean);
+      linkedSecret = await api("oidc/clients", jsonBody("POST", { service: select.value, redirect_uris: redirect }));
+      await loadAccounts();
+      document.getElementById("linkedServices").scrollIntoView({ block: "nearest" });
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      submit.disabled = false;
+    }
+  });
+  linkedCard.append(form);
 }
 
 function accountServices(account) {

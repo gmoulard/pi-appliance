@@ -14,6 +14,22 @@
 // Traduction de la console : arabe. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("ar", {
+  "Services reliés": "الخدمات المرتبطة",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "الخدمة التي تقبل تسجيل الدخول عبر OpenID Connect يمكنها استخدام حسابات الـ Pi: يسجّل كل شخص دخوله إليها باسم المستخدم وكلمة المرور الخاصين بوحدة التحكم. اربط الخدمة هنا، ثم انسخ ما تعرضه وحدة التحكم إلى إعداداتها.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "تم ربط {0}. انسخ هذه الإعدادات إلى الخدمة. لا يُعرض السرّ إلا مرة واحدة: للحصول على سرّ آخر، اربط الخدمة من جديد.",
+  "Adresse du fournisseur (émetteur)": "عنوان المزوّد (المُصدِر)",
+  "Identifiant du client": "معرّف العميل",
+  "Secret du client": "سرّ العميل",
+  "Relié le {0}. Identifiant du client : {1}.": "رُبط في {0}. معرّف العميل: {1}.",
+  "Adresse de retour : {0}": "عنوان العودة: {0}",
+  "Détacher": "فك الربط",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "فك ربط {0}؟ لن تتمكن بعد ذلك من استخدام حسابات الـ Pi لتسجيل دخول الأشخاص.",
+  "Aucun service relié.": "لا توجد خدمة مرتبطة.",
+  "Installez d'abord un service pour le relier.": "ثبّت خدمة أولاً لربطها.",
+  "Service": "الخدمة",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "عنوان العودة الذي تعطيه الخدمة (واحد في كل سطر، بـ https)",
+  "Relier le service": "ربط الخدمة",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} مرتبط بالفعل: ربطه من جديد يستبدل معرّفه وسرّه، ولن تُدخل الخدمة أحداً حتى تُغيَّر إعداداتها. هل تريد المتابعة؟",
   "Tous les services qui demandent une connexion.": "كل الخدمات التي تتطلب تسجيل الدخول.",
   "Seulement : {0}.": "فقط: {0}.",
   "Aucun service.": "لا توجد خدمة.",

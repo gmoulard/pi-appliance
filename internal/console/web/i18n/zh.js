@@ -14,6 +14,22 @@
 // Traduction de la console : chinois. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("zh", {
+  "Services reliés": "已关联的服务",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "支持 OpenID Connect 登录的服务可以使用 Pi 的账户：每个人用控制台的用户名和密码登录。在此关联服务，然后把控制台显示的内容复制到服务的设置中。",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} 已关联。请把这些设置复制到服务中。密钥只显示一次：如需新的密钥，请重新关联该服务。",
+  "Adresse du fournisseur (émetteur)": "提供方地址（签发者）",
+  "Identifiant du client": "客户端标识",
+  "Secret du client": "客户端密钥",
+  "Relié le {0}. Identifiant du client : {1}.": "关联于 {0}。客户端标识：{1}。",
+  "Adresse de retour : {0}": "回调地址：{0}",
+  "Détacher": "解除关联",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "解除 {0} 的关联？它将不能再使用 Pi 的账户让人们登录。",
+  "Aucun service relié.": "没有已关联的服务。",
+  "Installez d'abord un service pour le relier.": "请先安装一个服务再进行关联。",
+  "Service": "服务",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "服务给出的回调地址（每行一个，使用 https）",
+  "Relier le service": "关联服务",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} 已关联：重新关联会替换其标识和密钥，在修改服务设置之前，该服务将无法让任何人登录。继续吗？",
   "Tous les services qui demandent une connexion.": "所有需要登录的服务。",
   "Seulement : {0}.": "仅限：{0}。",
   "Aucun service.": "没有服务。",

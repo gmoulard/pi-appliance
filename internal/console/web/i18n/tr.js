@@ -14,6 +14,22 @@
 // Traduction de la console : turc. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("tr", {
+  "Services reliés": "Bağlı hizmetler",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "OpenID Connect ile oturum açmayı kabul eden bir hizmet Pi'nin hesaplarını kullanabilir: herkes konsolun kullanıcı adı ve parolasıyla oturum açar. Hizmeti buradan bağlayın, ardından konsolun gösterdiklerini hizmetin ayarlarına kopyalayın.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} bağlandı. Bu ayarları hizmete kopyalayın. Gizli anahtar yalnızca bir kez gösterilir: yenisi için hizmeti yeniden bağlayın.",
+  "Adresse du fournisseur (émetteur)": "Sağlayıcı adresi (yayımlayan)",
+  "Identifiant du client": "İstemci kimliği",
+  "Secret du client": "İstemci gizli anahtarı",
+  "Relié le {0}. Identifiant du client : {1}.": "{0} tarihinde bağlandı. İstemci kimliği: {1}.",
+  "Adresse de retour : {0}": "Dönüş adresi: {0}",
+  "Détacher": "Bağlantıyı kaldır",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "{0} bağlantısı kaldırılsın mı? Artık kişilerin oturum açması için Pi'nin hesaplarını kullanamayacak.",
+  "Aucun service relié.": "Bağlı hizmet yok.",
+  "Installez d'abord un service pour le relier.": "Bağlamak için önce bir hizmet kurun.",
+  "Service": "Hizmet",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "Hizmetin verdiği dönüş adresi (her satıra bir tane, https ile)",
+  "Relier le service": "Hizmeti bağla",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} zaten bağlı: yeniden bağlamak kimliğini ve gizli anahtarını değiştirir; hizmetin ayarları değiştirilene kadar kimse oturum açamaz. Devam edilsin mi?",
   "Tous les services qui demandent une connexion.": "Oturum açmayı gerektiren tüm hizmetler.",
   "Seulement : {0}.": "Yalnızca: {0}.",
   "Aucun service.": "Hiçbir hizmet.",

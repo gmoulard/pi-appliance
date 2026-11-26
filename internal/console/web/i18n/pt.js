@@ -14,6 +14,22 @@
 // Traduction de la console : portugais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("pt", {
+  "Services reliés": "Serviços ligados",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "Um serviço que aceita o início de sessão OpenID Connect pode usar as contas do Pi: cada pessoa entra com o identificador e a palavra-passe da consola. Ligue o serviço aqui e copie para as suas definições o que a consola mostra.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} está ligado. Copie estas definições para o serviço. O segredo só é mostrado uma vez: para obter outro, ligue de novo o serviço.",
+  "Adresse du fournisseur (émetteur)": "Endereço do fornecedor (emissor)",
+  "Identifiant du client": "Identificador do cliente",
+  "Secret du client": "Segredo do cliente",
+  "Relié le {0}. Identifiant du client : {1}.": "Ligado em {0}. Identificador do cliente: {1}.",
+  "Adresse de retour : {0}": "Endereço de retorno: {0}",
+  "Détacher": "Desligar",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "Desligar {0}? Deixará de poder usar as contas do Pi para as pessoas iniciarem sessão.",
+  "Aucun service relié.": "Nenhum serviço ligado.",
+  "Installez d'abord un service pour le relier.": "Instale primeiro um serviço para o ligar.",
+  "Service": "Serviço",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "Endereço de retorno indicado pelo serviço (um por linha, em https)",
+  "Relier le service": "Ligar o serviço",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} já está ligado: ligá-lo de novo substitui o identificador e o segredo, e o serviço não deixará ninguém entrar até as suas definições serem alteradas. Continuar?",
   "Tous les services qui demandent une connexion.": "Todos os serviços que pedem início de sessão.",
   "Seulement : {0}.": "Apenas: {0}.",
   "Aucun service.": "Nenhum serviço.",

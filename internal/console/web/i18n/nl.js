@@ -14,6 +14,22 @@
 // Traduction de la console : néerlandais. La clé est la phrase française, qui fait foi
 // (i18n.js). Les {0}, {1}… sont remplacés par la console : à garder tels quels.
 piTranslations("nl", {
+  "Services reliés": "Gekoppelde diensten",
+  "Un service qui accepte une connexion OpenID Connect peut utiliser les comptes du Pi : chacun s'y connecte avec l'identifiant et le mot de passe de la console. Reliez le service ici, puis recopiez dans ses réglages ce que la console affiche.": "Een dienst die aanmelden via OpenID Connect accepteert, kan de accounts van de Pi gebruiken: iedereen meldt zich daar aan met de gebruikersnaam en het wachtwoord van de console. Koppel de dienst hier en neem daarna in zijn instellingen over wat de console toont.",
+  "{0} est relié. Recopiez ces réglages dans le service. Le secret n'est montré qu'une fois : pour en avoir un autre, reliez de nouveau le service.": "{0} is gekoppeld. Neem deze instellingen over in de dienst. Het geheim wordt maar één keer getoond: koppel de dienst opnieuw voor een nieuw geheim.",
+  "Adresse du fournisseur (émetteur)": "Adres van de aanbieder (uitgever)",
+  "Identifiant du client": "Client-ID",
+  "Secret du client": "Clientgeheim",
+  "Relié le {0}. Identifiant du client : {1}.": "Gekoppeld op {0}. Client-ID: {1}.",
+  "Adresse de retour : {0}": "Terugkeeradres: {0}",
+  "Détacher": "Ontkoppelen",
+  "Détacher {0} ? Il ne pourra plus utiliser les comptes du Pi pour connecter les personnes.": "{0} ontkoppelen? De dienst kan de accounts van de Pi dan niet meer gebruiken om mensen aan te melden.",
+  "Aucun service relié.": "Geen gekoppelde dienst.",
+  "Installez d'abord un service pour le relier.": "Installeer eerst een dienst om hem te koppelen.",
+  "Service": "Dienst",
+  "Adresse de retour donnée par le service (une par ligne, en https)": "Terugkeeradres dat de dienst opgeeft (één per regel, met https)",
+  "Relier le service": "Dienst koppelen",
+  "{0} est déjà relié : le relier de nouveau remplace son identifiant et son secret, et le service ne connectera plus personne tant que ses réglages n'auront pas été changés. Continuer ?": "{0} is al gekoppeld: opnieuw koppelen vervangt de ID en het geheim, en de dienst meldt niemand meer aan tot zijn instellingen zijn aangepast. Doorgaan?",
   "Tous les services qui demandent une connexion.": "Alle diensten die om aanmelden vragen.",
   "Seulement : {0}.": "Alleen: {0}.",
   "Aucun service.": "Geen enkele dienst.",
