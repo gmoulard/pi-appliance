@@ -1,3 +1,7 @@
 - renomer le fichier /Todo-add-todo.md en Todo-ithem-for-todo.md
 - renome la banche master en main 
 - dans les "Docker Compose libre" ajouter un bouton Rebuild ou l'on force le telechargment des doclers et on relance. et un "Rebuild cleanup" ou l'on fait un rebuild complets avec supressions de toutes les données. 
+- mettre en place la gestion du DNS avec l'hebergement chez OVH (domaines pi-appliance.com)
+- pour chaque pi faire un enregistrement dydns dans OVH avec une mise a jours de l'IP a chaque chargement de la console et toutes les jours entre 5 et 8h du matin (domaines pi-appliance.com)
+- supprimer toutes référence a DuckDNS si cela est possible et le remplacer par un dyndns ovh (domaines pi-appliance.com)
+- l'email de contacte de pi-appliance est admin@pi-appliance.com
