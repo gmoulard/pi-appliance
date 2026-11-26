@@ -271,7 +271,6 @@ func TestPlaces(t *testing.T) {
 	}
 	p, _ := OpenPlaces(path, 1)
 	p.MonthlyBytes = 100
-	p.IdleRelease = time.Hour
 	now := time.Date(2026, 11, 26, 12, 0, 0, 0, time.UTC)
 	if s := p.Admit("a", "un", now); s.State != tunnel.StateReady {
 		t.Fatalf("a : %+v", s)
@@ -309,13 +308,21 @@ func TestPlaces(t *testing.T) {
 	if err != nil || len(again.data.Waiting) != 2 {
 		t.Fatalf("relecture : %v %+v", err, again.data)
 	}
-	// « b » muet plus d'une heure, « a » aussi : « c » prend la place.
-	later := next.Add(2 * time.Hour)
-	again.IdleRelease = time.Hour
-	again.Admit("c", "trois", later.Add(-time.Minute))
-	again.Expire(later)
-	if s := again.Admit("c", "trois", later); s.State != tunnel.StateReady {
-		t.Fatalf("après expiration : %+v", s)
+	// Muets des mois durant : personne ne perd sa place ni son rang.
+	later := next.AddDate(1, 0, 0)
+	if s := again.Admit("c", "trois", later); s.State != tunnel.StateWaiting || s.Position != 2 {
+		t.Fatalf("rang perdu : %+v", s)
+	}
+	if !again.Has("a", later) {
+		t.Fatal("place rendue d'office")
+	}
+	// « a » rend sa place : « b » la prend, « c » passe premier.
+	again.Release("a", later)
+	if s := again.Admit("b", "deux", later); s.State != tunnel.StateReady {
+		t.Fatalf("b après départ de a : %+v", s)
+	}
+	if s := again.Admit("c", "trois", later); s.State != tunnel.StateWaiting || s.Position != 1 {
+		t.Fatalf("c après départ de a : %+v", s)
 	}
 }
 
