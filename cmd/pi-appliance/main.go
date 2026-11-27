@@ -160,6 +160,15 @@ func main() {
 			manager.FollowName = false
 		}
 	})
+	// Étiquettes choisies à la main pour un service hors catalogue : effacées
+	// à la mise à jour (choix de l'utilisateur du 2026-11-27, TODO-5.28).
+	erased, err := manager.EraseTags()
+	if len(erased) > 0 {
+		log.Printf("étiquettes effacées : %s", strings.Join(erased, ", "))
+	}
+	if err != nil {
+		log.Printf("effacement des étiquettes : %v", err)
+	}
 	// Pare-feu des ports « maison seulement » (spécification 6.4), déjà chargé au
 	// démarrage par pi-appliance-firewall.service : réécrit d'après les services.
 	// Avec le préfixe IPv6 global de la maison, lu d'abord (home.yml de Traefik aussi).

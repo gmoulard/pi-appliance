@@ -128,10 +128,9 @@ func TestHealthCommit(t *testing.T) {
 	}
 }
 
-// Étiquettes d'un service hors catalogue : plus de réglage dans sa fiche
-// (demande de l'utilisateur du 2026-11-27, TODO-5.28), mais celles choisies
-// avant, gardées dans son instance.json, restent lues ; un service du
-// catalogue prend celles de son application.
+// Étiquettes d'un service hors catalogue : plus de réglage dans sa fiche, et
+// celles choisies avant sont effacées (choix de l'utilisateur du 2026-11-27,
+// TODO-5.28) ; un service du catalogue prend celles de son application.
 func TestServiceTags(t *testing.T) {
 	f := newFixture(t)
 	cookie := f.admin(t)
@@ -139,7 +138,8 @@ func TestServiceTags(t *testing.T) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	state, _ := json.Marshal(services.Instance{Name: "perso", App: services.CustomApp, AppName: "Docker Compose libre", Address: "perso.maison.example.org", Tags: []string{"maison", "fichiers"}})
+	state, _ := json.Marshal(services.Instance{Name: "perso", App: services.CustomApp, AppName: "Docker Compose libre", Address: "perso.maison.example.org"})
+	state = append(state[:len(state)-1], []byte(`,"tags":["maison","fichiers"]}`)...)
 	if err := os.WriteFile(filepath.Join(dir, "instance.json"), state, 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -157,7 +157,7 @@ func TestServiceTags(t *testing.T) {
 	for _, service := range listed.Services {
 		tags[service.Name] = strings.Join(service.Tags, ",")
 	}
-	if len(tags) != 2 || tags["perso"] != "maison,fichiers" || tags["wiki"] == "" || strings.Contains(response.Body.String(), "tags_editable") {
+	if len(tags) != 2 || tags["perso"] != "" || tags["wiki"] == "" || strings.Contains(response.Body.String(), "tags_editable") {
 		t.Fatalf("services %+v", listed.Services)
 	}
 }

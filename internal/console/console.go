@@ -813,6 +813,8 @@ type ServiceView struct {
 	// UsesDatabase : le service se servirait d'une base du PostgreSQL partagé
 	// (services.UsesDatabase) ; sinon la console ne la propose pas (TODO-2.84).
 	UsesDatabase bool `json:"uses_database,omitempty"`
+	// NE PAS lire les étiquettes dans instance.json : seulement celles du catalogue (TODO-5.28).
+	Tags []string `json:"tags,omitempty"`
 }
 
 func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
