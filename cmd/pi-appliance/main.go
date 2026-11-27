@@ -245,6 +245,8 @@ func main() {
 			Roles:      map[string]string{storage.DataMount: sdcard.RefusedData, backup.DiskMount: sdcard.RefusedBackup},
 			Decompress: sdcard.XZ,
 			Open:       sdcard.OpenDevice,
+			Channel:    checker.Channel,
+			Marker:     filepath.Join(*data, "sdcard-copy.json"),
 			Logf:       log.Printf,
 		}
 	}

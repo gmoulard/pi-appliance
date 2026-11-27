@@ -39,11 +39,11 @@ type Image struct {
 const imageSuffix = ".img.xz"
 
 // NE PAS prendre la dernière version tout court : les versions « socle seulement » n'ont pas d'image (workflow Image, image: false).
-func latestImage(releases []updates.Release) (Image, bool) {
+func latestImage(releases []updates.Release, channel string) (Image, bool) {
 	var best Image
 	found := false
 	for _, release := range releases {
-		if !release.Allowed(updates.Stable) {
+		if !release.Allowed(channel) {
 			continue
 		}
 		for _, asset := range release.Assets {

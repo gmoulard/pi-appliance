@@ -2221,7 +2221,6 @@ const SDCARD_REFUSED = {
   data: t("c'est le disque des données des services"),
   backup: t("c'est le disque des sauvegardes"),
   mounted: t("utilisée par le Pi en ce moment"),
-  fixed: t("ce n'est pas une carte amovible"),
   empty: t("lecteur sans carte"),
   "too-small": t("trop petite pour l'image"),
 };
@@ -2237,6 +2236,7 @@ const SDCARD_ERRORS = {
   cancelled: t("Copie annulée."),
   running: t("Une copie est déjà en cours."),
   "card-changed": t("La carte a changé depuis l'affichage de la liste : cherchez à nouveau."),
+  interrupted: t("La copie de la carte a été interrompue : relancez-la."),
 };
 
 function cardName(card) {
@@ -2299,8 +2299,9 @@ async function loadSDCard() {
       showMessage([SDCARD_ERRORS[job.error] || t("La copie a échoué."), t("La carte n'est pas utilisable en l'état : recommencez la copie.")], "error");
     }
   }
+  const interrupted = job && job.error === "interrupted" ? `${SDCARD_ERRORS.interrupted} ` : "";
   if (!status.image) {
-    sdcardState.textContent = SDCARD_ERRORS["no-image"];
+    sdcardState.textContent = interrupted + SDCARD_ERRORS["no-image"];
     return false;
   }
   if (status.internet) {
@@ -2308,10 +2309,10 @@ async function loadSDCard() {
     return false;
   }
   if (status.cards.length === 0) {
-    sdcardState.textContent = t("Aucune carte SD n'est branchée. Mettez la carte dans un lecteur de cartes branché sur un port USB du Pi, puis cherchez à nouveau.");
+    sdcardState.textContent = interrupted + t("Aucune carte SD n'est branchée. Mettez la carte dans un lecteur de cartes branché sur un port USB du Pi, puis cherchez à nouveau.");
     return false;
   }
-  sdcardState.textContent = t("Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :", status.image.version);
+  sdcardState.textContent = interrupted + t("Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :", status.image.version);
   sdcardCards.replaceChildren(...status.cards.map((card) => {
     const item = element("li");
     const button = element("button");

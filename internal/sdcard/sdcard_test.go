@@ -73,7 +73,7 @@ func TestCards(t *testing.T) {
 		"/dev/sda": RefusedSystem,
 		"/dev/sdb": RefusedBackup,
 		"/dev/sdc": RefusedMounted,
-		"/dev/sdd": RefusedFixed,
+		"/dev/sdd": "",
 		"/dev/sde": RefusedTooSmall,
 		"/dev/sdf": "",
 		"/dev/sdg": RefusedEmpty,
@@ -110,11 +110,14 @@ func TestLatestImage(t *testing.T) {
 		{Tag: "v0.2.0", Assets: []updates.Asset{asset("pi-appliance-v0.2.0.img.xz"), asset("pi-appliance-v0.2.0.img.xz.sha256")}},
 		{Tag: "v0.3.0", Draft: true, Assets: []updates.Asset{asset("pi-appliance-v0.3.0.img.xz"), asset("pi-appliance-v0.3.0.img.xz.sha256")}},
 	}
-	image, ok := latestImage(releases)
+	image, ok := latestImage(releases, updates.Stable)
 	if !ok || image.Version != "v0.2.0" || image.ChecksumURL != "https://x/pi-appliance-v0.2.0.img.xz.sha256" {
 		t.Fatalf("image : %+v %v", image, ok)
 	}
-	if _, ok := latestImage(releases[:1]); ok {
+	if image, ok := latestImage(releases, updates.Beta); !ok || image.Version != "v0.2.3-beta.1" {
+		t.Fatalf("canal bêta : %+v %v", image, ok)
+	}
+	if _, ok := latestImage(releases[:1], updates.Beta); ok {
 		t.Error("version sans image retenue")
 	}
 }
@@ -306,6 +309,10 @@ func TestVerifyMismatchFails(t *testing.T) {
 func TestStartRefusesSystemDisk(t *testing.T) {
 	f := newFixture(t, 64<<20, func(real string) string { return real })
 	f.manager.Lsblk = func(context.Context) ([]byte, error) { return []byte(lsblkSample), nil }
+	f.manager.Roles = testRoles
+	if err := os.WriteFile(f.manager.Fstab, []byte(fstabSample), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	for _, device := range []struct {
 		path, model string
 		size        int64
@@ -313,7 +320,8 @@ func TestStartRefusesSystemDisk(t *testing.T) {
 	}{
 		{"/dev/sda", "Samsung SSD 870", 500107862016, RefusedSystem},
 		{"/dev/sdc", "Stick", 32000000000, RefusedMounted},
-		{"/dev/sdd", "Disque dur", 1000000000000, RefusedFixed},
+		{"/dev/sdb", "WD Backup", 64000000000, RefusedBackup},
+		{"/dev/sdh", "Data", 64000000000, RefusedData},
 	} {
 		err := f.manager.Start(context.Background(), device.path, device.model, device.size)
 		var failure Failure
@@ -353,5 +361,74 @@ func TestCancel(t *testing.T) {
 	job := waitJob(t, f.manager)
 	if job.State != StateFailed || job.Error != ErrCancelled {
 		t.Fatalf("annulation : %+v", job)
+	}
+}
+
+func TestFixedUSBDiskAccepted(t *testing.T) {
+	f := newFixture(t, 64<<20, func(real string) string { return real })
+	lsblk := `{"blockdevices":[{"name":"/dev/sdz","type":"disk","tran":"usb","rm":false,"size":67108864,"model":"SSD","vendor":"Generic"}]}`
+	f.manager.Lsblk = func(context.Context) ([]byte, error) { return []byte(lsblk), nil }
+	if err := f.manager.Start(context.Background(), "/dev/sdz", "Generic SSD", 64<<20); err != nil {
+		t.Fatal(err)
+	}
+	if job := waitJob(t, f.manager); job.State != StateDone {
+		t.Fatalf("SSD USB : %+v", job)
+	}
+}
+
+func TestImageFollowsChannel(t *testing.T) {
+	f := newFixture(t, 64<<20, func(real string) string { return real })
+	releases := f.manager.Releases.(fakeReleases)
+	beta := updates.Release{Tag: "v0.3.0-beta.1", Prerelease: true, Assets: []updates.Asset{
+		{Name: "pi-appliance-v0.3.0-beta.1.img.xz", URL: releases[0].Assets[0].URL, Size: releases[0].Assets[0].Size},
+		{Name: "pi-appliance-v0.3.0-beta.1.img.xz.sha256", URL: releases[0].Assets[1].URL},
+	}}
+	f.manager.Releases = append(fakeReleases{beta}, releases...)
+	channel := updates.Stable
+	f.manager.Channel = func() string { return channel }
+	status, err := f.manager.Status(context.Background())
+	if err != nil || status.Image == nil || status.Image.Version != "v0.2.0" {
+		t.Fatalf("canal stable : %+v %v", status.Image, err)
+	}
+	channel = updates.Beta
+	status, err = f.manager.Status(context.Background())
+	if err != nil || status.Image == nil || status.Image.Version != "v0.3.0-beta.1" {
+		t.Fatalf("canal bêta : %+v %v", status.Image, err)
+	}
+}
+
+func TestInterruptedCopyReported(t *testing.T) {
+	f := newFixture(t, 64<<20, func(real string) string { return real })
+	f.manager.Marker = filepath.Join(t.TempDir(), "sdcard-copy.json")
+	f.manager.Decompress = func(ctx context.Context, _ io.Reader) (io.ReadCloser, func() error, error) {
+		return blocking{ctx}, func() error { return nil }, nil
+	}
+	if err := f.manager.Start(context.Background(), "/dev/sdz", "Generic Carte", 64<<20); err != nil {
+		t.Fatal(err)
+	}
+	saved, err := os.ReadFile(f.manager.Marker)
+	if err != nil {
+		t.Fatalf("copie en cours non marquée : %v", err)
+	}
+	restarted := &Manager{Marker: filepath.Join(t.TempDir(), "sdcard-copy.json")}
+	if err := os.WriteFile(restarted.Marker, saved, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	job := restarted.jobCopy()
+	if job == nil || job.State != StateFailed || job.Error != ErrInterrupted || job.Device != "/dev/sdz" || job.Version != "v0.2.0" {
+		t.Fatalf("copie interrompue : %+v", job)
+	}
+	if _, err := os.Stat(restarted.Marker); !os.IsNotExist(err) {
+		t.Fatalf("marque gardée après le signalement : %v", err)
+	}
+	if !f.manager.Cancel() {
+		t.Fatal("annulation refusée")
+	}
+	waitJob(t, f.manager)
+	if _, err := os.Stat(f.manager.Marker); !os.IsNotExist(err) {
+		t.Fatalf("marque gardée à la fin de la copie : %v", err)
+	}
+	if job := f.manager.jobCopy(); job.Error != ErrCancelled {
+		t.Fatalf("fin de copie : %+v", job)
 	}
 }

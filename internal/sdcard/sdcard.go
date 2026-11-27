@@ -18,6 +18,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -49,6 +50,7 @@ const (
 	ErrCancelled      = "cancelled"
 	ErrCardChanged    = "card-changed"
 	ErrAlreadyRunning = "running"
+	ErrInterrupted    = "interrupted"
 )
 
 type Failure struct {
@@ -93,17 +95,21 @@ type Manager struct {
 	Roles      map[string]string
 	Decompress func(ctx context.Context, compressed io.Reader) (io.ReadCloser, func() error, error)
 	Open       func(path string, write bool) (Device, error)
+	Channel    func() string
+	Marker     string
 	Logf       func(format string, args ...any)
 
-	mu        sync.Mutex
-	image     *Image
-	imageAt   time.Time
-	imageErr  error
-	job       *Job
-	cancel    context.CancelFunc
-	done      atomic.Int64
-	total     atomic.Int64
-	verifying atomic.Bool
+	mu           sync.Mutex
+	image        *Image
+	imageAt      time.Time
+	imageErr     error
+	imageChannel string
+	restored     bool
+	job          *Job
+	cancel       context.CancelFunc
+	done         atomic.Int64
+	total        atomic.Int64
+	verifying    atomic.Bool
 }
 
 func XZ(ctx context.Context, compressed io.Reader) (io.ReadCloser, func() error, error) {
@@ -143,28 +149,36 @@ func (m *Manager) client() *http.Client {
 	return &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment, ResponseHeaderTimeout: time.Minute}}
 }
 
+func (m *Manager) channel() string {
+	if m.Channel != nil && m.Channel() == updates.Beta {
+		return updates.Beta
+	}
+	return updates.Stable
+}
+
 func (m *Manager) currentImage(ctx context.Context) (*Image, error) {
+	channel := m.channel()
 	m.mu.Lock()
-	cached, at, cachedErr := m.image, m.imageAt, m.imageErr
+	cached, at, cachedErr, cachedChannel := m.image, m.imageAt, m.imageErr, m.imageChannel
 	m.mu.Unlock()
-	if (cached != nil && time.Since(at) < time.Hour) || (cachedErr != nil && time.Since(at) < 5*time.Minute) {
+	if cachedChannel == channel && ((cached != nil && time.Since(at) < time.Hour) || (cachedErr != nil && time.Since(at) < 5*time.Minute)) {
 		return cached, cachedErr
 	}
-	image, err := m.findImage(ctx)
+	image, err := m.findImage(ctx, channel)
 	m.mu.Lock()
-	m.image, m.imageAt, m.imageErr = image, time.Now(), err
+	m.image, m.imageAt, m.imageErr, m.imageChannel = image, time.Now(), err, channel
 	m.mu.Unlock()
 	return image, err
 }
 
-func (m *Manager) findImage(ctx context.Context) (*Image, error) {
+func (m *Manager) findImage(ctx context.Context, channel string) (*Image, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 	releases, err := m.Releases.List(ctx)
 	if err != nil {
 		return nil, err
 	}
-	image, ok := latestImage(releases)
+	image, ok := latestImage(releases, channel)
 	if !ok {
 		return nil, Failure{Code: ErrNoImage}
 	}
@@ -218,6 +232,7 @@ func (m *Manager) Status(ctx context.Context) (Status, error) {
 func (m *Manager) jobCopy() *Job {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	m.restoreLocked()
 	if m.job == nil {
 		return nil
 	}
@@ -235,6 +250,7 @@ func (m *Manager) jobCopy() *Job {
 
 func (m *Manager) Start(ctx context.Context, device, model string, size int64) error {
 	m.mu.Lock()
+	m.restoreLocked()
 	running := m.job != nil && (m.job.State == StateWriting || m.job.State == StateVerifying)
 	m.mu.Unlock()
 	if running {
@@ -275,6 +291,7 @@ func (m *Manager) Start(ctx context.Context, device, model string, size int64) e
 	m.total.Store(0)
 	m.verifying.Store(false)
 	m.job = &Job{State: StateWriting, Device: card.Device, Model: card.Model, Size: card.Size, Version: image.Version, StartedAt: time.Now().UTC().Format(time.RFC3339)}
+	m.mark(*m.job)
 	go m.run(jobCtx, *card, *image)
 	return nil
 }
@@ -294,6 +311,7 @@ func (m *Manager) run(ctx context.Context, card Card, image Image) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.cancel = nil
+	m.unmark()
 	if err == nil {
 		m.job.State, m.job.Percent = StateDone, 100
 		m.logf("carte SD : %s (%s) prête avec pi-appliance %s", card.Device, card.Model, image.Version)
@@ -309,6 +327,53 @@ func (m *Manager) run(ctx context.Context, card Card, image Image) {
 	}
 	m.job.State, m.job.Error = StateFailed, code
 	m.logf("carte SD : copie sur %s échouée : %v", card.Device, err)
+}
+
+// NE PAS se passer de la marque : une copie coupée par un redémarrage de la console laisse une carte à moitié écrite sans que personne le sache.
+func (m *Manager) mark(job Job) {
+	if m.Marker == "" {
+		return
+	}
+	data, err := json.Marshal(job)
+	if err == nil {
+		err = os.WriteFile(m.Marker, data, 0o600)
+	}
+	if err != nil {
+		m.logf("carte SD : copie en cours non enregistrée : %v", err)
+	}
+}
+
+func (m *Manager) unmark() {
+	if m.Marker == "" {
+		return
+	}
+	if err := os.Remove(m.Marker); err != nil && !errors.Is(err, os.ErrNotExist) {
+		m.logf("carte SD : marque de la copie non effacée : %v", err)
+	}
+}
+
+func (m *Manager) restoreLocked() {
+	if m.restored || m.Marker == "" {
+		return
+	}
+	m.restored = true
+	data, err := os.ReadFile(m.Marker)
+	if errors.Is(err, os.ErrNotExist) {
+		return
+	}
+	if err != nil {
+		m.logf("carte SD : marque de la copie illisible : %v", err)
+		return
+	}
+	var job Job
+	if err := json.Unmarshal(data, &job); err != nil {
+		m.logf("carte SD : marque de la copie illisible : %v", err)
+		job = Job{}
+	}
+	job.State, job.Percent, job.Error = StateFailed, 0, ErrInterrupted
+	m.job = &job
+	m.logf("carte SD : la copie sur %s a été interrompue par un redémarrage de la console", job.Device)
+	m.unmark()
 }
 
 type counter struct {

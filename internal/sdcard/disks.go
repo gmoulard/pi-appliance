@@ -27,7 +27,6 @@ const (
 	RefusedData     = "data"
 	RefusedBackup   = "backup"
 	RefusedMounted  = "mounted"
-	RefusedFixed    = "fixed"
 	RefusedEmpty    = "empty"
 	RefusedTooSmall = "too-small"
 )
@@ -37,14 +36,6 @@ type Card struct {
 	Model   string `json:"model"`
 	Size    int64  `json:"size"`
 	Refused string `json:"refused,omitempty"`
-}
-
-type flexBool bool
-
-func (b *flexBool) UnmarshalJSON(data []byte) error {
-	text := strings.Trim(string(data), `"`)
-	*b = flexBool(text == "true" || text == "1")
-	return nil
 }
 
 type flexInt int64
@@ -67,7 +58,6 @@ type blockDevice struct {
 	Name       string        `json:"name"`
 	Type       string        `json:"type"`
 	Tran       string        `json:"tran"`
-	RM         flexBool      `json:"rm"`
 	Size       flexInt       `json:"size"`
 	Model      string        `json:"model"`
 	Vendor     string        `json:"vendor"`
@@ -76,7 +66,7 @@ type blockDevice struct {
 	Children   []blockDevice `json:"children"`
 }
 
-var LsblkArgs = []string{"--json", "--bytes", "--paths", "--output", "NAME,TYPE,TRAN,RM,SIZE,MODEL,VENDOR,UUID,MOUNTPOINT"}
+var LsblkArgs = []string{"--json", "--bytes", "--paths", "--output", "NAME,TYPE,TRAN,SIZE,MODEL,VENDOR,UUID,MOUNTPOINT"}
 
 var systemMounts = map[string]bool{"/": true, "/boot": true, "/boot/firmware": true}
 
@@ -124,8 +114,6 @@ func Cards(devices []blockDevice, used map[string]string, imageSize int64) []Car
 			card.Refused = role
 		case mounted:
 			card.Refused = RefusedMounted
-		case !bool(device.RM):
-			card.Refused = RefusedFixed
 		case card.Size <= 0:
 			card.Refused = RefusedEmpty
 		case imageSize > 0 && card.Size < imageSize:
