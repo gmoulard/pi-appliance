@@ -989,5 +989,14 @@ piTranslations("it", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "Versione copiata: pi-appliance {0}. Il nuovo Pi si aggiornerà poi dalla sua console. Scegliete la scheda da preparare:",
   "ne peut pas être préparée": "non può essere preparata",
   "tout son contenu sera effacé": "tutto il suo contenuto sarà cancellato",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Annullare la copia? La scheda non sarà utilizzabile così com'è."
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Annullare la copia? La scheda non sarà utilizzabile così com'è.",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "Una riga per variabile: NOME=valore. Il file compose.yaml le usa con ${NOME}. Le variabili PI_INSTANCE, PI_HOST, PI_SMTP_… e PI_DATABASE_… sono impostate dalla console: non possono essere indicate qui.",
+  "Fichier .env": "File .env",
+  "Enregistrer le fichier .env": "Salva il file .env",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "Salvataggio del file .env di {0}… Il servizio si riavvia.",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "Il file .env di {0} è salvato e il servizio riavviato.",
+  "Fichier .env donné par l'administrateur :": "File .env indicato dall'amministratore:",
+  "Contenu du fichier .env (facultatif)": "Contenuto del file .env (facoltativo)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "Il file .env della precedente installazione di {0} è stato ripreso: ricontrollalo prima di installare.",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "Conservare il file .env di {0} (codici e impostazioni indicati dall'amministratore)?\n\nOK: conservarlo\nAnnulla: cancellarlo"
 });

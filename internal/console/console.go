@@ -132,6 +132,7 @@ type ComposeRequest struct {
 	// SourceEdited : modifié dans la console avant l'installation.
 	SourceURL    string `json:"source_url"`
 	SourceEdited bool   `json:"source_edited"`
+	Env          string `json:"env"`
 }
 
 // StorageUseRequest : placer les données des services sur cette partition ext4.
@@ -297,6 +298,9 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/cleanup", c.adminOnly(c.cleanupDirs))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/source", c.adminOnly(c.composeSource))
+	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/env", c.adminOnly(c.envFile))
+	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/env", c.adminOnly(c.setEnvFile))
+	mux.HandleFunc("GET "+BasePath+"/api/compose/env", c.adminOnly(c.keptEnvFile))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/access", c.adminOnly(c.setAccess))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/subpath", c.adminOnly(c.setSubPath))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/mail", c.adminOnly(c.setMail))
@@ -1005,7 +1009,16 @@ func (c *console) rebuild(w http.ResponseWriter, r *http.Request, name string) {
 		writeError(w, http.StatusBadRequest, "Dites s'il faut garder (data=keep) ou supprimer (data=delete) les données du service.")
 		return
 	}
-	result, err := c.Services.Rebuild(r.Context(), name, cleanup)
+	var dropEnv bool
+	switch r.URL.Query().Get("env") {
+	case "", "keep":
+	case "delete":
+		dropEnv = cleanup
+	default:
+		writeError(w, http.StatusBadRequest, "Dites s'il faut garder (env=keep) ou effacer (env=delete) le fichier .env du service.")
+		return
+	}
+	result, err := c.Services.Rebuild(r.Context(), name, cleanup, dropEnv)
 	if errors.Is(err, services.ErrRebuildRolledBack) {
 		c.syncTraefikNow()
 		writeJSON(w, http.StatusConflict, map[string]any{"error": "La reconstruction n'a pas marché : le service tourne de nouveau avec ses images d'avant. " + strings.TrimPrefix(err.Error(), services.ErrRebuildRolledBack.Error()+" : "), "rolled_back": true})
@@ -1031,7 +1044,46 @@ func (c *console) cleanupDirs(w http.ResponseWriter, r *http.Request) {
 		writeServiceError(w, err)
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"dirs": dirs, "kept": kept})
+	env, err := c.Services.EnvFile(r.PathValue("name"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"dirs": dirs, "kept": kept, "env": env != ""})
+}
+
+func (c *console) envFile(w http.ResponseWriter, r *http.Request) {
+	env, err := c.Services.EnvFile(r.PathValue("name"))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusOK, map[string]string{"env": env})
+}
+
+func (c *console) setEnvFile(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		Env string `json:"env"`
+	}
+	if !decodeJSON(w, r, &request) {
+		return
+	}
+	if err := c.Services.SetEnvFile(r.Context(), r.PathValue("name"), request.Env); err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (c *console) keptEnvFile(w http.ResponseWriter, r *http.Request) {
+	env, err := c.Services.KeptEnvFile(marketplace.NormalizeLabel(r.URL.Query().Get("name")))
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+	w.Header().Set("Cache-Control", "no-store")
+	writeJSON(w, http.StatusOK, map[string]string{"env": env})
 }
 
 // Réglages avancés et Docker Compose libre (spécification 6.4), réservés à l'administrateur.
@@ -1124,6 +1176,7 @@ func (c *console) installCompose(w http.ResponseWriter, r *http.Request) {
 		ConfirmRisks: request.ConfirmRisks,
 		SourceURL:    request.SourceURL,
 		SourceEdited: request.SourceEdited,
+		Env:          request.Env,
 	})
 	if err != nil {
 		writeServiceError(w, err)
@@ -1145,6 +1198,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 	case errors.As(err, &risks):
 		// À confirmer, pas bloqué (spécification 6.4) : la console redemande avec confirm_risks.
 		writeJSON(w, http.StatusConflict, map[string]any{"error": "Ces options donnent la main sur tout le Pi : confirmez pour continuer.", "risks": risks.Risks})
+	case errors.Is(err, services.ErrEnvRestored):
+		writeError(w, http.StatusConflict, "Avec ce fichier .env, le service ne démarre pas : l'ancien fichier .env est remis. "+strings.TrimPrefix(err.Error(), services.ErrEnvRestored.Error()+" : "))
 	case errors.Is(err, services.ErrSettingsRestored):
 		writeError(w, http.StatusConflict, "Avec ces réglages, le service ne démarre pas : les réglages d'avant sont remis. "+strings.TrimPrefix(err.Error(), services.ErrSettingsRestored.Error()+" : "))
 	case errors.Is(err, services.ErrNoSpace):

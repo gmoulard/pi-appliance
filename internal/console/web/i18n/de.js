@@ -989,5 +989,14 @@ piTranslations("de", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "Kopierte Version: pi-appliance {0}. Der neue Pi aktualisiert sich danach über seine Konsole. Wählen Sie die vorzubereitende Karte:",
   "ne peut pas être préparée": "kann nicht vorbereitet werden",
   "tout son contenu sera effacé": "ihr gesamter Inhalt wird gelöscht",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Kopieren abbrechen? Die Karte ist dann so nicht verwendbar."
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Kopieren abbrechen? Die Karte ist dann so nicht verwendbar.",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "Eine Zeile pro Variable: NAME=Wert. Die Datei compose.yaml verwendet sie mit ${NAME}. Die Variablen PI_INSTANCE, PI_HOST, PI_SMTP_… und PI_DATABASE_… setzt die Konsole: Sie können hier nicht angegeben werden.",
+  "Fichier .env": "Datei .env",
+  "Enregistrer le fichier .env": "Datei .env speichern",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "Datei .env von {0} wird gespeichert… Der Dienst startet neu.",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "Die Datei .env von {0} ist gespeichert und der Dienst neu gestartet.",
+  "Fichier .env donné par l'administrateur :": "Vom Administrator angegebene Datei .env:",
+  "Contenu du fichier .env (facultatif)": "Inhalt der Datei .env (optional)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "Die Datei .env der früheren Installation von {0} wurde übernommen: Prüfen Sie sie vor der Installation.",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "Die Datei .env von {0} (vom Administrator angegebene Codes und Einstellungen) behalten?\n\nOK: behalten\nAbbrechen: löschen"
 });

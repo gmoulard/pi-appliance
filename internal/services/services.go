@@ -192,6 +192,10 @@ func (m *Manager) compose(ctx context.Context, name string, args ...string) ([]b
 }
 
 func (m *Manager) Install(ctx context.Context, app marketplace.App, name string, values map[string]string) (Result, error) {
+	return m.installWith(ctx, app, name, values, "")
+}
+
+func (m *Manager) installWith(ctx context.Context, app marketplace.App, name string, values map[string]string, adminEnv string) (Result, error) {
 	m.forgetProgress(name)
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -212,12 +216,12 @@ func (m *Manager) Install(ctx context.Context, app marketplace.App, name string,
 		}
 	}
 	m.track(name, app.Name)
-	result, err := m.install(ctx, app, name, values)
+	result, err := m.install(ctx, app, name, values, adminEnv)
 	m.finish(name, err)
 	return result, err
 }
 
-func (m *Manager) install(ctx context.Context, app marketplace.App, name string, values map[string]string) (Result, error) {
+func (m *Manager) install(ctx context.Context, app marketplace.App, name string, values map[string]string, adminEnv string) (Result, error) {
 	dir := m.serviceDir(name)
 	address := ServiceAddress(name, m.CurrentDomain())
 	if err := checkAddress(name, address); err != nil {
@@ -234,6 +238,14 @@ func (m *Manager) install(ctx context.Context, app marketplace.App, name string,
 	if m.Measure != nil || m.MemoryMB != nil {
 		if memory := m.Resources().MemoryTotalMB; memory > 0 && memory < app.MemoryMB {
 			warnings = append(warnings, fmt.Sprintf("Ce Raspberry Pi a %d Mo de mémoire et %s en demande %d : le service risque d'être lent.", memory, app.Name, app.MemoryMB))
+		}
+	}
+	if app.ID == CustomApp {
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			return Result{}, err
+		}
+		if err := writeAdminEnv(dir, adminEnv); err != nil {
+			return Result{}, err
 		}
 	}
 	if err := m.writeFiles(dir, app, name, address, env); err != nil {
@@ -400,6 +412,13 @@ func writeEnv(dir string, env map[string]string) error {
 	var content strings.Builder
 	for _, key := range keys {
 		fmt.Fprintf(&content, "%s='%s'\n", key, env[key])
+	}
+	admin, err := readAdminEnv(dir)
+	if err != nil {
+		return err
+	}
+	if admin != "" {
+		content.WriteString(adminEnvMark + "\n" + admin)
 	}
 	return os.WriteFile(filepath.Join(dir, envName), []byte(content.String()), 0o600)
 }
@@ -579,6 +598,10 @@ func readEnv(path string) (map[string]string, error) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
+		// NE PAS lire après la marque : les lignes de l'administrateur viennent de admin.env, réécrites à chaque fois.
+		if scanner.Text() == adminEnvMark {
+			break
+		}
 		key, value, ok := strings.Cut(scanner.Text(), "=")
 		if ok {
 			values[key] = strings.Trim(value, "'")

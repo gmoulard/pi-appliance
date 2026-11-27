@@ -170,3 +170,58 @@ func TestComposeSourceAPI(t *testing.T) {
 		t.Fatalf("code %d : %s", response.Code, response.Body.String())
 	}
 }
+
+func TestComposeEnvAPI(t *testing.T) {
+	f := newFixture(t)
+	admin := f.admin(t)
+	install := func(env string) int {
+		body, _ := json.Marshal(ComposeRequest{Name: "nautilink", Compose: "services:\n  web:\n    image: nginx:1.27\n", Service: "web", Port: 80, Env: env})
+		return f.do(http.MethodPost, "/pi-appliance/api/compose", "application/json", string(body), admin).Code
+	}
+	if code := install("PI_HOST=ailleurs\n"); code != http.StatusBadRequest {
+		t.Fatalf("variable de la console : code %d", code)
+	}
+	if code := install("METEO_KEY=secret\n"); code != http.StatusCreated {
+		t.Fatalf("installation : code %d", code)
+	}
+	token := f.invite(t, admin, `{"name": "paul", "email": "paul@example.org", "role": "user"}`)
+	paul := sessionCookie(t, f.do(http.MethodPost, "/pi-appliance/api/invitation", "application/json", `{"token": "`+token+`", "password": "huit car"}`, nil))
+	for _, request := range []struct{ method, path, body string }{
+		{http.MethodGet, "/pi-appliance/api/services/nautilink/env", ""},
+		{http.MethodPut, "/pi-appliance/api/services/nautilink/env", `{"env": "A=1"}`},
+		{http.MethodGet, "/pi-appliance/api/compose/env?name=nautilink", ""},
+	} {
+		if response := f.do(request.method, request.path, "application/json", request.body, paul); response.Code != http.StatusForbidden || strings.Contains(response.Body.String(), "secret") {
+			t.Fatalf("%s %s par un utilisateur : code %d", request.method, request.path, response.Code)
+		}
+	}
+	response := f.do(http.MethodGet, "/pi-appliance/api/services/nautilink/env", "", "", admin)
+	if response.Code != http.StatusOK || response.Header().Get("Cache-Control") != "no-store" || !strings.Contains(response.Body.String(), `"env":"METEO_KEY=secret\n"`) {
+		t.Fatalf("lecture : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodGet, "/pi-appliance/api/services/nautilink/source", "", "", admin); !strings.Contains(response.Body.String(), "METEO_KEY=secret") {
+		t.Fatalf("source : %s", response.Body.String())
+	}
+	if response := f.do(http.MethodGet, "/pi-appliance/api/services/nautilink/cleanup", "", "", admin); !strings.Contains(response.Body.String(), `"env":true`) {
+		t.Fatalf("cleanup : %s", response.Body.String())
+	}
+	if response := f.do(http.MethodPut, "/pi-appliance/api/services/nautilink/env", "application/json", `{"env": "PI_SMTP_HOST=x"}`, admin); response.Code != http.StatusBadRequest {
+		t.Fatalf("variable de la console : code %d", response.Code)
+	}
+	if response := f.do(http.MethodPut, "/pi-appliance/api/services/nautilink/env", "application/json", `{"env": "METEO_KEY=autre\n"}`, admin); response.Code != http.StatusNoContent {
+		t.Fatalf("modification : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/nautilink/rebuild?data=delete&env=oui", "", "", admin); response.Code != http.StatusBadRequest {
+		t.Fatalf("env inconnu : code %d", response.Code)
+	}
+	if response := f.do(http.MethodPost, "/pi-appliance/api/services/nautilink/rebuild?data=delete&env=keep", "", "", admin); response.Code != http.StatusOK {
+		t.Fatalf("réinitialisation, .env gardé : code %d : %s", response.Code, response.Body.String())
+	}
+	if response := f.do(http.MethodDelete, "/pi-appliance/api/services/nautilink?data=keep", "", "", admin); response.Code >= 300 {
+		t.Fatalf("désinstallation : code %d : %s", response.Code, response.Body.String())
+	}
+	response = f.do(http.MethodGet, "/pi-appliance/api/compose/env?name=nautilink", "", "", admin)
+	if response.Code != http.StatusOK || !strings.Contains(response.Body.String(), `"env":"METEO_KEY=autre\n"`) {
+		t.Fatalf("préremplissage : code %d : %s", response.Code, response.Body.String())
+	}
+}

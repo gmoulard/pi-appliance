@@ -1474,6 +1474,44 @@ async function advancedPanel(service, panel) {
     }
   });
   panel.replaceChildren(form);
+  if (service.app === CUSTOM_APP) panel.append(await envPanel(service));
+}
+
+function envField(label, name, value) {
+  const box = textArea(label, name, value, "METEO_FRANCE_API_KEY=…");
+  const area = box.querySelector("textarea");
+  area.dir = "ltr";
+  area.rows = 4;
+  box.append(element("span", t("Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici."), "meta"));
+  return box;
+}
+
+async function envPanel(service) {
+  const { env } = await api(`services/${encodeURIComponent(service.name)}/env`);
+  const form = element("form", undefined, "advanced");
+  form.append(envField(t("Fichier .env"), "env", env),
+    element("p", t("Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance."), "note"));
+  const save = element("button", t("Enregistrer le fichier .env"));
+  form.append(save);
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    save.disabled = true;
+    showMessage([t("Enregistrement du fichier .env de {0}… Le service redémarre.", service.name)], "info");
+    try {
+      await api(`services/${encodeURIComponent(service.name)}/env`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ env: new FormData(form).get("env") }),
+      });
+      showMessage([t("Le fichier .env de {0} est enregistré et le service relancé.", service.name)], "success");
+      await loadServices().catch(() => null);
+    } catch (error) {
+      showMessage([error.message], "error");
+    } finally {
+      save.disabled = false;
+    }
+  });
+  return form;
 }
 
 function advancedButton(service, card) {
@@ -1546,6 +1584,16 @@ function sourceButton(service) {
         : t("Conteneur ouvert à l'adresse du service : inconnu.");
       panel.replaceChildren(origin, element("p", published, "meta"),
         element("p", t("Ce fichier peut contenir des mots de passe : ne le montrez qu'à des personnes de confiance."), "note"), text, controls);
+      if (source.env) {
+        const envText = element("textarea");
+        envText.readOnly = true;
+        envText.rows = Math.min(12, Math.max(3, source.env.split("\n").length));
+        envText.value = source.env;
+        envText.dir = "ltr";
+        envText.spellcheck = false;
+        envText.setAttribute("aria-label", t("Fichier .env"));
+        panel.append(element("p", t("Fichier .env donné par l'administrateur :"), "meta"), envText);
+      }
     } catch (error) {
       panel.hidden = true;
       button.setAttribute("aria-expanded", "false");
@@ -1875,9 +1923,25 @@ function customComposeCard() {
   port.value = 80;
   port.required = true;
   portLabel.append(port);
+  const envLabel = envField(t("Contenu du fichier .env (facultatif)"), "env", "");
+  const env = envLabel.querySelector("textarea");
+  let keptEnv = "";
+  name.addEventListener("change", async () => {
+    const wanted = name.value;
+    let kept = "";
+    try {
+      ({ env: kept } = await api(`compose/env?name=${encodeURIComponent(wanted)}`));
+    } catch {
+      return;
+    }
+    if (name.value !== wanted || !kept || (env.value.trim() && env.value !== keptEnv)) return;
+    env.value = kept;
+    keptEnv = kept;
+    showMessage([t("Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.", wanted)], "info");
+  });
   const button = element("button", t("Installer"));
   serviceNameField(name, button);
-  form.append(nameLabel, urlLabel, composeLabel, serviceLabel, portLabel, button);
+  form.append(nameLabel, urlLabel, composeLabel, envLabel, serviceLabel, portLabel, button);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(form);
@@ -1893,6 +1957,7 @@ function customComposeCard() {
           name: data.get("name"), compose: data.get("compose"), service: data.get("service"),
           port: Number(data.get("port")), confirm_risks: confirm,
           source_url: fetched ? fetched.url : "", source_edited: Boolean(fetched) && compose.value !== fetched.compose,
+          env: data.get("env"),
         }),
       }));
       if (!result) {
@@ -1903,6 +1968,7 @@ function customComposeCard() {
       showMessage([t("{0} est prêt : https://{1}", result.instance.name, result.instance.address), ...(result.warnings || [])], "success");
       form.reset();
       fetched = null;
+      keptEnv = "";
       await loadServices();
       await refreshResources();
     } catch (error) {
@@ -1994,12 +2060,13 @@ async function act(service, control, button) {
 // déjà sur le Pi, conteneurs recréés ; cleanup efface d'abord les données, dont
 // le contenu des dossiers du Pi montés (listés dans la confirmation).
 async function rebuildService(service, cleanup, button) {
+  let hasEnv = false;
   let question = t("Reconstruire {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?", service.name);
   if (cleanup) {
     let dirs;
     let kept;
     try {
-      ({ dirs, kept } = await api(`services/${encodeURIComponent(service.name)}/cleanup`));
+      ({ dirs, kept, env: hasEnv } = await api(`services/${encodeURIComponent(service.name)}/cleanup`));
     } catch (error) {
       showMessage([error.message], "error");
       return;
@@ -2009,13 +2076,14 @@ async function rebuildService(service, cleanup, button) {
     if (kept && kept.length) question += `\n\n${t("Ces prises du Pi sont laissées telles quelles, ni vidées ni supprimées :")}\n${kept.join("\n")}`;
   }
   if (!window.confirm(question)) return;
+  const keepEnv = !hasEnv || window.confirm(t("Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer", service.name));
   button.disabled = true;
   showMessage([t("Reconstruction de {0}… Le téléchargement peut prendre plusieurs minutes.", service.name)], "info");
   // Avancement au-dessus de la rangée de boutons, pas dedans.
   const stop = watchInstall(service.name, button.parentElement);
   let succeeded = false;
   try {
-    await api(`services/${encodeURIComponent(service.name)}/rebuild?data=${cleanup ? "delete" : "keep"}`, { method: "POST" });
+    await api(`services/${encodeURIComponent(service.name)}/rebuild?data=${cleanup ? "delete" : "keep"}&env=${keepEnv ? "keep" : "delete"}`, { method: "POST" });
     succeeded = true;
     showMessage([cleanup ? t("{0} est relancé avec de nouvelles images, sans données.", service.name) : t("{0} est relancé avec de nouvelles images, données gardées.", service.name)], "success");
   } catch (error) {

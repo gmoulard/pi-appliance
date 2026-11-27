@@ -989,5 +989,14 @@ piTranslations("nl", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "Gekopieerde versie: pi-appliance {0}. De nieuwe Pi werkt zichzelf daarna bij vanuit zijn console. Kies de kaart die u wilt voorbereiden:",
   "ne peut pas être préparée": "kan niet worden voorbereid",
   "tout son contenu sera effacé": "alles erop wordt gewist",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Kopiëren annuleren? De kaart is dan zo niet bruikbaar."
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Kopiëren annuleren? De kaart is dan zo niet bruikbaar.",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "Eén regel per variabele: NAAM=waarde. Het bestand compose.yaml gebruikt ze met ${NAAM}. De variabelen PI_INSTANCE, PI_HOST, PI_SMTP_… en PI_DATABASE_… zet de console: die kunnen hier niet worden opgegeven.",
+  "Fichier .env": "Bestand .env",
+  "Enregistrer le fichier .env": "Bestand .env opslaan",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "Bestand .env van {0} wordt opgeslagen… De dienst start opnieuw.",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "Het bestand .env van {0} is opgeslagen en de dienst opnieuw gestart.",
+  "Fichier .env donné par l'administrateur :": "Bestand .env opgegeven door de beheerder:",
+  "Contenu du fichier .env (facultatif)": "Inhoud van het bestand .env (optioneel)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "Het bestand .env van de vorige installatie van {0} is overgenomen: controleer het voor het installeren.",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "Het bestand .env van {0} (codes en instellingen opgegeven door de beheerder) bewaren?\n\nOK: bewaren\nAnnuleren: wissen"
 });

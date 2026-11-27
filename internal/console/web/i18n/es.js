@@ -989,5 +989,14 @@ piTranslations("es", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "Versión copiada: pi-appliance {0}. El nuevo Pi se actualizará después desde su consola. Elija la tarjeta que quiere preparar:",
   "ne peut pas être préparée": "no se puede preparar",
   "tout son contenu sera effacé": "se borrará todo su contenido",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "¿Cancelar la copia? La tarjeta no se podrá usar tal como está."
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "¿Cancelar la copia? La tarjeta no se podrá usar tal como está.",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "Una línea por variable: NOMBRE=valor. El archivo compose.yaml las usa con ${NOMBRE}. Las variables PI_INSTANCE, PI_HOST, PI_SMTP_… y PI_DATABASE_… las pone la consola: no se pueden dar aquí.",
+  "Fichier .env": "Archivo .env",
+  "Enregistrer le fichier .env": "Guardar el archivo .env",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "Guardando el archivo .env de {0}… El servicio se reinicia.",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "El archivo .env de {0} está guardado y el servicio reiniciado.",
+  "Fichier .env donné par l'administrateur :": "Archivo .env dado por el administrador:",
+  "Contenu du fichier .env (facultatif)": "Contenido del archivo .env (opcional)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "Se ha rellenado el archivo .env de la instalación anterior de {0}: revíselo antes de instalar.",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "¿Conservar el archivo .env de {0} (códigos y ajustes dados por el administrador)?\n\nAceptar: conservarlo\nCancelar: borrarlo"
 });

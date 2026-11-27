@@ -989,5 +989,14 @@ piTranslations("pt", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "Versão copiada: pi-appliance {0}. O novo Pi atualizar-se-á depois a partir da sua consola. Escolha o cartão a preparar:",
   "ne peut pas être préparée": "não pode ser preparado",
   "tout son contenu sera effacé": "todo o seu conteúdo será apagado",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Cancelar a cópia? O cartão não poderá ser usado tal como está."
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Cancelar a cópia? O cartão não poderá ser usado tal como está.",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "Uma linha por variável: NOME=valor. O ficheiro compose.yaml usa-as com ${NOME}. As variáveis PI_INSTANCE, PI_HOST, PI_SMTP_… e PI_DATABASE_… são definidas pela consola: não podem ser dadas aqui.",
+  "Fichier .env": "Ficheiro .env",
+  "Enregistrer le fichier .env": "Guardar o ficheiro .env",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "A guardar o ficheiro .env de {0}… O serviço está a reiniciar.",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "O ficheiro .env de {0} foi guardado e o serviço reiniciado.",
+  "Fichier .env donné par l'administrateur :": "Ficheiro .env dado pelo administrador:",
+  "Contenu du fichier .env (facultatif)": "Conteúdo do ficheiro .env (opcional)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "O ficheiro .env da instalação anterior de {0} foi preenchido: verifique-o antes de instalar.",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "Manter o ficheiro .env de {0} (códigos e definições dados pelo administrador)?\n\nOK: mantê-lo\nCancelar: apagá-lo"
 });

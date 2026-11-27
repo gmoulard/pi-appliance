@@ -69,7 +69,7 @@ func TestRebuildKeepsData(t *testing.T) {
 	puller := &fakePuller{manager: m, present: map[string]bool{"nginx:latest": true}}
 	m.Images = puller
 	runner.calls = nil
-	if _, err := m.Rebuild(context.Background(), "libre", false); err != nil {
+	if _, err := m.Rebuild(context.Background(), "libre", false, false); err != nil {
 		t.Fatal(err)
 	}
 	if len(puller.pulled) != 1 || puller.pulled[0] != "nginx:latest" {
@@ -104,7 +104,7 @@ func TestRebuildCleanup(t *testing.T) {
 		t.Fatal(err)
 	}
 	runner.calls = nil
-	if _, err := m.Rebuild(context.Background(), "libre", true); err != nil {
+	if _, err := m.Rebuild(context.Background(), "libre", true, false); err != nil {
 		t.Fatal(err)
 	}
 	if got := steps(runner.calls); got != "pull,down --volumes,create,start,up --detach --wait" {
@@ -129,7 +129,7 @@ func TestRebuildWithoutNetwork(t *testing.T) {
 	dir := installSimple(t, m)
 	runner.calls = nil
 	runner.fail = map[string]bool{" pull": true}
-	_, err := m.Rebuild(context.Background(), "libre", true)
+	_, err := m.Rebuild(context.Background(), "libre", true, false)
 	if err == nil || !strings.Contains(err.Error(), "pas été touché") {
 		t.Fatalf("erreur %v", err)
 	}
@@ -149,10 +149,10 @@ func TestRebuildCatalogRefused(t *testing.T) {
 	if _, err := m.Install(context.Background(), nextcloud(t), "cloud", nil); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := m.Rebuild(context.Background(), "cloud", false); !errors.Is(err, ErrInvalid) {
+	if _, err := m.Rebuild(context.Background(), "cloud", false, false); !errors.Is(err, ErrInvalid) {
 		t.Fatalf("service du catalogue : %v", err)
 	}
-	if _, err := m.Rebuild(context.Background(), "absent", false); !errors.Is(err, ErrNotFound) {
+	if _, err := m.Rebuild(context.Background(), "absent", false, false); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("service absent : %v", err)
 	}
 }
@@ -183,7 +183,7 @@ func TestRebuildRollback(t *testing.T) {
 	installSimple(t, m)
 	runner.calls = nil
 	runner.failRestart = true
-	_, err := m.Rebuild(context.Background(), "libre", false)
+	_, err := m.Rebuild(context.Background(), "libre", false, false)
 	if !errors.Is(err, ErrRebuildRolledBack) || !strings.Contains(err.Error(), "le conteneur web s'arrête") {
 		t.Fatalf("erreur %v", err)
 	}
@@ -209,7 +209,7 @@ func TestRebuildRollbackFails(t *testing.T) {
 	installSimple(t, m)
 	runner.calls = nil
 	runner.failRestart, runner.failRollback = true, true
-	_, err := m.Rebuild(context.Background(), "libre", false)
+	_, err := m.Rebuild(context.Background(), "libre", false, false)
 	if err == nil || errors.Is(err, ErrRebuildRolledBack) || !strings.Contains(err.Error(), "non plus") {
 		t.Fatalf("erreur %v", err)
 	}
@@ -223,7 +223,7 @@ func TestRebuildKeepsNoRollbackTag(t *testing.T) {
 	m := &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, MemoryMB: func() int { return 4096 }}
 	installSimple(t, m)
 	runner.calls = nil
-	if _, err := m.Rebuild(context.Background(), "libre", false); err != nil {
+	if _, err := m.Rebuild(context.Background(), "libre", false, false); err != nil {
 		t.Fatal(err)
 	}
 	if !runner.called("image tag sha256:ancienne nginx:pi-rollback-libre-latest") || !runner.called("image rm nginx:pi-rollback-libre-latest") || runner.called("--force-recreate") {
@@ -267,13 +267,13 @@ func TestRebuildCleanupHostDirs(t *testing.T) {
 	if err != nil || len(dirs) != 1 || dirs[0] != photos {
 		t.Fatalf("dossiers %v, %v", dirs, err)
 	}
-	if _, err := m.Rebuild(context.Background(), "libre", false); err != nil {
+	if _, err := m.Rebuild(context.Background(), "libre", false, false); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(filepath.Join(photos, "album", "photo.jpg")); err != nil {
 		t.Fatalf("Rebuild sans cleanup a effacé : %v", err)
 	}
-	if _, err := m.Rebuild(context.Background(), "libre", true); err != nil {
+	if _, err := m.Rebuild(context.Background(), "libre", true, false); err != nil {
 		t.Fatal(err)
 	}
 	entries, err := os.ReadDir(photos)
@@ -310,7 +310,7 @@ func TestRebuildCleanupKeepsSockets(t *testing.T) {
 	if err != nil || len(dirs) != 1 || dirs[0] != photos || len(kept) != 2 || !slices.Contains(kept, socket) || !slices.Contains(kept, link) {
 		t.Fatalf("dossiers %v, prises %v, %v", dirs, kept, err)
 	}
-	if _, err := m.Rebuild(context.Background(), "libre", true); err != nil {
+	if _, err := m.Rebuild(context.Background(), "libre", true, false); err != nil {
 		t.Fatal(err)
 	}
 	if info, err := os.Stat(socket); err != nil || info.Mode()&os.ModeSocket == 0 {
@@ -386,7 +386,7 @@ func TestRebuildCleanupRefused(t *testing.T) {
 			if _, _, err := m.CleanupDirs("libre"); !errors.Is(err, ErrInvalid) {
 				t.Fatalf("liste acceptée : %v", err)
 			}
-			_, err := m.Rebuild(context.Background(), "libre", true)
+			_, err := m.Rebuild(context.Background(), "libre", true, false)
 			if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "rien n'a été effacé") {
 				t.Fatalf("erreur %v", err)
 			}

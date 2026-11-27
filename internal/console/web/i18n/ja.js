@@ -989,5 +989,14 @@ piTranslations("ja", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "コピーするバージョン：pi-appliance {0}。新しいPiはその後、自分のコンソールから更新されます。準備するカードを選んでください：",
   "ne peut pas être préparée": "準備できません",
   "tout son contenu sera effacé": "内容はすべて消去されます",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "コピーを中止しますか？このままではカードは使えません。"
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "コピーを中止しますか？このままではカードは使えません。",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "1 行に 1 つの変数: 名前=値。compose.yaml ファイルは ${名前} で参照します。PI_INSTANCE、PI_HOST、PI_SMTP_…、PI_DATABASE_… はコンソールが設定する変数のため、ここでは指定できません。",
+  "Fichier .env": ".env ファイル",
+  "Enregistrer le fichier .env": ".env ファイルを保存",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "{0} の .env ファイルを保存しています… サービスを再起動します。",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "{0} の .env ファイルを保存し、サービスを再起動しました。",
+  "Fichier .env donné par l'administrateur :": "管理者が指定した .env ファイル:",
+  "Contenu du fichier .env (facultatif)": ".env ファイルの内容(任意)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "{0} の前回のインストールの .env ファイルを入力しました。インストール前に確認してください。",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "{0} の .env ファイル(管理者が指定したコードと設定)を残しますか?\n\nOK: 残す\nキャンセル: 消去する"
 });

@@ -24,7 +24,7 @@ import (
 
 // keptFiles : réglages d'un service gardés par « Rebuild cleanup » ; le reste
 // de son dossier (dossiers montés en ./…) est de la donnée.
-var keptFiles = []string{composeName, overrideName, envName, stateName, advancedName, advancedSettings, previousName, databaseFile, sourceName}
+var keptFiles = []string{composeName, overrideName, envName, stateName, advancedName, advancedSettings, previousName, databaseFile, sourceName, adminEnvName}
 
 func (m *Manager) customInstance(name string) (Instance, error) {
 	instance, err := m.instance(name)
@@ -48,7 +48,7 @@ var ErrRebuildRolledBack = errors.New("rebuild raté, retour aux images d'avant"
 // compose.yaml (CleanupDirs, refusé sans rien effacer pour un dossier protégé).
 // Sans réseau, le téléchargement échoue avant tout arrêt ; si le service ne
 // redémarre pas, il repart avec ses images d'avant.
-func (m *Manager) Rebuild(ctx context.Context, name string, cleanup bool) (Result, error) {
+func (m *Manager) Rebuild(ctx context.Context, name string, cleanup, dropEnv bool) (Result, error) {
 	m.forgetProgress(name)
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -57,7 +57,7 @@ func (m *Manager) Rebuild(ctx context.Context, name string, cleanup bool) (Resul
 		return Result{}, err
 	}
 	m.track(name, instance.AppName)
-	err = m.rebuild(ctx, instance, cleanup)
+	err = m.rebuild(ctx, instance, cleanup, dropEnv)
 	m.finish(name, err)
 	if err != nil {
 		return Result{}, err
@@ -65,7 +65,7 @@ func (m *Manager) Rebuild(ctx context.Context, name string, cleanup bool) (Resul
 	return Result{Instance: instance}, nil
 }
 
-func (m *Manager) rebuild(ctx context.Context, instance Instance, cleanup bool) error {
+func (m *Manager) rebuild(ctx context.Context, instance Instance, cleanup, dropEnv bool) error {
 	name := instance.Name
 	dir := m.serviceDir(name)
 	if cleanup {
@@ -99,7 +99,7 @@ func (m *Manager) rebuild(ctx context.Context, instance Instance, cleanup bool) 
 		dropKept()
 		return fmt.Errorf("les images de %s n'ont pas pu être téléchargées, le service n'a pas été touché : vérifiez que le Pi est bien relié à internet, puis réessayez (%v)", name, err)
 	}
-	failure := m.restart(ctx, instance, cleanup)
+	failure := m.restart(ctx, instance, cleanup, dropEnv)
 	if failure == "" {
 		dropKept()
 		return nil
@@ -116,7 +116,7 @@ func (m *Manager) rebuild(ctx context.Context, instance Instance, cleanup bool) 
 
 // restart arrête le service, efface ses données si cleanup, puis le recrée et
 // le relance ; rend la raison d'un échec, vide sinon.
-func (m *Manager) restart(ctx context.Context, instance Instance, cleanup bool) string {
+func (m *Manager) restart(ctx context.Context, instance Instance, cleanup, dropEnv bool) string {
 	name := instance.Name
 	m.setStep(name, StepCreate)
 	args := []string{"down"}
@@ -132,6 +132,14 @@ func (m *Manager) restart(ctx context.Context, instance Instance, cleanup bool) 
 		}
 		if err := clearServiceData(m.serviceDir(name)); err != nil {
 			return fmt.Sprintf("les données n'ont pas pu être effacées : %v", err)
+		}
+		if dropEnv {
+			if err := writeAdminEnv(m.serviceDir(name), ""); err != nil {
+				return fmt.Sprintf("le fichier .env n'a pas pu être effacé : %v", err)
+			}
+			if err := rewriteEnv(m.serviceDir(name)); err != nil {
+				return fmt.Sprintf("le fichier .env n'a pas pu être réécrit : %v", err)
+			}
 		}
 		// NE PAS réutiliser la liste vérifiée avant le téléchargement : un lien a pu changer depuis.
 		dirs, _, err := m.cleanupDirs(name)

@@ -989,5 +989,14 @@ piTranslations("zh", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "要复制的版本：pi-appliance {0}。新的 Pi 之后会通过自己的控制台更新。请选择要准备的卡：",
   "ne peut pas être préparée": "无法准备",
   "tout son contenu sera effacé": "其所有内容都将被清除",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "取消复制吗？这张卡将无法直接使用。"
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "取消复制吗？这张卡将无法直接使用。",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "每行一个变量:名称=值。compose.yaml 文件通过 ${名称} 引用它们。PI_INSTANCE、PI_HOST、PI_SMTP_… 和 PI_DATABASE_… 由控制台设置,不能在此填写。",
+  "Fichier .env": ".env 文件",
+  "Enregistrer le fichier .env": "保存 .env 文件",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "正在保存 {0} 的 .env 文件… 服务正在重启。",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "{0} 的 .env 文件已保存,服务已重启。",
+  "Fichier .env donné par l'administrateur :": "管理员提供的 .env 文件:",
+  "Contenu du fichier .env (facultatif)": ".env 文件内容(可选)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "已填入 {0} 上次安装的 .env 文件:安装前请检查。",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "保留 {0} 的 .env 文件(管理员提供的代码和设置)吗?\n\n确定:保留\n取消:删除"
 });

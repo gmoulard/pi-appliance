@@ -216,6 +216,7 @@ type CustomRequest struct {
 	// été modifié avant l'installation (source.go).
 	SourceURL    string
 	SourceEdited bool
+	Env          string
 }
 
 // InstallCustom installe un fichier Docker Compose hors marketplace, avec les
@@ -236,6 +237,10 @@ func (m *Manager) InstallCustom(ctx context.Context, request CustomRequest) (Res
 	if request.Port < 1 || request.Port > 65535 {
 		return Result{}, fmt.Errorf("%w : le port du service publié va de 1 à 65535", ErrInvalid)
 	}
+	adminEnv, err := normalizeAdminEnv(request.Env)
+	if err != nil {
+		return Result{}, err
+	}
 	if len(risks) > 0 && !request.ConfirmRisks {
 		return Result{}, RisksError{Risks: risks}
 	}
@@ -247,7 +252,7 @@ func (m *Manager) InstallCustom(ctx context.Context, request CustomRequest) (Res
 		Port:      request.Port,
 		Compose:   request.Compose,
 	}
-	result, err := m.Install(ctx, app, request.Name, nil)
+	result, err := m.installWith(ctx, app, request.Name, nil, adminEnv)
 	warnings := []string{Unsupported}
 	for _, risk := range risks {
 		warnings = append(warnings, risk.Message)

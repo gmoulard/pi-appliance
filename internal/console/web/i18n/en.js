@@ -989,5 +989,14 @@ piTranslations("en", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "Version copied: pi-appliance {0}. The new Pi will then update itself from its console. Choose the card to prepare:",
   "ne peut pas être préparée": "cannot be prepared",
   "tout son contenu sera effacé": "everything on it will be erased",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Cancel the copy? The card will not be usable as it is."
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Cancel the copy? The card will not be usable as it is.",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "One line per variable: NAME=value. The compose.yaml file uses them with ${NAME}. The variables PI_INSTANCE, PI_HOST, PI_SMTP_… and PI_DATABASE_… are set by the console: they cannot be given here.",
+  "Fichier .env": ".env file",
+  "Enregistrer le fichier .env": "Save the .env file",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "Saving the .env file of {0}… The service is restarting.",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "The .env file of {0} is saved and the service restarted.",
+  "Fichier .env donné par l'administrateur :": ".env file given by the administrator:",
+  "Contenu du fichier .env (facultatif)": "Contents of the .env file (optional)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "The .env file from the previous installation of {0} has been filled in: check it before installing.",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "Keep the .env file of {0} (codes and settings given by the administrator)?\n\nOK: keep it\nCancel: erase it"
 });

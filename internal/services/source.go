@@ -33,6 +33,7 @@ type Source struct {
 	Edited  bool   `json:"edited,omitempty"`
 	Service string `json:"service"`
 	Port    int    `json:"port"`
+	Env     string `json:"env,omitempty"`
 }
 
 type sourceFile struct {
@@ -67,7 +68,11 @@ func (m *Manager) ComposeSource(name string) (Source, error) {
 	default:
 		return Source{}, err
 	}
-	return Source{Compose: string(compose), URL: saved.URL, Edited: saved.Edited, Service: saved.Service, Port: saved.Port}, nil
+	env, err := readAdminEnv(dir)
+	if err != nil {
+		return Source{}, err
+	}
+	return Source{Compose: string(compose), URL: saved.URL, Edited: saved.Edited, Service: saved.Service, Port: saved.Port, Env: env}, nil
 }
 
 func (m *Manager) publishedPort(name string) int {

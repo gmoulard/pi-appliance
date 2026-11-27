@@ -989,5 +989,14 @@ piTranslations("tr", {
   "Version copiée : pi-appliance {0}. Le nouveau Pi se mettra ensuite à jour depuis sa console. Choisissez la carte à préparer :": "Kopyalanan sürüm: pi-appliance {0}. Yeni Pi daha sonra kendi konsolundan güncellenecek. Hazırlanacak kartı seçin:",
   "ne peut pas être préparée": "hazırlanamaz",
   "tout son contenu sera effacé": "tüm içeriği silinecek",
-  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Kopyalama iptal edilsin mi? Kart bu hâliyle kullanılamaz."
+  "Annuler la copie ? La carte ne sera pas utilisable en l'état.": "Kopyalama iptal edilsin mi? Kart bu hâliyle kullanılamaz.",
+  "Une ligne par variable : NOM=valeur. Le fichier compose.yaml les reprend par ${NOM}. Les variables PI_INSTANCE, PI_HOST, PI_SMTP_… et PI_DATABASE_… sont posées par la console : elles ne peuvent pas être données ici.": "Her değişken için bir satır: AD=değer. compose.yaml dosyası bunları ${AD} ile kullanır. PI_INSTANCE, PI_HOST, PI_SMTP_… ve PI_DATABASE_… değişkenlerini konsol belirler: burada verilemezler.",
+  "Fichier .env": ".env dosyası",
+  "Enregistrer le fichier .env": ".env dosyasını kaydet",
+  "Enregistrement du fichier .env de {0}… Le service redémarre.": "{0} için .env dosyası kaydediliyor… Hizmet yeniden başlıyor.",
+  "Le fichier .env de {0} est enregistré et le service relancé.": "{0} için .env dosyası kaydedildi ve hizmet yeniden başlatıldı.",
+  "Fichier .env donné par l'administrateur :": "Yöneticinin verdiği .env dosyası:",
+  "Contenu du fichier .env (facultatif)": ".env dosyasının içeriği (isteğe bağlı)",
+  "Fichier .env de l'ancienne installation de {0} repris : relisez-le avant d'installer.": "{0} hizmetinin önceki kurulumundaki .env dosyası dolduruldu: kurmadan önce gözden geçirin.",
+  "Garder le fichier .env de {0} (codes et réglages donnés par l'administrateur) ?\n\nOK : le garder\nAnnuler : l'effacer": "{0} için .env dosyası (yöneticinin verdiği kodlar ve ayarlar) saklansın mı?\n\nTamam: sakla\nİptal: sil"
 });
