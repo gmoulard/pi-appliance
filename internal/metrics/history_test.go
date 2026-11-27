@@ -130,3 +130,32 @@ func TestRunSavesOnStop(t *testing.T) {
 		t.Fatal("historique pas écrit à l'arrêt")
 	}
 }
+
+func TestClear(t *testing.T) {
+	h, c := newHistory(t)
+	for range 3 {
+		if err := h.Record(Sample{CPUPercent: value(10), Received: 1 << 20, Network: true}); err != nil {
+			t.Fatal(err)
+		}
+		c.t = c.t.Add(time.Hour)
+	}
+	if _, err := os.Stat(h.Path); err != nil {
+		t.Fatal(err)
+	}
+	if err := h.Clear(); err != nil {
+		t.Fatal(err)
+	}
+	if points := h.Points(); len(points) != 0 {
+		t.Fatalf("%d points", len(points))
+	}
+	if _, err := os.Stat(h.Path); !os.IsNotExist(err) {
+		t.Fatalf("fichier gardé : %v", err)
+	}
+	if err := h.Clear(); err != nil {
+		t.Fatalf("deuxième effacement : %v", err)
+	}
+	reloaded := &History{Path: h.Path, Now: c.now}
+	if err := reloaded.Load(); err != nil || len(reloaded.Points()) != 0 {
+		t.Fatalf("%v %d", err, len(reloaded.Points()))
+	}
+}

@@ -26,6 +26,7 @@ import (
 	"github.com/gmoulard/pi-appliance/internal/alerts"
 	"github.com/gmoulard/pi-appliance/internal/backup"
 	"github.com/gmoulard/pi-appliance/internal/cockpit"
+	"github.com/gmoulard/pi-appliance/internal/metrics"
 	"github.com/gmoulard/pi-appliance/internal/network"
 	"github.com/gmoulard/pi-appliance/marketplace"
 )
@@ -100,12 +101,20 @@ func TestFactoryResetErasesAllButWiFi(t *testing.T) {
 	if err := cockpitAccess.Set(cockpit.Access{Internet: true, Users: true}); err != nil {
 		t.Fatal(err)
 	}
+	history := &metrics.History{Path: filepath.Join(dir, "history.json")}
+	cpu := 42.0
+	if err := history.Record(metrics.Sample{CPUPercent: &cpu}); err != nil {
+		t.Fatal(err)
+	}
+	if err := history.Save(); err != nil {
+		t.Fatal(err)
+	}
 	catalog, err := marketplace.Builtin()
 	if err != nil {
 		t.Fatal(err)
 	}
 	f.handler = Handler(Config{Version: "1.2.3", Catalog: catalog, Services: f.manager, Accounts: f.accounts, ACMEEmailFile: f.acmeEmailFile,
-		Backups: backups, Network: &network.Client{Runner: net}, Alerts: monitor, InternetFile: internetFile, CockpitAccess: cockpitAccess})
+		Backups: backups, Network: &network.Client{Runner: net}, Alerts: monitor, InternetFile: internetFile, CockpitAccess: cockpitAccess, History: history})
 	response := f.do(http.MethodPost, factoryPath, "application/json", `{"confirm": true, "password": "`+adminPassword+`"}`, cookie)
 	if response.Code != http.StatusOK {
 		t.Fatalf("code %d : %s", response.Code, response.Body.String())
@@ -129,7 +138,10 @@ func TestFactoryResetErasesAllButWiFi(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "backup")); !os.IsNotExist(err) {
 		t.Fatalf("réglages et clé des sauvegardes gardés : %v", err)
 	}
-	for _, file := range []string{internetFile, f.acmeEmailFile} {
+	if points := history.Points(); len(points) != 0 {
+		t.Fatalf("historique des mesures gardé : %v", points)
+	}
+	for _, file := range []string{internetFile, f.acmeEmailFile, history.Path} {
 		if _, err := os.Stat(file); !os.IsNotExist(err) {
 			t.Fatalf("%s gardé : %v", file, err)
 		}

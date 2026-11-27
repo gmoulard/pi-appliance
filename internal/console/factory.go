@@ -128,6 +128,11 @@ func (c *console) factoryReset(w http.ResponseWriter, r *http.Request) {
 			problem("Le réglage des statistiques anonymes n'a pas pu être effacé.", err)
 		}
 	}
+	if c.History != nil {
+		if err := c.History.Clear(); err != nil {
+			problem("L'historique des mesures du Pi n'a pas pu être effacé.", err)
+		}
+	}
 	if c.SMTP != nil {
 		if err := c.SMTP.Forget(); err != nil {
 			problem("Le réglage de l'envoi des e-mails n'a pas pu être effacé.", err)

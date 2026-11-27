@@ -147,6 +147,16 @@ func (h *History) save() error {
 	return nil
 }
 
+func (h *History) Clear() error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.points, h.current, h.lastNet, h.modified = nil, nil, false, false
+	if err := os.Remove(h.Path); err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return err
+	}
+	return nil
+}
+
 // Record ajoute une mesure ; à chaque heure révolue, l'historique est écrit.
 func (h *History) Record(sample Sample) error {
 	h.mu.Lock()
