@@ -54,13 +54,16 @@ func ReadHomeIPv6() []netip.Prefix {
 	return sortedPrefixes(prefixes)
 }
 
-// NE PAS accepter un préfixe plus court que /48 ni plus long que /64 : une adresse en /128 (DHCPv6) ne dit pas le réseau, l'élargir ouvrirait celui de l'opérateur.
+// NE PAS accepter un préfixe plus court que /48, ni élargir au-delà du /64 une adresse en /128 (DHCPv6, décision du 2026-11-26) : ce serait ouvrir le réseau de l'opérateur.
 func homeIPv6Prefix(ipNet *net.IPNet) (netip.Prefix, bool) {
 	ip, ok := netip.AddrFromSlice(ipNet.IP)
 	if !ok || ip.Is4In6() || !ip.Is6() || !globalUnicast6.Contains(ip) {
 		return netip.Prefix{}, false
 	}
 	bits, size := ipNet.Mask.Size()
+	if size == 128 && bits == 128 {
+		bits = 64
+	}
 	if size != 128 || bits < 48 || bits > 64 {
 		return netip.Prefix{}, false
 	}

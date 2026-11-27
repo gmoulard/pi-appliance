@@ -30,7 +30,8 @@ func TestHomeIPv6Prefix(t *testing.T) {
 		"2a01:cb00:1234:5600:1:2:3:4/64": "2a01:cb00:1234:5600::/64",
 		"2a01:e0a:12:3400::5/56":         "2a01:e0a:12:3400::/56",
 		"2a01:e0a:12::5/48":              "2a01:e0a:12::/48",
-		"2a01:cb00:1234:5600::10/128":    "",
+		"2a01:cb00:1234:5600::10/128":    "2a01:cb00:1234:5600::/64",
+		"2a01:cb00:1234:5600::10/96":     "",
 		"2a01:cb00::1/32":                "",
 		"fd00::5/64":                     "",
 		"fe80::1/64":                     "",
@@ -129,5 +130,46 @@ func TestRefreshHomeIPv6(t *testing.T) {
 	}
 	if home, _ = os.ReadFile(m.TraefikHomeFile); string(home) != traefikHome(nil) || strings.Contains(string(home), "routers") {
 		t.Fatalf("sans préfixe :\n%s", home)
+	}
+}
+
+func TestHomeIPv6From128(t *testing.T) {
+	ip, ipNet, err := net.ParseCIDR("2a01:cb00:1234:5600:abcd::10/128")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ipNet.IP = ip
+	prefix, ok := homeIPv6Prefix(ipNet)
+	if !ok {
+		t.Fatal("adresse DHCPv6 en /128 refusée")
+	}
+	dir := t.TempDir()
+	firewall := &firewallRecorder{runner: &fakeRunner{}}
+	m := &Manager{Dir: dir, Runner: firewall.runner, Firewall: firewall.load, TraefikHomeFile: filepath.Join(dir, "traefik", "home.yml"),
+		ReadHomeIPv6: func() []netip.Prefix { return []netip.Prefix{prefix} }}
+	ctx := context.Background()
+	if _, err := m.Install(ctx, homeOnlyApp(t), "partage", nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := m.RefreshHomeIPv6(ctx); err != nil {
+		t.Fatal(err)
+	}
+	for address, want := range map[string]bool{
+		"2a01:cb00:1234:5600::42": true, "2a01:cb00:1234:5600:ffff:ffff:ffff:ffff": true,
+		"2a01:cb00:1234:5601::42": false, "2a01:cb00:1234:5700::1": false, "2a01:cb00::1": false,
+	} {
+		if got := m.InHomeIPv6(netip.MustParseAddr(address)); got != want {
+			t.Errorf("%s : %v", address, got)
+		}
+	}
+	home, err := os.ReadFile(m.TraefikHomeFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(home), "- 2a01:cb00:1234:5600::/64\n") || strings.Contains(string(home), "/128`") || strings.Contains(string(home), "abcd") {
+		t.Fatalf("home.yml :\n%s", home)
+	}
+	if last := firewall.loads[len(firewall.loads)-1]; !strings.Contains(last, "2a01:cb00:1234:5600::/64 }") || strings.Contains(last, "abcd") {
+		t.Fatalf("pare-feu :\n%s", last)
 	}
 }
