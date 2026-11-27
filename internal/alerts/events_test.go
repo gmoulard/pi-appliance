@@ -46,11 +46,15 @@ func TestNotifyEveryTimeButNotTheAuthor(t *testing.T) {
 		}
 	}
 	f.monitor.Notify(Event{Type: Password, Name: "john", Email: "john@example.org", Lang: "en", By: "john"})
-	if got := recipientsOf(f.sender.take()); got != "marie@example.org" {
+	sent := f.sender.take()
+	if got := recipientsOf(sent); got != "marie@example.org,john@example.org" {
 		t.Fatalf("mot de passe changé par la personne elle-même : %s", got)
 	}
+	if !strings.Contains(sent[1].body, `The password of your account "john" on this Pi was changed by "john".`) {
+		t.Fatal(sent[1].body)
+	}
 	f.monitor.Notify(Event{Type: Password, Name: "marie", Email: "marie@example.org", Lang: "fr", Way: ByResetLink})
-	sent := f.sender.take()
+	sent = f.sender.take()
 	if got := recipientsOf(sent); got != "john@example.org,marie@example.org" {
 		t.Fatalf("lien reçu par e-mail : %s", got)
 	}

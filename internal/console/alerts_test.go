@@ -144,5 +144,5 @@ func TestAccountAlerts(t *testing.T) {
 	if response.Code != http.StatusOK {
 		t.Fatalf("mot de passe : %d %s", response.Code, response.Body.String())
 	}
-	sender.expect(t, "paul@example.org pi-appliance: password changed")
+	sender.expect(t, "paul@example.org pi-appliance: password changed", "marie@example.org pi-appliance: password changed")
 }

@@ -38,9 +38,6 @@ type Event struct {
 	Way     Way
 }
 
-// Notify envoie l'événement tout de suite, à chaque fois (spécification 8.6,
-// décision du 2026-11-26) : aux administrateurs dont l'adresse est vérifiée
-// et à la personne concernée, jamais à l'auteur du changement.
 func (m *Monitor) Notify(e Event) {
 	if m.Sender == nil || !m.Sender.Configured() {
 		return
@@ -69,7 +66,9 @@ func (m *Monitor) Notify(e Event) {
 		}
 		m.sendEvent(e, r, false, link)
 	}
-	if e.Email != "" && e.Name != e.By {
+	// NE PAS sauter le titulaire qui change lui-même son mot de passe : un voleur
+	// du compte le ferait sans que le titulaire en sache rien (décision du 2026-11-26).
+	if e.Email != "" && (e.Name != e.By || e.Type == Password) {
 		m.sendEvent(e, Recipient{Name: e.Name, Email: e.Email, Lang: e.Lang}, true, link)
 	}
 }
