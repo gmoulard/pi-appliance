@@ -85,8 +85,9 @@ type Instance struct {
 	// NextcloudPending : Nextcloud installé, dossier pas encore créé.
 	NextcloudFolder  string `json:"nextcloud_folder,omitempty"`
 	NextcloudPending bool   `json:"nextcloud_pending,omitempty"`
-	// Tags : étiquettes choisies par l'administrateur pour un service hors
-	// catalogue (SetTags) ; un service du catalogue prend celles de son application.
+	// Tags : étiquettes d'un service hors catalogue, choisies par l'administrateur
+	// tant que sa fiche le permettait (réglage retiré le 2026-11-27, TODO-5.28) :
+	// gardées et lues ; un service du catalogue prend celles de son application.
 	Tags []string `json:"tags,omitempty"`
 	// SubPath : Docker Compose libre qui marche sous le chemin /<nom>/,
 	// publié sur internet avec ce chemin gardé (SetSubPath, TODO-2.72).

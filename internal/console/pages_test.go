@@ -128,8 +128,10 @@ func TestHealthCommit(t *testing.T) {
 	}
 }
 
-// Étiquettes d'un service hors catalogue (TODO-5.22) : choisies par
-// l'administrateur ; un service du catalogue garde celles de son application.
+// Étiquettes d'un service hors catalogue : plus de réglage dans sa fiche
+// (demande de l'utilisateur du 2026-11-27, TODO-5.28), mais celles choisies
+// avant, gardées dans son instance.json, restent lues ; un service du
+// catalogue prend celles de son application.
 func TestServiceTags(t *testing.T) {
 	f := newFixture(t)
 	cookie := f.admin(t)
@@ -137,37 +139,26 @@ func TestServiceTags(t *testing.T) {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	state, _ := json.Marshal(services.Instance{Name: "perso", App: services.CustomApp, AppName: "Docker Compose libre", Address: "perso.maison.example.org"})
+	state, _ := json.Marshal(services.Instance{Name: "perso", App: services.CustomApp, AppName: "Docker Compose libre", Address: "perso.maison.example.org", Tags: []string{"maison", "fichiers"}})
 	if err := os.WriteFile(filepath.Join(dir, "instance.json"), state, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	put := func(name, body string) *httptest.ResponseRecorder {
-		return f.do(http.MethodPut, "/pi-appliance/api/services/"+name+"/tags", "application/json", body, cookie)
+	if response := f.do(http.MethodPut, "/pi-appliance/api/services/perso/tags", "application/json", `{"tags": ["reseau"]}`, cookie); response.Code == http.StatusOK {
+		t.Fatalf("PUT api/services/perso/tags encore accepté : %s", response.Body.String())
 	}
-	if response := put("perso", `{"tags": ["maison", "fichiers"]}`); response.Code != http.StatusOK {
-		t.Fatalf("code %d : %s", response.Code, response.Body.String())
-	}
-	for _, body := range []string{`{"tags": ["inconnue"]}`, `{"tags": ["maison", "maison"]}`, `{"tags": ["maison", "fichiers", "reseau", "documents", "donnees"]}`} {
-		if response := put("perso", body); response.Code != http.StatusBadRequest {
-			t.Errorf("%s : code %d", body, response.Code)
-		}
-	}
-	if response := put("absent", `{"tags": []}`); response.Code != http.StatusNotFound {
-		t.Errorf("service absent : code %d", response.Code)
+	if response := f.install(`{"app": "dokuwiki", "name": "wiki"}`, cookie); response.Code != http.StatusCreated {
+		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
 	}
 	response := f.do(http.MethodGet, "/pi-appliance/api/services", "", "", cookie)
 	listed := decode[struct {
 		Services []ServiceView `json:"services"`
 	}](t, response)
-	if len(listed.Services) != 1 || strings.Join(listed.Services[0].Tags, ",") != "maison,fichiers" || !listed.Services[0].TagsEditable {
+	tags := map[string]string{}
+	for _, service := range listed.Services {
+		tags[service.Name] = strings.Join(service.Tags, ",")
+	}
+	if len(tags) != 2 || tags["perso"] != "maison,fichiers" || tags["wiki"] == "" || strings.Contains(response.Body.String(), "tags_editable") {
 		t.Fatalf("services %+v", listed.Services)
-	}
-	// Un service du catalogue : étiquettes de l'application, non modifiables.
-	if response := f.install(`{"app": "dokuwiki", "name": "wiki"}`, cookie); response.Code != http.StatusCreated {
-		t.Fatalf("installation : code %d : %s", response.Code, response.Body.String())
-	}
-	if response := put("wiki", `{"tags": ["maison"]}`); response.Code != http.StatusBadRequest {
-		t.Errorf("service du catalogue : code %d", response.Code)
 	}
 }
 

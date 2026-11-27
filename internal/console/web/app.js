@@ -311,10 +311,6 @@ async function loadServices() {
       buttons.append(remove);
       actions.append(buttons, advanced.panel);
       if (source) actions.append(source.panel);
-      // Hors catalogue : l'administrateur choisit les étiquettes (TODO-5.22).
-      if (service.tags_editable) {
-        actions.append(tagsChooser(service));
-      }
       if (!service.no_web_page && service.app !== POSTGRES_APP) {
         actions.append(hostingChooser(service));
       }
@@ -838,47 +834,6 @@ function hostingChooser(service) {
   save.type = "button";
   save.addEventListener("click", () => send("redirects", "PUT", { hosts: hosts.value.split(/\s+/).filter(Boolean) }, save));
   form.append(element("p", t("Domaines renvoyés vers ce service : un nom par ligne, par exemple nautilink.exemple.org. Faites d'abord pointer son DNS vers l'adresse internet du Pi (alias CNAME). Le renvoi ne marche que si le service est publié sur internet."), "meta"), hosts, save);
-  details.append(form);
-  return details;
-}
-
-// tagsChooser : étiquettes d'un service hors catalogue (Docker Compose libre,
-// application retirée), choisies par l'administrateur dans sa fiche (TODO-5.22).
-function tagsChooser(service) {
-  const details = element("details", undefined, "tags-chooser");
-  details.append(element("summary", t("Étiquettes")));
-  const form = element("form");
-  form.append(element("p", t("Choisissez jusqu'à 4 étiquettes pour retrouver ce service avec la barre du haut."), "meta"));
-  for (const [tag, label] of Object.entries(TAG_LABELS)) {
-    const field = element("label", undefined, "check");
-    const box = element("input");
-    box.type = "checkbox";
-    box.name = "tag";
-    box.value = tag;
-    box.checked = (service.tags || []).includes(tag);
-    field.append(box, label);
-    form.append(field);
-  }
-  const save = element("button", t("Enregistrer les étiquettes"), "secondary");
-  form.append(save);
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const tags = [...form.querySelectorAll('input[name="tag"]:checked')].map((box) => box.value);
-    save.disabled = true;
-    try {
-      await api(`services/${encodeURIComponent(service.name)}/tags`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tags }),
-      });
-      showMessage([t("{0} : étiquettes enregistrées.", service.name)], "success");
-      await loadServices();
-    } catch (error) {
-      showMessage([error.message], "error");
-    } finally {
-      save.disabled = false;
-    }
-  });
   details.append(form);
   return details;
 }

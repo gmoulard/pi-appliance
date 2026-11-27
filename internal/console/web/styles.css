@@ -863,10 +863,6 @@ main .filtered {
   display: none !important;
 }
 
-.tags-chooser form {
-  gap: 0.25rem;
-}
-
 footer code {
   font-family: var(--mono);
 }

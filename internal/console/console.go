@@ -298,7 +298,6 @@ func Handler(config Config) http.Handler {
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/advanced", c.adminOnly(c.setAdvanced))
 	mux.HandleFunc("GET "+BasePath+"/api/services/{name}/source", c.adminOnly(c.composeSource))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/access", c.adminOnly(c.setAccess))
-	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/tags", c.adminOnly(c.setTags))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/subpath", c.adminOnly(c.setSubPath))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/mail", c.adminOnly(c.setMail))
 	mux.HandleFunc("PUT "+BasePath+"/api/services/{name}/redirects", c.adminOnly(c.setRedirects))
@@ -805,10 +804,6 @@ type ServiceView struct {
 	services.Instance
 	Status          services.Status `json:"status"`
 	UpdateAvailable bool            `json:"update_available"`
-	// TagsEditable : service hors catalogue (Docker Compose libre, application
-	// retirée), dont l'administrateur choisit les étiquettes (PUT api/services/<nom>/tags) ;
-	// sinon Tags sont celles de l'application du catalogue.
-	TagsEditable bool `json:"tags_editable"`
 	// InternetAddress : adresse du service depuis internet, sous un chemin de
 	// l'adresse internet du Pi (https://<adresse>/<nom>/) ; vide sinon, avec
 	// InternetReason : home, console, no_address, subpath, update ou reserved
@@ -831,11 +826,11 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = services.Status{Color: services.Orange, Message: "État inconnu."}
 		}
-		view := ServiceView{Instance: instance, Status: status, TagsEditable: true}
+		view := ServiceView{Instance: instance, Status: status}
 		view.InternetAddress, view.InternetReason = published[instance.Name].Address, published[instance.Name].Reason
 		if app, ok := c.Catalog.Get(instance.App); ok {
 			view.UpdateAvailable = c.Services.UpdateAvailable(app, instance.Name)
-			view.Tags, view.TagsEditable = app.Tags, false
+			view.Tags = app.Tags
 		}
 		views = append(views, view)
 	}
