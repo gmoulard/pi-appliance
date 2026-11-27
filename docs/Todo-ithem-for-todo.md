@@ -1,1 +1,0 @@
-- enlevé la possibilité d'utiliser une base de donnée partagé au service. par exemple on ne peut pas selectionner de bd pour wp2markdown 

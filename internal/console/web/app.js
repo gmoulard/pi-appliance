@@ -820,7 +820,8 @@ function hostingChooser(service) {
     (on) => send("mail", "PUT", { mail: on })));
   if (service.database) {
     form.append(element("p", t("Base {0} dans le service PostgreSQL « {1} ». Le fichier Compose du service la reprend par les variables PI_DATABASE_URL, PI_DATABASE_HOST, PI_DATABASE_NAME, PI_DATABASE_USER et PI_DATABASE_PASSWORD.", service.database.name, service.database.server), "meta"));
-  } else {
+  } else if (service.uses_database) {
+    // Seulement pour un service qui reprend PI_DATABASE_… (TODO-2.84).
     const create = element("button", t("Créer sa base dans PostgreSQL"), "secondary");
     create.type = "button";
     create.addEventListener("click", () => send("database", "POST", {}, create));

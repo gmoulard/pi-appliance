@@ -810,6 +810,9 @@ type ServiceView struct {
 	// (services_internet.go).
 	InternetAddress string `json:"internet_address,omitempty"`
 	InternetReason  string `json:"internet_reason,omitempty"`
+	// UsesDatabase : le service se servirait d'une base du PostgreSQL partagé
+	// (services.UsesDatabase) ; sinon la console ne la propose pas (TODO-2.84).
+	UsesDatabase bool `json:"uses_database,omitempty"`
 }
 
 func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
@@ -826,7 +829,7 @@ func (c *console) listServices(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			status = services.Status{Color: services.Orange, Message: "État inconnu."}
 		}
-		view := ServiceView{Instance: instance, Status: status}
+		view := ServiceView{Instance: instance, Status: status, UsesDatabase: c.Services.UsesDatabase(instance.Name)}
 		view.InternetAddress, view.InternetReason = published[instance.Name].Address, published[instance.Name].Reason
 		if app, ok := c.Catalog.Get(instance.App); ok {
 			view.UpdateAvailable = c.Services.UpdateAvailable(app, instance.Name)

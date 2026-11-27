@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -112,8 +113,28 @@ func (m *Manager) psql(ctx context.Context, server, sql string) (string, error) 
 	return strings.TrimSpace(string(output)), nil
 }
 
+// databaseVariable : une variable PI_DATABASE_… reprise par le fichier
+// Compose ou les réglages avancés ($PI_DATABASE_URL, ${PI_DATABASE_URL}…).
+var databaseVariable = regexp.MustCompile(`\$\{?PI_DATABASE_[A-Z]`)
+
+// UsesDatabase : le service peut se servir d'une base du PostgreSQL partagé,
+// parce que son fichier Compose ou ses réglages avancés reprennent une variable
+// PI_DATABASE_… : sinon la base ne lui servirait à rien, et la console ne la
+// propose pas (« cacher si inutile », décision de l'utilisateur du
+// 2026-11-27, TODO-2.84). Aucune application du catalogue n'en reprend.
+func (m *Manager) UsesDatabase(name string) bool {
+	for _, file := range []string{composeName, advancedSettings} {
+		data, err := os.ReadFile(filepath.Join(m.serviceDir(name), file))
+		if err == nil && databaseVariable.Match(data) {
+			return true
+		}
+	}
+	return false
+}
+
 // CreateDatabase donne au service sa base dans le PostgreSQL partagé (ou
-// redonne les réglages de celle qu'il a), puis le redémarre.
+// redonne les réglages de celle qu'il a), puis le redémarre. Refusé pour un
+// service qui n'a pas de base et ne s'en servirait pas (UsesDatabase).
 func (m *Manager) CreateDatabase(ctx context.Context, name string) (Instance, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -123,6 +144,9 @@ func (m *Manager) CreateDatabase(ctx context.Context, name string) (Instance, er
 	}
 	if instance.NoWebPage || instance.App == PostgresApp {
 		return Instance{}, fmt.Errorf("%w : %s ne peut pas recevoir de base", ErrInvalid, name)
+	}
+	if instance.Database == nil && !m.UsesDatabase(name) {
+		return Instance{}, fmt.Errorf("%w : %s n'a pas besoin de base : son fichier Compose ne reprend aucune variable PI_DATABASE_…", ErrInvalid, name)
 	}
 	server, err := m.postgresServer()
 	if err != nil {

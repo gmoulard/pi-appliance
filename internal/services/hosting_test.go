@@ -174,6 +174,52 @@ func postgres(t *testing.T) marketplace.App {
 	return app
 }
 
+// Base proposée seulement à un service qui reprend PI_DATABASE_… (TODO-2.84,
+// « cacher si inutile ») : refusée aux autres, applications du catalogue comprises.
+func TestDatabaseOnlyWhenUsed(t *testing.T) {
+	runner := &sqlRunner{roles: map[string]bool{}}
+	m := &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, MemoryMB: func() int { return 4096 }}
+	installNautilink(t, m)
+	if _, err := m.InstallCustom(context.Background(), CustomRequest{Name: "web", Compose: []byte("services:\n  web:\n    image: nginx\n"), Service: "web", Port: 80}); err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := marketplace.Builtin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	markdown, ok := catalog.Get("wordpress-markdown")
+	if !ok {
+		t.Fatal("wordpress-markdown absent du catalogue")
+	}
+	if _, err := m.Install(context.Background(), markdown, "markdown", nil); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := m.Install(context.Background(), postgres(t), "base", nil); err != nil {
+		t.Fatal(err)
+	}
+	if !m.UsesDatabase("nautilink") || m.UsesDatabase("web") || m.UsesDatabase("markdown") {
+		t.Fatalf("UsesDatabase : nautilink %v, web %v, markdown %v", m.UsesDatabase("nautilink"), m.UsesDatabase("web"), m.UsesDatabase("markdown"))
+	}
+	for _, name := range []string{"web", "markdown"} {
+		if _, err := m.CreateDatabase(context.Background(), name); !errors.Is(err, ErrInvalid) {
+			t.Errorf("%s : base créée sans en avoir besoin : %v", name, err)
+		}
+	}
+	if runner.called("CREATE DATABASE") {
+		t.Fatalf("SQL : %v", runner.calls)
+	}
+	// Variable reprise par les réglages avancés : la base est proposée.
+	if err := os.WriteFile(filepath.Join(m.serviceDir("web"), advancedSettings), []byte(`{"service":"web","environment":{"URL":"${PI_DATABASE_URL}"}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if !m.UsesDatabase("web") {
+		t.Fatal("variable des réglages avancés ignorée")
+	}
+	if _, err := m.CreateDatabase(context.Background(), "nautilink"); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestSharedDatabase(t *testing.T) {
 	runner := &sqlRunner{roles: map[string]bool{}}
 	m := &Manager{Dir: t.TempDir(), Domain: "maison.example.org", Runner: runner, MemoryMB: func() int { return 4096 }}
