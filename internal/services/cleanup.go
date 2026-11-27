@@ -78,7 +78,7 @@ func (m *Manager) cleanupDirs(name string) ([]string, []string, error) {
 		}
 	}
 	if len(refused) > 0 {
-		return nil, nil, fmt.Errorf("%w : Rebuild cleanup de %s refusé, rien n'a été effacé : %s", ErrInvalid, name, strings.Join(refused, " ; "))
+		return nil, nil, fmt.Errorf("%w : Réinitialisation d'usine de %s refusée, rien n'a été effacé : %s", ErrInvalid, name, strings.Join(refused, " ; "))
 	}
 	sort.Strings(dirs)
 	sort.Strings(kept)

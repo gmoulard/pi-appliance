@@ -297,7 +297,7 @@ async function loadServices() {
       }
       if (service.app === CUSTOM_APP) {
         for (const cleanup of [false, true]) {
-          const rebuild = element("button", cleanup ? t("Rebuild cleanup") : t("Rebuild"), "secondary");
+          const rebuild = element("button", cleanup ? t("Réinitialisation d'usine") : t("Reconstruire"), "secondary");
           rebuild.addEventListener("click", () => rebuildService(service, cleanup, rebuild));
           buttons.append(rebuild);
         }
@@ -2034,11 +2034,11 @@ async function act(service, control, button) {
   }
 }
 
-// Rebuild d'un Docker Compose libre (TODO-2.81) : images retéléchargées, même
+// « Reconstruire » un Docker Compose libre (TODO-2.81) : images retéléchargées, même
 // déjà sur le Pi, conteneurs recréés ; cleanup efface d'abord les données, dont
 // le contenu des dossiers du Pi montés (listés dans la confirmation).
 async function rebuildService(service, cleanup, button) {
-  let question = t("Rebuild de {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?", service.name);
+  let question = t("Reconstruire {0} : ses images seront retéléchargées, même celles déjà sur le Pi, puis le service recréé et relancé. Ses données sont gardées. Continuer ?", service.name);
   if (cleanup) {
     let dirs;
     let kept;
@@ -2048,13 +2048,13 @@ async function rebuildService(service, cleanup, button) {
       showMessage([error.message], "error");
       return;
     }
-    question = t("Rebuild cleanup de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?", service.name);
+    question = t("Réinitialisation d'usine de {0} : TOUTES ses données seront effacées définitivement (conteneurs, volumes, dossier de données, contenu de sa base), puis ses images retéléchargées et le service relancé vide. Continuer ?", service.name);
     if (dirs.length) question += `\n\n${t("Le contenu de ces dossiers du Pi sera aussi effacé :")}\n${dirs.join("\n")}`;
     if (kept && kept.length) question += `\n\n${t("Ces prises du Pi sont laissées telles quelles, ni vidées ni supprimées :")}\n${kept.join("\n")}`;
   }
   if (!window.confirm(question)) return;
   button.disabled = true;
-  showMessage([t("Rebuild de {0}… Le téléchargement peut prendre plusieurs minutes.", service.name)], "info");
+  showMessage([t("Reconstruction de {0}… Le téléchargement peut prendre plusieurs minutes.", service.name)], "info");
   // Avancement au-dessus de la rangée de boutons, pas dedans.
   const stop = watchInstall(service.name, button.parentElement);
   let succeeded = false;
@@ -2063,7 +2063,7 @@ async function rebuildService(service, cleanup, button) {
     succeeded = true;
     showMessage([cleanup ? t("{0} est relancé avec de nouvelles images, sans données.", service.name) : t("{0} est relancé avec de nouvelles images, données gardées.", service.name)], "success");
   } catch (error) {
-    showMessage(error.body && error.body.rolled_back ? [t("Le Rebuild de {0} a échoué : l'ancienne version tourne de nouveau.", service.name), error.message] : [error.message], "error");
+    showMessage(error.body && error.body.rolled_back ? [t("La reconstruction de {0} a échoué : l'ancienne version tourne de nouveau.", service.name), error.message] : [error.message], "error");
   } finally {
     await stop(succeeded);
     button.disabled = false;

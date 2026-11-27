@@ -1008,7 +1008,7 @@ func (c *console) rebuild(w http.ResponseWriter, r *http.Request, name string) {
 	result, err := c.Services.Rebuild(r.Context(), name, cleanup)
 	if errors.Is(err, services.ErrRebuildRolledBack) {
 		c.syncTraefikNow()
-		writeJSON(w, http.StatusConflict, map[string]any{"error": "Le Rebuild n'a pas marché : le service tourne de nouveau avec ses images d'avant. " + strings.TrimPrefix(err.Error(), services.ErrRebuildRolledBack.Error()+" : "), "rolled_back": true})
+		writeJSON(w, http.StatusConflict, map[string]any{"error": "La reconstruction n'a pas marché : le service tourne de nouveau avec ses images d'avant. " + strings.TrimPrefix(err.Error(), services.ErrRebuildRolledBack.Error()+" : "), "rolled_back": true})
 		return
 	}
 	if err != nil {
